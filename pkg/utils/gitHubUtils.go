@@ -10,8 +10,8 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
 
-// CheckoutConfiguration clons a GitHub repo and checks out the specified branch
-func CheckoutConfiguration(gitHubOrg string, project string, branch string) (*git.Repository, error) {
+// Checkout clons a GitHub repo and checks out the specified branch
+func Checkout(gitHubOrg string, project string, branch string) (*git.Repository, error) {
 
 	err := os.RemoveAll(project)
 	if err != nil {
