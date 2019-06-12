@@ -2,13 +2,15 @@ package utils
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
+	"time"
 
 	"k8s.io/client-go/kubernetes"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	// Initialize all known client auth plugins.
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -30,14 +32,41 @@ func DoHelmUpgrade(project string, stage string) error {
 	return err
 }
 
-// CheckDeploymentRolloutStatus checks the rollout status of the provided deployment
-func CheckDeploymentRolloutStatus(serviceName string, namespace string) error {
-	_, err := ExecuteCommand("kubectl", []string{"rollout", "status", "deployment/" + serviceName, "--namespace", namespace})
-	return err
+// WaitForDeploymentToBeAvailable waits until the deployment is Available
+func WaitForDeploymentToBeAvailable(useInClusterConfig bool, serviceName string, namespace string) error {
+
+	clientset, err := GetClientset(useInClusterConfig)
+	if err != nil {
+		return err
+	}
+
+	dep, err := clientset.AppsV1().Deployments(namespace).Get(serviceName, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	for dep.Status.UnavailableReplicas > 0 {
+		time.Sleep(2 * time.Second)
+		dep, err = clientset.AppsV1().Deployments(namespace).Update(dep)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-// GetKubeAPI returns the Kube API in version v1
+// GetKubeAPI returns the CoreV1Interface
 func GetKubeAPI(useInClusterConfig bool) (v1.CoreV1Interface, error) {
+
+	clientset, err := GetClientset(useInClusterConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return clientset.CoreV1(), nil
+}
+
+// GetClientset returns the kubernetes Clientset
+func GetClientset(useInClusterConfig bool) (*kubernetes.Clientset, error) {
 
 	var config *rest.Config
 	var err error
@@ -45,7 +74,7 @@ func GetKubeAPI(useInClusterConfig bool) (v1.CoreV1Interface, error) {
 		config, err = rest.InClusterConfig()
 	} else {
 		kubeconfig := filepath.Join(
-			os.Getenv("HOME"), ".kube", "config",
+			UserHomeDir(), ".kube", "config",
 		)
 		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
 	}
@@ -53,10 +82,5 @@ func GetKubeAPI(useInClusterConfig bool) (v1.CoreV1Interface, error) {
 		return nil, err
 	}
 
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-
-	return clientset.CoreV1(), nil
+	return kubernetes.NewForConfig(config)
 }
