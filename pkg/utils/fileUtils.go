@@ -11,7 +11,7 @@ const keptnFolderName = ".keptn"
 // GetKeptnDirectory returns a path, which is used to store logs and possibly creds
 func GetKeptnDirectory() (string, error) {
 
-	keptnDir := userHomeDir() + string(os.PathSeparator) + keptnFolderName + string(os.PathSeparator)
+	keptnDir := UserHomeDir() + string(os.PathSeparator) + keptnFolderName + string(os.PathSeparator)
 
 	if _, err := os.Stat(keptnDir); os.IsNotExist(err) {
 		err := os.MkdirAll(keptnDir, os.ModePerm)
@@ -24,6 +24,7 @@ func GetKeptnDirectory() (string, error) {
 	return keptnDir, nil
 }
 
+// UserHomeDir returns the HOME directory by taking into account the operating system
 func UserHomeDir() string {
 	if runtime.GOOS == "windows" {
 		home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
