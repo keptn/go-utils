@@ -3,14 +3,16 @@ package utils
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"k8s.io/client-go/kubernetes"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
-	// Initialize all known client auth plugins.
-
+	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	// Initialize all known client auth plugins.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -40,18 +42,26 @@ func WaitForDeploymentToBeAvailable(useInClusterConfig bool, serviceName string,
 		return err
 	}
 
-	dep, err := clientset.AppsV1().Deployments(namespace).Get(serviceName, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
+	dep, err := getDeployment(clientset, namespace, serviceName)
+
 	for dep.Status.UnavailableReplicas > 0 {
 		time.Sleep(2 * time.Second)
-		dep, err = clientset.AppsV1().Deployments(namespace).Update(dep)
+		dep, err = getDeployment(clientset, namespace, serviceName)
 		if err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func getDeployment(clientset *kubernetes.Clientset, namespace string, serviceName string) (*appsv1.Deployment, error) {
+	dep, err := clientset.AppsV1().Deployments(namespace).Get(serviceName, metav1.GetOptions{})
+	if err != nil &&
+		strings.Contains(err.Error(), "the object has been modified; please apply your changes to the latest version and try again") {
+		time.Sleep(10 * time.Second)
+		return clientset.AppsV1().Deployments(namespace).Get(serviceName, metav1.GetOptions{})
+	}
+	return dep, nil
 }
 
 // GetKubeAPI returns the CoreV1Interface
