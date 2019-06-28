@@ -1,4 +1,4 @@
-# Release Notes 0.2.2
+# Release Notes 0.1.0
 
 This is the first release of the go-utils, which is a library for keptn services written in Go.
 
