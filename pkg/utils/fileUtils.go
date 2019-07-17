@@ -3,7 +3,9 @@ package utils
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 const keptnFolderName = ".keptn"
@@ -34,4 +36,14 @@ func UserHomeDir() string {
 		return home
 	}
 	return os.Getenv("HOME")
+}
+
+// ExpandTilde expands ~ to HOME
+func ExpandTilde(fileName string) string {
+	if fileName == "~" {
+		return UserHomeDir()
+	} else if strings.HasPrefix(fileName, "~/") {
+		return filepath.Join(UserHomeDir(), fileName[2:])
+	}
+	return fileName
 }
