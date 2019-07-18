@@ -30,7 +30,7 @@ func DoHelmUpgrade(project string, stage string) error {
 	if err != nil {
 		return err
 	}
-	_, err = ExecuteCommand("helm", []string{"upgrade", "--install", projectStage, helmChart, "--namespace", projectStage})
+	_, err = ExecuteCommand("helm", []string{"upgrade", "--install", projectStage, helmChart, "--namespace", projectStage, "--wait"})
 	return err
 }
 
