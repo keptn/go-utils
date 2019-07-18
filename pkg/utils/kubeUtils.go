@@ -62,14 +62,7 @@ func WaitForDeploymentsInNamespace(useInClusterConfig bool, namespace string) er
 	}
 	deps, err := clientset.AppsV1().Deployments(namespace).List(metav1.ListOptions{})
 	for _, dep := range deps.Items {
-		depStatus := &dep
-		for depStatus.Status.UnavailableReplicas > 0 {
-			time.Sleep(2 * time.Second)
-			depStatus, err = getDeployment(clientset, namespace, dep.Name)
-			if err != nil {
-				return err
-			}
-		}
+		WaitForDeploymentToBeAvailable(useInClusterConfig, dep.Name, namespace)
 	}
 	return nil
 }
