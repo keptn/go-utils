@@ -54,6 +54,26 @@ func WaitForDeploymentToBeAvailable(useInClusterConfig bool, serviceName string,
 	return nil
 }
 
+// WaitForDeploymentsInNamespace waits until all deployments in a namespace are available
+func WaitForDeploymentsInNamespace(useInClusterConfig bool, namespace string) error {
+	clientset, err := GetClientset(useInClusterConfig)
+	if err != nil {
+		return err
+	}
+	deps, err := clientset.AppsV1().Deployments(namespace).List(metav1.ListOptions{})
+	for _, dep := range deps.Items {
+		depStatus := &dep
+		for depStatus.Status.UnavailableReplicas > 0 {
+			time.Sleep(2 * time.Second)
+			depStatus, err = getDeployment(clientset, namespace, dep.Name)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 func getDeployment(clientset *kubernetes.Clientset, namespace string, serviceName string) (*appsv1.Deployment, error) {
 	dep, err := clientset.AppsV1().Deployments(namespace).Get(serviceName, metav1.GetOptions{})
 	if err != nil &&
