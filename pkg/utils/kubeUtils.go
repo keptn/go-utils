@@ -30,7 +30,7 @@ func DoHelmUpgrade(project string, stage string) error {
 	if err != nil {
 		return err
 	}
-	_, err = ExecuteCommand("helm", []string{"upgrade", "--install", projectStage, helmChart, "--namespace", projectStage})
+	_, err = ExecuteCommand("helm", []string{"upgrade", "--install", projectStage, helmChart, "--namespace", projectStage, "--wait"})
 	return err
 }
 
@@ -50,6 +50,19 @@ func WaitForDeploymentToBeAvailable(useInClusterConfig bool, serviceName string,
 		if err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+// WaitForDeploymentsInNamespace waits until all deployments in a namespace are available
+func WaitForDeploymentsInNamespace(useInClusterConfig bool, namespace string) error {
+	clientset, err := GetClientset(useInClusterConfig)
+	if err != nil {
+		return err
+	}
+	deps, err := clientset.AppsV1().Deployments(namespace).List(metav1.ListOptions{})
+	for _, dep := range deps.Items {
+		WaitForDeploymentToBeAvailable(useInClusterConfig, dep.Name, namespace)
 	}
 	return nil
 }
