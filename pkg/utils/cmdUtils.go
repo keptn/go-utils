@@ -11,7 +11,7 @@ func ExecuteCommand(command string, args []string) (string, error) {
 	cmd := exec.Command(command, args...)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", fmt.Errorf("Error executing command %s %s: %s", command, strings.Join(args, " "), err.Error())
+		return "", fmt.Errorf("Error executing command %s %s: %s\n%s", command, strings.Join(args, " "), err.Error(), string(out))
 	}
 	return string(out), nil
 }
