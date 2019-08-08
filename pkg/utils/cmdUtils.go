@@ -15,3 +15,14 @@ func ExecuteCommand(command string, args []string) (string, error) {
 	}
 	return string(out), nil
 }
+
+// ExecuteCommandInDirectory executes the command using the args within the specified directory
+func ExecuteCommandInDirectory(command string, args []string, directory string) (string, error) {
+	cmd := exec.Command(command, args...)
+	cmd.Dir = directory
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("Error executing command %s %s: %s", command, strings.Join(args, " "), err.Error())
+	}
+	return string(out), nil
+}
