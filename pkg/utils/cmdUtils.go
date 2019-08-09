@@ -22,7 +22,7 @@ func ExecuteCommandInDirectory(command string, args []string, directory string) 
 	cmd.Dir = directory
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", fmt.Errorf("Error executing command %s %s: %s", command, strings.Join(args, " "), err.Error())
+		return string(out), fmt.Errorf("Error executing command %s %s: %s", command, strings.Join(args, " "), err.Error())
 	}
 	return string(out), nil
 }
