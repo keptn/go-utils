@@ -24,7 +24,6 @@
 #   go-tests = true
 #   unused-packages = true
 
-
 [[constraint]]
   name = "gopkg.in/src-d/go-git.v4"
   version = "4.11.0"
@@ -40,6 +39,10 @@
 [[override]]
   name = "k8s.io/apimachinery"
   version = "kubernetes-1.14.3"
+
+[[override]]
+  name = "contrib.go.opencensus.io/exporter/ocagent"
+  version = "v0.4.12"
 
 [prune]
   go-tests = true
