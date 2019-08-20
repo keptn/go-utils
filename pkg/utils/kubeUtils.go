@@ -41,6 +41,9 @@ func RestartPodsWithSelector(useInClusterConfig bool, namespace string, selector
 		return err
 	}
 	pods, err := clientset.Pods(namespace).List(metav1.ListOptions{LabelSelector: selector})
+	if err != nil {
+		return err
+	}
 	for _, pod := range pods.Items {
 		if err := clientset.Pods(namespace).Delete(pod.Name, &metav1.DeleteOptions{}); err != nil {
 			return err
