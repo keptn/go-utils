@@ -34,6 +34,21 @@ func DoHelmUpgrade(project string, stage string) error {
 	return err
 }
 
+// RestartPodsWithSelector restarts the pods which are found in the provided namespace and selector
+func RestartPodsWithSelector(useInClusterConfig bool, namespace string, selector string) error {
+	clientset, err := GetKubeAPI(useInClusterConfig)
+	if err != nil {
+		return err
+	}
+	pods, err := clientset.Pods(namespace).List(metav1.ListOptions{LabelSelector: selector})
+	for _, pod := range pods.Items {
+		if err := clientset.Pods(namespace).Delete(pod.Name, &metav1.DeleteOptions{}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // WaitForDeploymentToBeAvailable waits until the deployment is Available
 func WaitForDeploymentToBeAvailable(useInClusterConfig bool, serviceName string, namespace string) error {
 
