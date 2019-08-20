@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 )
 
 // ResourceHandler handles resources
@@ -42,17 +43,17 @@ func (r *ResourceHandler) CreateProjectResources(project string, resources []*Re
 
 // GetProjectResource retrieves a project resource from the configuration service
 func (r *ResourceHandler) GetProjectResource(project string, resourceURI string) (*Resource, error) {
-	return getResource("http://" + r.BaseURL + "/v1/project/" + project + "/resource/" + resourceURI)
+	return getResource("http://" + r.BaseURL + "/v1/project/" + project + "/resource/" + url.QueryEscape(resourceURI))
 }
 
 // UpdateProjectResource updates a project resource
 func (r *ResourceHandler) UpdateProjectResource(project string, resource *Resource) (string, error) {
-	return updateResource("http://"+r.BaseURL+"/v1/project/"+project+"/resource/"+resource.ResourceURI, resource)
+	return updateResource("http://"+r.BaseURL+"/v1/project/"+project+"/resource/"+url.QueryEscape(resource.ResourceURI), resource)
 }
 
 // DeleteProjectResource deletes a project resource
 func (r *ResourceHandler) DeleteProjectResource(project string, resourceURI string) error {
-	return deleteResource("http://" + r.BaseURL + "/v1/project/" + project + "/resource/" + resourceURI)
+	return deleteResource("http://" + r.BaseURL + "/v1/project/" + project + "/resource/" + url.QueryEscape(resourceURI))
 }
 
 // UpdateProjectResources updates multiple project resources
@@ -67,17 +68,17 @@ func (r *ResourceHandler) CreateStageResources(project string, stage string, res
 
 // GetStageResource retrieves a stage resource from the configuration service
 func (r *ResourceHandler) GetStageResource(project string, stage string, resourceURI string) (*Resource, error) {
-	return getResource("http://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/resource/" + resourceURI)
+	return getResource("http://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/resource/" + url.QueryEscape(resourceURI))
 }
 
 // UpdateStageResource updates a stage resource
 func (r *ResourceHandler) UpdateStageResource(project string, stage string, resource *Resource) (string, error) {
-	return updateResource("http://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/resource/"+resource.ResourceURI, resource)
+	return updateResource("http://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/resource/"+url.QueryEscape(resource.ResourceURI), resource)
 }
 
 // DeleteStageResource deletes a stage resource
 func (r *ResourceHandler) DeleteStageResource(project string, stage string, resourceURI string) error {
-	return deleteResource("http://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/resource/" + resourceURI)
+	return deleteResource("http://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/resource/" + url.QueryEscape(resourceURI))
 }
 
 // CreateServiceResources creates a service resource
@@ -87,17 +88,17 @@ func (r *ResourceHandler) CreateServiceResources(project string, stage string, s
 
 // GetServiceResource retrieves a service resource from the configuration service
 func (r *ResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string) (*Resource, error) {
-	return getResource("http://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/service/" + service + "/resource/" + resourceURI)
+	return getResource("http://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/service/" + url.QueryEscape(service) + "/resource/" + url.QueryEscape(resourceURI))
 }
 
 // UpdateServiceResource updates a service resource
 func (r *ResourceHandler) UpdateServiceResource(project string, stage string, service string, resource *Resource) (string, error) {
-	return updateResource("http://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+service+"/resource/"+resource.ResourceURI, resource)
+	return updateResource("http://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+url.QueryEscape(service)+"/resource/"+url.QueryEscape(resource.ResourceURI), resource)
 }
 
 // DeleteServiceResource deletes a service resource
 func (r *ResourceHandler) DeleteServiceResource(project string, stage string, service string, resourceURI string) error {
-	return deleteResource("http://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/service/" + service + "/resource/" + resourceURI)
+	return deleteResource("http://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/service/" + url.QueryEscape(service) + "/resource/" + url.QueryEscape(resourceURI))
 }
 
 func createResources(uri string, resources []*Resource) (string, error) {
