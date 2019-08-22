@@ -1,7 +1,13 @@
 package events
 
-// ServiceCreateEventType is a CloudEvents type for creating new services
+// ServiceCreateEventType is a CloudEvent type for creating new services
 const ServiceCreateEventType = "sh.keptn.event.service.create"
+
+// InternalServiceCreateEventType is a CloudEvent type for creating new services
+const InternalServiceCreateEventType = "sh.keptn.internal.event.service.create"
+
+// ConfigurationChangeEventType is a CloudEvent type for changing the configuration
+const ConfigurationChangeEventType = "sh.keptn.event.configuration.change"
 
 // ServiceCreateEventData represents the data for creating a new service
 type ServiceCreateEventData struct {
