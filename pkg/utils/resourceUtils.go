@@ -76,6 +76,11 @@ func (r *ResourceHandler) UpdateStageResource(project string, stage string, reso
 	return updateResource("http://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/resource/"+url.QueryEscape(resource.ResourceURI), resource)
 }
 
+// UpdateStageResources updates multiple stage resources
+func (r *ResourceHandler) UpdateStageResources(project string, stage string, resources []*Resource) (string, error) {
+	return updateResources("http://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/resource", resources)
+}
+
 // DeleteStageResource deletes a stage resource
 func (r *ResourceHandler) DeleteStageResource(project string, stage string, resourceURI string) error {
 	return deleteResource("http://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/resource/" + url.QueryEscape(resourceURI))
@@ -94,6 +99,11 @@ func (r *ResourceHandler) GetServiceResource(project string, stage string, servi
 // UpdateServiceResource updates a service resource
 func (r *ResourceHandler) UpdateServiceResource(project string, stage string, service string, resource *Resource) (string, error) {
 	return updateResource("http://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+url.QueryEscape(service)+"/resource/"+url.QueryEscape(resource.ResourceURI), resource)
+}
+
+// UpdateServiceResources updates multiple service resources
+func (r *ResourceHandler) UpdateServiceResources(project string, stage string, service string, resources []*Resource) (string, error) {
+	return updateResources("http://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+url.QueryEscape(service)+"/resource", resources)
 }
 
 // DeleteServiceResource deletes a service resource
