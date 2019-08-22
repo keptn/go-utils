@@ -9,6 +9,6 @@ type ServiceCreateEventData struct {
 	Project string `json:"project"`
 	// Service is the name of the new service
 	Service string `json:"service"`
-	// HelmChart is a base64 encoded Helm chart packed as tgz
+	// HelmChart are the data of a Helm chart packed as tgz
 	HelmChart []byte `json:"helmChart"`
 }
