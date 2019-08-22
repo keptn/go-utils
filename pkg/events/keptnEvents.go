@@ -3,7 +3,7 @@ package events
 // ServiceCreateEventType is a CloudEvents type for creating new services
 const ServiceCreateEventType = "sh.keptn.event.service.create"
 
-// ServiceCreateEventData represents the
+// ServiceCreateEventData represents the data for creating a new service
 type ServiceCreateEventData struct {
 	// Project is the name of the project
 	Project string `json:"project"`
