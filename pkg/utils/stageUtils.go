@@ -10,23 +10,23 @@ import (
 	"github.com/keptn/go-utils/pkg/models"
 )
 
-// ServiceHandler handles services
-type ServiceHandler struct {
+// StageHandler handles stages
+type StageHandler struct {
 	BaseURL string
 }
 
-// NewServiceHandler returns a new ServiceHandler
-func NewServiceHandler(baseURL string) *ServiceHandler {
-	return &ServiceHandler{
+// NewStageHandler returns a new StageHandler
+func NewStageHandler(baseURL string) *StageHandler {
+	return &StageHandler{
 		BaseURL: baseURL,
 	}
 }
 
-// GetService returns a list of services.
+// GetStage returns a list of stages.
 // If page size is >0 it is used as query parameter. Also if nextPageKey is no empty string
 // it is used as query parameter.
-func (r *ServiceHandler) GetService(project string, stage string, pageSize int, nextPageKey string) (*models.Services, error) {
-	url, err := url.Parse("http://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/service")
+func (r *StageHandler) GetStage(project string, pageSize int, nextPageKey string) (*models.Stages, error) {
+	url, err := url.Parse("http://" + r.BaseURL + "/v1/project/" + project + "/stage")
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +48,7 @@ func (r *ServiceHandler) GetService(project string, stage string, pageSize int, 
 	defer resp.Body.Close()
 
 	body, _ := ioutil.ReadAll(resp.Body)
-	var services models.Services
-	err = json.Unmarshal(body, &services)
-	return &services, err
+	var stages models.Stages
+	err = json.Unmarshal(body, &stages)
+	return &stages, err
 }
