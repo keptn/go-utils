@@ -23,7 +23,7 @@ func NewServiceHandler(baseURL string) *ServiceHandler {
 }
 
 // GetService returns a list of services.
-func (r *ResourceHandler) GetService(project string, stage string, pageSize int, nextPageKey string) (*models.Services, error) {
+func (r *ServiceHandler) GetService(project string, stage string, pageSize int, nextPageKey string) (*models.Services, error) {
 	url, err := url.Parse("http://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/service")
 	if err != nil {
 		return nil, err
