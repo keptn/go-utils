@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strconv"
 
 	"github.com/keptn/go-utils/pkg/models"
 )
@@ -22,33 +21,47 @@ func NewServiceHandler(baseURL string) *ServiceHandler {
 	}
 }
 
-// GetService returns a list of services.
+// GetAllServices returns a list of all services.
 // If page size is >0 it is used as query parameter. Also if nextPageKey is no empty string
 // it is used as query parameter.
-func (r *ServiceHandler) GetService(project string, stage string, pageSize int, nextPageKey string) (*models.Services, error) {
-	url, err := url.Parse("http://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/service")
-	if err != nil {
-		return nil, err
-	}
-	q := url.Query()
-	if pageSize > 0 {
-		q.Set("pageSize", strconv.Itoa(pageSize))
-	}
-	if nextPageKey != "" {
-		q.Set("nextPageKey", nextPageKey)
-	}
-	req, err := http.NewRequest("GET", url.String(), nil)
-	req.Header.Set("Content-Type", "application/json")
+func (r *ServiceHandler) GetAllServices(project string, stage string) ([]*models.Service, error) {
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
+	services := []*models.Service{}
 
-	body, _ := ioutil.ReadAll(resp.Body)
-	var services models.Services
-	err = json.Unmarshal(body, &services)
-	return &services, err
+	nextPageKey := ""
+
+	for {
+		url, err := url.Parse("http://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/service")
+		if err != nil {
+			return nil, err
+		}
+		q := url.Query()
+		if nextPageKey != "" {
+			q.Set("nextPageKey", nextPageKey)
+		}
+		req, err := http.NewRequest("GET", url.String(), nil)
+		req.Header.Set("Content-Type", "application/json")
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+
+		body, _ := ioutil.ReadAll(resp.Body)
+		var received models.Services
+		err = json.Unmarshal(body, &services)
+		if err != nil {
+			return nil, err
+		}
+		services = append(services, received.Services...)
+
+		if received.NextPageKey == "" {
+			break
+		}
+		nextPageKey = received.NextPageKey
+	}
+
+	return services, nil
 }
