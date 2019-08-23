@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"crypto/tls"
 	b64 "encoding/base64"
 	"encoding/json"
 	"errors"
@@ -17,6 +18,8 @@ type ResourceHandler struct {
 	BaseURL    string
 	AuthToken  string
 	AuthHeader string
+	HTTPClient *http.Client
+	Scheme     string
 }
 
 type resourceRequest struct {
@@ -29,91 +32,98 @@ func NewResourceHandler(baseURL string) *ResourceHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
+		HTTPClient: &http.Client{},
+		Scheme:     "http",
 	}
 }
 
 // NewAuthenticatedResourceHandler returns a new ResourceHandler that authenticates at the endpoint via the provided token
-func NewAuthenticatedResourceHandler(baseURL string, authToken string, authHeader string) *ResourceHandler {
+func NewAuthenticatedResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ResourceHandler {
+	if httpClient == nil {
+		httpClient = &http.Client{}
+	}
 	return &ResourceHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,
 		AuthToken:  authToken,
+		HTTPClient: httpClient,
+		Scheme:     scheme,
 	}
 }
 
 // CreateProjectResources creates multiple project resources
 func (r *ResourceHandler) CreateProjectResources(project string, resources []*models.Resource) (string, error) {
-	return r.createResources("http://"+r.BaseURL+"/v1/project/"+project+"/resource", resources)
+	return r.createResources(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/resource", resources)
 }
 
 // GetProjectResource retrieves a project resource from the configuration service
 func (r *ResourceHandler) GetProjectResource(project string, resourceURI string) (*models.Resource, error) {
-	return r.getResource("http://" + r.BaseURL + "/v1/project/" + project + "/resource/" + url.QueryEscape(resourceURI))
+	return r.getResource(r.Scheme + "://" + r.BaseURL + "/v1/project/" + project + "/resource/" + url.QueryEscape(resourceURI))
 }
 
 // UpdateProjectResource updates a project resource
 func (r *ResourceHandler) UpdateProjectResource(project string, resource *models.Resource) (string, error) {
-	return r.updateResource("http://"+r.BaseURL+"/v1/project/"+project+"/resource/"+url.QueryEscape(*resource.ResourceURI), resource)
+	return r.updateResource(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/resource/"+url.QueryEscape(*resource.ResourceURI), resource)
 }
 
 // DeleteProjectResource deletes a project resource
 func (r *ResourceHandler) DeleteProjectResource(project string, resourceURI string) error {
-	return r.deleteResource("http://" + r.BaseURL + "/v1/project/" + project + "/resource/" + url.QueryEscape(resourceURI))
+	return r.deleteResource(r.Scheme + "://" + r.BaseURL + "/v1/project/" + project + "/resource/" + url.QueryEscape(resourceURI))
 }
 
 // UpdateProjectResources updates multiple project resources
 func (r *ResourceHandler) UpdateProjectResources(project string, resources []*models.Resource) (string, error) {
-	return r.updateResources("http://"+r.BaseURL+"/v1/project/"+project+"/resource", resources)
+	return r.updateResources(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/resource", resources)
 }
 
 // CreateStageResources creates a stage resource
 func (r *ResourceHandler) CreateStageResources(project string, stage string, resources []*models.Resource) (string, error) {
-	return r.createResources("http://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/resource", resources)
+	return r.createResources(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/resource", resources)
 }
 
 // GetStageResource retrieves a stage resource from the configuration service
 func (r *ResourceHandler) GetStageResource(project string, stage string, resourceURI string) (*models.Resource, error) {
-	return r.getResource("http://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/resource/" + url.QueryEscape(resourceURI))
+	return r.getResource(r.Scheme + "://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/resource/" + url.QueryEscape(resourceURI))
 }
 
 // UpdateStageResource updates a stage resource
 func (r *ResourceHandler) UpdateStageResource(project string, stage string, resource *models.Resource) (string, error) {
-	return r.updateResource("http://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/resource/"+url.QueryEscape(*resource.ResourceURI), resource)
+	return r.updateResource(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/resource/"+url.QueryEscape(*resource.ResourceURI), resource)
 }
 
 // UpdateStageResources updates multiple stage resources
 func (r *ResourceHandler) UpdateStageResources(project string, stage string, resources []*models.Resource) (string, error) {
-	return r.updateResources("http://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/resource", resources)
+	return r.updateResources(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/resource", resources)
 }
 
 // DeleteStageResource deletes a stage resource
 func (r *ResourceHandler) DeleteStageResource(project string, stage string, resourceURI string) error {
-	return r.deleteResource("http://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/resource/" + url.QueryEscape(resourceURI))
+	return r.deleteResource(r.Scheme + "://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/resource/" + url.QueryEscape(resourceURI))
 }
 
 // CreateServiceResources creates a service resource
 func (r *ResourceHandler) CreateServiceResources(project string, stage string, service string, resources []*models.Resource) (string, error) {
-	return r.createResources("http://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+service+"/resource", resources)
+	return r.createResources(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+service+"/resource", resources)
 }
 
 // GetServiceResource retrieves a service resource from the configuration service
 func (r *ResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
-	return r.getResource("http://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/service/" + url.QueryEscape(service) + "/resource/" + url.QueryEscape(resourceURI))
+	return r.getResource(r.Scheme + "://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/service/" + url.QueryEscape(service) + "/resource/" + url.QueryEscape(resourceURI))
 }
 
 // UpdateServiceResource updates a service resource
 func (r *ResourceHandler) UpdateServiceResource(project string, stage string, service string, resource *models.Resource) (string, error) {
-	return r.updateResource("http://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+url.QueryEscape(service)+"/resource/"+url.QueryEscape(*resource.ResourceURI), resource)
+	return r.updateResource(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+url.QueryEscape(service)+"/resource/"+url.QueryEscape(*resource.ResourceURI), resource)
 }
 
 // UpdateServiceResources updates multiple service resources
 func (r *ResourceHandler) UpdateServiceResources(project string, stage string, service string, resources []*models.Resource) (string, error) {
-	return r.updateResources("http://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+url.QueryEscape(service)+"/resource", resources)
+	return r.updateResources(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+url.QueryEscape(service)+"/resource", resources)
 }
 
 // DeleteServiceResource deletes a service resource
 func (r *ResourceHandler) DeleteServiceResource(project string, stage string, service string, resourceURI string) error {
-	return r.deleteResource("http://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/service/" + url.QueryEscape(service) + "/resource/" + url.QueryEscape(resourceURI))
+	return r.deleteResource(r.Scheme + "://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/service/" + url.QueryEscape(service) + "/resource/" + url.QueryEscape(resourceURI))
 }
 
 func (r *ResourceHandler) createResources(uri string, resources []*models.Resource) (string, error) {
@@ -142,8 +152,7 @@ func (r *ResourceHandler) writeResources(uri string, method string, resources []
 		req.Header.Set(r.AuthHeader, r.AuthToken)
 	}
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := r.HTTPClient.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -205,6 +214,7 @@ func (r *ResourceHandler) writeResource(uri string, method string, resource *mod
 }
 
 func (r *ResourceHandler) getResource(uri string) (*models.Resource, error) {
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("GET", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
 	if r.AuthHeader != "" && r.AuthToken != "" {
@@ -232,6 +242,7 @@ func (r *ResourceHandler) getResource(uri string) (*models.Resource, error) {
 }
 
 func (r *ResourceHandler) deleteResource(uri string) error {
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("DELETE", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
 	if r.AuthHeader != "" && r.AuthToken != "" {
