@@ -30,8 +30,9 @@ func (r *ServiceHandler) GetService(project string, stage string, pageSize int, 
 	}
 	q := url.Query()
 	q.Set("pageSize", strconv.Itoa(pageSize))
-	q.Set("nextPageKey", nextPageKey)
-
+	if nextPageKey != "" {
+		q.Set("nextPageKey", nextPageKey)
+	}
 	req, err := http.NewRequest("GET", url.String(), nil)
 	req.Header.Set("Content-Type", "application/json")
 
