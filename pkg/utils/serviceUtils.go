@@ -22,8 +22,6 @@ func NewServiceHandler(baseURL string) *ServiceHandler {
 }
 
 // GetAllServices returns a list of all services.
-// If page size is >0 it is used as query parameter. Also if nextPageKey is no empty string
-// it is used as query parameter.
 func (r *ServiceHandler) GetAllServices(project string, stage string) ([]*models.Service, error) {
 
 	services := []*models.Service{}

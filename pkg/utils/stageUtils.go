@@ -22,8 +22,6 @@ func NewStageHandler(baseURL string) *StageHandler {
 }
 
 // GetAllStages returns a list of all stages.
-// If page size is >0 it is used as query parameter. Also if nextPageKey is no empty string
-// it is used as query parameter.
 func (r *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 
 	stages := []*models.Stage{}
