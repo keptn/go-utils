@@ -16,6 +16,8 @@ const ProblemOpenEventType = "sh.keptn.event.problem.open"
 type ServiceCreateEventData struct {
 	// Project is the name of the project
 	Project string `json:"project"`
+	// Stage is the name of the stage
+	Stage string `json:"stage"`
 	// Service is the name of the new service
 	Service string `json:"service"`
 	// HelmChart are the data of a Helm chart packed as tgz
