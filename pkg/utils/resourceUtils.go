@@ -69,7 +69,7 @@ func (r *ResourceHandler) UpdateStageResource(project string, stage string, reso
 }
 
 // UpdateStageResources updates multiple stage resources
-func (r *ResourceHandler) UpdateStageResources(project string, stage string, resources []*Resource) (string, error) {
+func (r *ResourceHandler) UpdateStageResources(project string, stage string, resources []*models.Resource) (string, error) {
 	return updateResources("http://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/resource", resources)
 }
 
@@ -94,7 +94,7 @@ func (r *ResourceHandler) UpdateServiceResource(project string, stage string, se
 }
 
 // UpdateServiceResources updates multiple service resources
-func (r *ResourceHandler) UpdateServiceResources(project string, stage string, service string, resources []*Resource) (string, error) {
+func (r *ResourceHandler) UpdateServiceResources(project string, stage string, service string, resources []*models.Resource) (string, error) {
 	return updateResources("http://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+url.QueryEscape(service)+"/resource", resources)
 }
 
