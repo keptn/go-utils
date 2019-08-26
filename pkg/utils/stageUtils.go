@@ -96,6 +96,9 @@ func (r *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 		}
 		req, err := http.NewRequest("GET", url.String(), nil)
 		req.Header.Set("Content-Type", "application/json")
+		if r.AuthHeader != "" && r.AuthToken != "" {
+			req.Header.Set(r.AuthHeader, r.AuthToken)
+		}
 
 		client := &http.Client{}
 		resp, err := client.Do(req)

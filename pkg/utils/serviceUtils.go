@@ -11,13 +11,26 @@ import (
 
 // ServiceHandler handles services
 type ServiceHandler struct {
-	BaseURL string
+	BaseURL    string
+	AuthToken  string
+	AuthHeader string
 }
 
 // NewServiceHandler returns a new ServiceHandler
 func NewServiceHandler(baseURL string) *ServiceHandler {
 	return &ServiceHandler{
-		BaseURL: baseURL,
+		BaseURL:    baseURL,
+		AuthHeader: "",
+		AuthToken:  "",
+	}
+}
+
+// NewAuthenticatedServiceHandler returns a new ServiceHandler that authenticates at the endpoint via the provided token
+func NewAuthenticatedServiceHandler(baseURL string, authToken string, authHeader string) *ServiceHandler {
+	return &ServiceHandler{
+		BaseURL:    baseURL,
+		AuthHeader: authHeader,
+		AuthToken:  authToken,
 	}
 }
 
@@ -39,6 +52,9 @@ func (r *ServiceHandler) GetAllServices(project string, stage string) ([]*models
 		}
 		req, err := http.NewRequest("GET", url.String(), nil)
 		req.Header.Set("Content-Type", "application/json")
+		if r.AuthHeader != "" && r.AuthToken != "" {
+			req.Header.Set(r.AuthHeader, r.AuthToken)
+		}
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
