@@ -41,6 +41,18 @@ func NewAuthenticatedResourceHandler(baseURL string, authToken string, authHeade
 	}
 }
 
+func (r *ResourceHandler) getBaseURL() string {
+	return r.BaseURL
+}
+
+func (r *ResourceHandler) getAuthToken() string {
+	return r.AuthToken
+}
+
+func (r *ResourceHandler) getAuthHeader() string {
+	return r.AuthHeader
+}
+
 // CreateProjectResources creates multiple project resources
 func (r *ResourceHandler) CreateProjectResources(project string, resources []*models.Resource) (string, error) {
 	return r.createResources("http://"+r.BaseURL+"/v1/project/"+project+"/resource", resources)
@@ -138,9 +150,7 @@ func (r *ResourceHandler) writeResources(uri string, method string, resources []
 	}
 	req, err := http.NewRequest(method, uri, bytes.NewBuffer(resourceStr))
 	req.Header.Set("Content-Type", "application/json")
-	if r.AuthHeader != "" && r.AuthToken != "" {
-		req.Header.Set(r.AuthHeader, r.AuthToken)
-	}
+	addAuthHeader(req, r)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -178,9 +188,8 @@ func (r *ResourceHandler) writeResource(uri string, method string, resource *mod
 	}
 	req, err := http.NewRequest(method, uri, bytes.NewBuffer(resourceStr))
 	req.Header.Set("Content-Type", "application/json")
-	if r.AuthHeader != "" && r.AuthToken != "" {
-		req.Header.Set(r.AuthHeader, r.AuthToken)
-	}
+	addAuthHeader(req, r)
+
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -207,9 +216,8 @@ func (r *ResourceHandler) writeResource(uri string, method string, resource *mod
 func (r *ResourceHandler) getResource(uri string) (*models.Resource, error) {
 	req, err := http.NewRequest("GET", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
-	if r.AuthHeader != "" && r.AuthToken != "" {
-		req.Header.Set(r.AuthHeader, r.AuthToken)
-	}
+	addAuthHeader(req, r)
+
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -234,9 +242,8 @@ func (r *ResourceHandler) getResource(uri string) (*models.Resource, error) {
 func (r *ResourceHandler) deleteResource(uri string) error {
 	req, err := http.NewRequest("DELETE", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
-	if r.AuthHeader != "" && r.AuthToken != "" {
-		req.Header.Set(r.AuthHeader, r.AuthToken)
-	}
+	addAuthHeader(req, r)
+
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
