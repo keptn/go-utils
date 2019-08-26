@@ -34,15 +34,27 @@ func NewAuthenticatedServiceHandler(baseURL string, authToken string, authHeader
 	}
 }
 
+func (s *ServiceHandler) getBaseURL() string {
+	return s.BaseURL
+}
+
+func (s *ServiceHandler) getAuthToken() string {
+	return s.AuthToken
+}
+
+func (s *ServiceHandler) getAuthHeader() string {
+	return s.AuthHeader
+}
+
 // GetAllServices returns a list of all services.
-func (r *ServiceHandler) GetAllServices(project string, stage string) ([]*models.Service, error) {
+func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models.Service, error) {
 
 	services := []*models.Service{}
 
 	nextPageKey := ""
 
 	for {
-		url, err := url.Parse("http://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/service")
+		url, err := url.Parse("http://" + s.getBaseURL() + "/v1/project/" + project + "/stage/" + stage + "/service")
 		if err != nil {
 			return nil, err
 		}
@@ -52,9 +64,7 @@ func (r *ServiceHandler) GetAllServices(project string, stage string) ([]*models
 		}
 		req, err := http.NewRequest("GET", url.String(), nil)
 		req.Header.Set("Content-Type", "application/json")
-		if r.AuthHeader != "" && r.AuthToken != "" {
-			req.Header.Set(r.AuthHeader, r.AuthToken)
-		}
+		addAuthHeader(req, s)
 
 		client := &http.Client{}
 		resp, err := client.Do(req)

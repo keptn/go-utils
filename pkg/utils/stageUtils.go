@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -35,58 +34,37 @@ func NewAuthenticatedStageHandler(baseURL string, authToken string, authHeader s
 	}
 }
 
-// CreateStage creates a new stage with the provided name
-func (r *StageHandler) CreateStage(project string, stageName string) (*models.Error, error) {
-
-	stage := models.Stage{StageName: stageName}
-	resourceStr, err := json.Marshal(stage)
-	if err != nil {
-		return nil, err
-	}
-	return r.post("http://"+r.BaseURL+"/v1/project/"+project+"/stage", resourceStr)
+func (s *StageHandler) getBaseURL() string {
+	return s.BaseURL
 }
 
-func (r *StageHandler) post(uri string, data []byte) (*models.Error, error) {
+func (s *StageHandler) getAuthToken() string {
+	return s.AuthToken
+}
 
-	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(data))
-	req.Header.Set("Content-Type", "application/json")
-	if r.AuthHeader != "" && r.AuthToken != "" {
-		req.Header.Set(r.AuthHeader, r.AuthToken)
-	}
+func (s *StageHandler) getAuthHeader() string {
+	return s.AuthHeader
+}
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+// CreateStage creates a new stage with the provided name
+func (s *StageHandler) CreateStage(project string, stageName string) (*models.Error, error) {
+
+	stage := models.Stage{StageName: stageName}
+	body, err := json.Marshal(stage)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		return nil, nil
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var respErr models.Error
-	err = json.Unmarshal(body, &respErr)
-	if err != nil {
-		return nil, err
-	}
-
-	return &respErr, nil
+	return post("http://"+s.BaseURL+"/v1/project/"+project+"/stage", body, s)
 }
 
 // GetAllStages returns a list of all stages.
-func (r *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
+func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 
 	stages := []*models.Stage{}
 
 	nextPageKey := ""
 	for {
-		url, err := url.Parse("http://" + r.BaseURL + "/v1/project/" + project + "/stage")
+		url, err := url.Parse("http://" + s.getBaseURL() + "/v1/project/" + project + "/stage")
 		if err != nil {
 			return nil, err
 		}
@@ -96,9 +74,7 @@ func (r *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 		}
 		req, err := http.NewRequest("GET", url.String(), nil)
 		req.Header.Set("Content-Type", "application/json")
-		if r.AuthHeader != "" && r.AuthToken != "" {
-			req.Header.Set(r.AuthHeader, r.AuthToken)
-		}
+		addAuthHeader(req, s)
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
