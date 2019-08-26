@@ -135,6 +135,9 @@ func (r *ResourceHandler) updateResources(uri string, resources []*models.Resour
 }
 
 func (r *ResourceHandler) writeResources(uri string, method string, resources []*models.Resource) (string, error) {
+	for i := range resources {
+		resources[i].ResourceContent = b64.StdEncoding.EncodeToString([]byte(resources[i].ResourceContent))
+	}
 	resReq := &resourceRequest{
 		Resources: resources,
 	}
@@ -177,6 +180,7 @@ func (r *ResourceHandler) updateResource(uri string, resource *models.Resource) 
 }
 
 func (r *ResourceHandler) writeResource(uri string, method string, resource *models.Resource) (string, error) {
+	resource.ResourceContent = b64.StdEncoding.EncodeToString([]byte(resource.ResourceContent))
 	resourceStr, err := json.Marshal(resource)
 	if err != nil {
 		return "", err
