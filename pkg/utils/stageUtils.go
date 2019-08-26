@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -84,17 +85,27 @@ func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 		defer resp.Body.Close()
 
 		body, _ := ioutil.ReadAll(resp.Body)
-		var received models.Stages
-		err = json.Unmarshal(body, &received)
-		if err != nil {
-			return nil, err
-		}
-		stages = append(stages, received.Stages...)
 
-		if received.NextPageKey == "" {
-			break
+		if resp.StatusCode == 200 {
+			var received models.Stages
+			err = json.Unmarshal(body, &received)
+			if err != nil {
+				return nil, err
+			}
+			stages = append(stages, received.Stages...)
+
+			if received.NextPageKey == "" {
+				break
+			}
+			nextPageKey = received.NextPageKey
+		} else {
+			var respErr models.Error
+			err = json.Unmarshal(body, &respErr)
+			if err != nil {
+				return nil, err
+			}
+			return nil, errors.New("Response Error Code: " + string(respErr.Code) + " Message: " + *respErr.Message)
 		}
-		nextPageKey = received.NextPageKey
 	}
 	return stages, nil
 }

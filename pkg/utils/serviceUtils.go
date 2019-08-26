@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -73,18 +74,31 @@ func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models
 		}
 		defer resp.Body.Close()
 
-		body, _ := ioutil.ReadAll(resp.Body)
-		var received models.Services
-		err = json.Unmarshal(body, &services)
+		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, err
 		}
-		services = append(services, received.Services...)
 
-		if received.NextPageKey == "" {
-			break
+		if resp.StatusCode == 200 {
+			var received models.Services
+			err = json.Unmarshal(body, &services)
+			if err != nil {
+				return nil, err
+			}
+			services = append(services, received.Services...)
+
+			if received.NextPageKey == "" {
+				break
+			}
+			nextPageKey = received.NextPageKey
+		} else {
+			var respErr models.Error
+			err = json.Unmarshal(body, &respErr)
+			if err != nil {
+				return nil, err
+			}
+			return nil, errors.New("Response Error Code: " + string(respErr.Code) + " Message: " + *respErr.Message)
 		}
-		nextPageKey = received.NextPageKey
 	}
 
 	return services, nil
