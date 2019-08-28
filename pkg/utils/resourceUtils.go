@@ -137,11 +137,13 @@ func (r *ResourceHandler) updateResources(uri string, resources []*models.Resour
 }
 
 func (r *ResourceHandler) writeResources(uri string, method string, resources []*models.Resource) (string, error) {
-	for i := range resources {
-		resources[i].ResourceContent = b64.StdEncoding.EncodeToString([]byte(resources[i].ResourceContent))
+
+	copiedResources := make([]*models.Resource, len(resources), len(resources))
+	for i, val := range resources {
+		copiedResources[i] = &models.Resource{ResourceURI: val.ResourceURI, ResourceContent: b64.StdEncoding.EncodeToString([]byte(val.ResourceContent))}
 	}
 	resReq := &resourceRequest{
-		Resources: resources,
+		Resources: copiedResources,
 	}
 
 	resourceStr, err := json.Marshal(resReq)
@@ -181,8 +183,10 @@ func (r *ResourceHandler) updateResource(uri string, resource *models.Resource) 
 }
 
 func (r *ResourceHandler) writeResource(uri string, method string, resource *models.Resource) (string, error) {
-	resource.ResourceContent = b64.StdEncoding.EncodeToString([]byte(resource.ResourceContent))
-	resourceStr, err := json.Marshal(resource)
+
+	copiedResource := &models.Resource{ResourceURI: resource.ResourceURI, ResourceContent: b64.StdEncoding.EncodeToString([]byte(resource.ResourceContent))}
+
+	resourceStr, err := json.Marshal(copiedResource)
 	if err != nil {
 		return "", err
 	}
