@@ -129,7 +129,7 @@ func GetClientset(useInClusterConfig bool) (*kubernetes.Clientset, error) {
 // GetKeptnDomain reads the configmap keptn-domain in namespace keptn and returns
 // the contained app_domain
 func GetKeptnDomain(useInClusterConfig bool) (string, error) {
-	api, err := GetKubeAPI(true)
+	api, err := GetKubeAPI(useInClusterConfig)
 	if err != nil {
 		return "", err
 	}
