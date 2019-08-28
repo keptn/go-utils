@@ -94,7 +94,7 @@ func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 			}
 			stages = append(stages, received.Stages...)
 
-			if received.NextPageKey == "" {
+			if received.NextPageKey == "" || received.NextPageKey == "0" {
 				break
 			}
 			nextPageKey = received.NextPageKey

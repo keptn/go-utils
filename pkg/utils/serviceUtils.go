@@ -87,7 +87,7 @@ func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models
 			}
 			services = append(services, received.Services...)
 
-			if received.NextPageKey == "" {
+			if received.NextPageKey == "" || received.NextPageKey == "0" {
 				break
 			}
 			nextPageKey = received.NextPageKey
