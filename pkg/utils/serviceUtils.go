@@ -47,6 +47,17 @@ func (s *ServiceHandler) getAuthHeader() string {
 	return s.AuthHeader
 }
 
+// CreateService creates a new service
+func (s *ServiceHandler) CreateService(project string, stage string, serviceName string) (*models.Error, error) {
+
+	service := models.Service{ServiceName: serviceName}
+	body, err := json.Marshal(service)
+	if err != nil {
+		return nil, err
+	}
+	return post("http://"+s.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service", body, s)
+}
+
 // GetAllServices returns a list of all services.
 func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models.Service, error) {
 
