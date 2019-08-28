@@ -186,3 +186,18 @@ func Untar(dst string, r io.Reader) error {
 		}
 	}
 }
+
+// GetFiles returns a list of files in a directory filtered by the provided suffix
+func GetFiles(workingPath string, suffixes ...string) ([]string, error) {
+	var files []string
+	err := filepath.Walk(workingPath, func(path string, info os.FileInfo, err error) error {
+		for _, suffix := range suffixes {
+			if strings.HasSuffix(path, suffix) {
+				files = append(files, path)
+				break
+			}
+		}
+		return nil
+	})
+	return files, err
+}
