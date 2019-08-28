@@ -81,7 +81,7 @@ func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models
 
 		if resp.StatusCode == 200 {
 			var received models.Services
-			err = json.Unmarshal(body, &services)
+			err = json.Unmarshal(body, &received)
 			if err != nil {
 				return nil, err
 			}
