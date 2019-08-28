@@ -2,6 +2,8 @@ package utils
 
 import (
 	"testing"
+
+	"github.com/keptn/go-utils/pkg/models"
 )
 
 func TestResourceHandler_CreateProjectResources(t *testing.T) {
@@ -10,8 +12,9 @@ func TestResourceHandler_CreateProjectResources(t *testing.T) {
 	}
 	type args struct {
 		project   string
-		resources []*Resource
+		resources []*models.Resource
 	}
+	uri := "shipyard-hello2.yaml"
 	tests := []struct {
 		name    string
 		fields  fields
@@ -26,9 +29,9 @@ func TestResourceHandler_CreateProjectResources(t *testing.T) {
 			},
 			args: args{
 				project: "rockshop",
-				resources: []*Resource{
-					&Resource{
-						ResourceURI:     "shipyard-hello2.yaml",
+				resources: []*models.Resource{
+					&models.Resource{
+						ResourceURI:     &uri,
 						ResourceContent: "foo",
 					},
 				},
@@ -58,8 +61,9 @@ func TestResourceHandler_UpdateProjectResource(t *testing.T) {
 	}
 	type args struct {
 		project  string
-		resource *Resource
+		resource *models.Resource
 	}
+	uri := "shipyard-tests.yaml"
 	tests := []struct {
 		name    string
 		fields  fields
@@ -75,8 +79,8 @@ func TestResourceHandler_UpdateProjectResource(t *testing.T) {
 			wantErr: false,
 			args: args{
 				project: "rockshop",
-				resource: &Resource{
-					ResourceURI:     "shipyard-tests.yaml",
+				resource: &models.Resource{
+					ResourceURI:     &uri,
 					ResourceContent: "this is a test!",
 				},
 			},
