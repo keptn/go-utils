@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -14,16 +15,17 @@ type ConfigService interface {
 	getBaseURL() string
 	getAuthToken() string
 	getAuthHeader() string
+	getHTTPClient() *http.Client
 }
 
 func post(uri string, data []byte, c ConfigService) (*models.Error, error) {
 
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, c)
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := c.getHTTPClient().Do(req)
 	if err != nil {
 		return nil, err
 	}

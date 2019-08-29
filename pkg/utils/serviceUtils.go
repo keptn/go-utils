@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -15,6 +16,8 @@ type ServiceHandler struct {
 	BaseURL    string
 	AuthToken  string
 	AuthHeader string
+	HTTPClient *http.Client
+	Scheme     string
 }
 
 // NewServiceHandler returns a new ServiceHandler
@@ -23,15 +26,22 @@ func NewServiceHandler(baseURL string) *ServiceHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
+		HTTPClient: &http.Client{},
+		Scheme:     "http",
 	}
 }
 
 // NewAuthenticatedServiceHandler returns a new ServiceHandler that authenticates at the endpoint via the provided token
-func NewAuthenticatedServiceHandler(baseURL string, authToken string, authHeader string) *ServiceHandler {
+func NewAuthenticatedServiceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ServiceHandler {
+	if httpClient == nil {
+		httpClient = &http.Client{}
+	}
 	return &ServiceHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,
 		AuthToken:  authToken,
+		HTTPClient: httpClient,
+		Scheme:     scheme,
 	}
 }
 
@@ -47,6 +57,10 @@ func (s *ServiceHandler) getAuthHeader() string {
 	return s.AuthHeader
 }
 
+func (s *ServiceHandler) getHTTPClient() *http.Client {
+	return s.HTTPClient
+}
+
 // CreateService creates a new service
 func (s *ServiceHandler) CreateService(project string, stage string, serviceName string) (*models.Error, error) {
 
@@ -55,18 +69,19 @@ func (s *ServiceHandler) CreateService(project string, stage string, serviceName
 	if err != nil {
 		return nil, err
 	}
-	return post("http://"+s.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service", body, s)
+	return post(s.Scheme+s.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service", body, s)
 }
 
 // GetAllServices returns a list of all services.
 func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models.Service, error) {
 
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	services := []*models.Service{}
 
 	nextPageKey := ""
 
 	for {
-		url, err := url.Parse("http://" + s.getBaseURL() + "/v1/project/" + project + "/stage/" + stage + "/service")
+		url, err := url.Parse(s.Scheme + s.getBaseURL() + "/v1/project/" + project + "/stage/" + stage + "/service")
 		if err != nil {
 			return nil, err
 		}
@@ -78,8 +93,7 @@ func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, s)
 
-		client := &http.Client{}
-		resp, err := client.Do(req)
+		resp, err := s.HTTPClient.Do(req)
 		if err != nil {
 			return nil, err
 		}

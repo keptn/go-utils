@@ -63,6 +63,10 @@ func (r *ResourceHandler) getAuthHeader() string {
 	return r.AuthHeader
 }
 
+func (r *ResourceHandler) getHTTPClient() *http.Client {
+	return r.HTTPClient
+}
+
 // CreateProjectResources creates multiple project resources
 func (r *ResourceHandler) CreateProjectResources(project string, resources []*models.Resource) (string, error) {
 	return r.createResources(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/resource", resources)
@@ -203,8 +207,7 @@ func (r *ResourceHandler) writeResource(uri string, method string, resource *mod
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, r)
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := r.HTTPClient.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -232,8 +235,7 @@ func (r *ResourceHandler) getResource(uri string) (*models.Resource, error) {
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, r)
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := r.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -259,8 +261,7 @@ func (r *ResourceHandler) deleteResource(uri string) error {
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, r)
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := r.HTTPClient.Do(req)
 	if err != nil {
 		return err
 	}
