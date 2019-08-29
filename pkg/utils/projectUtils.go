@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"net/http"
 
 	"github.com/keptn/go-utils/pkg/models"
 )
@@ -11,6 +12,8 @@ type ProjectHandler struct {
 	BaseURL    string
 	AuthToken  string
 	AuthHeader string
+	HTTPClient *http.Client
+	Scheme     string
 }
 
 // NewProjectHandler returns a new ProjectHandler
@@ -19,15 +22,22 @@ func NewProjectHandler(baseURL string) *ProjectHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
+		HTTPClient: &http.Client{},
+		Scheme:     "http",
 	}
 }
 
 // NewAuthenticatedProjectHandler returns a new ProjectHandler that authenticates at the endpoint via the provided token
-func NewAuthenticatedProjectHandler(baseURL string, authToken string, authHeader string) *ProjectHandler {
+func NewAuthenticatedProjectHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ProjectHandler {
+	if httpClient == nil {
+		httpClient = &http.Client{}
+	}
 	return &ProjectHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,
 		AuthToken:  authToken,
+		HTTPClient: httpClient,
+		Scheme:     scheme,
 	}
 }
 
@@ -43,6 +53,10 @@ func (p *ProjectHandler) getAuthHeader() string {
 	return p.AuthHeader
 }
 
+func (p *ProjectHandler) getHTTPClient() *http.Client {
+	return p.HTTPClient
+}
+
 // CreateProject creates a new project
 func (p *ProjectHandler) CreateProject(project models.Project) (*models.Error, error) {
 
@@ -50,5 +64,5 @@ func (p *ProjectHandler) CreateProject(project models.Project) (*models.Error, e
 	if err != nil {
 		return nil, err
 	}
-	return post("http://"+p.getBaseURL()+"/v1/project", bodyStr, p)
+	return post(p.Scheme+"://"+p.getBaseURL()+"/v1/project", bodyStr, p)
 }

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -15,6 +16,8 @@ type StageHandler struct {
 	BaseURL    string
 	AuthToken  string
 	AuthHeader string
+	HTTPClient *http.Client
+	Scheme     string
 }
 
 // NewStageHandler returns a new StageHandler
@@ -23,15 +26,22 @@ func NewStageHandler(baseURL string) *StageHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
+		HTTPClient: &http.Client{},
+		Scheme:     "http",
 	}
 }
 
 // NewAuthenticatedStageHandler returns a new StageHandler that authenticates at the endpoint via the provided token
-func NewAuthenticatedStageHandler(baseURL string, authToken string, authHeader string) *StageHandler {
+func NewAuthenticatedStageHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *StageHandler {
+	if httpClient == nil {
+		httpClient = &http.Client{}
+	}
 	return &StageHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,
 		AuthToken:  authToken,
+		HTTPClient: httpClient,
+		Scheme:     scheme,
 	}
 }
 
@@ -47,6 +57,10 @@ func (s *StageHandler) getAuthHeader() string {
 	return s.AuthHeader
 }
 
+func (s *StageHandler) getHTTPClient() *http.Client {
+	return s.HTTPClient
+}
+
 // CreateStage creates a new stage with the provided name
 func (s *StageHandler) CreateStage(project string, stageName string) (*models.Error, error) {
 
@@ -55,17 +69,18 @@ func (s *StageHandler) CreateStage(project string, stageName string) (*models.Er
 	if err != nil {
 		return nil, err
 	}
-	return post("http://"+s.BaseURL+"/v1/project/"+project+"/stage", body, s)
+	return post(s.Scheme+"://"+s.BaseURL+"/v1/project/"+project+"/stage", body, s)
 }
 
 // GetAllStages returns a list of all stages.
 func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	stages := []*models.Stage{}
 
 	nextPageKey := ""
 	for {
-		url, err := url.Parse("http://" + s.getBaseURL() + "/v1/project/" + project + "/stage")
+		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + "/v1/project/" + project + "/stage")
 		if err != nil {
 			return nil, err
 		}
@@ -77,8 +92,7 @@ func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, s)
 
-		client := &http.Client{}
-		resp, err := client.Do(req)
+		resp, err := s.HTTPClient.Do(req)
 		if err != nil {
 			return nil, err
 		}
