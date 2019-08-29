@@ -64,5 +64,5 @@ func (p *ProjectHandler) CreateProject(project models.Project) (*models.Error, e
 	if err != nil {
 		return nil, err
 	}
-	return post(p.Scheme+p.getBaseURL()+"/v1/project", bodyStr, p)
+	return post(p.Scheme+"://"+p.getBaseURL()+"/v1/project", bodyStr, p)
 }
