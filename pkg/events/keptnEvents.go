@@ -45,7 +45,7 @@ type ConfigurationChangeEventData struct {
 // Canary describes the new configuration in a canary release
 type Canary struct {
 	// Value represents the traffic percentage on the canary
-	Value int `json:"value,omitempty"`
+	Value int32 `json:"value,omitempty"`
 	// Action represents the action of the canary
 	Action CanaryAction `json:"action,omitempty"`
 }
