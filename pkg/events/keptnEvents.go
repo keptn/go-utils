@@ -12,6 +12,9 @@ const ConfigurationChangeEventType = "sh.keptn.event.configuration.change"
 // ProblemOpenEventType is a CloudEvent type to inform about an open problem
 const ProblemOpenEventType = "sh.keptn.event.problem.open"
 
+// ConfigureMonitoringEventType is a CloudEvent for configuring monitoring
+const ConfigureMonitoringEventType = "sh.keptn.event.monitoring.configure"
+
 // ServiceCreateEventData represents the data for creating a new service
 type ServiceCreateEventData struct {
 	// Project is the name of the project
@@ -29,4 +32,14 @@ type ProblemEventData struct {
 	ProblemTitle   string `json:"problemtitle"`
 	ProblemDetails string `json:"problemdetails"`
 	ImpactedEntity string `json:"impactedEntity"`
+}
+
+// ConfigureMonitoringEventData represents the data necessary to configure monitoring for a service
+type ConfigureMonitoringEventData struct {
+	Type              string `json:"type"`
+	Project           string `json:"project"`
+	Service           string `json:"service"`
+	ServiceIndicators string `json:"serviceIndicators"`
+	ServiceObjectives string `json:"serviceObjectives"`
+	Remediation       string `json:"remediation"`
 }
