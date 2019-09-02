@@ -1,5 +1,7 @@
 package events
 
+import "github.com/keptn/go-utils/pkg/models"
+
 // ServiceCreateEventType is a CloudEvent type for creating new services
 const ServiceCreateEventType = "sh.keptn.event.service.create"
 
@@ -36,10 +38,10 @@ type ProblemEventData struct {
 
 // ConfigureMonitoringEventData represents the data necessary to configure monitoring for a service
 type ConfigureMonitoringEventData struct {
-	Type              string `json:"type"`
-	Project           string `json:"project"`
-	Service           string `json:"service"`
-	ServiceIndicators string `json:"serviceIndicators"`
-	ServiceObjectives string `json:"serviceObjectives"`
-	Remediation       string `json:"remediation"`
+	Type              string                    `json:"type"`
+	Project           string                    `json:"project"`
+	Service           string                    `json:"service"`
+	ServiceIndicators *models.ServiceIndicators `json:"serviceIndicators"`
+	ServiceObjectives *models.ServiceObjectives `json:"serviceObjectives"`
+	Remediation       *models.Remediation       `json:"remediation"`
 }
