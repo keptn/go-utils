@@ -43,5 +43,5 @@ type ConfigureMonitoringEventData struct {
 	Service           string                    `json:"service"`
 	ServiceIndicators *models.ServiceIndicators `json:"serviceIndicators"`
 	ServiceObjectives *models.ServiceObjectives `json:"serviceObjectives"`
-	Remediation       *models.Remediation       `json:"remediation"`
+	Remediation       *models.Remediations      `json:"remediation"`
 }
