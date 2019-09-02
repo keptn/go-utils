@@ -7,8 +7,8 @@ type Remediations struct {
 
 // Remediation represents a remediation
 type Remediation struct {
-	Name    string             `json:"name" yaml:"name"`
-	Actions *RemediationAction `json:"actions" yaml:"actions"`
+	Name    string               `json:"name" yaml:"name"`
+	Actions *[]RemediationAction `json:"actions" yaml:"actions"`
 }
 
 // RemediationAction represents a remediation action
