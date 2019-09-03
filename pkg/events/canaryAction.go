@@ -3,6 +3,7 @@ package events
 import (
 	"bytes"
 	"encoding/json"
+	"strings"
 )
 
 // CanaryAction describes the excution of a canary release
@@ -22,15 +23,15 @@ func (s CanaryAction) String() string {
 }
 
 var canaryActionToString = map[CanaryAction]string{
-	Set:     "Set",
-	Promote: "Promote",
-	Discard: "Discard",
+	Set:     "set",
+	Promote: "promote",
+	Discard: "discard",
 }
 
 var canaryActionToID = map[string]CanaryAction{
-	"Set":     Set,
-	"Promote": Promote,
-	"Discard": Discard,
+	"set":     Set,
+	"promote": Promote,
+	"discard": Discard,
 }
 
 // MarshalJSON marshals the enum as a quoted json string
@@ -49,6 +50,6 @@ func (s *CanaryAction) UnmarshalJSON(b []byte) error {
 		return err
 	}
 	// Note that if the string cannot be found then it will be set to the zero value, 'Created' in this case.
-	*s = canaryActionToID[j]
+	*s = canaryActionToID[strings.ToLower(j)]
 	return nil
 }

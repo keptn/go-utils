@@ -3,6 +3,7 @@ package events
 import (
 	"bytes"
 	"encoding/json"
+	"strings"
 )
 
 // DeploymentStrategy describes how a keptn-managed service is deployed
@@ -21,13 +22,13 @@ func (s DeploymentStrategy) String() string {
 }
 
 var deploymentStrategyToString = map[DeploymentStrategy]string{
-	Direct:    "Direct",
-	Duplicate: "Duplicate",
+	Direct:    "direct",
+	Duplicate: "duplicate",
 }
 
 var deploymentStrategyToID = map[string]DeploymentStrategy{
-	"Direct":    Direct,
-	"Duplicate": Duplicate,
+	"direct":    Direct,
+	"duplicate": Duplicate,
 }
 
 // MarshalJSON marshals the enum as a quoted json string
@@ -46,6 +47,6 @@ func (s *DeploymentStrategy) UnmarshalJSON(b []byte) error {
 		return err
 	}
 	// Note that if the string cannot be found then it will be set to the zero value, 'Created' in this case.
-	*s = deploymentStrategyToID[j]
+	*s = deploymentStrategyToID[strings.ToLower(j)]
 	return nil
 }
