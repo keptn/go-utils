@@ -18,16 +18,16 @@ const (
 )
 
 func (s CanaryAction) String() string {
-	return toString[s]
+	return canaryActionToString[s]
 }
 
-var toString = map[CanaryAction]string{
+var canaryActionToString = map[CanaryAction]string{
 	Set:     "Set",
 	Promote: "Promote",
 	Discard: "Discard",
 }
 
-var toID = map[string]CanaryAction{
+var canaryActionToID = map[string]CanaryAction{
 	"Set":     Set,
 	"Promote": Promote,
 	"Discard": Discard,
@@ -36,7 +36,7 @@ var toID = map[string]CanaryAction{
 // MarshalJSON marshals the enum as a quoted json string
 func (s CanaryAction) MarshalJSON() ([]byte, error) {
 	buffer := bytes.NewBufferString(`"`)
-	buffer.WriteString(toString[s])
+	buffer.WriteString(canaryActionToString[s])
 	buffer.WriteString(`"`)
 	return buffer.Bytes(), nil
 }
@@ -49,6 +49,6 @@ func (s *CanaryAction) UnmarshalJSON(b []byte) error {
 		return err
 	}
 	// Note that if the string cannot be found then it will be set to the zero value, 'Created' in this case.
-	*s = toID[j]
+	*s = canaryActionToID[j]
 	return nil
 }
