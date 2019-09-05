@@ -269,3 +269,60 @@ func (r *ResourceHandler) deleteResource(uri string) error {
 
 	return nil
 }
+
+// GetAllStageResources returns a list of all resources.
+func (r *ResourceHandler) GetAllStageResources(project string, stage string) ([]*models.Resource, error) {
+
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	resources := []*models.Resource{}
+
+	nextPageKey := ""
+
+	for {
+		url, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + "/v1/project/" + project + "/stage/" + stage + "/resource")
+		if err != nil {
+			return nil, err
+		}
+		q := url.Query()
+		if nextPageKey != "" {
+			q.Set("nextPageKey", nextPageKey)
+		}
+		req, err := http.NewRequest("GET", url.String(), nil)
+		req.Header.Set("Content-Type", "application/json")
+		addAuthHeader(req, r)
+
+		resp, err := r.HTTPClient.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		if resp.StatusCode == 200 {
+			var received models.Resources
+			err = json.Unmarshal(body, &received)
+			if err != nil {
+				return nil, err
+			}
+			resources = append(resources, received.Resources...)
+
+			if received.NextPageKey == "" || received.NextPageKey == "0" {
+				break
+			}
+			nextPageKey = received.NextPageKey
+		} else {
+			var respErr models.Error
+			err = json.Unmarshal(body, &respErr)
+			if err != nil {
+				return nil, err
+			}
+			return nil, errors.New("Response Error Code: " + string(respErr.Code) + " Message: " + *respErr.Message)
+		}
+	}
+
+	return resources, nil
+}
