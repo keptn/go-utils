@@ -8,6 +8,7 @@ import (
 
 	"k8s.io/client-go/kubernetes"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/util/retry"
 
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -52,9 +53,32 @@ func RestartPodsWithSelector(useInClusterConfig bool, namespace string, selector
 	return nil
 }
 
+func ScaleDeployment(useInClusterConfig bool, deployment string, namespace string, replicas int32) error {
+	clientset, err := GetClientset(useInClusterConfig)
+	if err != nil {
+		return err
+	}
+	deploymentsClient := clientset.AppsV1().Deployments(namespace)
+
+	retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		// Retrieve the latest version of Deployment before attempting update
+		// RetryOnConflict uses exponential backoff to avoid exhausting the apiserver
+		result, getErr := deploymentsClient.Get(deployment, metav1.GetOptions{})
+		if getErr != nil {
+			return fmt.Errorf("Failed to get latest version of Deployment: %v", getErr)
+		}
+
+		result.Spec.Replicas = int32Ptr(replicas)
+		_, updateErr := deploymentsClient.Update(result)
+		return updateErr
+	})
+	return retryErr
+}
+
+func int32Ptr(i int32) *int32 { return &i }
+
 // WaitForDeploymentToBeAvailable waits until the deployment is Available
 func WaitForDeploymentToBeAvailable(useInClusterConfig bool, serviceName string, namespace string) error {
-
 	clientset, err := GetClientset(useInClusterConfig)
 	if err != nil {
 		return err
