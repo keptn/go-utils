@@ -104,8 +104,8 @@ func GetDeployments(ch *chart.Chart) []*appsv1.Deployment {
 	return deployments
 }
 
-// GeServices returns all services contained in the provided chart
-func GeServices(ch *chart.Chart) []*corev1.Service {
+// GetServices returns all services contained in the provided chart
+func GetServices(ch *chart.Chart) []*corev1.Service {
 
 	services := make([]*corev1.Service, 0, 0)
 
