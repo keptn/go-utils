@@ -104,6 +104,32 @@ func GetDeployments(ch *chart.Chart) []*appsv1.Deployment {
 	return deployments
 }
 
+// GeServices returns all services contained in the provided chart
+func GeServices(ch *chart.Chart) []*corev1.Service {
+
+	services := make([]*corev1.Service, 0, 0)
+
+	for _, templateFile := range ch.Templates {
+		dec := kyaml.NewYAMLToJSONDecoder(bytes.NewReader(templateFile.Data))
+		for {
+			var svc corev1.Service
+			err := dec.Decode(&svc)
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				continue
+			}
+
+			if IsService(&svc) {
+				services = append(services, &svc)
+			}
+		}
+	}
+
+	return services
+}
+
 // IsService tests whether the provided struct is a service
 func IsService(svc *corev1.Service) bool {
 	return strings.ToLower(svc.Kind) == "service"
