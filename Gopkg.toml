@@ -44,6 +44,10 @@
   name = "contrib.go.opencensus.io/exporter/ocagent"
   version = "v0.4.12"
 
+[[override]]
+  name = "github.com/helm/helm"
+  version = "v2.12.3"
+
 [prune]
   go-tests = true
   unused-packages = true
