@@ -242,6 +242,9 @@ func (r *ResourceHandler) getResource(uri string) (*models.Resource, error) {
 	defer resp.Body.Close()
 
 	body, _ := ioutil.ReadAll(resp.Body)
+	if resp.StatusCode == 404 {
+		return nil, errors.New("resource not found")
+	}
 	var resource models.Resource
 	err = json.Unmarshal(body, &resource)
 	if err != nil {
