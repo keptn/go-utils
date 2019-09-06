@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -23,24 +24,38 @@ func NewCombinedLogger(logger *Logger, ws *websocket.Conn) *CombinedLogger {
 }
 
 // Info logs an info message
-func (l *CombinedLogger) Info(message string) error {
+func (l *CombinedLogger) Info(message string) {
 	l.logger.printLogMessage(keptnLogMessage{Timestamp: time.Now(), Message: message, LogLevel: "INFO"})
-	return WriteLog(l.ws, LogData{LogLevel: "INFO", Message: message, Terminate: false})
+	if err := WriteLog(l.ws, LogData{LogLevel: "INFO", Message: message, Terminate: false}); err != nil {
+		l.logWebsocketError(err)
+	}
 }
 
 // Error logs an error message
-func (l *CombinedLogger) Error(message string) error {
+func (l *CombinedLogger) Error(message string) {
 	l.logger.printLogMessage(keptnLogMessage{Timestamp: time.Now(), Message: message, LogLevel: "ERROR"})
-	return WriteLog(l.ws, LogData{LogLevel: "ERROR", Message: message, Terminate: false})
+	if err := WriteLog(l.ws, LogData{LogLevel: "ERROR", Message: message, Terminate: false}); err != nil {
+		l.logWebsocketError(err)
+	}
 }
 
 // Debug logs a debug message
-func (l *CombinedLogger) Debug(message string) error {
+func (l *CombinedLogger) Debug(message string) {
 	l.logger.printLogMessage(keptnLogMessage{Timestamp: time.Now(), Message: message, LogLevel: "DEBUG"})
-	return WriteLog(l.ws, LogData{LogLevel: "DEBUG", Message: message, Terminate: false})
+	if err := WriteLog(l.ws, LogData{LogLevel: "DEBUG", Message: message, Terminate: false}); err != nil {
+		l.logWebsocketError(err)
+	}
 }
 
 // Terminate sends a terminate message to the websocket
-func (l *CombinedLogger) Terminate() error {
-	return WriteLog(l.ws, LogData{LogLevel: "INFO", Message: "", Terminate: true})
+func (l *CombinedLogger) Terminate() {
+	if err := WriteLog(l.ws, LogData{LogLevel: "INFO", Message: "", Terminate: true}); err != nil {
+		l.logWebsocketError(err)
+	}
+}
+
+func (l *CombinedLogger) logWebsocketError(err error) {
+	l.logger.printLogMessage(keptnLogMessage{Timestamp: time.Now(),
+		Message:  fmt.Sprintf("Websocket error when writing message: %s", err.Error()),
+		LogLevel: "ERROR"})
 }
