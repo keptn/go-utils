@@ -9,7 +9,7 @@ type ServiceObjectives struct {
 
 // ServiceObjective describes a service objective
 type ServiceObjective struct {
-	Name      string  `json:"name" yaml:"name"`
+	Metric    string  `json:"metric" yaml:"metric"`
 	Threshold float32 `json:"threshold" yaml:"threshold"`
 	Timeframe string  `json:"timeframe" yaml:"timeframe"`
 	Score     float32 `json:"score" yaml:"score"`
