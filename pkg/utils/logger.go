@@ -7,7 +7,6 @@ import (
 )
 
 type keptnLogMessage struct {
-	Logger
 	Timestamp time.Time `json:"timestamp,string"`
 	LogLevel  string    `json:"logLevel"`
 	Message   string    `json:"message"`
@@ -31,20 +30,20 @@ type Logger struct {
 
 // Info logs an info message
 func (l *Logger) Info(message string) {
-	printLogMessage(keptnLogMessage{Logger: *l, Timestamp: time.Now(), Message: message, LogLevel: "INFO"})
+	l.printLogMessage(keptnLogMessage{Timestamp: time.Now(), Message: message, LogLevel: "INFO"})
 }
 
 // Error logs an error message
 func (l *Logger) Error(message string) {
-	printLogMessage(keptnLogMessage{Logger: *l, Timestamp: time.Now(), Message: message, LogLevel: "ERROR"})
+	l.printLogMessage(keptnLogMessage{Timestamp: time.Now(), Message: message, LogLevel: "ERROR"})
 }
 
 // Debug logs a debug message
 func (l *Logger) Debug(message string) {
-	printLogMessage(keptnLogMessage{Logger: *l, Timestamp: time.Now(), Message: message, LogLevel: "DEBUG"})
+	l.printLogMessage(keptnLogMessage{Timestamp: time.Now(), Message: message, LogLevel: "DEBUG"})
 }
 
-func printLogMessage(logMessage keptnLogMessage) {
+func (l *Logger) printLogMessage(logMessage keptnLogMessage) {
 	logString, err := json.Marshal(logMessage)
 
 	if err != nil {
