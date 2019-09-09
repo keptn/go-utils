@@ -28,6 +28,13 @@ type Logger struct {
 	ServiceName  string `json:"keptnService"`
 }
 
+// LoggerInterface collects signatures of the logger
+type LoggerInterface interface {
+	Info(message string)
+	Error(message string)
+	Debug(message string)
+}
+
 // Info logs an info message
 func (l *Logger) Info(message string) {
 	l.printLogMessage(keptnLogMessage{Timestamp: time.Now(), Message: message, LogLevel: "INFO"})

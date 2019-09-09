@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -23,34 +24,38 @@ func NewCombinedLogger(logger *Logger, ws *websocket.Conn) *CombinedLogger {
 }
 
 // Info logs an info message
-func (l *CombinedLogger) Info(message string, terminate bool) error {
-	if l.logger != nil {
-		l.logger.printLogMessage(keptnLogMessage{Timestamp: time.Now(), Message: message, LogLevel: "INFO"})
+func (l *CombinedLogger) Info(message string) {
+	l.logger.printLogMessage(keptnLogMessage{Timestamp: time.Now(), Message: message, LogLevel: "INFO"})
+	if err := WriteLog(l.ws, LogData{LogLevel: "INFO", Message: message, Terminate: false}); err != nil {
+		l.logWebsocketError(err)
 	}
-	if l.ws != nil {
-		return WriteLog(l.ws, LogData{LogLevel: "INFO", Message: message, Terminate: terminate})
-	}
-	return nil
 }
 
 // Error logs an error message
-func (l *CombinedLogger) Error(message string, terminate bool) error {
-	if l.logger != nil {
-		l.logger.printLogMessage(keptnLogMessage{Timestamp: time.Now(), Message: message, LogLevel: "ERROR"})
+func (l *CombinedLogger) Error(message string) {
+	l.logger.printLogMessage(keptnLogMessage{Timestamp: time.Now(), Message: message, LogLevel: "ERROR"})
+	if err := WriteLog(l.ws, LogData{LogLevel: "ERROR", Message: message, Terminate: false}); err != nil {
+		l.logWebsocketError(err)
 	}
-	if l.ws != nil {
-		return WriteLog(l.ws, LogData{LogLevel: "ERROR", Message: message, Terminate: terminate})
-	}
-	return nil
 }
 
 // Debug logs a debug message
-func (l *CombinedLogger) Debug(message string, terminate bool) error {
-	if l.logger != nil {
-		l.logger.printLogMessage(keptnLogMessage{Timestamp: time.Now(), Message: message, LogLevel: "DEBUG"})
+func (l *CombinedLogger) Debug(message string) {
+	l.logger.printLogMessage(keptnLogMessage{Timestamp: time.Now(), Message: message, LogLevel: "DEBUG"})
+	if err := WriteLog(l.ws, LogData{LogLevel: "DEBUG", Message: message, Terminate: false}); err != nil {
+		l.logWebsocketError(err)
 	}
-	if l.ws != nil {
-		return WriteLog(l.ws, LogData{LogLevel: "DEBUG", Message: message, Terminate: terminate})
+}
+
+// Terminate sends a terminate message to the websocket
+func (l *CombinedLogger) Terminate() {
+	if err := WriteLog(l.ws, LogData{LogLevel: "INFO", Message: "", Terminate: true}); err != nil {
+		l.logWebsocketError(err)
 	}
-	return nil
+}
+
+func (l *CombinedLogger) logWebsocketError(err error) {
+	l.logger.printLogMessage(keptnLogMessage{Timestamp: time.Now(),
+		Message:  fmt.Sprintf("Websocket error when writing message: %s", err.Error()),
+		LogLevel: "ERROR"})
 }
