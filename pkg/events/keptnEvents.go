@@ -8,6 +8,12 @@ const ServiceCreateEventType = "sh.keptn.event.service.create"
 // InternalServiceCreateEventType is a CloudEvent type for creating new services
 const InternalServiceCreateEventType = "sh.keptn.internal.event.service.create"
 
+// ProjectCreateEventType is a CloudEvent type for creating new projects
+const ProjectCreateEventType = "sh.keptn.event.project.create"
+
+// InternalProjectCreateEventType is a CloudEvent type for creating new projects
+const InternalProjectCreateEventType = "sh.keptn.internal.event.project.create"
+
 // ConfigurationChangeEventType is a CloudEvent type for changing the configuration
 const ConfigurationChangeEventType = "sh.keptn.event.configuration.change"
 
@@ -16,6 +22,14 @@ const ProblemOpenEventType = "sh.keptn.event.problem.open"
 
 // ConfigureMonitoringEventType is a CloudEvent for configuring monitoring
 const ConfigureMonitoringEventType = "sh.keptn.event.monitoring.configure"
+
+// ProjectCreateEventData represents the data for creating a new project
+type ProjectCreateEventData struct {
+	// Project is the name of the project
+	Project string `json:"project"`
+	// Shipyard is a base64 encoded string of the shipyard file
+	Shipyard string `json:"shipyard"`
+}
 
 // ServiceCreateEventData represents the data for creating a new service
 type ServiceCreateEventData struct {
