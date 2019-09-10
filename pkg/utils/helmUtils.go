@@ -14,6 +14,8 @@ import (
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/helm/pkg/chartutil"
 	"k8s.io/helm/pkg/proto/hapi/chart"
+	"k8s.io/helm/pkg/renderutil"
+	"k8s.io/helm/pkg/timeconv"
 )
 
 func getHelmChartURI(chartName string) string {
@@ -78,13 +80,27 @@ func PackageChart(ch *chart.Chart) ([]byte, error) {
 	return data, nil
 }
 
-// GetDeployments returns all deployments contained in the provided chart
-func GetDeployments(ch *chart.Chart) []*appsv1.Deployment {
+// GetRenderedDeployments returns all deployments contained in the provided chart
+func GetRenderedDeployments(ch *chart.Chart) ([]*appsv1.Deployment, error) {
+
+	renderOpts := renderutil.Options{
+		ReleaseOptions: chartutil.ReleaseOptions{
+			Name:      ch.Metadata.Name,
+			IsInstall: false,
+			IsUpgrade: false,
+			Time:      timeconv.Now(),
+		},
+	}
+
+	renderedTemplates, err := renderutil.Render(ch, ch.Values, renderOpts)
+	if err != nil {
+		return nil, err
+	}
 
 	deployments := make([]*appsv1.Deployment, 0, 0)
 
-	for _, templateFile := range ch.Templates {
-		dec := kyaml.NewYAMLToJSONDecoder(bytes.NewReader(templateFile.Data))
+	for _, v := range renderedTemplates {
+		dec := kyaml.NewYAMLToJSONDecoder(strings.NewReader(v))
 		for {
 			var dpl appsv1.Deployment
 			err := dec.Decode(&dpl)
@@ -92,6 +108,7 @@ func GetDeployments(ch *chart.Chart) []*appsv1.Deployment {
 				break
 			}
 			if err != nil {
+				fmt.Println(err)
 				continue
 			}
 
@@ -101,16 +118,30 @@ func GetDeployments(ch *chart.Chart) []*appsv1.Deployment {
 		}
 	}
 
-	return deployments
+	return deployments, nil
 }
 
-// GetServices returns all services contained in the provided chart
-func GetServices(ch *chart.Chart) []*corev1.Service {
+// GetRenderedServices returns all services contained in the provided chart
+func GetRenderedServices(ch *chart.Chart) ([]*corev1.Service, error) {
+
+	renderOpts := renderutil.Options{
+		ReleaseOptions: chartutil.ReleaseOptions{
+			Name:      ch.Metadata.Name,
+			IsInstall: false,
+			IsUpgrade: false,
+			Time:      timeconv.Now(),
+		},
+	}
+
+	renderedTemplates, err := renderutil.Render(ch, ch.Values, renderOpts)
+	if err != nil {
+		return nil, err
+	}
 
 	services := make([]*corev1.Service, 0, 0)
 
-	for _, templateFile := range ch.Templates {
-		dec := kyaml.NewYAMLToJSONDecoder(bytes.NewReader(templateFile.Data))
+	for _, v := range renderedTemplates {
+		dec := kyaml.NewYAMLToJSONDecoder(strings.NewReader(v))
 		for {
 			var svc corev1.Service
 			err := dec.Decode(&svc)
@@ -127,7 +158,7 @@ func GetServices(ch *chart.Chart) []*corev1.Service {
 		}
 	}
 
-	return services
+	return services, nil
 }
 
 // IsService tests whether the provided struct is a service
