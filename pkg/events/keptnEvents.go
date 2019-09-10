@@ -48,7 +48,7 @@ type ConfigurationChangeEventData struct {
 // PropertyChange describes the property to be changed
 type PropertyChange struct {
 	PropertyPath string      `json:"propertyPath"`
-	Value        interface{} `json:"Value"`
+	Value        interface{} `json:"value"`
 }
 
 // Canary describes the new configuration in a canary release
