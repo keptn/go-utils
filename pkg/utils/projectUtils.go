@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/keptn/go-utils/pkg/models"
 )
@@ -18,6 +19,8 @@ type ProjectHandler struct {
 
 // NewProjectHandler returns a new ProjectHandler
 func NewProjectHandler(baseURL string) *ProjectHandler {
+	baseURL = strings.TrimPrefix(baseURL, "http://")
+	baseURL = strings.TrimPrefix(baseURL, "https://")
 	return &ProjectHandler{
 		BaseURL:    baseURL,
 		AuthHeader: "",
@@ -32,6 +35,8 @@ func NewAuthenticatedProjectHandler(baseURL string, authToken string, authHeader
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
+	baseURL = strings.TrimPrefix(baseURL, "http://")
+	baseURL = strings.TrimPrefix(baseURL, "https://")
 	return &ProjectHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/keptn/go-utils/pkg/models"
 )
@@ -22,6 +23,8 @@ type StageHandler struct {
 
 // NewStageHandler returns a new StageHandler
 func NewStageHandler(baseURL string) *StageHandler {
+	baseURL = strings.TrimPrefix(baseURL, "http://")
+	baseURL = strings.TrimPrefix(baseURL, "https://")
 	return &StageHandler{
 		BaseURL:    baseURL,
 		AuthHeader: "",
@@ -36,6 +39,8 @@ func NewAuthenticatedStageHandler(baseURL string, authToken string, authHeader s
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
+	baseURL = strings.TrimPrefix(baseURL, "http://")
+	baseURL = strings.TrimPrefix(baseURL, "https://")
 	return &StageHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,
