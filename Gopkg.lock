@@ -65,6 +65,21 @@
   version = "v9"
 
 [[projects]]
+  digest = "1:d5fda7481e125c0874cf252044ec62d8a7e237368ace91712c8a9f551196b248"
+  name = "github.com/cloudevents/sdk-go"
+  packages = [
+    "pkg/cloudevents",
+    "pkg/cloudevents/datacodec",
+    "pkg/cloudevents/datacodec/json",
+    "pkg/cloudevents/datacodec/xml",
+    "pkg/cloudevents/observability",
+    "pkg/cloudevents/types",
+  ]
+  pruneopts = "UT"
+  revision = "e00e75c8a1befe895cc00def1f88adb611195159"
+  version = "0.4.4"
+
+[[projects]]
   digest = "1:ec66ad050342a3573ed2f5a4337d51b4c6d5d2a717cc6c9ecf86b081235a5759"
   name = "github.com/cyphar/filepath-securejoin"
   packages = ["."]
@@ -231,6 +246,14 @@
   version = "v1.3.0"
 
 [[projects]]
+  branch = "master"
+  digest = "1:b7cb6054d3dff43b38ad2e92492f220f57ae6087ee797dca298139776749ace8"
+  name = "github.com/golang/groupcache"
+  packages = ["lru"]
+  pruneopts = "UT"
+  revision = "869f871628b6baa9cfbc11732cdf6546b17c1298"
+
+[[projects]]
   digest = "1:f5ce1529abc1204444ec73779f44f94e2fa8fcdb7aca3c355b0c95947e4005c6"
   name = "github.com/golang/protobuf"
   packages = [
@@ -251,6 +274,14 @@
   pruneopts = "UT"
   revision = "f140a6486e521aad38f5917de355cbf147cc0496"
   version = "v1.0.0"
+
+[[projects]]
+  digest = "1:582b704bebaa06b48c29b0cec224a6058a09c86883aaddabde889cd1a5f73e1b"
+  name = "github.com/google/uuid"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "0cd6bf5da1e1c83f8b45653022c74f71af0538a4"
+  version = "v1.1.1"
 
 [[projects]]
   digest = "1:ca4524b4855ded427c7003ec903a5c854f37e7b1e8e2a93277243462c5b753a8"
@@ -279,6 +310,14 @@
   pruneopts = "UT"
   revision = "a84f8b330d669c6dff53ee9743a7579ac9541b69"
   version = "v0.4.0"
+
+[[projects]]
+  digest = "1:e62657cca9badaa308d86e7716083e4c5933bb78e30a17743fc67f50be26f6f4"
+  name = "github.com/gorilla/websocket"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c3e18be99d19e6b3e8f1559eea2c161a665c4b6b"
+  version = "v1.4.1"
 
 [[projects]]
   digest = "1:a0cefd27d12712af4b5018dc7046f245e1e3b5760e2e848c30b171b570708f9b"
@@ -415,6 +454,28 @@
   pruneopts = "UT"
   revision = "d42ea7239f0db8a61e77191b9f2730a922459042"
   version = "v1.1.0"
+
+[[projects]]
+  digest = "1:74accd9945e4e51580cbe9b9428c228c1a7d37180cf2647ac33a1dff7197546a"
+  name = "go.opencensus.io"
+  packages = [
+    ".",
+    "internal",
+    "internal/tagencoding",
+    "metric/metricdata",
+    "metric/metricproducer",
+    "resource",
+    "stats",
+    "stats/internal",
+    "stats/view",
+    "tag",
+    "trace",
+    "trace/internal",
+    "trace/tracestate",
+  ]
+  pruneopts = "UT"
+  revision = "59d1ce35d30f3c25ba762169da2a37eab6ffa041"
+  version = "v0.22.1"
 
 [[projects]]
   branch = "master"
@@ -835,14 +896,19 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/cloudevents/sdk-go/pkg/cloudevents",
+    "github.com/cloudevents/sdk-go/pkg/cloudevents/types",
     "github.com/go-openapi/errors",
     "github.com/go-openapi/strfmt",
     "github.com/go-openapi/swag",
     "github.com/go-openapi/validate",
+    "github.com/google/uuid",
+    "github.com/gorilla/websocket",
     "gopkg.in/src-d/go-git.v4",
     "gopkg.in/src-d/go-git.v4/config",
     "gopkg.in/src-d/go-git.v4/plumbing",
     "gopkg.in/src-d/go-git.v4/plumbing/transport/http",
+    "gopkg.in/yaml.v2",
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
