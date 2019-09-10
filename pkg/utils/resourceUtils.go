@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/keptn/go-utils/pkg/models"
 )
@@ -28,6 +29,8 @@ type resourceRequest struct {
 
 // NewResourceHandler returns a new ResourceHandler
 func NewResourceHandler(baseURL string) *ResourceHandler {
+	baseURL = strings.TrimPrefix(baseURL, "http://")
+	baseURL = strings.TrimPrefix(baseURL, "https://")
 	return &ResourceHandler{
 		BaseURL:    baseURL,
 		AuthHeader: "",
@@ -42,6 +45,8 @@ func NewAuthenticatedResourceHandler(baseURL string, authToken string, authHeade
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
+	baseURL = strings.TrimPrefix(baseURL, "http://")
+	baseURL = strings.TrimPrefix(baseURL, "https://")
 	return &ResourceHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,

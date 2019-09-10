@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/keptn/go-utils/pkg/models"
 )
@@ -22,6 +23,8 @@ type ServiceHandler struct {
 
 // NewServiceHandler returns a new ServiceHandler
 func NewServiceHandler(baseURL string) *ServiceHandler {
+	baseURL = strings.TrimPrefix(baseURL, "http://")
+	baseURL = strings.TrimPrefix(baseURL, "https://")
 	return &ServiceHandler{
 		BaseURL:    baseURL,
 		AuthHeader: "",
@@ -36,6 +39,8 @@ func NewAuthenticatedServiceHandler(baseURL string, authToken string, authHeader
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
+	baseURL = strings.TrimPrefix(baseURL, "http://")
+	baseURL = strings.TrimPrefix(baseURL, "https://")
 	return &ServiceHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,
