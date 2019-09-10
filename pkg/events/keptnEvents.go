@@ -37,12 +37,18 @@ type ConfigurationChangeEventData struct {
 	Service string `json:"service"`
 	// Stage is the name of the stage
 	Stage string `json:"stage"`
-	// ValuesPrimary contains new Helm values for primary
-	ValuesPrimary map[string]interface{} `json:"valuesPrimary,omitempty"`
 	// ValuesCanary contains new Helm values for canary
 	ValuesCanary map[string]interface{} `json:"valuesCanary,omitempty"`
 	// Canary contains a new configuration for canary releases
 	Canary *Canary `json:"canary,omitempty"`
+	// DeploymentChanges contains changes of the primary deployment
+	DeploymentChanges []PropertyChange `json:"deploymentChanges,omitempty"`
+}
+
+// PropertyChange describes the property to be changed
+type PropertyChange struct {
+	PropertyPath string      `json:"propertyPath"`
+	Value        interface{} `json:"Value"`
 }
 
 // Canary describes the new configuration in a canary release
