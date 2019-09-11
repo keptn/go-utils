@@ -57,6 +57,7 @@ func OpenWS(connData ConnectionData, apiEndPoint url.URL) (*websocket.Conn, *htt
 	header.Add("Token", connData.ChannelInfo.Token)
 
 	dialer := websocket.DefaultDialer
+	dialer.HandshakeTimeout = 120 * time.Second
 
 	return dialer.Dial(wsEndPoint.String(), header)
 }
