@@ -28,23 +28,19 @@
   name = "gopkg.in/src-d/go-git.v4"
   version = "4.11.0"
 
-[[override]]
+[[constraint]]
   name = "k8s.io/client-go"
-  version = "11.0.0"
+  version = "kubernetes-1.12.0"
 
-[[override]]
+[[constraint]]
   name = "k8s.io/api"
-  version = "kubernetes-1.14.3"
+  version = "kubernetes-1.12.0"
 
-[[override]]
+[[constraint]]
   name = "k8s.io/apimachinery"
-  version = "kubernetes-1.14.3"
+  version = "kubernetes-1.12.0"
 
-[[override]]
-  name = "contrib.go.opencensus.io/exporter/ocagent"
-  version = "v0.4.12"
-
-[[override]]
+[[constraint]]
   name = "github.com/helm/helm"
   version = "v2.12.3"
 
