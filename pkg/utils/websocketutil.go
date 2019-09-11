@@ -21,7 +21,7 @@ type MyCloudEvent struct {
 	Time           string          `json:"time"`
 	Type           string          `json:"type"`
 	Source         string          `json:"source"`
-	ShKeptnContext string          `json:"shkeptncontext,omitempty"`
+	ShKeptnContext string          `json:"shkeptncontext"`
 }
 
 // LogData represents log data
@@ -89,19 +89,20 @@ func WriteWSLog(ws *websocket.Conn, logEvent cloudevents.Event, message string, 
 }
 
 // WriteLog writes the logData to the websocket connection
-func WriteLog(ws *websocket.Conn, logData LogData) error {
+func WriteLog(ws *websocket.Conn, logData LogData, shkeptnContext string) error {
 
 	logDataRaw, _ := json.Marshal(logData)
 	now := &types.Timestamp{Time: time.Now()}
 
 	messageCE := MyCloudEvent{
-		SpecVersoin: "0.2",
-		ContentType: "application/json",
-		Data:        logDataRaw,
-		ID:          uuid.New().String(),
-		Time:        now.String(),
-		Type:        "sh.keptn.events.log",
-		Source:      "https://github.com/keptn/keptn",
+		SpecVersoin:    "0.2",
+		ContentType:    "application/json",
+		Data:           logDataRaw,
+		ID:             uuid.New().String(),
+		Time:           now.String(),
+		Type:           "sh.keptn.events.log",
+		Source:         "https://github.com/keptn/keptn",
+		ShKeptnContext: shkeptnContext,
 	}
 
 	data, _ := json.Marshal(messageCE)
