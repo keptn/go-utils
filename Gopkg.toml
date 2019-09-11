@@ -41,12 +41,12 @@
   version = "kubernetes-1.12.0"
 
 [[constraint]]
-  name = "github.com/helm/helm"
-  version = "v2.12.3"
-
-[[constraint]]
   name = "github.com/cloudevents/sdk-go"
   version = "0.7.0"
+
+[[override]]
+  name =  "github.com/Azure/go-autorest"
+  revision = "bca49d5b51a50dc5bb17bbf6204c711c6dbded06"
 
 [prune]
   go-tests = true
