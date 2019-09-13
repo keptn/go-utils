@@ -85,7 +85,7 @@ func WaitForDeploymentToBeRolledOut(useInClusterConfig bool, deploymentName stri
 	}
 
 	deployment, err := getDeployment(clientset, namespace, deploymentName)
-	for deployment.Generation <= deployment.Status.ObservedGeneration {
+	for {
 
 		var cond *appsv1.DeploymentCondition
 
@@ -112,8 +112,6 @@ func WaitForDeploymentToBeRolledOut(useInClusterConfig bool, deploymentName stri
 			return err
 		}
 	}
-
-	return nil
 }
 
 // WaitForDeploymentsInNamespace waits until all deployments in a namespace are available
