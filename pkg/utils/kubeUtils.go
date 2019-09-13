@@ -77,22 +77,42 @@ func ScaleDeployment(useInClusterConfig bool, deployment string, namespace strin
 
 func int32Ptr(i int32) *int32 { return &i }
 
-// WaitForDeploymentToBeAvailable waits until the deployment is Available
-func WaitForDeploymentToBeAvailable(useInClusterConfig bool, serviceName string, namespace string) error {
+// WaitForDeploymentToBeRolledOut waits until the deployment is Available
+func WaitForDeploymentToBeRolledOut(useInClusterConfig bool, deploymentName string, namespace string) error {
 	clientset, err := GetClientset(useInClusterConfig)
 	if err != nil {
 		return err
 	}
 
-	dep, err := getDeployment(clientset, namespace, serviceName)
+	deployment, err := getDeployment(clientset, namespace, deploymentName)
+	for deployment.Generation <= deployment.Status.ObservedGeneration {
 
-	for dep.Status.UnavailableReplicas > 0 {
+		var cond *appsv1.DeploymentCondition
+
+		for i := range deployment.Status.Conditions {
+			c := deployment.Status.Conditions[i]
+			if c.Type == appsv1.DeploymentProgressing {
+				cond = &c
+				break
+			}
+		}
+
+		if cond != nil && cond.Reason == "ProgressDeadlineExceeded" {
+			return fmt.Errorf("Deployment %q exceeded its progress deadline", deployment.Name)
+		}
+		if !(deployment.Spec.Replicas != nil && deployment.Status.UpdatedReplicas < *deployment.Spec.Replicas ||
+			deployment.Status.Replicas > deployment.Status.UpdatedReplicas ||
+			deployment.Status.AvailableReplicas < deployment.Status.UpdatedReplicas) {
+			return nil
+		}
+
 		time.Sleep(2 * time.Second)
-		dep, err = getDeployment(clientset, namespace, serviceName)
+		deployment, err = getDeployment(clientset, namespace, deploymentName)
 		if err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -104,17 +124,17 @@ func WaitForDeploymentsInNamespace(useInClusterConfig bool, namespace string) er
 	}
 	deps, err := clientset.AppsV1().Deployments(namespace).List(metav1.ListOptions{})
 	for _, dep := range deps.Items {
-		WaitForDeploymentToBeAvailable(useInClusterConfig, dep.Name, namespace)
+		WaitForDeploymentToBeRolledOut(useInClusterConfig, dep.Name, namespace)
 	}
 	return nil
 }
 
-func getDeployment(clientset *kubernetes.Clientset, namespace string, serviceName string) (*appsv1.Deployment, error) {
-	dep, err := clientset.AppsV1().Deployments(namespace).Get(serviceName, metav1.GetOptions{})
+func getDeployment(clientset *kubernetes.Clientset, namespace string, deploymentName string) (*appsv1.Deployment, error) {
+	dep, err := clientset.AppsV1().Deployments(namespace).Get(deploymentName, metav1.GetOptions{})
 	if err != nil &&
 		strings.Contains(err.Error(), "the object has been modified; please apply your changes to the latest version and try again") {
 		time.Sleep(10 * time.Second)
-		return clientset.AppsV1().Deployments(namespace).Get(serviceName, metav1.GetOptions{})
+		return clientset.AppsV1().Deployments(namespace).Get(deploymentName, metav1.GetOptions{})
 	}
 	return dep, nil
 }
