@@ -9,5 +9,5 @@ type ServiceIndicators struct {
 type ServiceIndicator struct {
 	Metric string `json:"metric" yaml:"metric"`
 	Source string `json:"source" yaml:"source"`
-	Query  string `json:"query" yaml:"query"`
+	Query  interface{} `json:"query" yaml:"query"`
 }
