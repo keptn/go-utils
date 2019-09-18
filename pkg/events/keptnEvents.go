@@ -34,7 +34,7 @@ type ProjectCreateEventData struct {
 	// GitToken is the authentication token for the git user
 	GitToken string `json:"gitToken,omitempty"`
 	// GitRemoteURL is the remote url of a repository
-	GitRemoteURI string `json:"gitRemoteURI,omitempty"`
+	GitRemoteURL string `json:"gitRemoteURL,omitempty"`
 }
 
 // ServiceCreateEventData represents the data for creating a new service
