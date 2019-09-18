@@ -29,6 +29,12 @@ type ProjectCreateEventData struct {
 	Project string `json:"project"`
 	// Shipyard is a base64 encoded string of the shipyard file
 	Shipyard string `json:"shipyard"`
+	// GitUser is the name of a git user of an upstream repository
+	GitUser string `json:"gituser"`
+	// GitToken is the authentication token for the git user
+	GitToken string `json:"gittoken"`
+	// GitRemoteURL is the remote url of a repository
+	GitRemoteURL string `json:"gitremoteurl"`
 }
 
 // ServiceCreateEventData represents the data for creating a new service
