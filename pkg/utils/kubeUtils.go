@@ -11,9 +11,11 @@ import (
 	"k8s.io/client-go/util/retry"
 
 	appsv1 "k8s.io/api/apps/v1"
+	typesv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	// Initialize all known client auth plugins.
+	_ "github.com/Azure/go-autorest/autorest"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -48,6 +50,31 @@ func RestartPodsWithSelector(useInClusterConfig bool, namespace string, selector
 	for _, pod := range pods.Items {
 		if err := clientset.Pods(namespace).Delete(pod.Name, &metav1.DeleteOptions{}); err != nil {
 			return err
+		}
+	}
+	return nil
+}
+
+func WaitForPodsWithSelector(useInClusterConfig bool, namespace string, selector string,
+	retries int, waitingTime time.Duration) error {
+
+	clientset, err := GetKubeAPI(useInClusterConfig)
+	if err != nil {
+		return err
+	}
+
+	for i := 0; i < retries; i++ {
+		pods, err := clientset.Pods(namespace).List(metav1.ListOptions{LabelSelector: selector})
+		if err != nil {
+			return err
+		}
+		for _, pod := range pods.Items {
+			for _, cond := range pod.Status.Conditions {
+				if cond.Type != typesv1.PodReady {
+					time.Sleep(waitingTime)
+					break
+				}
+			}
 		}
 	}
 	return nil
