@@ -26,7 +26,7 @@ const ConfigureMonitoringEventType = "sh.keptn.event.monitoring.configure"
 // ProjectCreateEventData represents the data for creating a new project
 type ProjectCreateEventData struct {
 	// Project is the name of the project
-	Project string `json:"project,"`
+	Project string `json:"project"`
 	// Shipyard is a base64 encoded string of the shipyard file
 	Shipyard string `json:"shipyard"`
 	// GitUser is the name of a git user of an upstream repository
