@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -55,9 +54,9 @@ func GetChart(project string, service string, stage string, chartName string, co
 	return ch, nil
 }
 
-// LoadChart converts a byte array into a Chart
-func LoadChart(data []byte) (*chart.Chart, error) {
-	return chartutil.LoadArchive(bytes.NewReader(data))
+// LoadChart loads a directory or Helm chart into a Chart
+func LoadChart(chartPath string) (*chart.Chart, error) {
+	return chartutil.Load(chartPath)
 }
 
 // PackageChart packages the chart and returns it
