@@ -60,6 +60,11 @@ func LoadChart(data []byte) (*chart.Chart, error) {
 	return chartutil.LoadArchive(bytes.NewReader(data))
 }
 
+// LoadChartFromPath loads a directory or Helm chart into a Chart
+func LoadChartFromPath(path string) (*chart.Chart, error) {
+	return chartutil.Load(path)
+}
+
 // PackageChart packages the chart and returns it
 func PackageChart(ch *chart.Chart) ([]byte, error) {
 	helmPackage, err := ioutil.TempDir("", "")
