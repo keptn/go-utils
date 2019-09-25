@@ -23,6 +23,9 @@ const ProblemOpenEventType = "sh.keptn.event.problem.open"
 // ConfigureMonitoringEventType is a CloudEvent for configuring monitoring
 const ConfigureMonitoringEventType = "sh.keptn.event.monitoring.configure"
 
+// TestsFinishedEventType is a CloudEvent for indicating that tests have finished
+const TestsFinishedEventType = "sh.keptn.event.tests.finished"
+
 // ProjectCreateEventData represents the data for creating a new project
 type ProjectCreateEventData struct {
 	// Project is the name of the project
@@ -63,6 +66,18 @@ type ConfigurationChangeEventData struct {
 	Canary *Canary `json:"canary,omitempty"`
 	// DeploymentChanges contains changes of the primary deployment
 	DeploymentChanges []PropertyChange `json:"deploymentChanges,omitempty"`
+}
+
+// TestsFinishedEventData represents the data for
+type TestsFinishedEventData struct {
+	// Project is the name of the project
+	Project string `json:"project"`
+	// Service is the name of the new service
+	Service string `json:"service"`
+	// Stage is the name of the stage
+	Stage string `json:"stage"`
+	// TestStrategy is the testing strategy
+	TestStrategy string `json:"teststrategy"`
 }
 
 // PropertyChange describes the property to be changed
