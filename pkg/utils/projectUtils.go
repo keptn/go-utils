@@ -71,3 +71,13 @@ func (p *ProjectHandler) CreateProject(project models.Project) (*models.Error, e
 	}
 	return post(p.Scheme+"://"+p.getBaseURL()+"/v1/project", bodyStr, p)
 }
+
+// DeleteProject deletes new project
+func (p *ProjectHandler) DeleteProject(project models.Project) (*models.Error, error) {
+
+	bodyStr, err := json.Marshal(project)
+	if err != nil {
+		return nil, err
+	}
+	return delete(p.Scheme+"://"+p.getBaseURL()+"/v1/project", bodyStr, p)
+}
