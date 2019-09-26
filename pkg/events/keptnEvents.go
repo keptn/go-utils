@@ -2,17 +2,23 @@ package events
 
 import "github.com/keptn/go-utils/pkg/models"
 
-// ServiceCreateEventType is a CloudEvent type for creating new services
+// ServiceCreateEventType is a CloudEvent type for creating a new service
 const ServiceCreateEventType = "sh.keptn.event.service.create"
 
-// InternalServiceCreateEventType is a CloudEvent type for creating new services
+// InternalServiceCreateEventType is a CloudEvent type for creating a new service
 const InternalServiceCreateEventType = "sh.keptn.internal.event.service.create"
 
-// ProjectCreateEventType is a CloudEvent type for creating new projects
+// ProjectCreateEventType is a CloudEvent type for creating a new project
 const ProjectCreateEventType = "sh.keptn.event.project.create"
 
-// InternalProjectCreateEventType is a CloudEvent type for creating new projects
+// ProjectDeleteEventType is a CloudEvent type for deleting a project
+const ProjectDeleteEventType = "sh.keptn.event.project.delete"
+
+// InternalProjectCreateEventType is a CloudEvent type for creating a new project
 const InternalProjectCreateEventType = "sh.keptn.internal.event.project.create"
+
+// InternalProjectDeleteEventType is a CloudEvent type for deleting a project
+const InternalProjectDeleteEventType = "sh.keptn.internal.event.project.delete"
 
 // ConfigurationChangeEventType is a CloudEvent type for changing the configuration
 const ConfigurationChangeEventType = "sh.keptn.event.configuration.change"
@@ -40,6 +46,12 @@ type ProjectCreateEventData struct {
 	GitRemoteURL string `json:"gitRemoteURL,omitempty"`
 }
 
+// ProjectDeleteEventData represents the data for deleting a new project
+type ProjectDeleteEventData struct {
+	// Project is the name of the project
+	Project string `json:"project"`
+}
+
 // ServiceCreateEventData represents the data for creating a new service
 type ServiceCreateEventData struct {
 	// Project is the name of the project
@@ -52,7 +64,7 @@ type ServiceCreateEventData struct {
 	DeploymentStrategies map[string]DeploymentStrategy `json:"deploymentStrategies"`
 }
 
-// ConfigurationChangeEventData represents the data for
+// ConfigurationChangeEventData represents the data for changing the service configuration
 type ConfigurationChangeEventData struct {
 	// Project is the name of the project
 	Project string `json:"project"`
@@ -68,7 +80,7 @@ type ConfigurationChangeEventData struct {
 	DeploymentChanges []PropertyChange `json:"deploymentChanges,omitempty"`
 }
 
-// TestsFinishedEventData represents the data for
+// TestsFinishedEventData represents the data for a test finished event
 type TestsFinishedEventData struct {
 	// Project is the name of the project
 	Project string `json:"project"`
