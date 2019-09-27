@@ -102,13 +102,13 @@ func get(uri string, c ConfigService) (*models.Project, error) {
 		return nil, err
 	}
 
-	var resp models.Project
-	err = json.Unmarshal(body, &resp)
+	var respProject models.Project
+	err = json.Unmarshal(body, &respProject)
 	if err != nil {
 		return nil, err
 	}
 
-	return &resp, nil
+	return &respProject, nil
 }
 
 func addAuthHeader(req *http.Request, c ConfigService) {
