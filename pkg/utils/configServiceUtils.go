@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -105,8 +104,7 @@ func get(uri string, c ConfigService) (*models.Project, *models.Error) {
 		if err != nil {
 			return nil, buildErrorResponse(err.Error())
 		}
-		fmt.Println(respProject.ProjectName)
-		fmt.Println(respProject.GitRemoteURI)
+
 		return &respProject, nil
 	}
 
