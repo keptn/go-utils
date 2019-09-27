@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -86,7 +87,7 @@ func get(uri string, c ConfigService) (*models.Project, error) {
 	req, err := http.NewRequest("GET", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, c)
-
+	fmt.Println(uri)
 	resp, err := c.getHTTPClient().Do(req)
 	if err != nil {
 		return nil, err
@@ -96,18 +97,19 @@ func get(uri string, c ConfigService) (*models.Project, error) {
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		return nil, nil
 	}
-
+	fmt.Println("read all")
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-
+	fmt.Println("marshal")
 	var respProject models.Project
 	err = json.Unmarshal(body, &respProject)
 	if err != nil {
+		fmt.Println(err.Error())
 		return nil, err
 	}
-
+	fmt.Println("done")
 	return &respProject, nil
 }
 
