@@ -64,7 +64,6 @@ func (p *ProjectHandler) getHTTPClient() *http.Client {
 
 // CreateProject creates a new project
 func (p *ProjectHandler) CreateProject(project models.Project) (*models.Error, error) {
-
 	bodyStr, err := json.Marshal(project)
 	if err != nil {
 		return nil, err
@@ -74,10 +73,5 @@ func (p *ProjectHandler) CreateProject(project models.Project) (*models.Error, e
 
 // DeleteProject deletes a project
 func (p *ProjectHandler) DeleteProject(project models.Project) (*models.Error, error) {
-
-	bodyStr, err := json.Marshal(project)
-	if err != nil {
-		return nil, err
-	}
-	return delete(p.Scheme+"://"+p.getBaseURL()+"/v1/project", bodyStr, p)
+	return delete(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.ProjectName, p)
 }
