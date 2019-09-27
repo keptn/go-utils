@@ -49,10 +49,10 @@ func post(uri string, data []byte, c ConfigService) (*models.Error, error) {
 	return &respErr, nil
 }
 
-func delete(uri string, data []byte, c ConfigService) (*models.Error, error) {
+func delete(uri string, c ConfigService) (*models.Error, error) {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	req, err := http.NewRequest("DELETE", uri, bytes.NewBuffer(data))
+	req, err := http.NewRequest("DELETE", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, c)
 
