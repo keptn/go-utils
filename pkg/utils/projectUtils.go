@@ -77,6 +77,6 @@ func (p *ProjectHandler) DeleteProject(project models.Project) (*models.Error, e
 }
 
 // GetProject returns a project
-func (p *ProjectHandler) GetProject(project models.Project) (*models.Project, error) {
+func (p *ProjectHandler) GetProject(project models.Project) (*models.Project, *models.Error) {
 	return get(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.ProjectName, p)
 }

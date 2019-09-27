@@ -81,7 +81,7 @@ func delete(uri string, c ConfigService) (*models.Error, error) {
 	return &respErr, nil
 }
 
-func get(uri string, c ConfigService) (*models.Project, error) {
+func get(uri string, c ConfigService) (*models.Project, *models.Error) {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("GET", uri, nil)
@@ -90,26 +90,42 @@ func get(uri string, c ConfigService) (*models.Project, error) {
 
 	resp, err := c.getHTTPClient().Do(req)
 	if err != nil {
-		return nil, err
+		return nil, buildErrorResponse(err.Error())
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return nil, err
+			return nil, buildErrorResponse(err.Error())
 		}
 
 		var respProject models.Project
 		err = json.Unmarshal(body, &respProject)
 		if err != nil {
-			return nil, err
+			return nil, buildErrorResponse(err.Error())
 		}
 		fmt.Println("done")
 		return &respProject, nil
 	}
 
-	return nil, nil
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
+
+	var respErr models.Error
+	err = json.Unmarshal(body, &respErr)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
+
+	return nil, &respErr
+}
+
+func buildErrorResponse(errorStr string) *models.Error {
+	err := models.Error{Message: &errorStr}
+	return &err
 }
 
 func addAuthHeader(req *http.Request, c ConfigService) {
