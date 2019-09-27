@@ -80,6 +80,37 @@ func delete(uri string, c ConfigService) (*models.Error, error) {
 	return &respErr, nil
 }
 
+func get(uri string, c ConfigService) (*models.Project, error) {
+
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	req, err := http.NewRequest("GET", uri, nil)
+	req.Header.Set("Content-Type", "application/json")
+	addAuthHeader(req, c)
+
+	resp, err := c.getHTTPClient().Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		return nil, nil
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp models.Project
+	err = json.Unmarshal(body, &resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp, nil
+}
+
 func addAuthHeader(req *http.Request, c ConfigService) {
 	if c.getAuthHeader() != "" && c.getAuthToken() != "" {
 		req.Header.Set(c.getAuthHeader(), c.getAuthToken())
