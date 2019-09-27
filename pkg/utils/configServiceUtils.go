@@ -80,6 +80,11 @@ func delete(uri string, c ConfigService) (*models.Error, error) {
 	return &respErr, nil
 }
 
+func buildErrorResponse(errorStr string) *models.Error {
+	err := models.Error{Message: &errorStr}
+	return &err
+}
+
 func addAuthHeader(req *http.Request, c ConfigService) {
 	if c.getAuthHeader() != "" && c.getAuthToken() != "" {
 		req.Header.Set(c.getAuthHeader(), c.getAuthToken())

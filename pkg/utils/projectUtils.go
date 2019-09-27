@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"crypto/tls"
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -74,4 +76,51 @@ func (p *ProjectHandler) CreateProject(project models.Project) (*models.Error, e
 // DeleteProject deletes a project
 func (p *ProjectHandler) DeleteProject(project models.Project) (*models.Error, error) {
 	return delete(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.ProjectName, p)
+}
+
+// GetProject returns a project
+func (p *ProjectHandler) GetProject(project models.Project) (*models.Project, *models.Error) {
+	return get(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.ProjectName, p)
+}
+
+func get(uri string, c ConfigService) (*models.Project, *models.Error) {
+
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	req, err := http.NewRequest("GET", uri, nil)
+	req.Header.Set("Content-Type", "application/json")
+	addAuthHeader(req, c)
+
+	resp, err := c.getHTTPClient().Do(req)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, buildErrorResponse(err.Error())
+		}
+
+		var respProject models.Project
+		err = json.Unmarshal(body, &respProject)
+		if err != nil {
+			return nil, buildErrorResponse(err.Error())
+		}
+
+		return &respProject, nil
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
+
+	var respErr models.Error
+	err = json.Unmarshal(body, &respErr)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
+
+	return nil, &respErr
 }
