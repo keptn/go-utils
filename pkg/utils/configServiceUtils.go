@@ -67,18 +67,7 @@ func delete(uri string, c ConfigService) (*models.Error, error) {
 		return nil, nil
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var respErr models.Error
-	err = json.Unmarshal(body, &respErr)
-	if err != nil {
-		return nil, err
-	}
-
-	return &respErr, nil
+	return nil, fmt.Errorf("DELETE resulted in status code %d", resp.StatusCode)
 }
 
 func get(uri string, c ConfigService) (*models.Project, error) {
@@ -87,26 +76,21 @@ func get(uri string, c ConfigService) (*models.Project, error) {
 	req, err := http.NewRequest("GET", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, c)
-	fmt.Println(uri)
+
 	resp, err := c.getHTTPClient().Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		return nil, nil
-	}
-	fmt.Println("read all")
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("marshal")
+
 	var respProject models.Project
 	err = json.Unmarshal(body, &respProject)
 	if err != nil {
-		fmt.Println(err.Error())
 		return nil, err
 	}
 	fmt.Println("done")
