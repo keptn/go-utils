@@ -105,7 +105,8 @@ func get(uri string, c ConfigService) (*models.Project, *models.Error) {
 		if err != nil {
 			return nil, buildErrorResponse(err.Error())
 		}
-		fmt.Println("done")
+		fmt.Println(respProject.ProjectName)
+		fmt.Println(respProject.GitRemoteURI)
 		return &respProject, nil
 	}
 
