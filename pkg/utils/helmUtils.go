@@ -37,6 +37,18 @@ func StoreChart(project string, service string, stage string, chartName string, 
 	return nil
 }
 
+// GetChartIfAvailable checks whether the chart is available in the configuration service
+func IsChartAvailable(project string, service string, stage string, chartName string, configServiceURL string) (bool, error) {
+	resourceHandler := NewResourceHandler(configServiceURL)
+
+	res, err := resourceHandler.IsServiceResourceAvailable(project, stage, service, getHelmChartURI(chartName))
+	if err != nil {
+		return false, fmt.Errorf("Error when checking avaiability of chart %s from project %s: %s",
+			chartName, project, err.Error())
+	}
+	return res, nil
+}
+
 // GetChart reads the chart from the configuration service
 func GetChart(project string, service string, stage string, chartName string, configServiceURL string) (*chart.Chart, error) {
 	resourceHandler := NewResourceHandler(configServiceURL)

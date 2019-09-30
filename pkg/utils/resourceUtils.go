@@ -132,6 +132,11 @@ func (r *ResourceHandler) GetServiceResource(project string, stage string, servi
 	return r.getResource(r.Scheme + "://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/service/" + url.QueryEscape(service) + "/resource/" + url.QueryEscape(resourceURI))
 }
 
+// IsServiceResourceAvailable checks whether a service resource is available in the configuration service
+func (r *ResourceHandler) IsServiceResourceAvailable(project string, stage string, service string, resourceURI string) (bool, error) {
+	return r.checkResourceAvailability(r.Scheme + "://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/service/" + url.QueryEscape(service) + "/resource/" + url.QueryEscape(resourceURI))
+}
+
 // UpdateServiceResource updates a service resource
 func (r *ResourceHandler) UpdateServiceResource(project string, stage string, service string, resource *models.Resource) (string, error) {
 	return r.updateResource(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+url.QueryEscape(service)+"/resource/"+url.QueryEscape(*resource.ResourceURI), resource)
@@ -261,6 +266,27 @@ func (r *ResourceHandler) getResource(uri string) (*models.Resource, error) {
 	}
 	resource.ResourceContent = string(decodedStr)
 	return &resource, nil
+}
+
+func (r *ResourceHandler) checkResourceAvailability(uri string) (bool, error) {
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	req, err := http.NewRequest("GET", uri, nil)
+	req.Header.Set("Content-Type", "application/json")
+	addAuthHeader(req, r)
+
+	resp, err := r.HTTPClient.Do(req)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == 404 {
+		return false, nil
+	}
+	if resp.StatusCode == 200 {
+		return true, nil
+	}
+	return false, errors.New(resp.Status)
 }
 
 func (r *ResourceHandler) deleteResource(uri string) error {
