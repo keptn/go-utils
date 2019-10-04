@@ -32,6 +32,16 @@ const ConfigureMonitoringEventType = "sh.keptn.event.monitoring.configure"
 // TestsFinishedEventType is a CloudEvent for indicating that tests have finished
 const TestsFinishedEventType = "sh.keptn.event.tests.finished"
 
+// TestFinishedEventType_0_5_0_Compatible is a CloudEvent for indicating that tests have finished
+const TestFinishedEventType_0_5_0_Compatible = "sh.keptn.events.tests-finished"
+
+// EvaluationDoneEventType is a CloudEvent for indicating that the evaluation has finished
+const EvaluationDoneEventType = "sh.keptn.events.evaluation-done"
+
+// DeploymentFinishedEventType is a CloudEvent for indicating that the deployment has finished
+const DeploymentFinishedEventType = "sh.keptn.events.deployment-finished"
+
+
 // ProjectCreateEventData represents the data for creating a new project
 type ProjectCreateEventData struct {
 	// Project is the name of the project
