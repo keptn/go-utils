@@ -1,6 +1,8 @@
-# Go-utils
+# Keptn go-utils
 
-This repo serves as a util package for common functionalities such as logging.
+This repo serves as a util package for common functionalities such as logging of the [Keptn Project](https://github.com/keptn).
+
+Please post any issues with this package to the [keptn/keptn repository](https://github.com/keptn/keptn/issues) and label them with `area:go-utils`.
 
 ## Usage
 
