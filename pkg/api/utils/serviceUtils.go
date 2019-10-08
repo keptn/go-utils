@@ -63,12 +63,12 @@ func (s *ServiceHandler) getHTTPClient() *http.Client {
 }
 
 // CreateService creates a new service
-func (s *ServiceHandler) CreateService(project string, stage string, serviceName string) (*models.Error, error) {
+func (s *ServiceHandler) CreateService(project string, serviceName string) (*models.Error, error) {
 
 	service := models.Service{ServiceName: serviceName}
 	body, err := json.Marshal(service)
 	if err != nil {
 		return nil, err
 	}
-	return post(s.Scheme+"://"+s.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service", body, s)
+	return post(s.Scheme+"://"+s.BaseURL+"/v1/project/"+project+"/service", body, s)
 }
