@@ -15,6 +15,9 @@ import (
 // swagger:model service
 type Service struct {
 
+	// deployment strategies
+	DeploymentStrategies map[string]string `json:"deploymentStrategies,omitempty"`
+
 	// helm chart
 	HelmChart string `json:"helmChart,omitempty"`
 
