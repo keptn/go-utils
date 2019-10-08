@@ -3,6 +3,7 @@ package events
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"strings"
 )
 
@@ -11,7 +12,7 @@ type DeploymentStrategy int
 
 const (
 	// Direct stores the chart which results in the
-	Direct DeploymentStrategy = iota
+	Direct DeploymentStrategy = iota + 1
 
 	// Duplicate generates a second chart in order to duplicate the deployments
 	Duplicate
@@ -19,6 +20,15 @@ const (
 
 func (s DeploymentStrategy) String() string {
 	return deploymentStrategyToString[s]
+}
+
+// GetDeploymentStrategy tries to parse the deployment strategy into the enum
+// If the provided deployment strategy is unsupported, an error is returned
+func GetDeploymentStrategy(deploymentStrategy string) (DeploymentStrategy, error) {
+	if val, ok := deploymentStrategyToID[deploymentStrategy]; ok {
+		return val, nil
+	}
+	return DeploymentStrategy(0), fmt.Errorf("The deployment strategy %s is invalid", deploymentStrategy)
 }
 
 var deploymentStrategyToString = map[DeploymentStrategy]string{
