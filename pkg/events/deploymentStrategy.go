@@ -28,7 +28,8 @@ func GetDeploymentStrategy(deploymentStrategy string) (DeploymentStrategy, error
 	if val, ok := deploymentStrategyToID[deploymentStrategy]; ok {
 		return val, nil
 	}
-	return DeploymentStrategy(0), fmt.Errorf("The deployment strategy %s is invalid", deploymentStrategy)
+
+	return DeploymentStrategy(-1), fmt.Errorf("The deployment strategy %s is invalid", deploymentStrategy)
 }
 
 var deploymentStrategyToString = map[DeploymentStrategy]string{
