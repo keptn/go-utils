@@ -64,7 +64,7 @@ func (s *ServiceHandler) getHTTPClient() *http.Client {
 
 // CreateService creates a new service
 func (s *ServiceHandler) CreateService(project string, service models.Service) (*models.Error, error) {
-	bodyStr, err := json.Marshal(project)
+	bodyStr, err := json.Marshal(service)
 	if err != nil {
 		return nil, err
 	}
