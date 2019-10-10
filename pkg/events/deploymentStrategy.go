@@ -12,7 +12,7 @@ type DeploymentStrategy int
 
 const (
 	// Direct stores the chart which results in the
-	Direct DeploymentStrategy = iota
+	Direct DeploymentStrategy = iota + 1
 
 	// Duplicate generates a second chart in order to duplicate the deployments
 	Duplicate
@@ -28,6 +28,7 @@ func GetDeploymentStrategy(deploymentStrategy string) (DeploymentStrategy, error
 	if val, ok := deploymentStrategyToID[deploymentStrategy]; ok {
 		return val, nil
 	}
+
 	return DeploymentStrategy(-1), fmt.Errorf("The deployment strategy %s is invalid", deploymentStrategy)
 }
 
