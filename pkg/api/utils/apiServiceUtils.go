@@ -31,24 +31,23 @@ func post(uri string, data []byte, api APIService) (*models.ChannelInfo, *models
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == 200 {
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, buildErrorResponse(err.Error())
-		}
-
-		var channelInfo models.ChannelInfo
-		err = json.Unmarshal(body, &channelInfo)
-		if err != nil {
-			return nil, buildErrorResponse(err.Error())
-		}
-
-		return &channelInfo, nil
-	}
-
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
+	}
+
+	if resp.StatusCode == 200 {
+
+		if len(body) > 0 {
+			var channelInfo models.ChannelInfo
+			err = json.Unmarshal(body, &channelInfo)
+			if err != nil {
+				return nil, buildErrorResponse(err.Error())
+			}
+			return &channelInfo, nil
+		}
+
+		return nil, nil
 	}
 
 	var respErr models.Error

@@ -96,24 +96,24 @@ func get(uri string, api APIService) (*models.Project, *models.Error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, buildErrorResponse(err.Error())
-		}
-
-		var respProject models.Project
-		err = json.Unmarshal(body, &respProject)
-		if err != nil {
-			return nil, buildErrorResponse(err.Error())
-		}
-
-		return &respProject, nil
-	}
-
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
+	}
+
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+
+		if len(body) > 0 {
+			var respProject models.Project
+			err = json.Unmarshal(body, &respProject)
+			if err != nil {
+				return nil, buildErrorResponse(err.Error())
+			}
+
+			return &respProject, nil
+		}
+
+		return nil, nil
 	}
 
 	var respErr models.Error
