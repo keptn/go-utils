@@ -61,7 +61,7 @@ func (p *AuthHandler) getHTTPClient() *http.Client {
 	return p.HTTPClient
 }
 
-// Authenticate creates a new project
+// Authenticate authenticates the client request against the server
 func (p *AuthHandler) Authenticate() (*models.ChannelInfo, *models.Error) {
 	return post(p.Scheme+"://"+p.getBaseURL()+"/v1/auth", nil, p)
 }
