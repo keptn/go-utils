@@ -18,7 +18,7 @@ type APIService interface {
 	getHTTPClient() *http.Client
 }
 
-func post(uri string, data []byte, api APIService) (*models.Error, error) {
+func post(uri string, data []byte, api APIService) (*models.ChannelInfo, *models.Error) {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(data))
@@ -27,29 +27,40 @@ func post(uri string, data []byte, api APIService) (*models.Error, error) {
 
 	resp, err := api.getHTTPClient().Do(req)
 	if err != nil {
-		return nil, err
+		return nil, buildErrorResponse(err.Error())
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		return nil, nil
+	if resp.StatusCode == 200 {
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, buildErrorResponse(err.Error())
+		}
+
+		var channelInfo models.ChannelInfo
+		err = json.Unmarshal(body, &channelInfo)
+		if err != nil {
+			return nil, buildErrorResponse(err.Error())
+		}
+
+		return &channelInfo, nil
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, buildErrorResponse(err.Error())
 	}
 
 	var respErr models.Error
 	err = json.Unmarshal(body, &respErr)
 	if err != nil {
-		return nil, err
+		return nil, buildErrorResponse(err.Error())
 	}
 
-	return &respErr, nil
+	return nil, &respErr
 }
 
-func delete(uri string, api APIService) (*models.Error, error) {
+func delete(uri string, api APIService) (*models.ChannelInfo, *models.Error) {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("DELETE", uri, nil)
@@ -58,7 +69,7 @@ func delete(uri string, api APIService) (*models.Error, error) {
 
 	resp, err := api.getHTTPClient().Do(req)
 	if err != nil {
-		return nil, err
+		return nil, buildErrorResponse(err.Error())
 	}
 	defer resp.Body.Close()
 
@@ -68,16 +79,16 @@ func delete(uri string, api APIService) (*models.Error, error) {
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, buildErrorResponse(err.Error())
 	}
 
 	var respErr models.Error
 	err = json.Unmarshal(body, &respErr)
 	if err != nil {
-		return nil, err
+		return nil, buildErrorResponse(err.Error())
 	}
 
-	return &respErr, nil
+	return nil, &respErr
 }
 
 func buildErrorResponse(errorStr string) *models.Error {

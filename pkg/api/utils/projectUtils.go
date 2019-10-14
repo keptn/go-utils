@@ -65,16 +65,16 @@ func (p *ProjectHandler) getHTTPClient() *http.Client {
 }
 
 // CreateProject creates a new project
-func (p *ProjectHandler) CreateProject(project models.Project) (*models.Error, error) {
+func (p *ProjectHandler) CreateProject(project models.Project) (*models.ChannelInfo, *models.Error) {
 	bodyStr, err := json.Marshal(project)
 	if err != nil {
-		return nil, err
+		return nil, buildErrorResponse(err.Error())
 	}
 	return post(p.Scheme+"://"+p.getBaseURL()+"/v1/project", bodyStr, p)
 }
 
 // DeleteProject deletes a project
-func (p *ProjectHandler) DeleteProject(project models.Project) (*models.Error, error) {
+func (p *ProjectHandler) DeleteProject(project models.Project) (*models.ChannelInfo, *models.Error) {
 	return delete(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.Name, p)
 }
 
