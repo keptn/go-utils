@@ -72,13 +72,22 @@ func delete(uri string, api APIService) (*models.ChannelInfo, *models.Error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		return nil, nil
-	}
-
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
+	}
+
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		if len(body) > 0 {
+			var channelInfo models.ChannelInfo
+			err = json.Unmarshal(body, &channelInfo)
+			if err != nil {
+				return nil, buildErrorResponse(err.Error())
+			}
+			return &channelInfo, nil
+		}
+
+		return nil, nil
 	}
 
 	var respErr models.Error
