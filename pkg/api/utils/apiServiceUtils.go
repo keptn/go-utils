@@ -18,7 +18,7 @@ type APIService interface {
 	getHTTPClient() *http.Client
 }
 
-func post(uri string, data []byte, api APIService) (*models.ChannelInfo, *models.Error) {
+func post(uri string, data []byte, api APIService) (*models.EventContext, *models.Error) {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(data))
@@ -40,12 +40,12 @@ func post(uri string, data []byte, api APIService) (*models.ChannelInfo, *models
 	if resp.StatusCode == 200 {
 
 		if len(body) > 0 {
-			var channelInfo models.ChannelInfo
-			err = json.Unmarshal(body, &channelInfo)
+			var eventContext models.EventContext
+			err = json.Unmarshal(body, &eventContext)
 			if err != nil {
 				return nil, buildErrorResponse(err.Error())
 			}
-			return &channelInfo, nil
+			return &eventContext, nil
 		}
 
 		return nil, nil
@@ -60,7 +60,7 @@ func post(uri string, data []byte, api APIService) (*models.ChannelInfo, *models
 	return nil, &respErr
 }
 
-func delete(uri string, api APIService) (*models.ChannelInfo, *models.Error) {
+func delete(uri string, api APIService) (*models.EventContext, *models.Error) {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("DELETE", uri, nil)
@@ -80,12 +80,12 @@ func delete(uri string, api APIService) (*models.ChannelInfo, *models.Error) {
 
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		if len(body) > 0 {
-			var channelInfo models.ChannelInfo
-			err = json.Unmarshal(body, &channelInfo)
+			var eventContext models.EventContext
+			err = json.Unmarshal(body, &eventContext)
 			if err != nil {
 				return nil, buildErrorResponse(err.Error())
 			}
-			return &channelInfo, nil
+			return &eventContext, nil
 		}
 
 		return nil, nil

@@ -65,7 +65,7 @@ func (p *ProjectHandler) getHTTPClient() *http.Client {
 }
 
 // CreateProject creates a new project
-func (p *ProjectHandler) CreateProject(project models.Project) (*models.ChannelInfo, *models.Error) {
+func (p *ProjectHandler) CreateProject(project models.Project) (*models.EventContext, *models.Error) {
 	bodyStr, err := json.Marshal(project)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
@@ -74,13 +74,13 @@ func (p *ProjectHandler) CreateProject(project models.Project) (*models.ChannelI
 }
 
 // DeleteProject deletes a project
-func (p *ProjectHandler) DeleteProject(project models.Project) (*models.ChannelInfo, *models.Error) {
-	return delete(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.Name, p)
+func (p *ProjectHandler) DeleteProject(project models.Project) (*models.EventContext, *models.Error) {
+	return delete(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+*project.Name, p)
 }
 
 // GetProject returns a project
 func (p *ProjectHandler) GetProject(project models.Project) (*models.Project, *models.Error) {
-	return get(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.Name, p)
+	return get(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+*project.Name, p)
 }
 
 func get(uri string, api APIService) (*models.Project, *models.Error) {

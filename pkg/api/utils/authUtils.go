@@ -62,6 +62,6 @@ func (p *AuthHandler) getHTTPClient() *http.Client {
 }
 
 // Authenticate authenticates the client request against the server
-func (p *AuthHandler) Authenticate() (*models.ChannelInfo, *models.Error) {
+func (p *AuthHandler) Authenticate() (*models.EventContext, *models.Error) {
 	return post(p.Scheme+"://"+p.getBaseURL()+"/v1/auth", nil, p)
 }
