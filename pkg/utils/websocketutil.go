@@ -38,9 +38,9 @@ type IncompleteCE struct {
 	ConnData ConnectionData `json:"data"`
 }
 
-// ConnectionData stores ChannelInfo and Success data
+// ConnectionData stores EventContext and Success data
 type ConnectionData struct {
-	ChannelInfo apimodels.ChannelInfo `json:"channelInfo"`
+	EventContext apimodels.EventContext `json:"eventContext"`
 }
 
 // OpenWS opens a websocket
@@ -50,7 +50,7 @@ func OpenWS(connData ConnectionData, apiEndPoint url.URL) (*websocket.Conn, *htt
 	wsEndPoint.Scheme = "ws"
 
 	header := http.Header{}
-	header.Add("Token", *connData.ChannelInfo.Token)
+	header.Add("Token", *connData.EventContext.Token)
 
 	dialer := websocket.DefaultDialer
 	dialer.HandshakeTimeout = 120 * time.Second
