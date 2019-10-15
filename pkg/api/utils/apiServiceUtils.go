@@ -23,6 +23,7 @@ func post(uri string, data []byte, api APIService) (*models.ChannelInfo, *models
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/json")
+	req.Host = "api.keptn"
 	addAuthHeader(req, api)
 
 	resp, err := api.getHTTPClient().Do(req)
