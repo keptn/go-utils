@@ -44,6 +44,15 @@ const EvaluationDoneEventType = "sh.keptn.events.evaluation-done"
 // DeploymentFinishedEventType is a CloudEvent for indicating that the deployment has finished
 const DeploymentFinishedEventType = "sh.keptn.events.deployment-finished"
 
+// StartEvaluationEventType is a CloudEvent for retrieving SLI values
+const StartEvaluationEventType = "sh.keptn.event.start-evaluation"
+
+// InternalGetSLIEventType is a CloudEvent for retrieving SLI values
+const InternalGetSLIEventType = "sh.keptn.internal.event.get-sli"
+
+// InternalGetSLIEventType is a CloudEvent for submitting SLI values
+const InternalGetSLIDoneEventType = "sh.keptn.internal.event.get-sli.done"
+
 // ProjectCreateEventData represents the data for creating a new project
 type ProjectCreateEventData struct {
 	// Project is the name of the project
@@ -116,6 +125,18 @@ type TestsFinishedEventData struct {
 	TestStrategy string `json:"teststrategy"`
 }
 
+// StartEvaluationEventData represents the data for a test finished event
+type StartEvaluationEventData struct {
+	// Project is the name of the project
+	Project string `json:"project"`
+	// Service is the name of the new service
+	Service string `json:"service"`
+	// Stage is the name of the stage
+	Stage string `json:"stage"`
+	// TestStrategy is the testing strategy
+	TestStrategy string `json:"teststrategy"`
+}
+
 // Canary describes the new configuration in a canary release
 type Canary struct {
 	// Value represents the traffic percentage on the canary
@@ -145,4 +166,26 @@ type ConfigureMonitoringEventData struct {
 	ServiceIndicators *models.ServiceIndicators `json:"serviceIndicators"`
 	ServiceObjectives *models.ServiceObjectives `json:"serviceObjectives"`
 	Remediation       *models.Remediations      `json:"remediation"`
+}
+
+// InternalGetSLIEventData describes a set of SLIs to be retrieved by a data source
+type InternalGetSLIEventData struct {
+	SLIProvider string   `json:"sliProvider"`
+	Project     string   `json:"project"`
+	Service     string   `json:"service"`
+	Stage       string   `json:"stage"`
+	Indicators  []string `json:"indicators"`
+}
+
+// InternalGetSLIDoneEventData contains a list of SLIs and their values
+type InternalGetSLIDoneEventData struct {
+	Project         string       `json:"project"`
+	Service         string       `json:"service"`
+	Stage           string       `json:"stage"`
+	IndicatorValues []*SLIResult `json:"indicatorValues"`
+}
+
+type SLIResult struct {
+	Metric string `json:"metric"`
+	Value  int    `json:"value"`
 }
