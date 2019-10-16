@@ -80,10 +80,10 @@ func (p *ProjectHandler) DeleteProject(project models.Project) (*models.EventCon
 
 // GetProject returns a project
 func (p *ProjectHandler) GetProject(project models.Project) (*models.Project, *models.Error) {
-	return get(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+*project.Name, p)
+	return getProject(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+*project.Name, p)
 }
 
-func get(uri string, api APIService) (*models.Project, *models.Error) {
+func getProject(uri string, api APIService) (*models.Project, *models.Error) {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("GET", uri, nil)
