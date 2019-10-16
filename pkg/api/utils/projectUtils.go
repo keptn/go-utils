@@ -88,6 +88,7 @@ func getProject(uri string, api APIService) (*models.Project, *models.Error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("GET", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
+	req.Host = "api.keptn"
 	addAuthHeader(req, api)
 
 	resp, err := api.getHTTPClient().Do(req)

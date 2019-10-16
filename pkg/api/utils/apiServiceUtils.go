@@ -70,6 +70,7 @@ func delete(uri string, api APIService) (*models.EventContext, *models.Error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("DELETE", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
+	req.Host = "api.keptn"
 	addAuthHeader(req, api)
 
 	resp, err := api.getHTTPClient().Do(req)
