@@ -45,23 +45,23 @@ func NewAuthenticatedAuthHandler(baseURL string, authToken string, authHeader st
 	}
 }
 
-func (p *AuthHandler) getBaseURL() string {
-	return p.BaseURL
+func (a *AuthHandler) getBaseURL() string {
+	return a.BaseURL
 }
 
-func (p *AuthHandler) getAuthToken() string {
-	return p.AuthToken
+func (a *AuthHandler) getAuthToken() string {
+	return a.AuthToken
 }
 
-func (p *AuthHandler) getAuthHeader() string {
-	return p.AuthHeader
+func (a *AuthHandler) getAuthHeader() string {
+	return a.AuthHeader
 }
 
-func (p *AuthHandler) getHTTPClient() *http.Client {
-	return p.HTTPClient
+func (a *AuthHandler) getHTTPClient() *http.Client {
+	return a.HTTPClient
 }
 
 // Authenticate authenticates the client request against the server
-func (p *AuthHandler) Authenticate() (*models.EventContext, *models.Error) {
-	return post(p.Scheme+"://"+p.getBaseURL()+"/v1/auth", nil, p)
+func (a *AuthHandler) Authenticate() (*models.EventContext, *models.Error) {
+	return post(a.Scheme+"://"+a.getBaseURL()+"/v1/auth", nil, a)
 }

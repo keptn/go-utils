@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -51,13 +52,17 @@ func post(uri string, data []byte, api APIService) (*models.EventContext, *model
 		return nil, nil
 	}
 
-	var respErr models.Error
-	err = json.Unmarshal(body, &respErr)
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
+	if len(body) > 0 {
+		var respErr models.Error
+		err = json.Unmarshal(body, &respErr)
+		if err != nil {
+			return nil, buildErrorResponse(err.Error())
+		}
+
+		return nil, &respErr
 	}
 
-	return nil, &respErr
+	return nil, buildErrorResponse(fmt.Sprintf("Received unexptected response: %d %s", resp.StatusCode, resp.Status))
 }
 
 func delete(uri string, api APIService) (*models.EventContext, *models.Error) {
