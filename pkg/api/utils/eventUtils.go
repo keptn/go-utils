@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
-	datastore "github.com/keptn/go-utils/pkg/datastore/models"
+	datastore "github.com/keptn/go-utils/pkg/mongodb-datastore/models"
 )
 
 // EventHandler handles services

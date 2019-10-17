@@ -11,7 +11,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/keptn/go-utils/pkg/models"
+	"github.com/keptn/go-utils/pkg/configuration-service/models"
 )
 
 // ResourceHandler handles resources

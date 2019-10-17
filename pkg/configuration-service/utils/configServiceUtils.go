@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/keptn/go-utils/pkg/models"
+	"github.com/keptn/go-utils/pkg/configuration-service/models"
 )
 
 // ConfigService represents the interface for accessing the configuration service

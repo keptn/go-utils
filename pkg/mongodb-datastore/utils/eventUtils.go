@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/keptn/go-utils/pkg/datastore/models"
+	"github.com/keptn/go-utils/pkg/mongodb-datastore/models"
 )
 
 // EventHandler handles event
@@ -53,13 +53,13 @@ func (p *EventHandler) GetEvent(keptnContext string, eventType string) (*models.
 	return get(p.Scheme+"://"+p.getBaseURL()+"/event?keptnContext="+keptnContext+"type="+eventType+"&pageSize=10", p)
 }
 
-func get(uri string, api APIService) (*models.KeptnContextExtendedCE, *models.Error) {
+func get(uri string, datastore Datastore) (*models.KeptnContextExtendedCE, *models.Error) {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("GET", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := api.getHTTPClient().Do(req)
+	resp, err := datastore.getHTTPClient().Do(req)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
