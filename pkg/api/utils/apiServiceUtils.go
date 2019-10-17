@@ -39,12 +39,14 @@ func post(uri string, data []byte, api APIService) (*models.EventContext, *model
 	}
 
 	if resp.StatusCode == 200 {
+		// api returned status 200 -> unmarshal json response
 
 		if len(body) > 0 {
 			var eventContext models.EventContext
 			err = json.Unmarshal(body, &eventContext)
 			if err != nil {
-				return nil, buildErrorResponse(err.Error())
+				// failed to parse json
+				return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
 			}
 			return &eventContext, nil
 		}
@@ -56,7 +58,8 @@ func post(uri string, data []byte, api APIService) (*models.EventContext, *model
 		var respErr models.Error
 		err = json.Unmarshal(body, &respErr)
 		if err != nil {
-			return nil, buildErrorResponse(err.Error())
+			// failed to parse json
+			return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
 		}
 
 		return nil, &respErr
@@ -89,7 +92,8 @@ func delete(uri string, api APIService) (*models.EventContext, *models.Error) {
 			var eventContext models.EventContext
 			err = json.Unmarshal(body, &eventContext)
 			if err != nil {
-				return nil, buildErrorResponse(err.Error())
+				// failed to parse json
+				return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
 			}
 			return &eventContext, nil
 		}
@@ -100,7 +104,8 @@ func delete(uri string, api APIService) (*models.EventContext, *models.Error) {
 	var respErr models.Error
 	err = json.Unmarshal(body, &respErr)
 	if err != nil {
-		return nil, buildErrorResponse(err.Error())
+		// failed to parse json
+		return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
 	}
 
 	return nil, &respErr
