@@ -1,6 +1,7 @@
 package utils
 
 import (
+	b64 "encoding/base64"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -68,9 +69,20 @@ func (r *ResourceHandler) getHTTPClient() *http.Client {
 
 // CreateServiceResources creates a service resource
 func (r *ResourceHandler) CreateServiceResources(project string, stage string, service string, resources []*models.Resource) (*models.EventContext, *models.Error) {
-	bodyStr, err := json.Marshal(resources)
+
+	copiedResources := make([]*models.Resource, len(resources), len(resources))
+	for i, val := range resources {
+		resourceContent := b64.StdEncoding.EncodeToString([]byte(*val.ResourceContent))
+		copiedResources[i] = &models.Resource{ResourceURI: val.ResourceURI, ResourceContent: &resourceContent}
+	}
+	resReq := &resourceRequest{
+		Resources: copiedResources,
+	}
+
+	requestStr, err := json.Marshal(resReq)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return post(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+service+"/resource", bodyStr, r)
+
+	return post(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+service+"/resource", requestStr, r)
 }
