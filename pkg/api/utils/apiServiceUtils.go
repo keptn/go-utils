@@ -38,9 +38,7 @@ func post(uri string, data []byte, api APIService) (*models.EventContext, *model
 		return nil, buildErrorResponse(err.Error())
 	}
 
-	if resp.StatusCode == 200 {
-		// api returned status 200 -> unmarshal json response
-
+	if resp.StatusCode >= 200 && resp.StatusCode <= 204 {
 		if len(body) > 0 {
 			var eventContext models.EventContext
 			err = json.Unmarshal(body, &eventContext)
