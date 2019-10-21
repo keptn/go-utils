@@ -3,7 +3,6 @@ package utils
 import (
 	"crypto/tls"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -51,10 +50,10 @@ func (e *EventHandler) getHTTPClient() *http.Client {
 
 // GetEvent returns an event specified by keptnContext and eventType
 func (e *EventHandler) GetEvent(keptnContext string, eventType string) (*models.KeptnContextExtendedCE, *models.Error) {
-	return get(e.Scheme+"://"+e.getBaseURL()+"/event?keptnContext="+keptnContext+"&type="+eventType+"&pageSize=10", e)
+	return getSingleEvent(e.Scheme+"://"+e.getBaseURL()+"/event?keptnContext="+keptnContext+"&type="+eventType+"&pageSize=10", e)
 }
 
-func get(uri string, datastore Datastore) (*models.KeptnContextExtendedCE, *models.Error) {
+func getSingleEvent(uri string, datastore Datastore) (*models.KeptnContextExtendedCE, *models.Error) {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("GET", uri, nil)
@@ -75,17 +74,16 @@ func get(uri string, datastore Datastore) (*models.KeptnContextExtendedCE, *mode
 
 		if len(body) > 0 {
 
-			fmt.Println(string(body))
+			response := models.Events{}
+			err = json.Unmarshal(body, &response)
+			if err != nil {
+				return nil, buildErrorResponse(err.Error())
+			}
 
-			/*
-				var cloudEvent models.KeptnContextExtendedCE
-				err = json.Unmarshal(body, &cloudEvent)
-				if err != nil {
-					return nil, buildErrorResponse(err.Error())
-				}
-
-				return &cloudEvent, nil
-			*/
+			// return first event of slice
+			for _, event := range response.Events {
+				return event, nil
+			}
 		}
 
 		return nil, nil
