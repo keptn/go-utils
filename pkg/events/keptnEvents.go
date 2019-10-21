@@ -41,7 +41,6 @@ const EvaluationDoneEventType = "sh.keptn.events.evaluation-done"
 // DeploymentFinishedEventType is a CloudEvent for indicating that the deployment has finished
 const DeploymentFinishedEventType = "sh.keptn.events.deployment-finished"
 
-
 // ProjectCreateEventData represents the data for creating a new project
 type ProjectCreateEventData struct {
 	// Project is the name of the project
@@ -88,6 +87,12 @@ type ConfigurationChangeEventData struct {
 	Canary *Canary `json:"canary,omitempty"`
 	// DeploymentChanges contains changes of the primary deployment
 	DeploymentChanges []PropertyChange `json:"deploymentChanges,omitempty"`
+	// FileChangesUserChart provides new content for the user chart.
+	// The key value pairs represent the URI within the chart (i.e. the key) and the new content (i.e. the value).
+	FileChangesUserChart map[string]string `json:"fileChangesUserChart,omitempty"`
+	// FileChangesGeneratedChart provides new content for the generated chart.
+	// The key value pairs represent the URI within the chart (i.e. the key) and the new content (i.e. the value).
+	FileChangesGeneratedChart map[string]string `json:"fileChangesGeneratedChart,omitempty"`
 }
 
 // TestsFinishedEventData represents the data for a test finished event
