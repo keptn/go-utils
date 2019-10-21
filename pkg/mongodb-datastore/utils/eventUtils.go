@@ -32,25 +32,25 @@ func NewEventHandler(baseURL string) *EventHandler {
 	}
 }
 
-func (p *EventHandler) getBaseURL() string {
-	return p.BaseURL
+func (e *EventHandler) getBaseURL() string {
+	return e.BaseURL
 }
 
-func (p *EventHandler) getAuthToken() string {
-	return p.AuthToken
+func (e *EventHandler) getAuthToken() string {
+	return e.AuthToken
 }
 
-func (p *EventHandler) getAuthHeader() string {
-	return p.AuthHeader
+func (e *EventHandler) getAuthHeader() string {
+	return e.AuthHeader
 }
 
-func (p *EventHandler) getHTTPClient() *http.Client {
-	return p.HTTPClient
+func (e *EventHandler) getHTTPClient() *http.Client {
+	return e.HTTPClient
 }
 
 // GetEvent returns an event specified by keptnContext and eventType
-func (p *EventHandler) GetEvent(keptnContext string, eventType string) (*models.KeptnContextExtendedCE, *models.Error) {
-	return get(p.Scheme+"://"+p.getBaseURL()+"/event?keptnContext="+keptnContext+"type="+eventType+"&pageSize=10", p)
+func (e *EventHandler) GetEvent(keptnContext string, eventType string) (*models.KeptnContextExtendedCE, *models.Error) {
+	return get(e.Scheme+"://"+e.getBaseURL()+"/event?keptnContext="+keptnContext+"&type="+eventType+"&pageSize=10", e)
 }
 
 func get(uri string, datastore Datastore) (*models.KeptnContextExtendedCE, *models.Error) {
