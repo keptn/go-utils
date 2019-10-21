@@ -1,6 +1,8 @@
 package events
 
-import "github.com/keptn/go-utils/pkg/models"
+import (
+	"github.com/keptn/go-utils/pkg/models"
+)
 
 // ServiceCreateEventType is a CloudEvent type for creating a new service
 const ServiceCreateEventType = "sh.keptn.event.service.create"
@@ -174,6 +176,8 @@ type InternalGetSLIEventData struct {
 	Project     string   `json:"project"`
 	Service     string   `json:"service"`
 	Stage       string   `json:"stage"`
+	Start       string   `json:"start"`
+	End         string   `json:"end"`
 	Indicators  []string `json:"indicators"`
 }
 
