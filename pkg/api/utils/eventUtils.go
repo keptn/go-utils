@@ -65,6 +65,15 @@ func (e *EventHandler) getHTTPClient() *http.Client {
 	return e.HTTPClient
 }
 
+// SendEvent sends an event to Keptn
+func (e *EventHandler) SendEvent(event models.Event) (*models.EventContext, *models.Error) {
+	bodyStr, err := json.Marshal(event)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
+	return post(e.Scheme+"://"+e.getBaseURL()+"/v1/event", bodyStr, e)
+}
+
 // GetEvent returns an event specified by keptnContext and eventType
 func (e *EventHandler) GetEvent(keptnContext string, eventType string) (*datastore.KeptnContextExtendedCE, *models.Error) {
 	return getEvent(e.Scheme+"://"+e.getBaseURL()+"/v1/event?keptnContext="+keptnContext+"type="+eventType+"&pageSize=10", e)
