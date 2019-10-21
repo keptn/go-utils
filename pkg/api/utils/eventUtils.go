@@ -76,7 +76,7 @@ func (e *EventHandler) SendEvent(event models.Event) (*models.EventContext, *mod
 
 // GetEvent returns an event specified by keptnContext and eventType
 func (e *EventHandler) GetEvent(keptnContext string, eventType string) (*datastore.KeptnContextExtendedCE, *models.Error) {
-	return getEvent(e.Scheme+"://"+e.getBaseURL()+"/v1/event?keptnContext="+keptnContext+"type="+eventType+"&pageSize=10", e)
+	return getEvent(e.Scheme+"://"+e.getBaseURL()+"/v1/event?keptnContext="+keptnContext+"&type="+eventType+"&pageSize=10", e)
 }
 
 func getEvent(uri string, api APIService) (*datastore.KeptnContextExtendedCE, *models.Error) {
