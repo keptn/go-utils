@@ -3,6 +3,7 @@ package utils
 import (
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -73,13 +74,18 @@ func get(uri string, datastore Datastore) (*models.KeptnContextExtendedCE, *mode
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 
 		if len(body) > 0 {
-			var cloudEvent models.KeptnContextExtendedCE
-			err = json.Unmarshal(body, &cloudEvent)
-			if err != nil {
-				return nil, buildErrorResponse(err.Error())
-			}
 
-			return &cloudEvent, nil
+			fmt.Println(string(body))
+
+			/*
+				var cloudEvent models.KeptnContextExtendedCE
+				err = json.Unmarshal(body, &cloudEvent)
+				if err != nil {
+					return nil, buildErrorResponse(err.Error())
+				}
+
+				return &cloudEvent, nil
+			*/
 		}
 
 		return nil, nil
