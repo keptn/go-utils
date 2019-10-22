@@ -29,7 +29,7 @@ func NewEventHandler(baseURL string) *EventHandler {
 		AuthHeader: "",
 		AuthToken:  "",
 		HTTPClient: &http.Client{},
-		Scheme:     "http",
+		Scheme:     "https",
 	}
 }
 

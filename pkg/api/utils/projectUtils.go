@@ -28,7 +28,7 @@ func NewProjectHandler(baseURL string) *ProjectHandler {
 		AuthHeader: "",
 		AuthToken:  "",
 		HTTPClient: &http.Client{},
-		Scheme:     "http",
+		Scheme:     "https",
 	}
 }
 

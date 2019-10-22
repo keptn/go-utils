@@ -25,7 +25,7 @@ func NewAuthHandler(baseURL string) *AuthHandler {
 		AuthHeader: "",
 		AuthToken:  "",
 		HTTPClient: &http.Client{},
-		Scheme:     "http",
+		Scheme:     "https",
 	}
 }
 

@@ -31,7 +31,7 @@ func NewResourceHandler(baseURL string) *ResourceHandler {
 		AuthHeader: "",
 		AuthToken:  "",
 		HTTPClient: &http.Client{},
-		Scheme:     "http",
+		Scheme:     "https",
 	}
 }
 

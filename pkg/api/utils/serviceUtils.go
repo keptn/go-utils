@@ -26,7 +26,7 @@ func NewServiceHandler(baseURL string) *ServiceHandler {
 		AuthHeader: "",
 		AuthToken:  "",
 		HTTPClient: &http.Client{},
-		Scheme:     "http",
+		Scheme:     "https",
 	}
 }
 
