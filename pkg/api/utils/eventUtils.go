@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
-	datastore "github.com/keptn/go-utils/pkg/mongodb-datastore/models"
 )
 
 // EventHandler handles services
@@ -75,11 +74,11 @@ func (e *EventHandler) SendEvent(event models.Event) (*models.EventContext, *mod
 }
 
 // GetEvent returns an event specified by keptnContext and eventType
-func (e *EventHandler) GetEvent(keptnContext string, eventType string) (*datastore.KeptnContextExtendedCE, *models.Error) {
+func (e *EventHandler) GetEvent(keptnContext string, eventType string) (*models.KeptnContextExtendedCE, *models.Error) {
 	return getEvent(e.Scheme+"://"+e.getBaseURL()+"/v1/event?keptnContext="+keptnContext+"&type="+eventType+"&pageSize=10", e)
 }
 
-func getEvent(uri string, api APIService) (*datastore.KeptnContextExtendedCE, *models.Error) {
+func getEvent(uri string, api APIService) (*models.KeptnContextExtendedCE, *models.Error) {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("GET", uri, nil)
@@ -101,7 +100,7 @@ func getEvent(uri string, api APIService) (*datastore.KeptnContextExtendedCE, *m
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 
 		if len(body) > 0 {
-			var cloudEvent datastore.KeptnContextExtendedCE
+			var cloudEvent models.KeptnContextExtendedCE
 			err = json.Unmarshal(body, &cloudEvent)
 			if err != nil {
 				return nil, buildErrorResponse(err.Error())

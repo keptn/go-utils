@@ -95,7 +95,7 @@ func TestGetEventStatusOK(t *testing.T) {
 	cloudEvent, errObj := eventHandler.GetEvent("8929e5e5-3826-488f-9257-708bfa974909", keptnevents.EvaluationDoneEventType)
 
 	if cloudEvent == nil {
-		t.Error("no CloudEvent returned")
+		t.Error("no Keptn event returned")
 	}
 
 	// check whether the last event is returned
