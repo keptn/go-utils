@@ -190,6 +190,6 @@ type InternalGetSLIDoneEventData struct {
 }
 
 type SLIResult struct {
-	Metric string `json:"metric"`
-	Value  int    `json:"value"`
+	Metric string  `json:"metric"`
+	Value  float64 `json:"value"`
 }
