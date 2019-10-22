@@ -128,6 +128,10 @@ type ProblemEventData struct {
 	ProblemTitle   string `json:"problemtitle"`
 	ProblemDetails string `json:"problemdetails"`
 	ImpactedEntity string `json:"impactedEntity"`
+	Tags           string `json:"tags,omitempty"`
+	Project        string `json:"project,omitempty"`
+	Stage          string `json:"project,omitempty"`
+	Service        string `json:"project,omitempty"`
 }
 
 // ConfigureMonitoringEventData represents the data necessary to configure monitoring for a service
