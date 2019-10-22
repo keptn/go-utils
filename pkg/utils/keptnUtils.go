@@ -3,15 +3,16 @@ package utils
 import (
 	"github.com/keptn/go-utils/pkg/models"
 	"gopkg.in/yaml.v2"
+	"github.com/keptn/go-utils/pkg/configuration-service/utils"
 )
 
 // KeptnHandler provides an interface to keptn resources
 type KeptnHandler struct {
-	ResourceHandler *ResourceHandler
+	ResourceHandler *utils.ResourceHandler
 }
 
 // NewKeptnHandler returns a new KeptnHandler instance
-func NewKeptnHandler(rh *ResourceHandler) *KeptnHandler {
+func NewKeptnHandler(rh *utils.ResourceHandler) *KeptnHandler {
 	return &KeptnHandler{
 		ResourceHandler: rh,
 	}
