@@ -3,9 +3,11 @@ package utils
 import (
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/keptn/go-utils/pkg/mongodb-datastore/models"
 )
@@ -48,12 +50,12 @@ func (e *EventHandler) getHTTPClient() *http.Client {
 	return e.HTTPClient
 }
 
-// GetEvent returns an event specified by keptnContext and eventType
+// GetEvent returns the latest event of a specific event type and from a specific Keptn context
 func (e *EventHandler) GetEvent(keptnContext string, eventType string) (*models.KeptnContextExtendedCE, *models.Error) {
-	return getSingleEvent(e.Scheme+"://"+e.getBaseURL()+"/event?keptnContext="+keptnContext+"&type="+eventType+"&pageSize=10", e)
+	return getLatestEvent(e.Scheme+"://"+e.getBaseURL()+"/event?keptnContext="+keptnContext+"&type="+eventType+"&pageSize=10", e)
 }
 
-func getSingleEvent(uri string, datastore Datastore) (*models.KeptnContextExtendedCE, *models.Error) {
+func getLatestEvent(uri string, datastore Datastore) (*models.KeptnContextExtendedCE, *models.Error) {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("GET", uri, nil)
@@ -80,10 +82,16 @@ func getSingleEvent(uri string, datastore Datastore) (*models.KeptnContextExtend
 				return nil, buildErrorResponse(err.Error())
 			}
 
-			// return first event of slice
+			fmt.Println(string(body))
+
+			// find latest event
+			var latest *models.KeptnContextExtendedCE
 			for _, event := range response.Events {
-				return event, nil
+				if time.Time(latest.Time).After(time.Time(event.Time)) {
+					latest = event
+				}
 			}
+			return latest, nil
 		}
 
 		return nil, nil
