@@ -3,7 +3,6 @@ package utils
 import (
 	"crypto/tls"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -52,10 +51,10 @@ func (e *EventHandler) getHTTPClient() *http.Client {
 
 // GetEvent returns the latest event of a specific event type and from a specific Keptn context
 func (e *EventHandler) GetEvent(keptnContext string, eventType string) (*models.KeptnContextExtendedCE, *models.Error) {
-	return getLatestEvent(e.Scheme+"://"+e.getBaseURL()+"/event?keptnContext="+keptnContext+"&type="+eventType+"&pageSize=10", e)
+	return getLatestEvent(keptnContext, eventType, e.Scheme+"://"+e.getBaseURL()+"/event?keptnContext="+keptnContext+"&type="+eventType+"&pageSize=10", e)
 }
 
-func getLatestEvent(uri string, datastore Datastore) (*models.KeptnContextExtendedCE, *models.Error) {
+func getLatestEvent(keptnContext string, eventType string, uri string, datastore Datastore) (*models.KeptnContextExtendedCE, *models.Error) {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("GET", uri, nil)
@@ -82,19 +81,24 @@ func getLatestEvent(uri string, datastore Datastore) (*models.KeptnContextExtend
 				return nil, buildErrorResponse(err.Error())
 			}
 
-			fmt.Println(string(body))
-
 			// find latest event
 			var latest *models.KeptnContextExtendedCE
 			for _, event := range response.Events {
-				if time.Time(latest.Time).After(time.Time(event.Time)) {
+				if latest == nil || time.Time(latest.Time).Before(time.Time(event.Time)) {
 					latest = event
 				}
 			}
-			return latest, nil
+
+			if latest != nil {
+				return latest, nil
+			}
 		}
 
-		return nil, nil
+		var respMessage models.Error
+		message := "No Keptn " + eventType + " event found for context: " + keptnContext
+		respMessage.Message = &message
+		respMessage.Code = 400
+		return nil, &respMessage
 	}
 
 	var respErr models.Error
