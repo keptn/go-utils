@@ -32,6 +32,18 @@ const ConfigureMonitoringEventType = "sh.keptn.event.monitoring.configure"
 // TestsFinishedEventType is a CloudEvent for indicating that tests have finished
 const TestsFinishedEventType = "sh.keptn.event.tests.finished"
 
+// TestFinishedEventType_0_5_0_Compatible is a CloudEvent for indicating that tests have finished
+const TestFinishedEventType_0_5_0_Compatible = "sh.keptn.events.tests-finished"
+
+// EvaluationStartEventType is a CloudEvent to trigger an evaluation step
+const EvaluationStartEventType = "sh.keptn.event.evaluation.start"
+
+// EvaluationDoneEventType is a CloudEvent for indicating that the evaluation has finished
+const EvaluationDoneEventType = "sh.keptn.events.evaluation-done"
+
+// DeploymentFinishedEventType is a CloudEvent for indicating that the deployment has finished
+const DeploymentFinishedEventType = "sh.keptn.events.deployment-finished"
+
 // ProjectCreateEventData represents the data for creating a new project
 type ProjectCreateEventData struct {
 	// Project is the name of the project
@@ -78,6 +90,14 @@ type ConfigurationChangeEventData struct {
 	Canary *Canary `json:"canary,omitempty"`
 	// DeploymentChanges contains changes of the primary deployment
 	DeploymentChanges []PropertyChange `json:"deploymentChanges,omitempty"`
+}
+
+// EvaluationStartEventData represents the data for a evaluation start event
+type EvaluationStartEventData struct {
+	// Project is the name of the project
+	Project string `json:"project"`
+	// Service is the name of the new service
+	Service string `json:"service"`
 }
 
 // TestsFinishedEventData represents the data for a test finished event

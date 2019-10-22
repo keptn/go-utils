@@ -6,6 +6,8 @@ import (
 	"net/url"
 	"time"
 
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
@@ -36,15 +38,9 @@ type IncompleteCE struct {
 	ConnData ConnectionData `json:"data"`
 }
 
-// ConnectionData stores ChannelInfo and Success data
+// ConnectionData stores EventContext and Success data
 type ConnectionData struct {
-	ChannelInfo ChannelInfo `json:"channelInfo"`
-}
-
-// ChannelInfo stores a token and a channelID used for opening the websocket
-type ChannelInfo struct {
-	Token     string `json:"token"`
-	ChannelID string `json:"channelID"`
+	EventContext apimodels.EventContext `json:"eventContext"`
 }
 
 // OpenWS opens a websocket
@@ -54,7 +50,7 @@ func OpenWS(connData ConnectionData, apiEndPoint url.URL) (*websocket.Conn, *htt
 	wsEndPoint.Scheme = "ws"
 
 	header := http.Header{}
-	header.Add("Token", connData.ChannelInfo.Token)
+	header.Add("Token", *connData.EventContext.Token)
 
 	dialer := websocket.DefaultDialer
 	dialer.HandshakeTimeout = 120 * time.Second

@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/keptn/go-utils/pkg/models"
+	"github.com/keptn/go-utils/pkg/configuration-service/models"
 )
 
 // StageHandler handles stages
