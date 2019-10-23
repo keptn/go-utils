@@ -1,10 +1,10 @@
 module github.com/keptn/go-utils
 
-go 1.13
+go 1.12
 
 require (
-	github.com/Azure/go-autorest/autorest v0.9.2
-	github.com/Azure/go-autorest/autorest/adal v0.8.0 // indirect
+	github.com/Azure/go-autorest v12.2.0+incompatible
+	github.com/Azure/go-autorest/autorest v0.2.0
 	github.com/Masterminds/goutils v1.1.0 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
@@ -25,8 +25,6 @@ require (
 	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/json-iterator/go v1.1.7 // indirect
 	github.com/mitchellh/copystructure v1.0.0 // indirect
-	github.com/modern-go/reflect2 v1.0.1 // indirect
-	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.4.0
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550 // indirect
@@ -35,18 +33,17 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v2 v2.2.4
-	k8s.io/api v0.0.0-20190111032252-67edc246be36
-	k8s.io/apimachinery v0.0.0-20181127025237-2b1284ed4c93
-	k8s.io/client-go v10.0.0+incompatible
+	k8s.io/api v0.0.0-20190620084959-7cf5895f2711
+	k8s.io/apimachinery v0.0.0-20190612205821-1799e75a0719
+	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/helm v2.14.3+incompatible
 	k8s.io/klog v1.0.0 // indirect
-	sigs.k8s.io/yaml v1.1.0 // indirect
 )
 
-// using kubernetes-1.13.2 for api/apimachinery
+// using kubernetes-1.15.0 for api/apimachinery
 
 replace (
-	k8s.io/api => k8s.io/api v0.0.0-20190111032252-67edc246be36
-	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20181127025237-2b1284ed4c93
-	k8s.io/client-go => k8s.io/client-go v10.0.0+incompatible
+	k8s.io/api => k8s.io/api v0.0.0-20190620084959-7cf5895f2711
+	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20190612205821-1799e75a0719
+	k8s.io/client-go => k8s.io/client-go v12.0.0+incompatible
 )
