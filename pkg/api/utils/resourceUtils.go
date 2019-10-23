@@ -30,7 +30,7 @@ func NewResourceHandler(baseURL string) *ResourceHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{},
+		HTTPClient: &http.Client{Transport: getClientTransport()},
 		Scheme:     "https",
 	}
 }
@@ -40,6 +40,8 @@ func NewAuthenticatedResourceHandler(baseURL string, authToken string, authHeade
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
+	httpClient.Transport = getClientTransport()
+
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
 	return &ResourceHandler{
@@ -75,10 +77,10 @@ func (r *ResourceHandler) CreateServiceResources(project string, stage string, s
 		resourceContent := b64.StdEncoding.EncodeToString([]byte(*val.ResourceContent))
 		copiedResources[i] = &models.Resource{ResourceURI: val.ResourceURI, ResourceContent: &resourceContent}
 	}
+
 	resReq := &resourceRequest{
 		Resources: copiedResources,
 	}
-
 	requestStr, err := json.Marshal(resReq)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())

@@ -88,8 +88,12 @@ type ConfigurationChangeEventData struct {
 	ValuesCanary map[string]interface{} `json:"valuesCanary,omitempty"`
 	// Canary contains a new configuration for canary releases
 	Canary *Canary `json:"canary,omitempty"`
-	// DeploymentChanges contains changes of the primary deployment
-	DeploymentChanges []PropertyChange `json:"deploymentChanges,omitempty"`
+	// FileChangesUserChart provides new content for the user chart.
+	// The key value pairs represent the URI within the chart (i.e. the key) and the new content (i.e. the value).
+	FileChangesUserChart map[string]string `json:"fileChangesUserChart,omitempty"`
+	// FileChangesGeneratedChart provides new content for the generated chart.
+	// The key value pairs represent the URI within the chart (i.e. the key) and the new content (i.e. the value).
+	FileChangesGeneratedChart map[string]string `json:"fileChangesGeneratedChart,omitempty"`
 }
 
 // EvaluationStartEventData represents the data for a evaluation start event
@@ -112,12 +116,6 @@ type TestsFinishedEventData struct {
 	TestStrategy string `json:"teststrategy"`
 }
 
-// PropertyChange describes the property to be changed
-type PropertyChange struct {
-	PropertyPath string      `json:"propertyPath"`
-	Value        interface{} `json:"value"`
-}
-
 // Canary describes the new configuration in a canary release
 type Canary struct {
 	// Value represents the traffic percentage on the canary
@@ -133,6 +131,10 @@ type ProblemEventData struct {
 	ProblemTitle   string `json:"problemtitle"`
 	ProblemDetails string `json:"problemdetails"`
 	ImpactedEntity string `json:"impactedEntity"`
+	Tags           string `json:"tags,omitempty"`
+	Project        string `json:"project,omitempty"`
+	Stage          string `json:"stage,omitempty"`
+	Service        string `json:"service,omitempty"`
 }
 
 // ConfigureMonitoringEventData represents the data necessary to configure monitoring for a service
