@@ -172,13 +172,14 @@ type ConfigureMonitoringEventData struct {
 
 // InternalGetSLIEventData describes a set of SLIs to be retrieved by a data source
 type InternalGetSLIEventData struct {
-	SLIProvider string   `json:"sliProvider"`
-	Project     string   `json:"project"`
-	Service     string   `json:"service"`
-	Stage       string   `json:"stage"`
-	Start       string   `json:"start"`
-	End         string   `json:"end"`
-	Indicators  []string `json:"indicators"`
+	SLIProvider   string       `json:"sliProvider"`
+	Project       string       `json:"project"`
+	Service       string       `json:"service"`
+	Stage         string       `json:"stage"`
+	Start         string       `json:"start"`
+	End           string       `json:"end"`
+	Indicators    []string     `json:"indicators"`
+	CustomFilters []*SLIFilter `json:"customFilters"`
 }
 
 // InternalGetSLIDoneEventData contains a list of SLIs and their values
@@ -187,6 +188,11 @@ type InternalGetSLIDoneEventData struct {
 	Service         string       `json:"service"`
 	Stage           string       `json:"stage"`
 	IndicatorValues []*SLIResult `json:"indicatorValues"`
+}
+
+type SLIFilter struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }
 
 type SLIResult struct {
