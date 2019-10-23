@@ -19,9 +19,16 @@ type APIService interface {
 	getHTTPClient() *http.Client
 }
 
+func getClientTransport() *http.Transport {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		DialContext:     ResolveXipIoWithContext,
+	}
+	return tr
+}
+
 func post(uri string, data []byte, api APIService) (*models.EventContext, *models.Error) {
 
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/json")
 	req.Host = "api.keptn"
@@ -68,7 +75,6 @@ func post(uri string, data []byte, api APIService) (*models.EventContext, *model
 
 func delete(uri string, api APIService) (*models.EventContext, *models.Error) {
 
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("DELETE", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
 	req.Host = "api.keptn"

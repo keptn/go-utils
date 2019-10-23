@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -27,7 +26,7 @@ func NewProjectHandler(baseURL string) *ProjectHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{},
+		HTTPClient: &http.Client{Transport: getClientTransport()},
 		Scheme:     "https",
 	}
 }
@@ -37,6 +36,8 @@ func NewAuthenticatedProjectHandler(baseURL string, authToken string, authHeader
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
+	httpClient.Transport = getClientTransport()
+
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
 	return &ProjectHandler{
@@ -85,7 +86,6 @@ func (p *ProjectHandler) GetProject(project models.Project) (*models.Project, *m
 
 func getProject(uri string, api APIService) (*models.Project, *models.Error) {
 
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("GET", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
 	req.Host = "api.keptn"
