@@ -196,6 +196,8 @@ type SLIFilter struct {
 }
 
 type SLIResult struct {
-	Metric string  `json:"metric"`
-	Value  float64 `json:"value"`
+	Metric  string  `json:"metric"`
+	Value   float64 `json:"value"`
+	Success bool    `json:"success"`
+	Message string  `json:"message"`
 }
