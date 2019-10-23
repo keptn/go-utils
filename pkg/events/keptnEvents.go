@@ -116,12 +116,6 @@ type TestsFinishedEventData struct {
 	TestStrategy string `json:"teststrategy"`
 }
 
-// PropertyChange describes the property to be changed
-type PropertyChange struct {
-	PropertyPath string      `json:"propertyPath"`
-	Value        interface{} `json:"value"`
-}
-
 // Canary describes the new configuration in a canary release
 type Canary struct {
 	// Value represents the traffic percentage on the canary
@@ -139,8 +133,8 @@ type ProblemEventData struct {
 	ImpactedEntity string `json:"impactedEntity"`
 	Tags           string `json:"tags,omitempty"`
 	Project        string `json:"project,omitempty"`
-	Stage          string `json:"project,omitempty"`
-	Service        string `json:"project,omitempty"`
+	Stage          string `json:"stage,omitempty"`
+	Service        string `json:"service,omitempty"`
 }
 
 // ConfigureMonitoringEventData represents the data necessary to configure monitoring for a service
