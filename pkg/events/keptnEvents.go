@@ -88,8 +88,6 @@ type ConfigurationChangeEventData struct {
 	ValuesCanary map[string]interface{} `json:"valuesCanary,omitempty"`
 	// Canary contains a new configuration for canary releases
 	Canary *Canary `json:"canary,omitempty"`
-	// DeploymentChanges contains changes of the primary deployment
-	DeploymentChanges []PropertyChange `json:"deploymentChanges,omitempty"`
 	// FileChangesUserChart provides new content for the user chart.
 	// The key value pairs represent the URI within the chart (i.e. the key) and the new content (i.e. the value).
 	FileChangesUserChart map[string]string `json:"fileChangesUserChart,omitempty"`
