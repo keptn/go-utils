@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -27,7 +26,7 @@ func NewEventHandler(baseURL string) *EventHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{},
+		HTTPClient: &http.Client{Transport: getClientTransport()},
 		Scheme:     "https",
 	}
 }
@@ -37,6 +36,8 @@ func NewAuthenticatedEventHandler(baseURL string, authToken string, authHeader s
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
+	httpClient.Transport = getClientTransport()
+
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
 	return &EventHandler{
@@ -80,7 +81,6 @@ func (e *EventHandler) GetEvent(keptnContext string, eventType string) (*models.
 
 func getEvent(uri string, api APIService) (*models.KeptnContextExtendedCE, *models.Error) {
 
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("GET", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
 	req.Host = "api.keptn"

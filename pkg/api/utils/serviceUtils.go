@@ -25,7 +25,7 @@ func NewServiceHandler(baseURL string) *ServiceHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{},
+		HTTPClient: &http.Client{Transport: getClientTransport()},
 		Scheme:     "https",
 	}
 }
@@ -35,6 +35,8 @@ func NewAuthenticatedServiceHandler(baseURL string, authToken string, authHeader
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
+	httpClient.Transport = getClientTransport()
+
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
 	return &ServiceHandler{
