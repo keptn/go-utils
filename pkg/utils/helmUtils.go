@@ -8,7 +8,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/keptn/go-utils/pkg/models"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
@@ -16,6 +15,9 @@ import (
 	"k8s.io/helm/pkg/proto/hapi/chart"
 	"k8s.io/helm/pkg/renderutil"
 	"k8s.io/helm/pkg/timeconv"
+
+	"github.com/keptn/go-utils/pkg/configuration-service/models"
+	"github.com/keptn/go-utils/pkg/configuration-service/utils"
 )
 
 func getHelmChartURI(chartName string) string {
@@ -24,7 +26,7 @@ func getHelmChartURI(chartName string) string {
 
 // StoreChart stores a chart in the configuration service
 func StoreChart(project string, service string, stage string, chartName string, helmChart []byte, configServiceURL string) error {
-	resourceHandler := NewResourceHandler(configServiceURL)
+	resourceHandler := utils.NewResourceHandler(configServiceURL)
 
 	uri := getHelmChartURI(chartName)
 	resource := models.Resource{ResourceURI: &uri, ResourceContent: string(helmChart)}
@@ -39,7 +41,7 @@ func StoreChart(project string, service string, stage string, chartName string, 
 
 // GetChart reads the chart from the configuration service
 func GetChart(project string, service string, stage string, chartName string, configServiceURL string) (*chart.Chart, error) {
-	resourceHandler := NewResourceHandler(configServiceURL)
+	resourceHandler := utils.NewResourceHandler(configServiceURL)
 
 	resource, err := resourceHandler.GetServiceResource(project, stage, service, getHelmChartURI(chartName))
 	if err != nil {

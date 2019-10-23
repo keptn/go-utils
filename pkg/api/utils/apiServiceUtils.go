@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -18,7 +19,7 @@ type APIService interface {
 	getHTTPClient() *http.Client
 }
 
-func post(uri string, data []byte, api APIService) (*models.ChannelInfo, *models.Error) {
+func post(uri string, data []byte, api APIService) (*models.EventContext, *models.Error) {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(data))
@@ -37,37 +38,40 @@ func post(uri string, data []byte, api APIService) (*models.ChannelInfo, *models
 		return nil, buildErrorResponse(err.Error())
 	}
 
-	if resp.StatusCode == 200 {
-		// api returned status 200 -> unmarshal json response
-
+	if resp.StatusCode >= 200 && resp.StatusCode <= 204 {
 		if len(body) > 0 {
-			var channelInfo models.ChannelInfo
-			err = json.Unmarshal(body, &channelInfo)
+			var eventContext models.EventContext
+			err = json.Unmarshal(body, &eventContext)
 			if err != nil {
 				// failed to parse json
 				return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
 			}
-			return &channelInfo, nil
+			return &eventContext, nil
 		}
 
 		return nil, nil
 	}
 
-	var respErr models.Error
-	err = json.Unmarshal(body, &respErr)
-	if err != nil {
-		// failed to parse json
-		return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
+	if len(body) > 0 {
+		var respErr models.Error
+		err = json.Unmarshal(body, &respErr)
+		if err != nil {
+			// failed to parse json
+			return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
+		}
+
+		return nil, &respErr
 	}
 
-	return nil, &respErr
+	return nil, buildErrorResponse(fmt.Sprintf("Received unexptected response: %d %s", resp.StatusCode, resp.Status))
 }
 
-func delete(uri string, api APIService) (*models.ChannelInfo, *models.Error) {
+func delete(uri string, api APIService) (*models.EventContext, *models.Error) {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("DELETE", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
+	req.Host = "api.keptn"
 	addAuthHeader(req, api)
 
 	resp, err := api.getHTTPClient().Do(req)
@@ -83,13 +87,13 @@ func delete(uri string, api APIService) (*models.ChannelInfo, *models.Error) {
 
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		if len(body) > 0 {
-			var channelInfo models.ChannelInfo
-			err = json.Unmarshal(body, &channelInfo)
+			var eventContext models.EventContext
+			err = json.Unmarshal(body, &eventContext)
 			if err != nil {
 				// failed to parse json
 				return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
 			}
-			return &channelInfo, nil
+			return &eventContext, nil
 		}
 
 		return nil, nil

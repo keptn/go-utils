@@ -8,10 +8,11 @@ import (
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	datastore "github.com/keptn/go-utils/pkg/mongodb-datastore/models"
 )
 
-// ProjectHandler handles projects
-type ProjectHandler struct {
+// EventHandler handles services
+type EventHandler struct {
 	BaseURL    string
 	AuthToken  string
 	AuthHeader string
@@ -19,11 +20,11 @@ type ProjectHandler struct {
 	Scheme     string
 }
 
-// NewProjectHandler returns a new ProjectHandler
-func NewProjectHandler(baseURL string) *ProjectHandler {
+// NewEventHandler returns a new EventHandler
+func NewEventHandler(baseURL string) *EventHandler {
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
-	return &ProjectHandler{
+	return &EventHandler{
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
@@ -32,14 +33,14 @@ func NewProjectHandler(baseURL string) *ProjectHandler {
 	}
 }
 
-// NewAuthenticatedProjectHandler returns a new ProjectHandler that authenticates at the endpoint via the provided token
-func NewAuthenticatedProjectHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ProjectHandler {
+// NewAuthenticatedEventHandler returns a new EventHandler that authenticates at the endpoint via the provided token
+func NewAuthenticatedEventHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *EventHandler {
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
-	return &ProjectHandler{
+	return &EventHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,
 		AuthToken:  authToken,
@@ -48,42 +49,37 @@ func NewAuthenticatedProjectHandler(baseURL string, authToken string, authHeader
 	}
 }
 
-func (p *ProjectHandler) getBaseURL() string {
-	return p.BaseURL
+func (e *EventHandler) getBaseURL() string {
+	return e.BaseURL
 }
 
-func (p *ProjectHandler) getAuthToken() string {
-	return p.AuthToken
+func (e *EventHandler) getAuthToken() string {
+	return e.AuthToken
 }
 
-func (p *ProjectHandler) getAuthHeader() string {
-	return p.AuthHeader
+func (e *EventHandler) getAuthHeader() string {
+	return e.AuthHeader
 }
 
-func (p *ProjectHandler) getHTTPClient() *http.Client {
-	return p.HTTPClient
+func (e *EventHandler) getHTTPClient() *http.Client {
+	return e.HTTPClient
 }
 
-// CreateProject creates a new project
-func (p *ProjectHandler) CreateProject(project models.Project) (*models.EventContext, *models.Error) {
-	bodyStr, err := json.Marshal(project)
+// SendEvent sends an event to Keptn
+func (e *EventHandler) SendEvent(event models.Event) (*models.EventContext, *models.Error) {
+	bodyStr, err := json.Marshal(event)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return post(p.Scheme+"://"+p.getBaseURL()+"/v1/project", bodyStr, p)
+	return post(e.Scheme+"://"+e.getBaseURL()+"/v1/event", bodyStr, e)
 }
 
-// DeleteProject deletes a project
-func (p *ProjectHandler) DeleteProject(project models.Project) (*models.EventContext, *models.Error) {
-	return delete(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+*project.Name, p)
+// GetEvent returns an event specified by keptnContext and eventType
+func (e *EventHandler) GetEvent(keptnContext string, eventType string) (*datastore.KeptnContextExtendedCE, *models.Error) {
+	return getEvent(e.Scheme+"://"+e.getBaseURL()+"/v1/event?keptnContext="+keptnContext+"&type="+eventType+"&pageSize=10", e)
 }
 
-// GetProject returns a project
-func (p *ProjectHandler) GetProject(project models.Project) (*models.Project, *models.Error) {
-	return getProject(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+*project.Name, p)
-}
-
-func getProject(uri string, api APIService) (*models.Project, *models.Error) {
+func getEvent(uri string, api APIService) (*datastore.KeptnContextExtendedCE, *models.Error) {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("GET", uri, nil)
@@ -105,13 +101,13 @@ func getProject(uri string, api APIService) (*models.Project, *models.Error) {
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 
 		if len(body) > 0 {
-			var respProject models.Project
-			err = json.Unmarshal(body, &respProject)
+			var cloudEvent datastore.KeptnContextExtendedCE
+			err = json.Unmarshal(body, &cloudEvent)
 			if err != nil {
 				return nil, buildErrorResponse(err.Error())
 			}
 
-			return &respProject, nil
+			return &cloudEvent, nil
 		}
 
 		return nil, nil

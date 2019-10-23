@@ -35,6 +35,9 @@ const TestsFinishedEventType = "sh.keptn.event.tests.finished"
 // TestFinishedEventType_0_5_0_Compatible is a CloudEvent for indicating that tests have finished
 const TestFinishedEventType_0_5_0_Compatible = "sh.keptn.events.tests-finished"
 
+// EvaluationStartEventType is a CloudEvent to trigger an evaluation step
+const EvaluationStartEventType = "sh.keptn.event.evaluation.start"
+
 // EvaluationDoneEventType is a CloudEvent for indicating that the evaluation has finished
 const EvaluationDoneEventType = "sh.keptn.events.evaluation-done"
 
@@ -93,6 +96,14 @@ type ConfigurationChangeEventData struct {
 	// FileChangesGeneratedChart provides new content for the generated chart.
 	// The key value pairs represent the URI within the chart (i.e. the key) and the new content (i.e. the value).
 	FileChangesGeneratedChart map[string]string `json:"fileChangesGeneratedChart,omitempty"`
+}
+
+// EvaluationStartEventData represents the data for a evaluation start event
+type EvaluationStartEventData struct {
+	// Project is the name of the project
+	Project string `json:"project"`
+	// Service is the name of the new service
+	Service string `json:"service"`
 }
 
 // TestsFinishedEventData represents the data for a test finished event
