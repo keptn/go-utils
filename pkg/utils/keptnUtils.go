@@ -1,9 +1,8 @@
 package utils
 
 import (
-	"github.com/keptn/go-utils/pkg/models"
-	"gopkg.in/yaml.v2"
 	"github.com/keptn/go-utils/pkg/configuration-service/utils"
+	"github.com/keptn/go-utils/pkg/models"
 )
 
 // KeptnHandler provides an interface to keptn resources
