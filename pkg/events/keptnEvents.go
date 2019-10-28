@@ -184,10 +184,10 @@ type InternalGetSLIEventData struct {
 
 // InternalGetSLIDoneEventData contains a list of SLIs and their values
 type InternalGetSLIDoneEventData struct {
-	Project         string       `json:"project"`
-	Service         string       `json:"service"`
-	Stage           string       `json:"stage"`
-	IndicatorValues []*SLIResult `json:"indicatorValues"`
+	Project         string      `json:"project"`
+	Service         string      `json:"service"`
+	Stage           string      `json:"stage"`
+	IndicatorValues []SLIResult `json:"indicatorValues"`
 }
 
 // EvaluationDoneEventData contains information about evaluation results
