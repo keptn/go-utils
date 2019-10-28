@@ -190,6 +190,23 @@ type InternalGetSLIDoneEventData struct {
 	IndicatorValues []*SLIResult `json:"indicatorValues"`
 }
 
+// EvaluationDoneEventData contains information about evaluation results
+type EvaluationDoneEventData struct {
+	Deploymentstrategy string `json:"deploymentstrategy"`
+	Evaluationdetails  []struct {
+		TimeStart        string                 `json:"timeStart"`
+		TimeEnd          string                 `json:"timeEnd"`
+		Result           string                 `json:"result"`
+		Score            float64                `json:"score"`
+		IndicatorResults []*SLIEvaluationResult `json:"indicatorResults"`
+	} `json:"evaluationdetails"`
+	EvaluationPassed bool   `json:"evaluationpassed"`
+	Project          string `json:"project"`
+	Service          string `json:"service"`
+	Stage            string `json:"stage"`
+	TestStrategy     string `json:"teststrategy"`
+}
+
 type SLIFilter struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
@@ -200,4 +217,14 @@ type SLIResult struct {
 	Value   float64 `json:"value"`
 	Success bool    `json:"success"`
 	Message string  `json:"message"`
+}
+
+type SLIEvaluationResult struct {
+	Value      *SLIResult      `json:"value"`
+	Violations []*SLIViolation `json:"violations"`
+}
+
+type SLIViolation struct {
+	Type     string  `json:"type"` // warning or fail
+	Criteria float64 `json:"criteria"`
 }
