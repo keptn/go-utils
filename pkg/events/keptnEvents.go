@@ -126,12 +126,12 @@ type Canary struct {
 
 // ProblemEventData represents the data for describing a problem
 type ProblemEventData struct {
-	State          string `json:"state"`
-	ProblemID      string `json:"problemID"`
-	ProblemTitle   string `json:"problemtitle"`
-	ProblemDetails string `json:"problemdetails"`
-	ImpactedEntity string `json:"impactedEntity"`
-	Tags           string `json:"tags,omitempty"`
+	State          string `json:"State"`
+	ProblemID      string `json:"ProblemID"`
+	ProblemTitle   string `json:"ProblemTitle"`
+	ProblemDetails string `json:"ProblemDetails"`
+	ImpactedEntity string `json:"ImpactedEntities"`
+	Tags           string `json:"Tags,omitempty"`
 	Project        string `json:"project,omitempty"`
 	Stage          string `json:"stage,omitempty"`
 	Service        string `json:"service,omitempty"`
