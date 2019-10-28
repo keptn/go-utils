@@ -291,16 +291,35 @@ func (r *ResourceHandler) deleteResource(uri string) error {
 // GetAllStageResources returns a list of all resources.
 func (r *ResourceHandler) GetAllStageResources(project string, stage string) ([]*models.Resource, error) {
 
+	url, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + "/v1/project/" + project + "/stage/" + stage + "/resource")
+	if err != nil {
+		return nil, err
+	}
+	if err != nil {
+		return nil, err
+	}
+	return r.getAllResources(url)
+}
+
+// GetAllStageResources returns a list of all resources.
+func (r *ResourceHandler) GetAllServiceResources(project string, stage string, service string) ([]*models.Resource, error) {
+
+	url, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + "/v1/project/" + project + "/stage/" + stage +
+		"/service/" + service + "/resource/")
+	if err != nil {
+		return nil, err
+	}
+	return r.getAllResources(url)
+}
+
+func (r *ResourceHandler) getAllResources(url *url.URL) ([]*models.Resource, error) {
+
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	resources := []*models.Resource{}
 
 	nextPageKey := ""
 
 	for {
-		url, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + "/v1/project/" + project + "/stage/" + stage + "/resource")
-		if err != nil {
-			return nil, err
-		}
 		q := url.Query()
 		if nextPageKey != "" {
 			q.Set("nextPageKey", nextPageKey)
