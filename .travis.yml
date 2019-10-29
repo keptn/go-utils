@@ -1,0 +1,25 @@
+# use the latest ubuntu environment (18.04) available on travis
+dist: xenial
+
+language: go
+
+go:
+- 1.12.x
+
+# Don't email me the results of the test runs.
+notifications:
+  email: false
+
+env:
+- GO111MODULE=on
+
+# enable module cache
+cache:
+  directories:
+    - $GOPATH/pkg/mod  
+
+# script always runs to completion (set +e). If we have linter issues AND a
+# failing test, we want to see both. Configure golangci-lint with a
+# .golangci.yml file at the top level of your repo.
+script:
+  - go test -v -race ./...  # Run all the tests with the race detector enabled

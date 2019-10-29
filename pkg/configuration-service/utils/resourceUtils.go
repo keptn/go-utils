@@ -11,7 +11,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/keptn/go-utils/pkg/models"
+	"github.com/keptn/go-utils/pkg/configuration-service/models"
 )
 
 // ResourceHandler handles resources
@@ -217,15 +217,17 @@ func (r *ResourceHandler) writeResource(uri string, method string, resource *mod
 		return "", err
 	}
 	defer resp.Body.Close()
-	var version models.Version
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
+
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
 		return "", errors.New(string(body))
 	}
 
+	var version models.Version
 	err = json.Unmarshal(body, &version)
 	if err != nil {
 		return "", err
@@ -246,20 +248,28 @@ func (r *ResourceHandler) getResource(uri string) (*models.Resource, error) {
 	}
 	defer resp.Body.Close()
 
-	body, _ := ioutil.ReadAll(resp.Body)
-	if resp.StatusCode == 404 {
-		return nil, errors.New("resource not found")
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
 	}
+
+	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
+		return nil, errors.New(string(body))
+	}
+
 	var resource models.Resource
 	err = json.Unmarshal(body, &resource)
 	if err != nil {
 		return nil, err
 	}
+
+	// decode resource content
 	decodedStr, err := b64.StdEncoding.DecodeString(resource.ResourceContent)
 	if err != nil {
 		return nil, err
 	}
 	resource.ResourceContent = string(decodedStr)
+
 	return &resource, nil
 }
 
@@ -281,16 +291,35 @@ func (r *ResourceHandler) deleteResource(uri string) error {
 // GetAllStageResources returns a list of all resources.
 func (r *ResourceHandler) GetAllStageResources(project string, stage string) ([]*models.Resource, error) {
 
+	url, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + "/v1/project/" + project + "/stage/" + stage + "/resource")
+	if err != nil {
+		return nil, err
+	}
+	if err != nil {
+		return nil, err
+	}
+	return r.getAllResources(url)
+}
+
+// GetAllStageResources returns a list of all resources.
+func (r *ResourceHandler) GetAllServiceResources(project string, stage string, service string) ([]*models.Resource, error) {
+
+	url, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + "/v1/project/" + project + "/stage/" + stage +
+		"/service/" + service + "/resource/")
+	if err != nil {
+		return nil, err
+	}
+	return r.getAllResources(url)
+}
+
+func (r *ResourceHandler) getAllResources(url *url.URL) ([]*models.Resource, error) {
+
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	resources := []*models.Resource{}
 
 	nextPageKey := ""
 
 	for {
-		url, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + "/v1/project/" + project + "/stage/" + stage + "/resource")
-		if err != nil {
-			return nil, err
-		}
 		q := url.Query()
 		if nextPageKey != "" {
 			q.Set("nextPageKey", nextPageKey)

@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/keptn/go-utils/pkg/models"
+	"github.com/keptn/go-utils/pkg/configuration-service/models"
 )
 
 // ProjectHandler handles projects
