@@ -199,7 +199,7 @@ type InternalGetSLIDoneEventData struct {
 // EvaluationDoneEventData contains information about evaluation results
 type EvaluationDoneEventData struct {
 	EvaluationDetails *EvaluationDetails `json:"evaluationdetails"`
-	EvaluationPassed  bool               `json:"evaluationpassed"`
+	Result            string             `json:"result"` // pass | warning | fail
 	Project           string             `json:"project"`
 	Service           string             `json:"service"`
 	Stage             string             `json:"stage"`
