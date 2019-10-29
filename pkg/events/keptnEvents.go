@@ -231,5 +231,5 @@ type SLIEvaluationResult struct {
 }
 
 type SLIViolation struct {
-	Criteria float64 `json:"criteria"`
+	Criteria string `json:"criteria"`
 }
