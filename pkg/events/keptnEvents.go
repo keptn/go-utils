@@ -191,6 +191,8 @@ type InternalGetSLIDoneEventData struct {
 	Project         string       `json:"project"`
 	Service         string       `json:"service"`
 	Stage           string       `json:"stage"`
+	Start           string       `json:"start"`
+	End             string       `json:"end"`
 	IndicatorValues []*SLIResult `json:"indicatorValues"`
 }
 
