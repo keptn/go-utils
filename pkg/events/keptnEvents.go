@@ -137,6 +137,10 @@ type StartEvaluationEventData struct {
 	Stage string `json:"stage"`
 	// TestStrategy is the testing strategy
 	TestStrategy string `json:"teststrategy"`
+	// Start indicates the starting timestamp of the tests
+	Start string `json:"start"`
+	// End indicates the end timestamp of the tests
+	End string `json:"end"`
 }
 
 // Canary describes the new configuration in a canary release
