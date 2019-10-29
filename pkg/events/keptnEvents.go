@@ -227,9 +227,9 @@ type SLIEvaluationResult struct {
 	Score      float64         `json:"score"`
 	Value      *SLIResult      `json:"value"`
 	Violations []*SLIViolation `json:"violations"`
+	Status     string          `json:"status"` // pass | warning | fail
 }
 
 type SLIViolation struct {
-	Type     string  `json:"type"` // warning or fail
 	Criteria float64 `json:"criteria"`
 }
