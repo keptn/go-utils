@@ -220,6 +220,7 @@ type SLIResult struct {
 }
 
 type SLIEvaluationResult struct {
+	Score      float64         `json:"score"`
 	Value      *SLIResult      `json:"value"`
 	Violations []*SLIViolation `json:"violations"`
 }
