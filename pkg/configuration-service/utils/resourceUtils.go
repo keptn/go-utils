@@ -6,6 +6,7 @@ import (
 	b64 "encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -290,20 +291,15 @@ func (r *ResourceHandler) deleteResource(uri string) error {
 
 // GetAllStageResources returns a list of all resources.
 func (r *ResourceHandler) GetAllStageResources(project string, stage string) ([]*models.Resource, error) {
-
 	url, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + "/v1/project/" + project + "/stage/" + stage + "/resource")
-	if err != nil {
-		return nil, err
-	}
 	if err != nil {
 		return nil, err
 	}
 	return r.getAllResources(url)
 }
 
-// GetAllStageResources returns a list of all resources.
+// GetAllServiceResources returns a list of all resources.
 func (r *ResourceHandler) GetAllServiceResources(project string, stage string, service string) ([]*models.Resource, error) {
-
 	url, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + "/v1/project/" + project + "/stage/" + stage +
 		"/service/" + service + "/resource/")
 	if err != nil {
@@ -322,6 +318,7 @@ func (r *ResourceHandler) getAllResources(url *url.URL) ([]*models.Resource, err
 	for {
 		q := url.Query()
 		if nextPageKey != "" {
+			fmt.Println("set nextPageKey to: " + nextPageKey)
 			q.Set("nextPageKey", nextPageKey)
 		}
 		req, err := http.NewRequest("GET", url.String(), nil)
@@ -351,6 +348,7 @@ func (r *ResourceHandler) getAllResources(url *url.URL) ([]*models.Resource, err
 				break
 			}
 			nextPageKey = received.NextPageKey
+			fmt.Println(nextPageKey)
 		} else {
 			var respErr models.Error
 			err = json.Unmarshal(body, &respErr)
