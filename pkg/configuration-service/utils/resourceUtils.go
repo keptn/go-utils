@@ -323,6 +323,8 @@ func (r *ResourceHandler) getAllResources(u *url.URL) ([]*models.Resource, error
 			u.RawQuery = q.Encode()
 		}
 
+		fmt.Println(u.RawQuery)
+		fmt.Println(u)
 		req, err := http.NewRequest("GET", u.String(), nil)
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, r)
