@@ -6,7 +6,6 @@ import (
 	b64 "encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -317,14 +316,10 @@ func (r *ResourceHandler) getAllResources(u *url.URL) ([]*models.Resource, error
 
 	for {
 		if nextPageKey != "" {
-			fmt.Println("set nextPageKey to: " + nextPageKey)
 			q := u.Query()
 			q.Set("nextPageKey", nextPageKey)
 			u.RawQuery = q.Encode()
 		}
-
-		fmt.Println(u.RawQuery)
-		fmt.Println(u)
 		req, err := http.NewRequest("GET", u.String(), nil)
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, r)
@@ -352,7 +347,7 @@ func (r *ResourceHandler) getAllResources(u *url.URL) ([]*models.Resource, error
 				break
 			}
 			nextPageKey = received.NextPageKey
-			fmt.Println(nextPageKey)
+
 		} else {
 			var respErr models.Error
 			err = json.Unmarshal(body, &respErr)
