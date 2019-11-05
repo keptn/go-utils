@@ -308,7 +308,7 @@ func (r *ResourceHandler) GetAllServiceResources(project string, stage string, s
 	return r.getAllResources(url)
 }
 
-func (r *ResourceHandler) getAllResources(url *url.URL) ([]*models.Resource, error) {
+func (r *ResourceHandler) getAllResources(u *url.URL) ([]*models.Resource, error) {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	resources := []*models.Resource{}
@@ -316,12 +316,14 @@ func (r *ResourceHandler) getAllResources(url *url.URL) ([]*models.Resource, err
 	nextPageKey := ""
 
 	for {
-		q := url.Query()
 		if nextPageKey != "" {
 			fmt.Println("set nextPageKey to: " + nextPageKey)
+			q := u.Query()
 			q.Set("nextPageKey", nextPageKey)
+			u.RawQuery = q.Encode()
 		}
-		req, err := http.NewRequest("GET", url.String(), nil)
+
+		req, err := http.NewRequest("GET", u.String(), nil)
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, r)
 
