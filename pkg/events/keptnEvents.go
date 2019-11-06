@@ -114,6 +114,10 @@ type TestsFinishedEventData struct {
 	Stage string `json:"stage"`
 	// TestStrategy is the testing strategy
 	TestStrategy string `json:"teststrategy"`
+	// Start indicates the starting timestamp of the tests
+	Start string `json:"start"`
+	// End indicates the end timestamp of the tests
+	End string `json:"end"`
 }
 
 // StartEvaluationEventData represents the data for a test finished event
@@ -171,6 +175,7 @@ type InternalGetSLIEventData struct {
 	Stage         string       `json:"stage"`
 	Start         string       `json:"start"`
 	End           string       `json:"end"`
+	TestStrategy  string       `json:"teststrategy"`
 	Indicators    []string     `json:"indicators"`
 	CustomFilters []*SLIFilter `json:"customFilters"`
 }
@@ -182,6 +187,7 @@ type InternalGetSLIDoneEventData struct {
 	Stage           string       `json:"stage"`
 	Start           string       `json:"start"`
 	End             string       `json:"end"`
+	TestStrategy    string       `json:"teststrategy"`
 	IndicatorValues []*SLIResult `json:"indicatorValues"`
 }
 
