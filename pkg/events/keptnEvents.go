@@ -114,6 +114,8 @@ type TestsFinishedEventData struct {
 	Stage string `json:"stage"`
 	// TestStrategy is the testing strategy
 	TestStrategy string `json:"teststrategy"`
+	// DeploymentStrategy is the deployment strategy
+	DeploymentStrategy string `json:"deploymentstrategy"`
 	// Start indicates the starting timestamp of the tests
 	Start string `json:"start"`
 	// End indicates the end timestamp of the tests
@@ -130,6 +132,8 @@ type StartEvaluationEventData struct {
 	Stage string `json:"stage"`
 	// TestStrategy is the testing strategy
 	TestStrategy string `json:"teststrategy"`
+	// DeploymentStrategy is the deployment strategy
+	DeploymentStrategy string `json:"deploymentstrategy"`
 	// Start indicates the starting timestamp of the tests
 	Start string `json:"start"`
 	// End indicates the end timestamp of the tests
@@ -199,6 +203,7 @@ type EvaluationDoneEventData struct {
 	Service           string             `json:"service"`
 	Stage             string             `json:"stage"`
 	TestStrategy      string             `json:"teststrategy"`
+	DeploymentStrategy string            `json:"deploymentstrategy"`
 }
 
 type EvaluationDetails struct {
