@@ -39,14 +39,20 @@ const TestsFinishedEventType = "sh.keptn.event.tests.finished"
 // TestFinishedEventType_0_5_0_Compatible is a CloudEvent for indicating that tests have finished
 const TestFinishedEventType_0_5_0_Compatible = "sh.keptn.events.tests-finished"
 
-// EvaluationStartEventType is a CloudEvent to trigger an evaluation step
-const EvaluationStartEventType = "sh.keptn.event.evaluation.start"
-
 // EvaluationDoneEventType is a CloudEvent for indicating that the evaluation has finished
 const EvaluationDoneEventType = "sh.keptn.events.evaluation-done"
 
 // DeploymentFinishedEventType is a CloudEvent for indicating that the deployment has finished
 const DeploymentFinishedEventType = "sh.keptn.events.deployment-finished"
+
+// StartEvaluationEventType is a CloudEvent for retrieving SLI values
+const StartEvaluationEventType = "sh.keptn.event.start-evaluation"
+
+// InternalGetSLIEventType is a CloudEvent for retrieving SLI values
+const InternalGetSLIEventType = "sh.keptn.internal.event.get-sli"
+
+// InternalGetSLIEventType is a CloudEvent for submitting SLI values
+const InternalGetSLIDoneEventType = "sh.keptn.internal.event.get-sli.done"
 
 // ProjectCreateEventData represents the data for creating a new project
 type ProjectCreateEventData struct {
@@ -103,14 +109,6 @@ type ConfigurationChangeEventData struct {
 	FileChangesUmbrellaChart map[string]string `json:"fileChangesUmbreallaChart,omitempty"`
 }
 
-// EvaluationStartEventData represents the data for a evaluation start event
-type EvaluationStartEventData struct {
-	// Project is the name of the project
-	Project string `json:"project"`
-	// Service is the name of the new service
-	Service string `json:"service"`
-}
-
 // TestsFinishedEventData represents the data for a test finished event
 type TestsFinishedEventData struct {
 	// Project is the name of the project
@@ -121,6 +119,30 @@ type TestsFinishedEventData struct {
 	Stage string `json:"stage"`
 	// TestStrategy is the testing strategy
 	TestStrategy string `json:"teststrategy"`
+	// DeploymentStrategy is the deployment strategy
+	DeploymentStrategy string `json:"deploymentstrategy"`
+	// Start indicates the starting timestamp of the tests
+	Start string `json:"start"`
+	// End indicates the end timestamp of the tests
+	End string `json:"end"`
+}
+
+// StartEvaluationEventData represents the data for a test finished event
+type StartEvaluationEventData struct {
+	// Project is the name of the project
+	Project string `json:"project"`
+	// Service is the name of the new service
+	Service string `json:"service"`
+	// Stage is the name of the stage
+	Stage string `json:"stage"`
+	// TestStrategy is the testing strategy
+	TestStrategy string `json:"teststrategy"`
+	// DeploymentStrategy is the deployment strategy
+	DeploymentStrategy string `json:"deploymentstrategy"`
+	// Start indicates the starting timestamp of the tests
+	Start string `json:"start"`
+	// End indicates the end timestamp of the tests
+	End string `json:"end"`
 }
 
 // Canary describes the new configuration in a canary release
@@ -153,4 +175,71 @@ type ConfigureMonitoringEventData struct {
 	ServiceIndicators *models.ServiceIndicators `json:"serviceIndicators"`
 	ServiceObjectives *models.ServiceObjectives `json:"serviceObjectives"`
 	Remediation       *models.Remediations      `json:"remediation"`
+}
+
+// InternalGetSLIEventData describes a set of SLIs to be retrieved by a data source
+type InternalGetSLIEventData struct {
+	SLIProvider   string       `json:"sliProvider"`
+	Project       string       `json:"project"`
+	Service       string       `json:"service"`
+	Stage         string       `json:"stage"`
+	Start         string       `json:"start"`
+	End           string       `json:"end"`
+	TestStrategy  string       `json:"teststrategy"`
+	Indicators    []string     `json:"indicators"`
+	CustomFilters []*SLIFilter `json:"customFilters"`
+}
+
+// InternalGetSLIDoneEventData contains a list of SLIs and their values
+type InternalGetSLIDoneEventData struct {
+	Project         string       `json:"project"`
+	Service         string       `json:"service"`
+	Stage           string       `json:"stage"`
+	Start           string       `json:"start"`
+	End             string       `json:"end"`
+	TestStrategy    string       `json:"teststrategy"`
+	IndicatorValues []*SLIResult `json:"indicatorValues"`
+}
+
+// EvaluationDoneEventData contains information about evaluation results
+type EvaluationDoneEventData struct {
+	EvaluationDetails  *EvaluationDetails `json:"evaluationdetails"`
+	Result             string             `json:"result"` // pass | warning | fail
+	Project            string             `json:"project"`
+	Service            string             `json:"service"`
+	Stage              string             `json:"stage"`
+	TestStrategy       string             `json:"teststrategy"`
+	DeploymentStrategy string             `json:"deploymentstrategy"`
+}
+
+type EvaluationDetails struct {
+	TimeStart        string                 `json:"timeStart"`
+	TimeEnd          string                 `json:"timeEnd"`
+	Result           string                 `json:"result"`
+	Score            float64                `json:"score"`
+	IndicatorResults []*SLIEvaluationResult `json:"indicatorResults"`
+}
+
+type SLIFilter struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+type SLIResult struct {
+	Metric  string  `json:"metric"`
+	Value   float64 `json:"value"`
+	Success bool    `json:"success"`
+	Message string  `json:"message,omitempty"`
+}
+
+type SLIEvaluationResult struct {
+	Score      float64         `json:"score"`
+	Value      *SLIResult      `json:"value"`
+	Violations []*SLIViolation `json:"violations"`
+	Status     string          `json:"status"` // pass | warning | fail
+}
+
+type SLIViolation struct {
+	Criteria    string  `json:"criteria"`
+	TargetValue float64 `json:"targetValue"`
 }
