@@ -1,6 +1,8 @@
 package events
 
 import (
+	"encoding/json"
+
 	"github.com/keptn/go-utils/pkg/models"
 )
 
@@ -102,6 +104,9 @@ type ConfigurationChangeEventData struct {
 	// FileChangesGeneratedChart provides new content for the generated chart.
 	// The key value pairs represent the URI within the chart (i.e. the key) and the new content (i.e. the value).
 	FileChangesGeneratedChart map[string]string `json:"fileChangesGeneratedChart,omitempty"`
+	// FileChangesUmbrellaChart provides new content for the umbrealla chart.
+	// The key value pairs represent the URI within the chart (i.e. the key) and the new content (i.e. the value).
+	FileChangesUmbrellaChart map[string]string `json:"fileChangesUmbreallaChart,omitempty"`
 }
 
 // TestsFinishedEventData represents the data for a test finished event
@@ -150,15 +155,16 @@ type Canary struct {
 
 // ProblemEventData represents the data for describing a problem
 type ProblemEventData struct {
-	State          string `json:"state"`
-	ProblemID      string `json:"problemID"`
-	ProblemTitle   string `json:"problemtitle"`
-	ProblemDetails string `json:"problemdetails"`
-	ImpactedEntity string `json:"impactedEntity"`
-	Tags           string `json:"tags,omitempty"`
-	Project        string `json:"project,omitempty"`
-	Stage          string `json:"stage,omitempty"`
-	Service        string `json:"service,omitempty"`
+	State          string          `json:"State,omitempty"`
+	ProblemID      string          `json:"ProblemID"`
+	ProblemTitle   string          `json:"ProblemTitle"`
+	ProblemDetails json.RawMessage `json:"ProblemDetails"`
+	PID            string          `json:"PID"`
+	ImpactedEntity string          `json:"ImpactedEntities,omitempty"`
+	Tags           string          `json:"Tags,omitempty"`
+	Project        string          `json:"project,omitempty"`
+	Stage          string          `json:"stage,omitempty"`
+	Service        string          `json:"service,omitempty"`
 }
 
 // ConfigureMonitoringEventData represents the data necessary to configure monitoring for a service
@@ -197,13 +203,13 @@ type InternalGetSLIDoneEventData struct {
 
 // EvaluationDoneEventData contains information about evaluation results
 type EvaluationDoneEventData struct {
-	EvaluationDetails *EvaluationDetails `json:"evaluationdetails"`
-	Result            string             `json:"result"` // pass | warning | fail
-	Project           string             `json:"project"`
-	Service           string             `json:"service"`
-	Stage             string             `json:"stage"`
-	TestStrategy      string             `json:"teststrategy"`
-	DeploymentStrategy string            `json:"deploymentstrategy"`
+	EvaluationDetails  *EvaluationDetails `json:"evaluationdetails"`
+	Result             string             `json:"result"` // pass | warning | fail
+	Project            string             `json:"project"`
+	Service            string             `json:"service"`
+	Stage              string             `json:"stage"`
+	TestStrategy       string             `json:"teststrategy"`
+	DeploymentStrategy string             `json:"deploymentstrategy"`
 }
 
 type EvaluationDetails struct {
