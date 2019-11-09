@@ -7,6 +7,7 @@ require (
 	github.com/Masterminds/goutils v1.1.0 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
+	//github.com/alecthomas/jsonschema v0.0.0-20191017121752-4bb6e3fae4f2
 	github.com/cloudevents/sdk-go v0.10.0
 	github.com/cyphar/filepath-securejoin v0.2.2 // indirect
 	github.com/go-openapi/errors v0.19.2

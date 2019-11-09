@@ -172,13 +172,18 @@ type StartEvaluationEventData struct {
 
 // EvaluationDoneEventData contains information about evaluation results
 type EvaluationDoneEventData struct {
-	EvaluationDetails  *EvaluationDetails `json:"evaluationdetails"`
-	Result             string             `json:"result"` // pass | warning | fail
-	Project            string             `json:"project"`
-	Service            string             `json:"service"`
-	Stage              string             `json:"stage"`
-	TestStrategy       string             `json:"teststrategy"`
-	DeploymentStrategy string             `json:"deploymentstrategy"`
+	EvaluationDetails *EvaluationDetails `json:"evaluationdetails"`
+	Result            string             `json:"result"` // pass | warning | fail
+	// Project is the name of the project
+	Project string `json:"project"`
+	// Stage is the name of the stage
+	Stage string `json:"stage"`
+	// Service is the name of the new service
+	Service string `json:"service"`
+	// TestStrategy is the testing strategy
+	TestStrategy string `json:"teststrategy"`
+	// DeploymentStrategy is the deployment strategy
+	DeploymentStrategy string `json:"deploymentstrategy"`
 }
 
 type EvaluationDetails struct {
@@ -222,15 +227,20 @@ type ProblemEventData struct {
 	PID            string          `json:"PID"`
 	ImpactedEntity string          `json:"ImpactedEntities,omitempty"`
 	Tags           string          `json:"Tags,omitempty"`
-	Project        string          `json:"project,omitempty"`
-	Stage          string          `json:"stage,omitempty"`
-	Service        string          `json:"service,omitempty"`
+	// Project is the name of the project
+	Project string `json:"project,omitempty"`
+	// Stage is the name of the stage
+	Stage string `json:"stage,omitempty"`
+	// Service is the name of the new service
+	Service string `json:"service,omitempty"`
 }
 
 // ConfigureMonitoringEventData represents the data necessary to configure monitoring for a service
 type ConfigureMonitoringEventData struct {
-	Type              string                    `json:"type"`
-	Project           string                    `json:"project"`
+	Type string `json:"type"`
+	// Project is the name of the project
+	Project string `json:"project"`
+	// Service is the name of the new service
 	Service           string                    `json:"service"`
 	ServiceIndicators *models.ServiceIndicators `json:"serviceIndicators"`
 	ServiceObjectives *models.ServiceObjectives `json:"serviceObjectives"`
@@ -239,12 +249,16 @@ type ConfigureMonitoringEventData struct {
 
 // InternalGetSLIEventData describes a set of SLIs to be retrieved by a data source
 type InternalGetSLIEventData struct {
-	SLIProvider   string       `json:"sliProvider"`
-	Project       string       `json:"project"`
-	Service       string       `json:"service"`
-	Stage         string       `json:"stage"`
-	Start         string       `json:"start"`
-	End           string       `json:"end"`
+	SLIProvider string `json:"sliProvider"`
+	// Project is the name of the project
+	Project string `json:"project"`
+	// Stage is the name of the stage
+	Stage string `json:"stage"`
+	// Service is the name of the new service
+	Service string `json:"service"`
+	Start   string `json:"start"`
+	End     string `json:"end"`
+	// TestStrategy is the testing strategy
 	TestStrategy  string       `json:"teststrategy"`
 	Indicators    []string     `json:"indicators"`
 	CustomFilters []*SLIFilter `json:"customFilters"`
@@ -252,20 +266,24 @@ type InternalGetSLIEventData struct {
 
 // InternalGetSLIDoneEventData contains a list of SLIs and their values
 type InternalGetSLIDoneEventData struct {
-	Project         string       `json:"project"`
-	Service         string       `json:"service"`
-	Stage           string       `json:"stage"`
-	Start           string       `json:"start"`
-	End             string       `json:"end"`
+	// Project is the name of the project
+	Project string `json:"project"`
+	// Stage is the name of the stage
+	Stage string `json:"stage"`
+	// Service is the name of the new service
+	Service string `json:"service"`
+	Start   string `json:"start"`
+	End     string `json:"end"`
+	// TestStrategy is the testing strategy
 	TestStrategy    string       `json:"teststrategy"`
 	IndicatorValues []*SLIResult `json:"indicatorValues"`
 }
 
 /*
+// jsonSchema prints the schema of a struct in JSON
 func jsonSchema() {
-	schema := jsonschema.Reflect(&ProblemEventData{})
+	schema := jsonschema.Reflect(&InternalGetSLIDoneEventData{})
 	schemaJSON, _ := json.MarshalIndent(schema, "", "  ")
-
 	fmt.Println(string(schemaJSON))
 }
 */
