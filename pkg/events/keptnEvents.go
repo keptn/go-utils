@@ -2,8 +2,6 @@ package events
 
 import (
 	"encoding/json"
-
-	"github.com/keptn/go-utils/pkg/models"
 )
 
 // InternalProjectCreateEventType is a CloudEvent type for creating a new project
@@ -241,10 +239,10 @@ type ConfigureMonitoringEventData struct {
 	// Project is the name of the project
 	Project string `json:"project"`
 	// Service is the name of the new service
-	Service           string                    `json:"service"`
-	ServiceIndicators *models.ServiceIndicators `json:"serviceIndicators"`
-	ServiceObjectives *models.ServiceObjectives `json:"serviceObjectives"`
-	Remediation       *models.Remediations      `json:"remediation"`
+	Service string `json:"service"`
+	//ServiceIndicators *models.ServiceIndicators `json:"serviceIndicators"`
+	//ServiceObjectives *models.ServiceObjectives `json:"serviceObjectives"`
+	//Remediation       *models.Remediations      `json:"remediation"`
 }
 
 // InternalGetSLIEventData describes a set of SLIs to be retrieved by a data source
