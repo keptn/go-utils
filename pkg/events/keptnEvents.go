@@ -279,12 +279,3 @@ type InternalGetSLIDoneEventData struct {
 	TestStrategy    string       `json:"teststrategy"`
 	IndicatorValues []*SLIResult `json:"indicatorValues"`
 }
-
-/*
-// jsonSchema prints the schema of a struct in JSON
-func jsonSchema() {
-	schema := jsonschema.Reflect(&InternalGetSLIDoneEventData{})
-	schemaJSON, _ := json.MarshalIndent(schema, "", "  ")
-	fmt.Println(string(schemaJSON))
-}
-*/
