@@ -21,15 +21,8 @@ const ConfigurationChangeEventType = "sh.keptn.event.configuration.change"
 // DeploymentFinishedEventType is a CloudEvent for indicating that the deployment has finished
 const DeploymentFinishedEventType = "sh.keptn.events.deployment-finished"
 
-////////////////////// TODO: remove TestFinishedEventType_0_5_0_Compatible
-
 // TestsFinishedEventType is a CloudEvent for indicating that tests have finished
-const TestsFinishedEventType = "sh.keptn.event.tests.finished"
-
-// TestFinishedEventType_0_5_0_Compatible is a CloudEvent for indicating that tests have finished
-const TestFinishedEventType_0_5_0_Compatible = "sh.keptn.events.tests-finished"
-
-//////////////////////
+const TestsFinishedEventType = "sh.keptn.events.tests-finished"
 
 // StartEvaluationEventType is a CloudEvent for retrieving SLI values
 const StartEvaluationEventType = "sh.keptn.event.start-evaluation"
@@ -40,12 +33,11 @@ const EvaluationDoneEventType = "sh.keptn.events.evaluation-done"
 // ProblemOpenEventType is a CloudEvent type to inform about an open problem
 const ProblemOpenEventType = "sh.keptn.event.problem.open"
 
-////////////////////// TODO: Is this event necessary
+// ProblemEventType is a CloudEvent type to inform about a problem
+const ProblemEventType = "sh.keptn.events.problem"
 
 // ConfigureMonitoringEventType is a CloudEvent for configuring monitoring
 const ConfigureMonitoringEventType = "sh.keptn.event.monitoring.configure"
-
-//////////////////////
 
 // InternalGetSLIEventType is a CloudEvent for retrieving SLI values
 const InternalGetSLIEventType = "sh.keptn.internal.event.get-sli"
