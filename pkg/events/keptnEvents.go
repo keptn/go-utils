@@ -165,7 +165,8 @@ type StartEvaluationEventData struct {
 // EvaluationDoneEventData contains information about evaluation results
 type EvaluationDoneEventData struct {
 	EvaluationDetails *EvaluationDetails `json:"evaluationdetails"`
-	Result            string             `json:"result"` // pass | warning | fail
+	// Result is the result of an evaluation; possible values are: pass, warning, fail
+	Result string `json:"result"`
 	// Project is the name of the project
 	Project string `json:"project"`
 	// Stage is the name of the stage
@@ -212,13 +213,20 @@ type SLIViolation struct {
 
 // ProblemEventData represents the data for describing a problem
 type ProblemEventData struct {
-	State          string          `json:"State,omitempty"`
-	ProblemID      string          `json:"ProblemID"`
-	ProblemTitle   string          `json:"ProblemTitle"`
+	// State is the state of the problem; possible values are: OPEN, RESOLVED
+	State string `json:"State,omitempty"`
+	// ProblemID is a unique system identifier of the reported problem
+	ProblemID string `json:"ProblemID"`
+	// ProblemTitle is the display number of the reported problem.
+	ProblemTitle string `json:"ProblemTitle"`
+	// ProblemDetails are all problem event details including root cause
 	ProblemDetails json.RawMessage `json:"ProblemDetails"`
-	PID            string          `json:"PID"`
-	ImpactedEntity string          `json:"ImpactedEntities,omitempty"`
-	Tags           string          `json:"Tags,omitempty"`
+	// PID is a unique system identifier of the reported problem.
+	PID string `json:"PID"`
+	// ImpcatedEntity is an identifier of the impacted entity
+	ImpactedEntity string `json:"ImpactedEntities,omitempty"`
+	// Tags is a comma separated list of tags that are defined for all impacted entities.
+	Tags string `json:"Tags,omitempty"`
 	// Project is the name of the project
 	Project string `json:"project,omitempty"`
 	// Stage is the name of the stage
@@ -241,6 +249,7 @@ type ConfigureMonitoringEventData struct {
 
 // InternalGetSLIEventData describes a set of SLIs to be retrieved by a data source
 type InternalGetSLIEventData struct {
+	// SLIProvider is the name of the SLI provider which is queried
 	SLIProvider string `json:"sliProvider"`
 	// Project is the name of the project
 	Project string `json:"project"`
