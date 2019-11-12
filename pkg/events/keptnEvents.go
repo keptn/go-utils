@@ -258,9 +258,11 @@ type InternalGetSLIEventData struct {
 	Start   string `json:"start"`
 	End     string `json:"end"`
 	// TestStrategy is the testing strategy
-	TestStrategy  string       `json:"teststrategy"`
-	Indicators    []string     `json:"indicators"`
-	CustomFilters []*SLIFilter `json:"customFilters"`
+	TestStrategy string `json:"teststrategy"`
+	// DeploymentStrategy is the deployment strategy
+	DeploymentStrategy string       `json:"deploymentstrategy"`
+	Indicators         []string     `json:"indicators"`
+	CustomFilters      []*SLIFilter `json:"customFilters"`
 }
 
 // InternalGetSLIDoneEventData contains a list of SLIs and their values
@@ -276,4 +278,6 @@ type InternalGetSLIDoneEventData struct {
 	// TestStrategy is the testing strategy
 	TestStrategy    string       `json:"teststrategy"`
 	IndicatorValues []*SLIResult `json:"indicatorValues"`
+	// DeploymentStrategy is the deployment strategy
+	DeploymentStrategy string `json:"deploymentstrategy"`
 }
