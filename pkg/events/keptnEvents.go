@@ -222,7 +222,7 @@ type ProblemEventData struct {
 	// PID is a unique system identifier of the reported problem.
 	PID string `json:"PID"`
 	// ImpcatedEntity is an identifier of the impacted entity
-	ImpactedEntity string `json:"ImpactedEntities,omitempty"`
+	ImpactedEntity string `json:"ImpactedEntity,omitempty"`
 	// Tags is a comma separated list of tags that are defined for all impacted entities.
 	Tags string `json:"Tags,omitempty"`
 	// Project is the name of the project
