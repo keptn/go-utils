@@ -93,9 +93,9 @@ type ConfigurationChangeEventData struct {
 	// FileChangesGeneratedChart provides new content for the generated chart.
 	// The key value pairs represent the URI within the chart (i.e. the key) and the new content (i.e. the value).
 	FileChangesGeneratedChart map[string]string `json:"fileChangesGeneratedChart,omitempty"`
-	// FileChangesUmbrellaChart provides new content for the umbrealla chart.
+	// FileChangesUmbrellaChart provides new content for the umbrella chart.
 	// The key value pairs represent the URI within the chart (i.e. the key) and the new content (i.e. the value).
-	FileChangesUmbrellaChart map[string]string `json:"fileChangesUmbreallaChart,omitempty"`
+	FileChangesUmbrellaChart map[string]string `json:"fileChangesUmbrellaChart,omitempty"`
 }
 
 // Canary describes the new configuration in a canary release
