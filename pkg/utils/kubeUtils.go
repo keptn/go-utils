@@ -149,7 +149,9 @@ func WaitForDeploymentsInNamespace(useInClusterConfig bool, namespace string) er
 	}
 	deps, err := clientset.AppsV1().Deployments(namespace).List(metav1.ListOptions{})
 	for _, dep := range deps.Items {
-		WaitForDeploymentToBeRolledOut(useInClusterConfig, dep.Name, namespace)
+		if err := WaitForDeploymentToBeRolledOut(useInClusterConfig, dep.Name, namespace); err != nil {
+			return err
+		}
 	}
 	return nil
 }
