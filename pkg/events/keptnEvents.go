@@ -2,7 +2,6 @@ package events
 
 import (
 	"encoding/json"
-	v2 "github.com/keptn/go-utils/pkg/models/v2"
 )
 
 // InternalProjectCreateEventType is a CloudEvent type for creating a new project
@@ -179,12 +178,12 @@ type EvaluationDoneEventData struct {
 }
 
 type EvaluationDetails struct {
-	TimeStart              string                    `json:"timeStart"`
-	TimeEnd                string                    `json:"timeEnd"`
-	Result                 string                    `json:"result"`
-	Score                  float64                   `json:"score"`
-	ServiceLevelObjectives v2.ServiceLevelObjectives `json:"serviceLevelObjectives"`
-	IndicatorResults       []*SLIEvaluationResult    `json:"indicatorResults"`
+	TimeStart        string                 `json:"timeStart"`
+	TimeEnd          string                 `json:"timeEnd"`
+	Result           string                 `json:"result"`
+	Score            float64                `json:"score"`
+	SLOFileContent   string                 `json:"sloFileContent"`
+	IndicatorResults []*SLIEvaluationResult `json:"indicatorResults"`
 }
 
 type SLIFilter struct {
