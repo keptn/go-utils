@@ -290,20 +290,15 @@ func (r *ResourceHandler) deleteResource(uri string) error {
 
 // GetAllStageResources returns a list of all resources.
 func (r *ResourceHandler) GetAllStageResources(project string, stage string) ([]*models.Resource, error) {
-
 	url, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + "/v1/project/" + project + "/stage/" + stage + "/resource")
-	if err != nil {
-		return nil, err
-	}
 	if err != nil {
 		return nil, err
 	}
 	return r.getAllResources(url)
 }
 
-// GetAllStageResources returns a list of all resources.
+// GetAllServiceResources returns a list of all resources.
 func (r *ResourceHandler) GetAllServiceResources(project string, stage string, service string) ([]*models.Resource, error) {
-
 	url, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + "/v1/project/" + project + "/stage/" + stage +
 		"/service/" + service + "/resource/")
 	if err != nil {
@@ -312,7 +307,7 @@ func (r *ResourceHandler) GetAllServiceResources(project string, stage string, s
 	return r.getAllResources(url)
 }
 
-func (r *ResourceHandler) getAllResources(url *url.URL) ([]*models.Resource, error) {
+func (r *ResourceHandler) getAllResources(u *url.URL) ([]*models.Resource, error) {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	resources := []*models.Resource{}
@@ -320,11 +315,12 @@ func (r *ResourceHandler) getAllResources(url *url.URL) ([]*models.Resource, err
 	nextPageKey := ""
 
 	for {
-		q := url.Query()
 		if nextPageKey != "" {
+			q := u.Query()
 			q.Set("nextPageKey", nextPageKey)
+			u.RawQuery = q.Encode()
 		}
-		req, err := http.NewRequest("GET", url.String(), nil)
+		req, err := http.NewRequest("GET", u.String(), nil)
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, r)
 
@@ -351,6 +347,7 @@ func (r *ResourceHandler) getAllResources(url *url.URL) ([]*models.Resource, err
 				break
 			}
 			nextPageKey = received.NextPageKey
+
 		} else {
 			var respErr models.Error
 			err = json.Unmarshal(body, &respErr)
