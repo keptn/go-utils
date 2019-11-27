@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 )
@@ -31,7 +32,9 @@ func post(uri string, data []byte, api APIService) (*models.EventContext, *model
 
 	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/json")
-	req.Host = "api.keptn"
+	if !strings.Contains(uri, "api.keptn") {
+		req.Host = "api.keptn"
+	}
 	addAuthHeader(req, api)
 
 	resp, err := api.getHTTPClient().Do(req)
