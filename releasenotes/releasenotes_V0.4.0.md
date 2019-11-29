@@ -1,4 +1,4 @@
-# Release Notes 0.3.0
+# Release Notes 0.4.0
 
 ## New Features
 - Evaluation Done events contain more info about SLIs and SLOs [#1058](https://github.com/keptn/keptn/issues/1058)
