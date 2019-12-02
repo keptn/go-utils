@@ -275,6 +275,7 @@ type InternalGetSLIEventData struct {
 	TestStrategy string `json:"teststrategy"`
 	// DeploymentStrategy is the deployment strategy
 	DeploymentStrategy string       `json:"deploymentstrategy"`
+	Deployment string				`json:"deployment"`
 	Indicators         []string     `json:"indicators"`
 	CustomFilters      []*SLIFilter `json:"customFilters"`
 	// Labels contains labels
@@ -296,6 +297,7 @@ type InternalGetSLIDoneEventData struct {
 	IndicatorValues []*SLIResult `json:"indicatorValues"`
 	// DeploymentStrategy is the deployment strategy
 	DeploymentStrategy string `json:"deploymentstrategy"`
+	Deployment string		  `json:"deployment"`
 	// Labels contains labels
 	Labels map[string]string `json:"labels"`
 }
