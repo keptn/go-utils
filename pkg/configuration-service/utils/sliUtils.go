@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"strings"
+
 	"github.com/keptn/go-utils/pkg/configuration-service/models"
 	"gopkg.in/yaml.v2"
 )
@@ -19,7 +21,7 @@ func (r *ResourceHandler) GetSLIConfiguration(project string, stage string, serv
 	if project != "" {
 		res, err = r.GetProjectResource(project, resourceURI)
 		if err != nil {
-			if err.Error() != "resource not found" {
+			if !strings.Contains(err.Error(), "resource not found") {
 				return nil, err
 			}
 		}
@@ -29,7 +31,7 @@ func (r *ResourceHandler) GetSLIConfiguration(project string, stage string, serv
 	if project != "" && stage != "" {
 		res, err = r.GetStageResource(project, stage, resourceURI)
 		if err != nil {
-			if err.Error() != "resource not found" {
+			if !strings.Contains(err.Error(), "resource not found") {
 				return nil, err
 			}
 		}
@@ -39,7 +41,7 @@ func (r *ResourceHandler) GetSLIConfiguration(project string, stage string, serv
 	if project != "" && stage != "" && service != "" {
 		res, err = r.GetServiceResource(project, stage, service, resourceURI)
 		if err != nil {
-			if err.Error() != "resource not found" {
+			if !strings.Contains(err.Error(), "resource not found") {
 				return nil, err
 			}
 		}
