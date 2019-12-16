@@ -19,7 +19,9 @@ func (r *ResourceHandler) GetSLIConfiguration(project string, stage string, serv
 	if project != "" {
 		res, err = r.GetProjectResource(project, resourceURI)
 		if err != nil {
-			return nil, err
+			if err.Error() != "resource not found" {
+				return nil, err
+			}
 		}
 		SLIs, _ = addResourceContentToSLIMap(SLIs, res)
 	}
@@ -27,7 +29,9 @@ func (r *ResourceHandler) GetSLIConfiguration(project string, stage string, serv
 	if project != "" && stage != "" {
 		res, err = r.GetStageResource(project, stage, resourceURI)
 		if err != nil {
-			return nil, err
+			if err.Error() != "resource not found" {
+				return nil, err
+			}
 		}
 		SLIs, _ = addResourceContentToSLIMap(SLIs, res)
 	}
@@ -35,7 +39,9 @@ func (r *ResourceHandler) GetSLIConfiguration(project string, stage string, serv
 	if project != "" && stage != "" && service != "" {
 		res, err = r.GetServiceResource(project, stage, service, resourceURI)
 		if err != nil {
-			return nil, err
+			if err.Error() != "resource not found" {
+				return nil, err
+			}
 		}
 		SLIs, _ = addResourceContentToSLIMap(SLIs, res)
 	}
