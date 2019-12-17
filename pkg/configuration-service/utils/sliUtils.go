@@ -39,7 +39,10 @@ func (r *ResourceHandler) GetSLIConfiguration(project string, stage string, serv
 				return nil, err
 			}
 		}
-		SLIs, _ = addResourceContentToSLIMap(SLIs, res)
+		SLIs, err = addResourceContentToSLIMap(SLIs, res)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if project != "" && stage != "" && service != "" {
@@ -49,10 +52,13 @@ func (r *ResourceHandler) GetSLIConfiguration(project string, stage string, serv
 				return nil, err
 			}
 		}
-		SLIs, _ = addResourceContentToSLIMap(SLIs, res)
+		SLIs, err = addResourceContentToSLIMap(SLIs, res)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return SLIs, err
+	return SLIs, nil
 }
 
 func addResourceContentToSLIMap(SLIs map[string]string, resource *models.Resource) (map[string]string, error) {
