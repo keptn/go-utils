@@ -13,7 +13,7 @@ func TestAddResourceContentToSLIMap(t *testing.T) {
 	resourceURI := "dynatrace/sli.yaml"
 	resource.ResourceURI = &resourceURI
 	resource.ResourceContent = `--- 
-serviceLevelObjectives: 
+indicators: 
   error_rate: "builtin:service.errors.total.count:merge(0):avg?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"
   response_time_p50: "builtin:service.response.time:merge(0):percentile(50)?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"
   response_time_p90: "builtin:service.response.time:merge(0):percentile(90)?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"
@@ -34,7 +34,7 @@ func TestAddMultipleResourceContentToSLIMap(t *testing.T) {
 	resourceURI := "dynatrace/sli.yaml"
 	resource.ResourceURI = &resourceURI
 	resource.ResourceContent = `--- 
-serviceLevelObjectives: 
+indicators: 
   error_rate: "not defined"
   response_time_p50: "builtin:service.response.time:merge(0):percentile(50)?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"
   response_time_p90: "builtin:service.response.time:merge(0):percentile(90)?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"
@@ -44,7 +44,7 @@ serviceLevelObjectives:
 	SLIs, _ = addResourceContentToSLIMap(SLIs, resource)
 
 	resource.ResourceContent = `--- 
-serviceLevelObjectives: 
+indicators: 
   error_rate: "builtin:service.errors.total.count:merge(0):avg?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"
   failure_rate: "builtin:service.requestCount.total:merge(0):count?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"	
 `
