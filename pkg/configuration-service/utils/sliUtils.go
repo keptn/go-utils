@@ -7,8 +7,9 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// SLIConfig represents the struct of a SLI file
 type SLIConfig struct {
-	ServiceLevelObjectives map[string]string `json:"serviceLevelObjectives" yaml:"serviceLevelObjectives"`
+	Indicators map[string]string `json:"indicators" yaml:"indicators"`
 }
 
 // GetSLIConfiguration retrieves the SLI configuration for a service, considering SLI configs on stage and project level
@@ -25,7 +26,10 @@ func (r *ResourceHandler) GetSLIConfiguration(project string, stage string, serv
 				return nil, err
 			}
 		}
-		SLIs, _ = addResourceContentToSLIMap(SLIs, res)
+		SLIs, err = addResourceContentToSLIMap(SLIs, res)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if project != "" && stage != "" {
@@ -59,7 +63,7 @@ func addResourceContentToSLIMap(SLIs map[string]string, resource *models.Resourc
 			return nil, err
 		}
 
-		for key, value := range sliConfig.ServiceLevelObjectives {
+		for key, value := range sliConfig.Indicators {
 			SLIs[key] = value
 		}
 
