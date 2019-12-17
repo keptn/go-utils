@@ -12,13 +12,13 @@ type SLIConfig struct {
 	Indicators map[string]string `json:"indicators" yaml:"indicators"`
 }
 
-// GetSLIConfiguration retrieves the SLI configuration for a service, considering SLI configs on stage and project level
+// GetSLIConfiguration retrieves the SLI configuration for a service, considering SLI configuration on stage and project level
 func (r *ResourceHandler) GetSLIConfiguration(project string, stage string, service string, resourceURI string) (map[string]string, error) {
-
 	var res *models.Resource
 	var err error
 	SLIs := make(map[string]string)
 
+	// get sli config from project
 	if project != "" {
 		res, err = r.GetProjectResource(project, resourceURI)
 		if err != nil {
@@ -32,6 +32,7 @@ func (r *ResourceHandler) GetSLIConfiguration(project string, stage string, serv
 		}
 	}
 
+	// get sli config from stage
 	if project != "" && stage != "" {
 		res, err = r.GetStageResource(project, stage, resourceURI)
 		if err != nil {
@@ -45,6 +46,7 @@ func (r *ResourceHandler) GetSLIConfiguration(project string, stage string, serv
 		}
 	}
 
+	// get sli config from service
 	if project != "" && stage != "" && service != "" {
 		res, err = r.GetServiceResource(project, stage, service, resourceURI)
 		if err != nil {
@@ -72,7 +74,6 @@ func addResourceContentToSLIMap(SLIs map[string]string, resource *models.Resourc
 		for key, value := range sliConfig.Indicators {
 			SLIs[key] = value
 		}
-
 	}
 	return SLIs, nil
 }

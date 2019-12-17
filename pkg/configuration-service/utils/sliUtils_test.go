@@ -10,7 +10,7 @@ import (
 func TestAddResourceContentToSLIMap(t *testing.T) {
 	SLIs := make(map[string]string)
 	resource := &models.Resource{}
-	resourceURI := "dynatrace/sli.yaml"
+	resourceURI := "provider/sli.yaml"
 	resource.ResourceURI = &resourceURI
 	resource.ResourceContent = `--- 
 indicators: 
@@ -31,7 +31,7 @@ indicators:
 func TestAddMultipleResourceContentToSLIMap(t *testing.T) {
 	SLIs := make(map[string]string)
 	resource := &models.Resource{}
-	resourceURI := "dynatrace/sli.yaml"
+	resourceURI := "provider/sli.yaml"
 	resource.ResourceURI = &resourceURI
 	resource.ResourceContent = `--- 
 indicators: 
