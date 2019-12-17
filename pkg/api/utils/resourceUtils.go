@@ -69,8 +69,8 @@ func (r *ResourceHandler) getHTTPClient() *http.Client {
 	return r.HTTPClient
 }
 
-// CreateServiceResources creates a service resource
-func (r *ResourceHandler) CreateServiceResources(project string, stage string, service string, resources []*models.Resource) (*models.EventContext, *models.Error) {
+// CreateResources creates a resource for the specified entity
+func (r *ResourceHandler) CreateResources(project string, stage string, service string, resources []*models.Resource) (*models.EventContext, *models.Error) {
 
 	copiedResources := make([]*models.Resource, len(resources), len(resources))
 	for i, val := range resources {
@@ -86,5 +86,11 @@ func (r *ResourceHandler) CreateServiceResources(project string, stage string, s
 		return nil, buildErrorResponse(err.Error())
 	}
 
-	return post(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+service+"/resource", requestStr, r)
+	if project != "" && stage != "" && service != "" {
+		return post(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+service+"/resource", requestStr, r)
+	} else if project != "" && stage != "" && service == "" {
+		return post(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/resource", requestStr, r)
+	} else {
+		return post(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/resource", requestStr, r)
+	}
 }
