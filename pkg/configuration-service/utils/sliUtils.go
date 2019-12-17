@@ -12,7 +12,9 @@ type SLIConfig struct {
 	Indicators map[string]string `json:"indicators" yaml:"indicators"`
 }
 
-// GetSLIConfiguration retrieves the SLI configuration for a service, considering SLI configuration on stage and project level
+// GetSLIConfiguration retrieves the SLI configuration for a service considering SLI configuration on stage and project level.
+// First, the configuration of project-level is retrieved, which is then overridden by configuration on stage level,
+// overridden by configuration on service level.
 func (r *ResourceHandler) GetSLIConfiguration(project string, stage string, service string, resourceURI string) (map[string]string, error) {
 	var res *models.Resource
 	var err error
@@ -22,6 +24,7 @@ func (r *ResourceHandler) GetSLIConfiguration(project string, stage string, serv
 	if project != "" {
 		res, err = r.GetProjectResource(project, resourceURI)
 		if err != nil {
+			// return error except "resource not found"
 			if !strings.Contains(err.Error(), "resource not found") {
 				return nil, err
 			}
@@ -36,6 +39,7 @@ func (r *ResourceHandler) GetSLIConfiguration(project string, stage string, serv
 	if project != "" && stage != "" {
 		res, err = r.GetStageResource(project, stage, resourceURI)
 		if err != nil {
+			// return error except "resource not found"
 			if !strings.Contains(err.Error(), "resource not found") {
 				return nil, err
 			}
@@ -50,6 +54,7 @@ func (r *ResourceHandler) GetSLIConfiguration(project string, stage string, serv
 	if project != "" && stage != "" && service != "" {
 		res, err = r.GetServiceResource(project, stage, service, resourceURI)
 		if err != nil {
+			// return error except "resource not found"
 			if !strings.Contains(err.Error(), "resource not found") {
 				return nil, err
 			}
