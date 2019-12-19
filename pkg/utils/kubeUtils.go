@@ -211,3 +211,15 @@ func GetKeptnDomain(useInClusterConfig bool) (string, error) {
 	}
 	return cm.Data["app_domain"], nil
 }
+
+// CreateNamespace creates a new Kubernetes namespace with the provided name
+func CreateNamespace(useInClusterConfig bool, namespace string) error {
+
+	ns := &typesv1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespace}}
+	clientset, err := GetClientset(useInClusterConfig)
+	if err != nil {
+		return err
+	}
+	_, err = clientset.CoreV1().Namespaces().Create(ns)
+	return err
+}
