@@ -42,7 +42,7 @@ func ValidateKeptnEntityName(name string) bool {
 	if len(name) == 0 {
 		return false
 	}
-	reg, err := regexp.Compile(`(^[a-z][a-z0-9]*)|(^[a-z][a-z0-9-]*[a-z0-9]$)`)
+	reg, err := regexp.Compile(`(^[a-z][a-z0-9-]*[a-z0-9]$)|(^[a-z][a-z0-9]*)`)
 	if err != nil {
 		log.Fatal(err)
 	}
