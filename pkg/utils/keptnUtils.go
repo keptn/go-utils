@@ -1,9 +1,12 @@
 package utils
 
 import (
+	"log"
+	"regexp"
+
+	"github.com/keptn/go-utils/pkg/configuration-service/utils"
 	"github.com/keptn/go-utils/pkg/models"
 	"gopkg.in/yaml.v2"
-	"github.com/keptn/go-utils/pkg/configuration-service/utils"
 )
 
 // KeptnHandler provides an interface to keptn resources
@@ -31,4 +34,18 @@ func (k *KeptnHandler) GetShipyard(project string) (*models.Shipyard, error) {
 		return nil, err
 	}
 	return &shipyard, nil
+}
+
+// ValidateKeptnEntityName checks whether the provided name represents a valid
+// project, service, or stage name
+func ValidateKeptnEntityName(name string) bool {
+	if len(name) == 0 {
+		return false
+	}
+	reg, err := regexp.Compile(`(^[a-z][a-z0-9]*)|(^[a-z][a-z0-9-]*[a-z0-9]$)`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	processedString := reg.FindString(name)
+	return len(processedString) == len(name)
 }
