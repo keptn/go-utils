@@ -38,7 +38,7 @@ func (k *KeptnHandler) GetShipyard(project string) (*models.Shipyard, error) {
 
 // ValidateKeptnEntityName checks whether the provided name represents a valid
 // project, service, or stage name
-func (k *KeptnHandler) ValidateKeptnEntityName(name string) bool {
+func ValidateKeptnEntityName(name string) bool {
 	reg, err := regexp.Compile(`[a-z][a-z0-9-]+[a-z0-9]`)
 	if err != nil {
 		log.Fatal(err)
