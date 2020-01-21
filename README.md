@@ -15,6 +15,13 @@ go get github.com/keptn/go-utils
 ```
 Also consider browsing our [Releases Page](https://github.com/keptn/go-utils/releases) to find out about all releases.
 
+
+## Contributing
+
+If you want to contribute, just create a PR on the **master** branch.
+
+Please also see [CONTRIBUTING.md](CONTRIBUTING.md) instructions on how to contribute.
+
 ## Usage
 
 Below we have listed some basic examples. You can find more information about the usage within the [docs/](docs/) folder.
