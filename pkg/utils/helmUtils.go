@@ -98,7 +98,11 @@ func GetRenderedDeployments(ch *chart.Chart) ([]*appsv1.Deployment, error) {
 			Time:      timeconv.Now(),
 		},
 	}
-
+	ch.Values.Raw += `
+keptn:
+  project: prj,
+  service: svc,
+  deployment: dpl`
 	renderedTemplates, err := renderutil.Render(ch, ch.Values, renderOpts)
 	if err != nil {
 		return nil, err
@@ -139,7 +143,11 @@ func GetRenderedServices(ch *chart.Chart) ([]*corev1.Service, error) {
 			Time:      timeconv.Now(),
 		},
 	}
-
+	ch.Values.Raw += `
+keptn:
+  project: prj,
+  service: svc,
+  deployment: dpl`
 	renderedTemplates, err := renderutil.Render(ch, ch.Values, renderOpts)
 	if err != nil {
 		return nil, err

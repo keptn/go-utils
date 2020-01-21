@@ -14,6 +14,8 @@ import (
 	typesv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	apierr "k8s.io/apimachinery/pkg/api/errors"
+
 	// Initialize all known client auth plugins.
 	_ "github.com/Azure/go-autorest/autorest"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -210,4 +212,32 @@ func GetKeptnDomain(useInClusterConfig bool) (string, error) {
 		return "", err
 	}
 	return cm.Data["app_domain"], nil
+}
+
+// CreateNamespace creates a new Kubernetes namespace with the provided name
+func CreateNamespace(useInClusterConfig bool, namespace string) error {
+
+	ns := &typesv1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespace}}
+	clientset, err := GetClientset(useInClusterConfig)
+	if err != nil {
+		return err
+	}
+	_, err = clientset.CoreV1().Namespaces().Create(ns)
+	return err
+}
+
+// ExistsNamespace checks whether a namespace with the provided name exists
+func ExistsNamespace(useInClusterConfig bool, namespace string) (bool, error) {
+	clientset, err := GetClientset(useInClusterConfig)
+	if err != nil {
+		return false, err
+	}
+	_, err = clientset.CoreV1().Namespaces().Get(namespace, metav1.GetOptions{})
+	if err != nil {
+		if statusErr, ok := err.(*apierr.StatusError); ok && statusErr.ErrStatus.Reason == metav1.StatusReasonNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
 }
