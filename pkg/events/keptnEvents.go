@@ -96,6 +96,8 @@ type ConfigurationChangeEventData struct {
 	// FileChangesUmbrellaChart provides new content for the umbrella chart.
 	// The key value pairs represent the URI within the chart (i.e. the key) and the new content (i.e. the value).
 	FileChangesUmbrellaChart map[string]string `json:"fileChangesUmbrellaChart,omitempty"`
+	// Labels contains labels
+	Labels map[string]string `json:"labels"`
 }
 
 // Canary describes the new configuration in a canary release
@@ -122,6 +124,8 @@ type DeploymentFinishedEventData struct {
 	Tag string `json:"tag"`
 	// Image of the new deployed artifact
 	Image string `json:"image"`
+	// Labels contains labels
+	Labels map[string]string `json:"labels"`
 }
 
 // TestsFinishedEventData represents the data for a test finished event
@@ -140,6 +144,10 @@ type TestsFinishedEventData struct {
 	Start string `json:"start"`
 	// End indicates the end timestamp of the tests
 	End string `json:"end"`
+	// Labels contains labels
+	Labels map[string]string `json:"labels"`
+	// Result shows the status of the test
+	Result string `json:"result"`
 }
 
 // StartEvaluationEventData represents the data for a test finished event
@@ -158,6 +166,8 @@ type StartEvaluationEventData struct {
 	Start string `json:"start"`
 	// End indicates the end timestamp of the tests
 	End string `json:"end"`
+	// Labels contains labels
+	Labels map[string]string `json:"labels"`
 }
 
 // EvaluationDoneEventData contains information about evaluation results
@@ -175,6 +185,8 @@ type EvaluationDoneEventData struct {
 	TestStrategy string `json:"teststrategy"`
 	// DeploymentStrategy is the deployment strategy
 	DeploymentStrategy string `json:"deploymentstrategy"`
+	// Labels contains labels
+	Labels map[string]string `json:"labels"`
 }
 
 type EvaluationDetails struct {
@@ -182,6 +194,7 @@ type EvaluationDetails struct {
 	TimeEnd          string                 `json:"timeEnd"`
 	Result           string                 `json:"result"`
 	Score            float64                `json:"score"`
+	SLOFileContent   string                 `json:"sloFileContent"`
 	IndicatorResults []*SLIEvaluationResult `json:"indicatorResults"`
 }
 
@@ -198,15 +211,16 @@ type SLIResult struct {
 }
 
 type SLIEvaluationResult struct {
-	Score      float64         `json:"score"`
-	Value      *SLIResult      `json:"value"`
-	Violations []*SLIViolation `json:"violations"`
-	Status     string          `json:"status"` // pass | warning | fail
+	Score   float64      `json:"score"`
+	Value   *SLIResult   `json:"value"`
+	Targets []*SLITarget `json:"targets"`
+	Status  string       `json:"status"` // pass | warning | fail
 }
 
-type SLIViolation struct {
+type SLITarget struct {
 	Criteria    string  `json:"criteria"`
 	TargetValue float64 `json:"targetValue"`
+	Violated    bool    `json:"violated"`
 }
 
 // ProblemEventData represents the data for describing a problem
@@ -231,6 +245,8 @@ type ProblemEventData struct {
 	Stage string `json:"stage,omitempty"`
 	// Service is the name of the new service
 	Service string `json:"service,omitempty"`
+	// Labels contains labels
+	Labels map[string]string `json:"labels"`
 }
 
 // ConfigureMonitoringEventData represents the data necessary to configure monitoring for a service
@@ -261,8 +277,11 @@ type InternalGetSLIEventData struct {
 	TestStrategy string `json:"teststrategy"`
 	// DeploymentStrategy is the deployment strategy
 	DeploymentStrategy string       `json:"deploymentstrategy"`
+	Deployment         string       `json:"deployment"`
 	Indicators         []string     `json:"indicators"`
 	CustomFilters      []*SLIFilter `json:"customFilters"`
+	// Labels contains labels
+	Labels map[string]string `json:"labels"`
 }
 
 // InternalGetSLIDoneEventData contains a list of SLIs and their values
@@ -280,4 +299,7 @@ type InternalGetSLIDoneEventData struct {
 	IndicatorValues []*SLIResult `json:"indicatorValues"`
 	// DeploymentStrategy is the deployment strategy
 	DeploymentStrategy string `json:"deploymentstrategy"`
+	Deployment         string `json:"deployment"`
+	// Labels contains labels
+	Labels map[string]string `json:"labels"`
 }

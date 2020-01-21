@@ -7,6 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	strfmt "github.com/go-openapi/strfmt"
+
 	keptnevents "github.com/keptn/go-utils/pkg/events"
 	"github.com/magiconair/properties/assert"
 )
@@ -37,7 +39,7 @@ func TestGetEventStatusOK(t *testing.T) {
 			"events":[
 				{"contenttype":"application/json",
 					"data":{"deploymentstrategy":"blue_green_service",
-					"evaluationdetails":[{"Key":"result","Value":"pass"}],
+					"evaluationdetails":{"result": "pass"},
 					"evaluationpassed":true,
 					"project":"sockshop",
 					"service":"carts",
@@ -52,7 +54,7 @@ func TestGetEventStatusOK(t *testing.T) {
 				
 				{"contenttype":"application/json",
 					"data":{"deploymentstrategy":"blue_green_service",
-					"evaluationdetails":[{"Key":"result","Value":"pass"}],
+					"evaluationdetails":{"result": "pass"},
 					"evaluationpassed":true,
 					"project":"sockshop",
 					"service":"carts",
@@ -67,7 +69,7 @@ func TestGetEventStatusOK(t *testing.T) {
 				
 				{"contenttype":"application/json",
 					"data":{"deploymentstrategy":"direct",
-					"evaluationdetails":[{"Key":"result","Value":"pass"}],
+					"evaluationdetails":{"result": "pass"},
 					"evaluationpassed":true,
 					"project":"sockshop",
 					"service":"carts",
@@ -99,7 +101,7 @@ func TestGetEventStatusOK(t *testing.T) {
 	}
 
 	// check whether the last event is returned
-	if cloudEvent.Time.String() != "2019-10-21T14:12:48.000Z" {
+	if strfmt.DateTime(cloudEvent.Time).String() != "2019-10-21T14:12:48.000Z" {
 		t.Error("did not receive the latest event")
 	}
 
