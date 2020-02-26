@@ -126,6 +126,10 @@ type DeploymentFinishedEventData struct {
 	Image string `json:"image"`
 	// Labels contains labels
 	Labels map[string]string `json:"labels"`
+	// DeploymentURILocal contains the local URL
+	DeploymentURILocal string `json:"deploymentURILocal,omitempty"`
+	// DeploymentURIPublic contains the public URL
+	DeploymentURIPublic string `json:"deploymentURIPublic,omitempty"`
 }
 
 // TestsFinishedEventData represents the data for a test finished event
