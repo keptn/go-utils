@@ -30,7 +30,7 @@ jobs:
 
     - stage: Auto PR To Keptn
       os: linux
-      if: branch = master or tag IS present
+      if: not type = pull_request and (branch = master or tag IS present)
       before_script:
         - git config --global user.email "go-utils@keptn.sh"
         - git config --global user.name "go-utils"
