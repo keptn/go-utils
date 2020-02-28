@@ -4,22 +4,73 @@ dist: xenial
 language: go
 
 go:
-- 1.12.x
+  - 1.12.x
 
 # Don't email me the results of the test runs.
 notifications:
   email: false
 
 env:
-- GO111MODULE=on
+  global:
+    - GO111MODULE=on
+    - GOPROXY=https://proxy.golang.org
 
 # enable module cache
 cache:
   directories:
-    - $GOPATH/pkg/mod  
+    - $GOPATH/pkg/mod
+    - ../keptn
 
-# script always runs to completion (set +e). If we have linter issues AND a
-# failing test, we want to see both. Configure golangci-lint with a
-# .golangci.yml file at the top level of your repo.
-script:
-  - go test -v -race ./...  # Run all the tests with the race detector enabled
+jobs:
+  include:
+    - stage: tests
+      os: linux
+      script:
+        - go test -v -race ./...  # Run all the tests with the race detector enabled
+
+    - stage: Auto PR To Keptn
+      os: linux
+      if: not type = pull_request and (branch = master or tag IS present)
+      before_script:
+        - git config --global user.email "go-utils@keptn.sh"
+        - git config --global user.name "go-utils"
+        # figure out if this is a tag
+        - |
+          GO_UTILS_TARGET=$TRAVIS_COMMIT
+          if [[ $TRAVIS_TAG -ne "" ]]; then
+            GO_UTILS_TARGET=$TRAVIS_TAG
+          fi
+      script:
+        - cd ..
+        # clone Keptn repo
+        - git clone https://${GITHUB_TOKEN}@github.com/keptn/keptn.git
+        - cd keptn
+        # checkout master and ensure we are up2date
+        - git checkout master
+        - git pull
+        - export TARGET_BRANCH=patch/1/update_go_utils
+        # delete existing branch just in case
+        - git branch -D $TARGET_BRANCH &>/dev/null
+        # create a new branch
+        - git checkout -b $TARGET_BRANCH
+        # update go modules in all directories that contain go.mod
+        - |
+          for file in *; do
+             if [[ -f "$file/go.mod" ]]; then
+                 echo "Checking if $file/go.mod contains go-utils"
+                 grep go-utils $file/go.mod
+                 if [[ $? -eq 0 ]]; then
+                      echo "Yes, updating go-utils now..."
+                      cd $file
+                      go get "github.com/keptn/go-utils@$GO_UTILS_TARGET"
+                      cd ..
+                 fi
+             fi
+          done
+        - git status
+        # add changes to a new commit
+        - git add .
+        - git commit -m "Update keptn/go-utils to $GO_UTILS_TARGET"
+        - git push -f origin $TARGET_BRANCH
+        - |
+          curl -XPOST -H "Authorization: token $GITHUB_TOKEN" -d "{\"title\":\"Auto-update go-utils to latest version\", \"base\":\"master\", \"head\":\"$TARGET_BRANCH\", \"body\":\"This is an automatically created PR to change keptn/go-utils to version $GO_UTILS_TARGET.\"}" https://api.github.com/repos/keptn/keptn/pulls

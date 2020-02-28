@@ -70,3 +70,10 @@ import {
 	keptnmodels "github.com/keptn/go-utils/pkg/models"
 )
 ```
+
+## Automation
+
+Within [.travis.yml](.travis.yml) we have included an automation that creates a Pull Request to 
+ [github.com/keptn/keptn](https://github.com/keptn/keptn) to update `go.mod` files with an updated version of this 
+ package (based on the commit hash). To make this work, a `GITHUB_TOKEN` (personal access token) 
+ needs to be added within the [travis-ci settings page](https://travis-ci.org/keptn/go-utils/settings).
