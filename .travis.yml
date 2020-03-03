@@ -43,14 +43,14 @@ jobs:
       script:
         - cd ..
         # clone Keptn repo
-        - git clone https://${GITHUB_TOKEN}@github.com/keptn/keptn.git
+        - git clone https://${GITHUB_TOKEN}@github.com/keptn/keptn.git || true
         - cd keptn
         # checkout master and ensure we are up2date
         - git checkout master
-        - git pull
+        - git pull || travis_terminate 1
         - export TARGET_BRANCH=patch/1/update_go_utils
         # delete existing branch just in case
-        - git branch -D $TARGET_BRANCH &>/dev/null
+        - git branch -D $TARGET_BRANCH &>/dev/null || true
         # create a new branch
         - git checkout -b $TARGET_BRANCH
         # update go modules in all directories that contain go.mod
@@ -58,7 +58,7 @@ jobs:
           for file in *; do
              if [[ -f "$file/go.mod" ]]; then
                  echo "Checking if $file/go.mod contains go-utils"
-                 grep go-utils $file/go.mod
+                 grep "github.com/keptn/go-utils" $file/go.mod
                  if [[ $? -eq 0 ]]; then
                       echo "Yes, updating go-utils now..."
                       cd $file
@@ -70,7 +70,7 @@ jobs:
         - git status
         # add changes to a new commit
         - git add .
-        - git commit -m "Update keptn/go-utils to $GO_UTILS_TARGET"
-        - git push -f origin $TARGET_BRANCH
+        - git commit -m "Update keptn/go-utils to $GO_UTILS_TARGET" || travis_terminate 1
+        - git push -f origin $TARGET_BRANCH || travis_terminate 1
         - |
-          curl -XPOST -H "Authorization: token $GITHUB_TOKEN" -d "{\"title\":\"Auto-update go-utils to latest version\", \"base\":\"master\", \"head\":\"$TARGET_BRANCH\", \"body\":\"This is an automatically created PR to change keptn/go-utils to version $GO_UTILS_TARGET.\"}" https://api.github.com/repos/keptn/keptn/pulls
+          curl -XPOST -H "Authorization: token $GITHUB_TOKEN" -d "{\"title\":\"Auto-update go-utils to latest version\", \"base\":\"master\", \"head\":\"$TARGET_BRANCH\", \"body\":\"This is an automatically created PR to change keptn/go-utils to version $GO_UTILS_TARGET.\"}" https://api.github.com/repos/keptn/keptn/pulls || true
