@@ -5,9 +5,10 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/keptn/go-utils/pkg/api/models"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/keptn/go-utils/pkg/api/models"
 )
 
 // APIService represents the interface for accessing the configuration service
@@ -52,6 +53,7 @@ func post(uri string, data []byte, api APIService) (*models.EventContext, *model
 				// failed to parse json
 				return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
 			}
+			fmt.Println("ID of Keptn context: " + *eventContext.KeptnContext)
 			return &eventContext, nil
 		}
 
