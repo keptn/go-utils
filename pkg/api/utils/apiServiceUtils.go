@@ -53,7 +53,12 @@ func post(uri string, data []byte, api APIService) (*models.EventContext, *model
 				// failed to parse json
 				return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
 			}
-			fmt.Println("ID of Keptn context: " + *eventContext.KeptnContext)
+
+			if eventContext.KeptnContext != nil {
+				fmt.Println("ID of Keptn context: " + *eventContext.KeptnContext)
+			} else {
+				fmt.Println("ID of Keptn context is nil")
+			}
 			return &eventContext, nil
 		}
 
