@@ -3,6 +3,7 @@ package utils
 import (
 	"log"
 	"regexp"
+	"strings"
 
 	"github.com/keptn/go-utils/pkg/configuration-service/utils"
 	"github.com/keptn/go-utils/pkg/models"
@@ -48,4 +49,18 @@ func ValidateKeptnEntityName(name string) bool {
 	}
 	processedString := reg.FindString(name)
 	return len(processedString) == len(name)
+}
+
+// IsValidUnixDirectoryName checks whether the provided dirName contains
+// any special character according to
+// https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/
+func IsValidUnixDirectoryName(dirName string) bool {
+	return !(dirName == "." ||
+		dirName == ".." ||
+		strings.Contains(dirName, "/") ||
+		strings.Contains(dirName, ">") ||
+		strings.Contains(dirName, "<") ||
+		strings.Contains(dirName, "|") ||
+		strings.Contains(dirName, ":") ||
+		strings.Contains(dirName, "&"))
 }
