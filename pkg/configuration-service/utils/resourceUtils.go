@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -175,6 +176,7 @@ func (r *ResourceHandler) writeResources(uri string, method string, resources []
 
 	resp, err := r.HTTPClient.Do(req)
 	if err != nil {
+		log.Println("Failed to execute", method, uri)
 		return "", err
 	}
 	defer resp.Body.Close()
@@ -182,14 +184,17 @@ func (r *ResourceHandler) writeResources(uri string, method string, resources []
 	var version models.Version
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		log.Println("Failed to read body: ", err)
 		return "", err
 	}
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
+		log.Println("Got unexpected status code", resp.StatusCode, " when executing", method, uri)
 		return "", errors.New(string(body))
 	}
 
 	err = json.Unmarshal(body, &version)
 	if err != nil {
+		log.Println("Error unmarshalling response from", uri)
 		return "", err
 	}
 
@@ -214,12 +219,14 @@ func (r *ResourceHandler) writeResource(uri string, method string, resource *mod
 
 	resp, err := r.HTTPClient.Do(req)
 	if err != nil {
+		log.Println("Failed to execute ", method, uri)
 		return "", err
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		log.Println("Failed to read body: ", err)
 		return "", err
 	}
 
@@ -230,6 +237,7 @@ func (r *ResourceHandler) writeResource(uri string, method string, resource *mod
 	var version models.Version
 	err = json.Unmarshal(body, &version)
 	if err != nil {
+		log.Println("Error unmarshalling response from", uri)
 		return "", err
 	}
 
@@ -244,12 +252,15 @@ func (r *ResourceHandler) getResource(uri string) (*models.Resource, error) {
 
 	resp, err := r.HTTPClient.Do(req)
 	if err != nil {
+		log.Println("Failed to execute GET ", uri)
+		log.Println(err)
 		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		log.Println("Failed to read body: ", err)
 		return nil, err
 	}
 
@@ -260,12 +271,14 @@ func (r *ResourceHandler) getResource(uri string) (*models.Resource, error) {
 	var resource models.Resource
 	err = json.Unmarshal(body, &resource)
 	if err != nil {
+		log.Println("Error unmarshalling response from", uri)
 		return nil, err
 	}
 
 	// decode resource content
 	decodedStr, err := b64.StdEncoding.DecodeString(resource.ResourceContent)
 	if err != nil {
+		log.Println("Error decoding content in response from", uri)
 		return nil, err
 	}
 	resource.ResourceContent = string(decodedStr)
