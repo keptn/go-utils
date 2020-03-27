@@ -1,4 +1,4 @@
-package events
+package keptn
 
 import (
 	"bytes"

@@ -1,4 +1,18 @@
-package events
+package keptn
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
+	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	"github.com/google/uuid"
+	"log"
+	"net/url"
+	"time"
+)
 
 import (
 	"encoding/json"
@@ -42,6 +56,24 @@ const InternalGetSLIEventType = "sh.keptn.internal.event.get-sli"
 
 // InternalGetSLIDoneEventType is a CloudEvent for submitting SLI values
 const InternalGetSLIDoneEventType = "sh.keptn.internal.event.get-sli.done"
+
+// KeptnBase contains properties that are shared among most Keptn events
+type KeptnBase struct {
+	Project string `json:"project"`
+	// Service is the name of the new service
+	Service string `json:"service"`
+	// Stage is the name of the stage
+	Stage        string  `json:"stage"`
+	TestStrategy *string `json:"teststrategy,omitempty"`
+	// DeploymentStrategy is the deployment strategy
+	DeploymentStrategy *string `json:"deploymentstrategy,omitempty"`
+	// Tag of the new deployed artifact
+	Tag *string `json:"tag,omitempty"`
+	// Image of the new deployed artifact
+	Image *string `json:"image,omitempty"`
+	// Labels contains labels
+	Labels map[string]string `json:"labels"`
+}
 
 // ProjectCreateEventData represents the data for creating a new project
 type ProjectCreateEventData struct {
@@ -306,4 +338,199 @@ type InternalGetSLIDoneEventData struct {
 	Deployment         string `json:"deployment"`
 	// Labels contains labels
 	Labels map[string]string `json:"labels"`
+}
+
+//
+// Sends a ConfigurationChangeEventType = "sh.keptn.event.configuration.change"
+//
+func (k *Keptn) SendConfigurationChangeEvent(incomingEvent *cloudevents.Event, labels map[string]string, eventSource string) error {
+	source, _ := url.Parse(eventSource)
+	contentType := "application/json"
+
+	configurationChangeData := ConfigurationChangeEventData{}
+
+	// if we have an incoming event we pre-populate data
+	if incomingEvent != nil {
+		incomingEvent.DataAs(&configurationChangeData)
+	}
+
+	if k.KeptnBase.Project != "" {
+		configurationChangeData.Project = k.KeptnBase.Project
+	}
+	if k.KeptnBase.Service != "" {
+		configurationChangeData.Service = k.KeptnBase.Service
+	}
+	if k.KeptnBase.Stage != "" {
+		configurationChangeData.Stage = k.KeptnBase.Stage
+	}
+	if labels != nil {
+		configurationChangeData.Labels = labels
+	}
+
+	event := cloudevents.Event{
+		Context: cloudevents.EventContextV02{
+			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
+			Type:        ConfigurationChangeEventType,
+			Source:      types.URLRef{URL: *source},
+			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": k.KeptnContext},
+		}.AsV02(),
+		Data: configurationChangeData,
+	}
+
+	log.Println(fmt.Sprintf("%s", event))
+
+	return k.sendCloudEvent(event)
+}
+
+//
+// Sends a DeploymentFinishedEventType = "sh.keptn.events.deployment-finished"
+//
+func (k *Keptn) SendDeploymentFinishedEvent(incomingEvent *cloudevents.Event, teststrategy, deploymentstrategy, image, tag, deploymentURILocal, deploymentURIPublic string, labels map[string]string, eventSource string) error {
+	source, _ := url.Parse(eventSource)
+	contentType := "application/json"
+
+	deploymentFinishedData := DeploymentFinishedEventData{}
+
+	// if we have an incoming event we pre-populate data
+	if incomingEvent != nil {
+		incomingEvent.DataAs(&deploymentFinishedData)
+	}
+
+	if k.KeptnBase.Project != "" {
+		deploymentFinishedData.Project = k.KeptnBase.Project
+	}
+	if k.KeptnBase.Service != "" {
+		deploymentFinishedData.Service = k.KeptnBase.Service
+	}
+	if k.KeptnBase.Stage != "" {
+		deploymentFinishedData.Stage = k.KeptnBase.Stage
+	}
+	if teststrategy != "" {
+		deploymentFinishedData.TestStrategy = teststrategy
+	}
+	if deploymentstrategy != "" {
+		deploymentFinishedData.DeploymentStrategy = deploymentstrategy
+	}
+	if image != "" {
+		deploymentFinishedData.Image = image
+	}
+	if tag != "" {
+		deploymentFinishedData.Tag = tag
+	}
+
+	if labels != nil {
+		deploymentFinishedData.Labels = labels
+	}
+
+	if deploymentURILocal != "" {
+		deploymentFinishedData.DeploymentURILocal = deploymentURILocal
+	}
+
+	if deploymentURIPublic != "" {
+		deploymentFinishedData.DeploymentURIPublic = deploymentURIPublic
+	}
+
+	event := cloudevents.Event{
+		Context: cloudevents.EventContextV02{
+			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
+			Type:        DeploymentFinishedEventType,
+			Source:      types.URLRef{URL: *source},
+			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": k.KeptnContext},
+		}.AsV02(),
+		Data: deploymentFinishedData,
+	}
+
+	log.Println(fmt.Sprintf("%s", event))
+
+	return k.sendCloudEvent(event)
+
+}
+
+//
+// Sends a TestsFinishedEventType = "sh.keptn.events.tests-finished"
+//
+func (k *Keptn) SendTestsFinishedEvent(incomingEvent *cloudevents.Event, teststrategy, deploymentstrategy string, startedAt time.Time, result string, labels map[string]string, eventSource string) error {
+	source, _ := url.Parse(eventSource)
+	contentType := "application/json"
+
+	testFinishedData := TestsFinishedEventData{}
+
+	// if we have an incoming event we pre-populate data
+	if incomingEvent != nil {
+		incomingEvent.DataAs(&testFinishedData)
+	}
+
+	if k.KeptnBase.Project != "" {
+		testFinishedData.Project = k.KeptnBase.Project
+	}
+	if k.KeptnBase.Service != "" {
+		testFinishedData.Service = k.KeptnBase.Service
+	}
+	if k.KeptnBase.Stage != "" {
+		testFinishedData.Stage = k.KeptnBase.Stage
+	}
+	if teststrategy != "" {
+		testFinishedData.TestStrategy = teststrategy
+	}
+	if deploymentstrategy != "" {
+		testFinishedData.DeploymentStrategy = deploymentstrategy
+	}
+
+	if labels != nil {
+		testFinishedData.Labels = labels
+	}
+
+	// fill in timestamps
+	testFinishedData.Start = startedAt.Format(time.RFC3339)
+	testFinishedData.End = time.Now().Format(time.RFC3339)
+
+	// set test result
+	testFinishedData.Result = result
+
+	event := cloudevents.Event{
+		Context: cloudevents.EventContextV02{
+			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
+			Type:        TestsFinishedEventType,
+			Source:      types.URLRef{URL: *source},
+			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": k.KeptnContext},
+		}.AsV02(),
+		Data: testFinishedData,
+	}
+
+	log.Println(fmt.Printf("%s", event))
+
+	return k.sendCloudEvent(event)
+}
+
+//
+// Sends a CloudEvent to the event broker
+//
+func (k *Keptn) sendCloudEvent(event cloudevents.Event) error {
+	if k.useLocalFileSystem {
+		log.Println(fmt.Printf("%v", event.Data))
+		return nil
+	}
+	transport, err := cloudeventshttp.New(
+		cloudeventshttp.WithTarget(k.eventBrokerURL),
+		cloudeventshttp.WithEncoding(cloudeventshttp.StructuredV02),
+	)
+	if err != nil {
+		return errors.New("Failed to create transport:" + err.Error())
+	}
+
+	c, err := client.New(transport)
+	if err != nil {
+		return errors.New("Failed to create HTTP client:" + err.Error())
+	}
+
+	if _, _, err := c.Send(context.Background(), event); err != nil {
+		return errors.New("Failed to send cloudevent:, " + err.Error())
+	}
+	return nil
 }

@@ -71,6 +71,15 @@ import {
 )
 ```
 
+## Updating model definitions
+After updating the model definitions in the `swagger.yaml` file, execute the command
+
+```
+swagger generate model --spec=swagger.yaml -t=./pkg/api/
+```
+
+to update the models located in `./pkg/api/models`
+
 ## Automation
 
 Within [.travis.yml](.travis.yml) we have included an automation that creates a Pull Request to 

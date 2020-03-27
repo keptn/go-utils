@@ -1,16 +1,13 @@
-package utils
+package keptn
 
 import (
 	"context"
+	"github.com/go-openapi/strfmt"
+	"github.com/stretchr/testify/assert"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	strfmt "github.com/go-openapi/strfmt"
-
-	keptnevents "github.com/keptn/go-utils/pkg/events"
-	"github.com/magiconair/properties/assert"
 )
 
 // Helper function to build a test client with a httptest server
@@ -94,7 +91,7 @@ func TestGetEventStatusOK(t *testing.T) {
 
 	eventHandler := NewEventHandler("https://localhost")
 	eventHandler.HTTPClient = httpClient
-	cloudEvent, errObj := eventHandler.GetEvent("8929e5e5-3826-488f-9257-708bfa974909", keptnevents.EvaluationDoneEventType)
+	cloudEvent, errObj := eventHandler.GetEvent("8929e5e5-3826-488f-9257-708bfa974909", EvaluationDoneEventType)
 
 	if cloudEvent == nil {
 		t.Error("no Keptn event returned")
@@ -130,7 +127,7 @@ func TestGetEventStatusOKNoEvent(t *testing.T) {
 
 	eventHandler := NewEventHandler("https://localhost")
 	eventHandler.HTTPClient = httpClient
-	cloudEvent, errObj := eventHandler.GetEvent("8929e5e5-3826-488f-9257-708bfa974909", keptnevents.EvaluationDoneEventType)
+	cloudEvent, errObj := eventHandler.GetEvent("8929e5e5-3826-488f-9257-708bfa974909", EvaluationDoneEventType)
 
 	if cloudEvent != nil {
 		t.Error("do not expect a Keptn Cloud event")

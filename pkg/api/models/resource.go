@@ -6,20 +6,18 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // Resource resource
-// swagger:model resource
+// swagger:model Resource
 type Resource struct {
 
 	// Resource content
-	// Required: true
-	ResourceContent *string `json:"resourceContent"`
+	ResourceContent string `json:"resourceContent,omitempty"`
 
 	// Resource URI
 	// Required: true
@@ -30,10 +28,6 @@ type Resource struct {
 func (m *Resource) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateResourceContent(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateResourceURI(formats); err != nil {
 		res = append(res, err)
 	}
@@ -41,15 +35,6 @@ func (m *Resource) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *Resource) validateResourceContent(formats strfmt.Registry) error {
-
-	if err := validate.Required("resourceContent", "body", m.ResourceContent); err != nil {
-		return err
-	}
-
 	return nil
 }
 

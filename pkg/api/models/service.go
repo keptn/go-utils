@@ -7,47 +7,19 @@ package models
 
 import (
 	strfmt "github.com/go-openapi/strfmt"
-
-	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
-	"github.com/go-openapi/validate"
 )
 
 // Service service
-// swagger:model service
+// swagger:model Service
 type Service struct {
 
-	// deployment strategies
-	DeploymentStrategies map[string]string `json:"deploymentStrategies,omitempty"`
-
-	// helm chart
-	HelmChart string `json:"helmChart,omitempty"`
-
-	// service name
-	// Required: true
-	ServiceName *string `json:"serviceName"`
+	// Service name
+	ServiceName string `json:"serviceName,omitempty"`
 }
 
 // Validate validates this service
 func (m *Service) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateServiceName(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *Service) validateServiceName(formats strfmt.Registry) error {
-
-	if err := validate.Required("serviceName", "body", m.ServiceName); err != nil {
-		return err
-	}
-
 	return nil
 }
 

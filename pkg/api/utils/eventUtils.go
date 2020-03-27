@@ -66,7 +66,7 @@ func (e *EventHandler) getHTTPClient() *http.Client {
 }
 
 // SendEvent sends an event to Keptn
-func (e *EventHandler) SendEvent(event models.Event) (*models.EventContext, *models.Error) {
+func (e *EventHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.EventContext, *models.Error) {
 	bodyStr, err := json.Marshal(event)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())

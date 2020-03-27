@@ -74,8 +74,8 @@ func (r *ResourceHandler) CreateResources(project string, stage string, service 
 
 	copiedResources := make([]*models.Resource, len(resources), len(resources))
 	for i, val := range resources {
-		resourceContent := b64.StdEncoding.EncodeToString([]byte(*val.ResourceContent))
-		copiedResources[i] = &models.Resource{ResourceURI: val.ResourceURI, ResourceContent: &resourceContent}
+		resourceContent := b64.StdEncoding.EncodeToString([]byte(val.ResourceContent))
+		copiedResources[i] = &models.Resource{ResourceURI: val.ResourceURI, ResourceContent: resourceContent}
 	}
 
 	resReq := &resourceRequest{

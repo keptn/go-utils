@@ -1,15 +1,33 @@
-package utils
+package keptn
 
 import (
 	"crypto/tls"
 	"encoding/json"
+	"github.com/keptn/go-utils/pkg/api/models"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
-
-	"github.com/keptn/go-utils/pkg/mongodb-datastore/models"
 )
+
+// Datastore represents the interface for accessing Keptn's datastore
+type Datastore interface {
+	getBaseURL() string
+	getAuthToken() string
+	getAuthHeader() string
+	getHTTPClient() *http.Client
+}
+
+func buildErrorResponse(errorStr string) *models.Error {
+	err := models.Error{Message: &errorStr}
+	return &err
+}
+
+func addAuthHeader(req *http.Request, datastore Datastore) {
+	if datastore.getAuthHeader() != "" && datastore.getAuthToken() != "" {
+		req.Header.Set(datastore.getAuthHeader(), datastore.getAuthToken())
+	}
+}
 
 // EventHandler handles event
 type EventHandler struct {

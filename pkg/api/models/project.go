@@ -6,44 +6,38 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"strconv"
 
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"github.com/go-openapi/validate"
 )
 
 // Project project
-// swagger:model project
+// swagger:model Project
 type Project struct {
 
-	// git remote URL
-	GitRemoteURL string `json:"gitRemoteURL,omitempty"`
+	// Git remote URI
+	GitRemoteURI string `json:"gitRemoteURI,omitempty"`
 
-	// git token
+	// Git token
 	GitToken string `json:"gitToken,omitempty"`
 
-	// git user
+	// Git User
 	GitUser string `json:"gitUser,omitempty"`
 
-	// name
-	// Required: true
-	Name *string `json:"name"`
+	// Project name
+	ProjectName string `json:"projectName,omitempty"`
 
-	// shipyard
-	// Required: true
-	Shipyard *string `json:"shipyard"`
+	// stages
+	Stages []*Stage `json:"stages"`
 }
 
 // Validate validates this project
 func (m *Project) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateName(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateShipyard(formats); err != nil {
+	if err := m.validateStages(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -53,19 +47,26 @@ func (m *Project) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Project) validateName(formats strfmt.Registry) error {
+func (m *Project) validateStages(formats strfmt.Registry) error {
 
-	if err := validate.Required("name", "body", m.Name); err != nil {
-		return err
+	if swag.IsZero(m.Stages) { // not required
+		return nil
 	}
 
-	return nil
-}
+	for i := 0; i < len(m.Stages); i++ {
+		if swag.IsZero(m.Stages[i]) { // not required
+			continue
+		}
 
-func (m *Project) validateShipyard(formats strfmt.Registry) error {
+		if m.Stages[i] != nil {
+			if err := m.Stages[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("stages" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
 
-	if err := validate.Required("shipyard", "body", m.Shipyard); err != nil {
-		return err
 	}
 
 	return nil

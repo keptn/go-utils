@@ -1,4 +1,4 @@
-package utils
+package keptn
 
 import (
 	"encoding/json"
