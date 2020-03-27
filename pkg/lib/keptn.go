@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	"github.com/keptn/go-utils/pkg/api/models"
 	"gopkg.in/yaml.v2"
 	"log"
 	"os"
@@ -28,14 +29,9 @@ type Keptn struct {
 	resourceHandler    *ResourceHandler
 }
 
-// Shipyard defines the name, deployment strategy and test strategy of each stage
-type Shipyard struct {
-	Stages []struct {
-		Name                string `json:"name" yaml:"name"`
-		DeploymentStrategy  string `json:"deployment_strategy" yaml:"deployment_strategy"`
-		TestStrategy        string `json:"test_strategy,omitempty" yaml:"test_strategy"`
-		RemediationStrategy string `json:"remediation_strategy,omitempty" yaml:"remediation_strategy"`
-	} `json:"stages" yaml:"stages"`
+// SLIConfig represents the struct of a SLI file
+type SLIConfig struct {
+	Indicators map[string]string `json:"indicators" yaml:"indicators"`
 }
 
 const configurationServiceURL = "configuration-service:8080"
@@ -91,6 +87,77 @@ func (k *Keptn) GetShipyard() (*Shipyard, error) {
 		return nil, err
 	}
 	return &shipyard, nil
+}
+
+// GetSLIConfiguration retrieves the SLI configuration for a service considering SLI configuration on stage and project level.
+// First, the configuration of project-level is retrieved, which is then overridden by configuration on stage level,
+// overridden by configuration on service level.
+func (k *Keptn) GetSLIConfiguration(project string, stage string, service string, resourceURI string) (map[string]string, error) {
+	var res *models.Resource
+	var err error
+	SLIs := make(map[string]string)
+
+	// get sli config from project
+	if project != "" {
+		res, err = k.resourceHandler.GetProjectResource(project, resourceURI)
+		if err != nil {
+			// return error except "resource not found" type
+			if !strings.Contains(err.Error(), "resource not found") {
+				return nil, err
+			}
+		}
+		SLIs, err = addResourceContentToSLIMap(SLIs, res)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// get sli config from stage
+	if project != "" && stage != "" {
+		res, err = k.resourceHandler.GetStageResource(project, stage, resourceURI)
+		if err != nil {
+			// return error except "resource not found" type
+			if !strings.Contains(err.Error(), "resource not found") {
+				return nil, err
+			}
+		}
+		SLIs, err = addResourceContentToSLIMap(SLIs, res)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// get sli config from service
+	if project != "" && stage != "" && service != "" {
+		res, err = k.resourceHandler.GetServiceResource(project, stage, service, resourceURI)
+		if err != nil {
+			// return error except "resource not found" type
+			if !strings.Contains(err.Error(), "resource not found") {
+				return nil, err
+			}
+		}
+		SLIs, err = addResourceContentToSLIMap(SLIs, res)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return SLIs, nil
+}
+
+func addResourceContentToSLIMap(SLIs map[string]string, resource *models.Resource) (map[string]string, error) {
+	if resource != nil {
+		sliConfig := SLIConfig{}
+		err := yaml.Unmarshal([]byte(resource.ResourceContent), &sliConfig)
+		if err != nil {
+			return nil, err
+		}
+
+		for key, value := range sliConfig.Indicators {
+			SLIs[key] = value
+		}
+	}
+	return SLIs, nil
 }
 
 func (k *Keptn) GetKeptnResource(resource string) (string, error) {

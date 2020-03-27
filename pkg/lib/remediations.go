@@ -1,4 +1,4 @@
-package models
+package keptn
 
 // Remediations contains remediation definitions for a service
 type Remediations struct {

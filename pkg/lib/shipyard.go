@@ -1,4 +1,4 @@
-package models
+package keptn
 
 // Shipyard defines the name, deployment strategy and test strategy of each stage
 type Shipyard struct {

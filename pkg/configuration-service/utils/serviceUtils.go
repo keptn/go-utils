@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/keptn/go-utils/pkg/configuration-service/models"
+	"github.com/keptn/go-utils/pkg/api/models"
 )
 
 // ServiceHandler handles services

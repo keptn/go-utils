@@ -1,4 +1,4 @@
-package models
+package keptn
 
 type SLOComparison struct {
 	CompareWith               string `json:"compare_with" yaml:"compare_with"`                           // single_result|several_results
