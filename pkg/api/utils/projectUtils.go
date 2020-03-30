@@ -71,7 +71,7 @@ func (p *ProjectHandler) getHTTPClient() *http.Client {
 }
 
 // CreateProject creates a new project
-func (p *ProjectHandler) CreateProject(project models.Project) (*models.EventContext, *models.Error) {
+func (p *ProjectHandler) CreateProject(project models.CreateProject) (*models.EventContext, *models.Error) {
 	bodyStr, err := json.Marshal(project)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
