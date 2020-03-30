@@ -19,14 +19,19 @@ type ServiceHandler struct {
 
 // NewServiceHandler returns a new ServiceHandler
 func NewServiceHandler(baseURL string) *ServiceHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
+	scheme := "https"
+	if strings.Contains(baseURL, "https://") {
+		baseURL = strings.TrimPrefix(baseURL, "https://")
+	} else if strings.Contains(baseURL, "http://") {
+		baseURL = strings.TrimPrefix(baseURL, "http://")
+		scheme = "http"
+	}
 	return &ServiceHandler{
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
 		HTTPClient: &http.Client{Transport: getClientTransport()},
-		Scheme:     "https",
+		Scheme:     scheme,
 	}
 }
 

@@ -3,13 +3,13 @@ package keptn
 import (
 	"encoding/json"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	"github.com/go-test/deep"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"reflect"
 	"testing"
 	"time"
 )
@@ -54,16 +54,7 @@ func TestNewKeptn(t *testing.T) {
 				opts:          KeptnOpts{},
 			},
 			want: &Keptn{
-				KeptnBase: &KeptnBase{
-					Project:            "sockshop",
-					Stage:              "dev",
-					Service:            "carts",
-					TestStrategy:       nil,
-					DeploymentStrategy: nil,
-					Tag:                nil,
-					Image:              nil,
-					Labels:             nil,
-				},
+				KeptnBase:          keptnBase,
 				KeptnContext:       "test-context",
 				eventBrokerURL:     defaultEventBrokerURL,
 				useLocalFileSystem: false,
@@ -73,6 +64,13 @@ func TestNewKeptn(t *testing.T) {
 					AuthToken:  "",
 					HTTPClient: &http.Client{},
 					Scheme:     "http",
+				},
+				eventHandler: &api.EventHandler{
+					BaseURL:    configurationServiceURL,
+					AuthToken:  "",
+					AuthHeader: "",
+					HTTPClient: nil,
+					Scheme:     "",
 				},
 			},
 		},
@@ -107,6 +105,13 @@ func TestNewKeptn(t *testing.T) {
 					HTTPClient: &http.Client{},
 					Scheme:     "http",
 				},
+				eventHandler: &api.EventHandler{
+					BaseURL:    configurationServiceURL,
+					AuthToken:  "",
+					AuthHeader: "",
+					HTTPClient: nil,
+					Scheme:     "",
+				},
 			},
 		},
 		{
@@ -139,6 +144,13 @@ func TestNewKeptn(t *testing.T) {
 					AuthToken:  "",
 					HTTPClient: &http.Client{},
 					Scheme:     "http",
+				},
+				eventHandler: &api.EventHandler{
+					BaseURL:    "custom-config:8080",
+					AuthToken:  "",
+					AuthHeader: "",
+					HTTPClient: nil,
+					Scheme:     "",
 				},
 			},
 		},
@@ -173,12 +185,19 @@ func TestNewKeptn(t *testing.T) {
 					HTTPClient: &http.Client{},
 					Scheme:     "http",
 				},
+				eventHandler: &api.EventHandler{
+					BaseURL:    "custom-config:8080",
+					AuthToken:  "",
+					AuthHeader: "",
+					HTTPClient: nil,
+					Scheme:     "",
+				},
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got, _ := NewKeptn(tt.args.incomingEvent, tt.args.opts); !reflect.DeepEqual(got, tt.want) {
+			if got, _ := NewKeptn(tt.args.incomingEvent, tt.args.opts); deep.Equal(got, tt.want) != nil {
 				t.Errorf("NewKeptn() = %v, want %v", got, tt.want)
 			}
 		})
