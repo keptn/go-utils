@@ -1,4 +1,4 @@
-package utils
+package api
 
 import (
 	"crypto/tls"
@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/keptn/go-utils/pkg/configuration-service/models"
+	"github.com/keptn/go-utils/pkg/api/models"
 )
 
 // StageHandler handles stages
@@ -67,12 +67,12 @@ func (s *StageHandler) getHTTPClient() *http.Client {
 }
 
 // CreateStage creates a new stage with the provided name
-func (s *StageHandler) CreateStage(project string, stageName string) (*models.Error, error) {
+func (s *StageHandler) CreateStage(project string, stageName string) (*models.EventContext, *models.Error) {
 
 	stage := models.Stage{StageName: stageName}
 	body, err := json.Marshal(stage)
 	if err != nil {
-		return nil, err
+		return nil, buildErrorResponse(err.Error())
 	}
 	return post(s.Scheme+"://"+s.BaseURL+"/v1/project/"+project+"/stage", body, s)
 }
