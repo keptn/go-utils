@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/keptn/go-utils/pkg/api/models"
+	api "github.com/keptn/go-utils/pkg/api/utils"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
@@ -66,7 +67,7 @@ func TestNewKeptn(t *testing.T) {
 				KeptnContext:       "test-context",
 				eventBrokerURL:     defaultEventBrokerURL,
 				useLocalFileSystem: false,
-				resourceHandler: &ResourceHandler{
+				resourceHandler: &api.ResourceHandler{
 					BaseURL:    configurationServiceURL,
 					AuthHeader: "",
 					AuthToken:  "",
@@ -99,7 +100,7 @@ func TestNewKeptn(t *testing.T) {
 				KeptnContext:       "test-context",
 				eventBrokerURL:     defaultEventBrokerURL,
 				useLocalFileSystem: true,
-				resourceHandler: &ResourceHandler{
+				resourceHandler: &api.ResourceHandler{
 					BaseURL:    configurationServiceURL,
 					AuthHeader: "",
 					AuthToken:  "",
@@ -132,7 +133,7 @@ func TestNewKeptn(t *testing.T) {
 				KeptnContext:       "test-context",
 				eventBrokerURL:     defaultEventBrokerURL,
 				useLocalFileSystem: false,
-				resourceHandler: &ResourceHandler{
+				resourceHandler: &api.ResourceHandler{
 					BaseURL:    "custom-config:8080",
 					AuthHeader: "",
 					AuthToken:  "",
@@ -165,7 +166,7 @@ func TestNewKeptn(t *testing.T) {
 				KeptnContext:       "test-context",
 				eventBrokerURL:     "custom-eb:8080",
 				useLocalFileSystem: false,
-				resourceHandler: &ResourceHandler{
+				resourceHandler: &api.ResourceHandler{
 					BaseURL:    "custom-config:8080",
 					AuthHeader: "",
 					AuthToken:  "",
@@ -206,7 +207,7 @@ func TestKeptn_GetKeptnResource(t *testing.T) {
 		KeptnContext       string
 		eventBrokerURL     string
 		useLocalFileSystem bool
-		resourceHandler    *ResourceHandler
+		resourceHandler    *api.ResourceHandler
 	}
 	type args struct {
 		resource string
@@ -233,7 +234,7 @@ func TestKeptn_GetKeptnResource(t *testing.T) {
 				},
 				eventBrokerURL:     "",
 				useLocalFileSystem: false,
-				resourceHandler:    NewResourceHandler(ts.URL),
+				resourceHandler:    api.NewResourceHandler(ts.URL),
 			},
 			args: args{
 				resource: "test-resource.file",
@@ -311,6 +312,59 @@ func TestInvalidKeptnEntityName2(t *testing.T) {
 func TestValidKeptnEntityName(t *testing.T) {
 	if !ValidateKeptnEntityName("sockshop-test") {
 		t.Fatalf("project should be valid")
+	}
+}
+
+// TestAddResourceContentToSLIMap
+func TestAddResourceContentToSLIMap(t *testing.T) {
+	SLIs := make(map[string]string)
+	resource := &models.Resource{}
+	resourceURI := "provider/sli.yaml"
+	resource.ResourceURI = &resourceURI
+	resource.ResourceContent = `--- 
+indicators: 
+  error_rate: "builtin:service.errors.total.count:merge(0):avg?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"
+  response_time_p50: "builtin:service.response.time:merge(0):percentile(50)?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"
+  response_time_p90: "builtin:service.response.time:merge(0):percentile(90)?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"
+  response_time_p95: "builtin:service.response.time:merge(0):percentile(95)?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"
+  throughput: "builtin:service.requestCount.total:merge(0):count?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"	
+`
+	SLIs, _ = addResourceContentToSLIMap(SLIs, resource)
+
+	if len(SLIs) != 5 {
+		t.Errorf("Unexpected lenght of SLI map")
+	}
+}
+
+// TestAddResourceContentToSLIMap
+func TestAddMultipleResourceContentToSLIMap(t *testing.T) {
+	SLIs := make(map[string]string)
+	resource := &models.Resource{}
+	resourceURI := "provider/sli.yaml"
+	resource.ResourceURI = &resourceURI
+	resource.ResourceContent = `--- 
+indicators: 
+  error_rate: "not defined"
+  response_time_p50: "builtin:service.response.time:merge(0):percentile(50)?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"
+  response_time_p90: "builtin:service.response.time:merge(0):percentile(90)?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"
+  response_time_p95: "builtin:service.response.time:merge(0):percentile(95)?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"
+  throughput: "builtin:service.requestCount.total:merge(0):count?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"	
+`
+	SLIs, _ = addResourceContentToSLIMap(SLIs, resource)
+
+	resource.ResourceContent = `--- 
+indicators: 
+  error_rate: "builtin:service.errors.total.count:merge(0):avg?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"
+  failure_rate: "builtin:service.requestCount.total:merge(0):count?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"	
+`
+	SLIs, _ = addResourceContentToSLIMap(SLIs, resource)
+
+	if len(SLIs) != 6 {
+		t.Errorf("Unexpected length of SLI map")
+	}
+
+	if SLIs["error_rate"] != "builtin:service.errors.total.count:merge(0):avg?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)" {
+		t.Errorf("Unexpected value of error_rate SLI")
 	}
 }
 

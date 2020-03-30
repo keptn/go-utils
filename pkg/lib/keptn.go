@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/keptn/go-utils/pkg/api/models"
+	api "github.com/keptn/go-utils/pkg/api/utils"
 	"gopkg.in/yaml.v2"
 	"log"
 	"os"
@@ -26,7 +27,8 @@ type Keptn struct {
 
 	eventBrokerURL     string
 	useLocalFileSystem bool
-	resourceHandler    *ResourceHandler
+	resourceHandler    *api.ResourceHandler
+	eventHandler       *api.EventHandler
 }
 
 // SLIConfig represents the struct of a SLI file
@@ -69,7 +71,8 @@ func NewKeptn(incomingEvent *cloudevents.Event, opts KeptnOpts) (*Keptn, error) 
 		k.eventBrokerURL = defaultEventBrokerURL
 	}
 
-	k.resourceHandler = NewResourceHandler(csURL)
+	k.resourceHandler = api.NewResourceHandler(csURL)
+	k.eventHandler = api.NewEventHandler(csURL)
 
 	return k, nil
 }

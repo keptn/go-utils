@@ -1,4 +1,4 @@
-package utils
+package api
 
 import (
 	"encoding/json"
@@ -76,12 +76,12 @@ func (p *ProjectHandler) CreateProject(project models.Project) (*models.EventCon
 
 // DeleteProject deletes a project
 func (p *ProjectHandler) DeleteProject(project models.Project) (*models.EventContext, *models.Error) {
-	return delete(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+*project.Name, p)
+	return delete(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.ProjectName, p)
 }
 
 // GetProject returns a project
 func (p *ProjectHandler) GetProject(project models.Project) (*models.Project, *models.Error) {
-	return getProject(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+*project.Name, p)
+	return getProject(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.ProjectName, p)
 }
 
 func getProject(uri string, api APIService) (*models.Project, *models.Error) {
