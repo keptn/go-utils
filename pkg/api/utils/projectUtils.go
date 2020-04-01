@@ -79,6 +79,14 @@ func (p *ProjectHandler) CreateProject(project models.CreateProject) (*models.Ev
 	return post(p.Scheme+"://"+p.getBaseURL()+"/v1/project", bodyStr, p)
 }
 
+func (p *ProjectHandler) CreateConfigurationServiceProject(project models.Project) (*models.EventContext, *models.Error) {
+	bodyStr, err := json.Marshal(project)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
+	return post(p.Scheme+"://"+p.getBaseURL()+"/v1/project", bodyStr, p)
+}
+
 // DeleteProject deletes a project
 func (p *ProjectHandler) DeleteProject(project models.Project) (*models.EventContext, *models.Error) {
 	return delete(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.ProjectName, p)
