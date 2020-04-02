@@ -40,7 +40,8 @@ const configurationServiceURL = "configuration-service:8080"
 const defaultEventBrokerURL = "http://event-broker.keptn.svc.cluster.local/keptn"
 
 func NewKeptn(incomingEvent *cloudevents.Event, opts KeptnOpts) (*Keptn, error) {
-	shkeptncontext, _ := incomingEvent.Context.GetExtension("shkeptncontext")
+	var shkeptncontext string
+	_ = incomingEvent.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
 	// create a base Keptn Event
 	keptnBase := &KeptnBase{}
@@ -56,7 +57,7 @@ func NewKeptn(incomingEvent *cloudevents.Event, opts KeptnOpts) (*Keptn, error) 
 
 	k := &Keptn{
 		KeptnBase:          keptnBase,
-		KeptnContext:       shkeptncontext.(string),
+		KeptnContext:       shkeptncontext,
 		useLocalFileSystem: opts.UseLocalFileSystem,
 		resourceHandler:    nil,
 	}
