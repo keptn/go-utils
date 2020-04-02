@@ -29,7 +29,7 @@ type resourceRequest struct {
 
 // NewResourceHandler returns a new ResourceHandler
 func NewResourceHandler(baseURL string) *ResourceHandler {
-	scheme := "https"
+	scheme := "http"
 	if strings.Contains(baseURL, "https://") {
 		baseURL = strings.TrimPrefix(baseURL, "https://")
 	} else if strings.Contains(baseURL, "http://") {

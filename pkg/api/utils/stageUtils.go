@@ -23,7 +23,7 @@ type StageHandler struct {
 
 // NewStageHandler returns a new StageHandler
 func NewStageHandler(baseURL string) *StageHandler {
-	scheme := "https"
+	scheme := "http"
 	if strings.Contains(baseURL, "https://") {
 		baseURL = strings.TrimPrefix(baseURL, "https://")
 	} else if strings.Contains(baseURL, "http://") {

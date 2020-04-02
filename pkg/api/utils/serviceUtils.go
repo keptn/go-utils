@@ -23,7 +23,7 @@ type ServiceHandler struct {
 
 // NewServiceHandler returns a new ServiceHandler
 func NewServiceHandler(baseURL string) *ServiceHandler {
-	scheme := "https"
+	scheme := "http"
 	if strings.Contains(baseURL, "https://") {
 		baseURL = strings.TrimPrefix(baseURL, "https://")
 	} else if strings.Contains(baseURL, "http://") {

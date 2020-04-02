@@ -20,7 +20,7 @@ type EventHandler struct {
 
 // NewEventHandler returns a new EventHandler
 func NewEventHandler(baseURL string) *EventHandler {
-	scheme := "https"
+	scheme := "http"
 	if strings.Contains(baseURL, "https://") {
 		baseURL = strings.TrimPrefix(baseURL, "https://")
 	} else if strings.Contains(baseURL, "http://") {

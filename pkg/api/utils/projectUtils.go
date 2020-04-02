@@ -20,7 +20,7 @@ type ProjectHandler struct {
 
 // NewProjectHandler returns a new ProjectHandler
 func NewProjectHandler(baseURL string) *ProjectHandler {
-	scheme := "https"
+	scheme := "http"
 	if strings.Contains(baseURL, "https://") {
 		baseURL = strings.TrimPrefix(baseURL, "https://")
 	} else if strings.Contains(baseURL, "http://") {
