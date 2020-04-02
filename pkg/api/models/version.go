@@ -10,21 +10,21 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// Service service
-// swagger:model Service
-type Service struct {
+// Version version
+// swagger:model Version
+type Version struct {
 
-	// Service name
-	ServiceName string `json:"serviceName,omitempty"`
+	// Version identifier
+	Version string `json:"version,omitempty"`
 }
 
-// Validate validates this service
-func (m *Service) Validate(formats strfmt.Registry) error {
+// Validate validates this version
+func (m *Version) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *Service) MarshalBinary() ([]byte, error) {
+func (m *Version) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -32,8 +32,8 @@ func (m *Service) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *Service) UnmarshalBinary(b []byte) error {
-	var res Service
+func (m *Version) UnmarshalBinary(b []byte) error {
+	var res Version
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

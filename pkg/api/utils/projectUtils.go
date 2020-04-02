@@ -1,4 +1,4 @@
-package utils
+package api
 
 import (
 	"encoding/json"
@@ -20,14 +20,19 @@ type ProjectHandler struct {
 
 // NewProjectHandler returns a new ProjectHandler
 func NewProjectHandler(baseURL string) *ProjectHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
+	scheme := "http"
+	if strings.Contains(baseURL, "https://") {
+		baseURL = strings.TrimPrefix(baseURL, "https://")
+	} else if strings.Contains(baseURL, "http://") {
+		baseURL = strings.TrimPrefix(baseURL, "http://")
+		scheme = "http"
+	}
 	return &ProjectHandler{
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
 		HTTPClient: &http.Client{Transport: getClientTransport()},
-		Scheme:     "https",
+		Scheme:     scheme,
 	}
 }
 
@@ -66,7 +71,15 @@ func (p *ProjectHandler) getHTTPClient() *http.Client {
 }
 
 // CreateProject creates a new project
-func (p *ProjectHandler) CreateProject(project models.Project) (*models.EventContext, *models.Error) {
+func (p *ProjectHandler) CreateProject(project models.CreateProject) (*models.EventContext, *models.Error) {
+	bodyStr, err := json.Marshal(project)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
+	return post(p.Scheme+"://"+p.getBaseURL()+"/v1/project", bodyStr, p)
+}
+
+func (p *ProjectHandler) CreateConfigurationServiceProject(project models.Project) (*models.EventContext, *models.Error) {
 	bodyStr, err := json.Marshal(project)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
@@ -76,12 +89,12 @@ func (p *ProjectHandler) CreateProject(project models.Project) (*models.EventCon
 
 // DeleteProject deletes a project
 func (p *ProjectHandler) DeleteProject(project models.Project) (*models.EventContext, *models.Error) {
-	return delete(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+*project.Name, p)
+	return delete(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.ProjectName, p)
 }
 
 // GetProject returns a project
 func (p *ProjectHandler) GetProject(project models.Project) (*models.Project, *models.Error) {
-	return getProject(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+*project.Name, p)
+	return getProject(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.ProjectName, p)
 }
 
 func getProject(uri string, api APIService) (*models.Project, *models.Error) {

@@ -1,4 +1,4 @@
-package utils
+package api
 
 import (
 	"encoding/json"
@@ -20,14 +20,19 @@ type EventHandler struct {
 
 // NewEventHandler returns a new EventHandler
 func NewEventHandler(baseURL string) *EventHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
+	scheme := "http"
+	if strings.Contains(baseURL, "https://") {
+		baseURL = strings.TrimPrefix(baseURL, "https://")
+	} else if strings.Contains(baseURL, "http://") {
+		baseURL = strings.TrimPrefix(baseURL, "http://")
+		scheme = "http"
+	}
 	return &EventHandler{
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
 		HTTPClient: &http.Client{Transport: getClientTransport()},
-		Scheme:     "https",
+		Scheme:     scheme,
 	}
 }
 
@@ -66,7 +71,7 @@ func (e *EventHandler) getHTTPClient() *http.Client {
 }
 
 // SendEvent sends an event to Keptn
-func (e *EventHandler) SendEvent(event models.Event) (*models.EventContext, *models.Error) {
+func (e *EventHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.EventContext, *models.Error) {
 	bodyStr, err := json.Marshal(event)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())

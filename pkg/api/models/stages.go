@@ -13,28 +13,25 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// Project project
-// swagger:model Project
-type Project struct {
+// Stages stages
+// swagger:model Stages
+type Stages struct {
 
-	// Git remote URI
-	GitRemoteURI string `json:"gitRemoteURI,omitempty"`
+	// Pointer to next page, base64 encoded
+	NextPageKey string `json:"nextPageKey,omitempty"`
 
-	// Git token
-	GitToken string `json:"gitToken,omitempty"`
-
-	// Git User
-	GitUser string `json:"gitUser,omitempty"`
-
-	// Project name
-	ProjectName string `json:"projectName,omitempty"`
+	// Size of returned page
+	PageSize float64 `json:"pageSize,omitempty"`
 
 	// stages
 	Stages []*Stage `json:"stages"`
+
+	// Total number of stages
+	TotalCount float64 `json:"totalCount,omitempty"`
 }
 
-// Validate validates this project
-func (m *Project) Validate(formats strfmt.Registry) error {
+// Validate validates this stages
+func (m *Stages) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateStages(formats); err != nil {
@@ -47,7 +44,7 @@ func (m *Project) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Project) validateStages(formats strfmt.Registry) error {
+func (m *Stages) validateStages(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.Stages) { // not required
 		return nil
@@ -73,7 +70,7 @@ func (m *Project) validateStages(formats strfmt.Registry) error {
 }
 
 // MarshalBinary interface implementation
-func (m *Project) MarshalBinary() ([]byte, error) {
+func (m *Stages) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -81,8 +78,8 @@ func (m *Project) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *Project) UnmarshalBinary(b []byte) error {
-	var res Project
+func (m *Stages) UnmarshalBinary(b []byte) error {
+	var res Stages
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
