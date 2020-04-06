@@ -382,7 +382,7 @@ func (k *Keptn) SendConfigurationChangeEvent(incomingEvent *cloudevents.Event, l
 
 	log.Println(fmt.Sprintf("%s", event))
 
-	return k.sendCloudEvent(event)
+	return k.SendCloudEvent(event)
 }
 
 //
@@ -447,7 +447,7 @@ func (k *Keptn) SendDeploymentFinishedEvent(incomingEvent *cloudevents.Event, te
 
 	log.Println(fmt.Sprintf("%s", event))
 
-	return k.sendCloudEvent(event)
+	return k.SendCloudEvent(event)
 
 }
 
@@ -506,7 +506,7 @@ func (k *Keptn) SendTestsFinishedEvent(incomingEvent *cloudevents.Event, teststr
 
 	log.Println(fmt.Printf("%s", event))
 
-	return k.sendCloudEvent(event)
+	return k.SendCloudEvent(event)
 }
 
 func (k *Keptn) GetEvents(eventType string) (*models.KeptnContextExtendedCE, *models.Error) {
@@ -516,7 +516,7 @@ func (k *Keptn) GetEvents(eventType string) (*models.KeptnContextExtendedCE, *mo
 //
 // Sends a CloudEvent to the event broker
 //
-func (k *Keptn) sendCloudEvent(event cloudevents.Event) error {
+func (k *Keptn) SendCloudEvent(event cloudevents.Event) error {
 	if k.useLocalFileSystem {
 		log.Println(fmt.Printf("%v", event.Data))
 		return nil

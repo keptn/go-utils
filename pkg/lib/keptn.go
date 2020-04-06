@@ -8,6 +8,7 @@ import (
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"gopkg.in/yaml.v2"
 	"log"
+	"net/url"
 	"os"
 	"regexp"
 	"strings"
@@ -285,4 +286,24 @@ func ValididateUnixDirectoryName(dirName string) bool {
 		strings.Contains(dirName, "|") ||
 		strings.Contains(dirName, ":") ||
 		strings.Contains(dirName, "&"))
+}
+
+// getServiceEndpoint gets an endpoint stored in an environment variable and sets http as default scheme
+func GetServiceEndpoint(service string) (url.URL, error) {
+	url, err := url.Parse(os.Getenv(service))
+	if err != nil {
+		return *url, fmt.Errorf("Failed to retrieve value from ENVIRONMENT_VARIABLE: %s", service)
+	}
+
+	if url.Scheme == "" {
+		url.Scheme = "http"
+	}
+
+	// check if only a service name has been provided, e.g. 'configuration-service'
+	if url.Host == "" && url.Path != "" {
+		url.Host = url.Path
+		url.Path = ""
+	}
+
+	return *url, nil
 }
