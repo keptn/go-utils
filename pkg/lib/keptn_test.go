@@ -9,7 +9,9 @@ import (
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -389,4 +391,67 @@ indicators:
 
 func stringp(s string) *string {
 	return &s
+}
+
+func TestGetServiceEndpoint(t *testing.T) {
+	type args struct {
+		service string
+	}
+	tests := []struct {
+		name        string
+		args        args
+		envVarValue string
+		want        url.URL
+		wantErr     bool
+	}{
+		{
+			name: "get http endpoint",
+			args: args{
+				service: "CONFIGURATION_SERVICE",
+			},
+			envVarValue: "http://configuration-service",
+			want: url.URL{
+				Scheme: "http",
+				Host:   "configuration-service",
+			},
+			wantErr: false,
+		},
+		{
+			name: "get https endpoint",
+			args: args{
+				service: "CONFIGURATION_SERVICE",
+			},
+			envVarValue: "https://configuration-service",
+			want: url.URL{
+				Scheme: "https",
+				Host:   "configuration-service",
+			},
+			wantErr: false,
+		},
+		{
+			name: "get http endpoint from service-name only",
+			args: args{
+				service: "CONFIGURATION_SERVICE",
+			},
+			envVarValue: "configuration-service",
+			want: url.URL{
+				Scheme: "http",
+				Host:   "configuration-service",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			os.Setenv(tt.args.service, tt.envVarValue)
+			got, err := GetServiceEndpoint(tt.args.service)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetServiceEndpoint() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetServiceEndpoint() got = %v, want %v", got.Host, tt.want.Host)
+			}
+		})
+	}
 }
