@@ -43,10 +43,15 @@ func getKeptnFields(ts *httptest.Server) fields {
 }
 
 func TestKeptn_SendCloudEvent(t *testing.T) {
-
+	failOnFirstTry := true
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
+			if failOnFirstTry {
+				failOnFirstTry = false
+				w.WriteHeader(500)
+				w.Write([]byte(`{}`))
+			}
 			w.WriteHeader(200)
 			w.Write([]byte(`{}`))
 		}),
@@ -205,5 +210,59 @@ func verifyReceivedEventType(receivedCorrectType chan bool, t *testing.T) {
 
 	case <-time.After(5 * time.Second):
 		t.Errorf("SendTestsFinishedEvent(): timed out waiting for event")
+	}
+}
+
+func Test_getExpBackoffTime(t *testing.T) {
+	type args struct {
+		retryNr int
+	}
+	type durationRange struct {
+		min time.Duration
+		max time.Duration
+	}
+	tests := []struct {
+		name string
+		args args
+		want durationRange
+	}{
+		{
+			name: "Get exponential backoff time (1)",
+			args: args{
+				retryNr: 1,
+			},
+			want: durationRange{
+				min: 375.0 * time.Millisecond,
+				max: 1125.0 * time.Millisecond,
+			},
+		},
+		{
+			name: "Get exponential backoff time (2)",
+			args: args{
+				retryNr: 2,
+			},
+			want: durationRange{
+				min: 750.0 * time.Millisecond,
+				max: 2250.0 * time.Millisecond,
+			},
+		},
+		{
+			name: "Get exponential backoff time (3)",
+			args: args{
+				retryNr: 3,
+			},
+			want: durationRange{
+				min: 1125.0 * time.Millisecond,
+				max: 3375.0 * time.Millisecond,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := getExpBackoffTime(tt.args.retryNr)
+			if got < tt.want.min || got > tt.want.max {
+				t.Errorf("getExpBackoffTime() = %v, want [%v,%v]", got, tt.want.min, tt.want.max)
+			}
+		})
 	}
 }

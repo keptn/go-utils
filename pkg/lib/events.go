@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"log"
+	"math/rand"
 	"net/url"
 	"time"
 )
@@ -18,6 +19,8 @@ import (
 import (
 	"encoding/json"
 )
+
+const MAX_SEND_RETRIES = 3
 
 // InternalProjectCreateEventType is a CloudEvent type for creating a new project
 const InternalProjectCreateEventType = "sh.keptn.internal.event.project.create"
@@ -534,8 +537,28 @@ func (k *Keptn) SendCloudEvent(event cloudevents.Event) error {
 		return errors.New("Failed to create HTTP client:" + err.Error())
 	}
 
-	if _, _, err := c.Send(context.Background(), event); err != nil {
-		return errors.New("Failed to send cloudevent:, " + err.Error())
+	for i := 0; i <= MAX_SEND_RETRIES; i++ {
+		_, _, err = c.Send(context.Background(), event)
+		if err == nil {
+			return nil
+		}
+		<-time.After(getExpBackoffTime(i + 1))
 	}
-	return nil
+	return errors.New("Failed to send cloudevent:, " + err.Error())
+}
+
+func getExpBackoffTime(retryNr int) time.Duration {
+	f := 1.5 * float64(retryNr)
+	if retryNr <= 1 {
+		f = 1.5
+	}
+	currentInterval := float64(500*time.Millisecond) * f
+	randomizationFactor := 0.5
+	random := rand.Float64()
+
+	var delta = randomizationFactor * currentInterval
+	minInterval := float64(currentInterval) - delta
+	maxInterval := float64(currentInterval) + delta
+
+	return time.Duration(minInterval + (random * (maxInterval - minInterval + 1)))
 }
