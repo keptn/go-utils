@@ -56,8 +56,6 @@ func post(uri string, data []byte, api APIService) (*models.EventContext, *model
 
 			if eventContext.KeptnContext != nil {
 				fmt.Println("ID of Keptn context: " + *eventContext.KeptnContext)
-			} else {
-				fmt.Println("ID of Keptn context is nil")
 			}
 			return &eventContext, nil
 		}
