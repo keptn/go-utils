@@ -97,7 +97,7 @@ func (p *ProjectHandler) DeleteProject(project models.Project) (*models.EventCon
 
 // GetProject returns a project
 func (p *ProjectHandler) GetProject(project models.Project) (*models.Project, *models.Error) {
-	return getProject(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.ProjectName, p)
+	return getProject(p.Scheme+"://"+p.getBaseURL()+"/configuration-service/v1/project/"+project.ProjectName, p)
 }
 
 // GetProjects returns a project
@@ -108,7 +108,7 @@ func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
 	nextPageKey := ""
 
 	for {
-		url, err := url.Parse(p.Scheme + "://" + p.getBaseURL() + "/v1/project/")
+		url, err := url.Parse(p.Scheme + "://" + p.getBaseURL() + "/configuration-service/v1/project/")
 		if err != nil {
 			return nil, err
 		}
