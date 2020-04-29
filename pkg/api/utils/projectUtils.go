@@ -1,9 +1,12 @@
 package api
 
 import (
+	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
@@ -94,7 +97,64 @@ func (p *ProjectHandler) DeleteProject(project models.Project) (*models.EventCon
 
 // GetProject returns a project
 func (p *ProjectHandler) GetProject(project models.Project) (*models.Project, *models.Error) {
-	return getProject(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.ProjectName, p)
+	return getProject(p.Scheme+"://"+p.getBaseURL()+"/configuration-service/v1/project/"+project.ProjectName, p)
+}
+
+// GetProjects returns a project
+func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	projects := []*models.Project{}
+
+	nextPageKey := ""
+
+	for {
+		url, err := url.Parse(p.Scheme + "://" + p.getBaseURL() + "/configuration-service/v1/project/")
+		if err != nil {
+			return nil, err
+		}
+		q := url.Query()
+		if nextPageKey != "" {
+			q.Set("nextPageKey", nextPageKey)
+			url.RawQuery = q.Encode()
+		}
+		req, err := http.NewRequest("GET", url.String(), nil)
+		req.Header.Set("Content-Type", "application/json")
+		addAuthHeader(req, p)
+
+		resp, err := p.HTTPClient.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		if resp.StatusCode == 200 {
+			var received models.Projects
+			err = json.Unmarshal(body, &received)
+			if err != nil {
+				return nil, err
+			}
+			projects = append(projects, received.Projects...)
+
+			if received.NextPageKey == "" || received.NextPageKey == "0" {
+				break
+			}
+			nextPageKey = received.NextPageKey
+		} else {
+			var respErr models.Error
+			err = json.Unmarshal(body, &respErr)
+			if err != nil {
+				return nil, err
+			}
+			return nil, errors.New("Response Error Code: " + string(respErr.Code) + " Message: " + *respErr.Message)
+		}
+	}
+
+	return projects, nil
 }
 
 func getProject(uri string, api APIService) (*models.Project, *models.Error) {
