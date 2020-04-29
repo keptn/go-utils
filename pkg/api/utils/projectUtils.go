@@ -115,6 +115,7 @@ func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
 		q := url.Query()
 		if nextPageKey != "" {
 			q.Set("nextPageKey", nextPageKey)
+			url.RawQuery = q.Encode()
 		}
 		req, err := http.NewRequest("GET", url.String(), nil)
 		req.Header.Set("Content-Type", "application/json")
