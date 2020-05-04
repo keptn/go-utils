@@ -31,15 +31,30 @@ If you need to access several utility functions:
 
 ```go
 import {
-  keptnutils "github.com/keptn/go-utils/pkg/utils"
+  "github.com/keptn/go-utils/pkg/lib"
 }
 ```
 
-Logging Example:
+This module provides you with a convenient `Keptn` helper struct that allows you to access several resources that are relevant within the context of a 
+Keptn event. The helper struct can be initialized by passing a CloudEvent to the `NewKeptn` function. Example:
+
 ```go
-keptnutils.Debug(keptncontext, message)
-keptnutils.Info(keptncontext, message)
-keptnutils.Error(keptncontext, message)
+func HandleEvent(event cloudevents.Event) error {
+	keptnHandler, err := keptn.NewKeptn(&event, keptn.KeptnOpts{})
+	if err != nil {
+		return nil, err
+	}
+	
+    // get the shipyard file of the project
+    shipyard, _ := keptnHandler.GetShipyard()
+    
+    // get a resource within the current context (i.e., project, stage, service) of the event
+    resourceContent, _ := keptnHandler.GetKeptnResource("resource.yaml")
+
+    // send a cloud event
+    _ = keptnHandler.SendCloudEvent(event)
+    // ...
+}
 ```
 
 ### CloudEvent Data
@@ -47,7 +62,7 @@ If you need to access data within CloudEvents:
 
 ```go
 import {
-	keptnevents "github.com/keptn/go-utils/pkg/events"
+	"github.com/keptn/go-utils/pkg/lib"
 )
 ```
 
@@ -55,7 +70,7 @@ Example:
 
 ```go
 func parseCloudEvent(event cloudevents.Event) (keptnevents.TestFinishedEventData, error) {
-	eventData := &keptnevents.TestsFinishedEventData{}
+	eventData := &keptn.TestsFinishedEventData{}
 	err := event.DataAs(eventData)
     
     return eventData, err
@@ -67,7 +82,7 @@ If you need to access Models for YAML files:
 
 ```go
 import {
-	keptnmodels "github.com/keptn/go-utils/pkg/models"
+	"github.com/keptn/go-utils/pkg/lib"
 )
 ```
 
