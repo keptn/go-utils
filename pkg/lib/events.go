@@ -61,6 +61,10 @@ const InternalGetSLIEventType = "sh.keptn.internal.event.get-sli"
 // InternalGetSLIDoneEventType is a CloudEvent for submitting SLI values
 const InternalGetSLIDoneEventType = "sh.keptn.internal.event.get-sli.done"
 
+const ApprovalTriggeredEventType = "sh.keptn.events.approval.triggered"
+
+const ApprovalFinishedEventType = "sh.keptn.events.approval.finished"
+
 // KeptnBase contains properties that are shared among most Keptn events
 type KeptnBase struct {
 	Project string `json:"project"`
@@ -342,6 +346,50 @@ type InternalGetSLIDoneEventData struct {
 	Deployment         string `json:"deployment"`
 	// Labels contains labels
 	Labels map[string]string `json:"labels"`
+}
+
+type ApprovalData struct {
+	TriggeredID *string `json:"triggered_id,omitempty"`
+	Result      *string `json:"result,omitempty"`
+	Status      *string `json:"status,omitempty"`
+}
+
+// ApprovalTriggeredEventData contains information about an approval.triggered event
+type ApprovalTriggeredEventData struct {
+	Project string `json:"project"`
+	// Service is the name of the new service
+	Service string `json:"service"`
+	// Stage is the name of the stage
+	Stage        string  `json:"stage"`
+	TestStrategy *string `json:"teststrategy,omitempty"`
+	// DeploymentStrategy is the deployment strategy
+	DeploymentStrategy *string `json:"deploymentstrategy,omitempty"`
+	// Tag of the new deployed artifact
+	Tag *string `json:"tag,omitempty"`
+	// Image of the new deployed artifact
+	Image *string `json:"image,omitempty"`
+	// Labels contains labels
+	Labels   map[string]string `json:"labels"`
+	Approval *ApprovalData     `json:"approval,omitempty"`
+}
+
+// ApprovalTriggeredEventData contains information about an approval.finished event
+type ApprovalFinishedEventData struct {
+	Project string `json:"project"`
+	// Service is the name of the new service
+	Service string `json:"service"`
+	// Stage is the name of the stage
+	Stage        string  `json:"stage"`
+	TestStrategy *string `json:"teststrategy,omitempty"`
+	// DeploymentStrategy is the deployment strategy
+	DeploymentStrategy *string `json:"deploymentstrategy,omitempty"`
+	// Tag of the new deployed artifact
+	Tag *string `json:"tag,omitempty"`
+	// Image of the new deployed artifact
+	Image *string `json:"image,omitempty"`
+	// Labels contains labels
+	Labels   map[string]string `json:"labels"`
+	Approval *ApprovalData     `json:"approval,omitempty"`
 }
 
 //
