@@ -349,9 +349,9 @@ type InternalGetSLIDoneEventData struct {
 }
 
 type ApprovalData struct {
-	TriggeredID *string `json:"triggered_id,omitempty"`
-	Result      *string `json:"result,omitempty"`
-	Status      *string `json:"status,omitempty"`
+	TriggeredID string `json:"triggered_id,omitempty"`
+	Result      string `json:"result,omitempty"`
+	Status      string `json:"status,omitempty"`
 }
 
 // ApprovalTriggeredEventData contains information about an approval.triggered event
