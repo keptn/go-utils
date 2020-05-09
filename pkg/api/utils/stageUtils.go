@@ -90,7 +90,7 @@ func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 
 	nextPageKey := ""
 	for {
-		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + "/v1/project/" + project + "/stage")
+		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + "/configuration-service/v1/project/" + project + "/stage")
 		if err != nil {
 			return nil, err
 		}
