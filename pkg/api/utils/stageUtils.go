@@ -44,6 +44,7 @@ func NewAuthenticatedStageHandler(baseURL string, authToken string, authHeader s
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
+	httpClient.Transport = getClientTransport()
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
 	return &StageHandler{
