@@ -369,8 +369,10 @@ type ApprovalTriggeredEventData struct {
 	// Image of the new deployed artifact
 	Image *string `json:"image,omitempty"`
 	// Labels contains labels
-	Labels   map[string]string `json:"labels"`
-	Approval *ApprovalData     `json:"approval,omitempty"`
+	Labels map[string]string `json:"labels"`
+
+	// Result is the result of an evaluation; possible values are: pass, warning, fail
+	Result string `json:"result"`
 }
 
 // ApprovalTriggeredEventData contains information about an approval.finished event
