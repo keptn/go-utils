@@ -4,16 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"math/rand"
+	"net/url"
+	"time"
+
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
-	"log"
-	"math/rand"
-	"net/url"
-	"time"
 )
 
 import (
@@ -349,9 +350,9 @@ type InternalGetSLIDoneEventData struct {
 }
 
 type ApprovalData struct {
-	TriggeredID string `json:"triggered_id,omitempty"`
-	Result      string `json:"result,omitempty"`
-	Status      string `json:"status,omitempty"`
+	TriggeredID string `json:"triggered_id"`
+	Result      string `json:"result"`
+	Status      string `json:"status"`
 }
 
 // ApprovalTriggeredEventData contains information about an approval.triggered event
@@ -365,9 +366,9 @@ type ApprovalTriggeredEventData struct {
 	// DeploymentStrategy is the deployment strategy
 	DeploymentStrategy *string `json:"deploymentstrategy,omitempty"`
 	// Tag of the new deployed artifact
-	Tag *string `json:"tag,omitempty"`
+	Tag string `json:"tag,omitempty"`
 	// Image of the new deployed artifact
-	Image *string `json:"image,omitempty"`
+	Image string `json:"image,omitempty"`
 	// Labels contains labels
 	Labels map[string]string `json:"labels"`
 
@@ -386,12 +387,12 @@ type ApprovalFinishedEventData struct {
 	// DeploymentStrategy is the deployment strategy
 	DeploymentStrategy *string `json:"deploymentstrategy,omitempty"`
 	// Tag of the new deployed artifact
-	Tag *string `json:"tag,omitempty"`
+	Tag string `json:"tag,omitempty"`
 	// Image of the new deployed artifact
-	Image *string `json:"image,omitempty"`
+	Image string `json:"image,omitempty"`
 	// Labels contains labels
 	Labels   map[string]string `json:"labels"`
-	Approval *ApprovalData     `json:"approval,omitempty"`
+	Approval ApprovalData      `json:"approval"`
 }
 
 //
