@@ -1,8 +1,6 @@
 package keptn
 
 import (
-	"bytes"
-	"encoding/json"
 	"strings"
 )
 
@@ -30,19 +28,19 @@ var approvalStrategyToID = map[string]ApprovalStrategy{
 	"manual":    Manual,
 }
 
-// MarshalJSON marshals the enum as a quoted json string
-func (s ApprovalStrategy) MarshalJSON() ([]byte, error) {
-	buffer := bytes.NewBufferString(`"`)
-	buffer.WriteString(approvalStrategyToString[s])
-	buffer.WriteString(`"`)
-	return buffer.Bytes(), nil
+// MarshalYAML marshalls the enum as a quoted json string
+func (s ApprovalStrategy) MarshalYAML() (interface{}, error) {
+	return approvalStrategyToString[s], nil
+	//buffer := bytes.NewBufferString(`"`)
+	//buffer.WriteString(approvalStrategyToString[*s])
+	//buffer.WriteString(`"`)
+	//return buffer.Bytes(), nil
 }
 
-// UnmarshalJSON unmashals a quoted json string to the enum value
-func (s *ApprovalStrategy) UnmarshalJSON(b []byte) error {
+// UnmarshalYAML unmarshalls a quoted json string to the enum value
+func (s *ApprovalStrategy) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var j string
-	err := json.Unmarshal(b, &j)
-	if err != nil {
+	if err := unmarshal(&j); err != nil {
 		return err
 	}
 	// Note that if the string cannot be found then it will be set to the zero value, 'Created' in this case.

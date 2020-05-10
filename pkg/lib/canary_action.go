@@ -34,7 +34,7 @@ var canaryActionToID = map[string]CanaryAction{
 	"discard": Discard,
 }
 
-// MarshalJSON marshals the enum as a quoted json string
+// MarshalJSON marshalls the enum as a quoted json string
 func (s CanaryAction) MarshalJSON() ([]byte, error) {
 	buffer := bytes.NewBufferString(`"`)
 	buffer.WriteString(canaryActionToString[s])
@@ -42,7 +42,7 @@ func (s CanaryAction) MarshalJSON() ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-// UnmarshalJSON unmashals a quoted json string to the enum value
+// UnmarshalJSON unmarshalls a quoted json string to the enum value
 func (s *CanaryAction) UnmarshalJSON(b []byte) error {
 	var j string
 	err := json.Unmarshal(b, &j)
