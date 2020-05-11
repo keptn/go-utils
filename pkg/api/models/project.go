@@ -29,6 +29,9 @@ type Project struct {
 	// Project name
 	ProjectName string `json:"projectName,omitempty"`
 
+	// Creation Date
+	CreationDate string `json:"creationDate,omitempty"`
+
 	// stages
 	Stages []*Stage `json:"stages"`
 }
