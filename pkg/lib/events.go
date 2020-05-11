@@ -4,16 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"math/rand"
+	"net/url"
+	"time"
+
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
-	"log"
-	"math/rand"
-	"net/url"
-	"time"
 )
 
 import (
@@ -60,6 +61,10 @@ const InternalGetSLIEventType = "sh.keptn.internal.event.get-sli"
 
 // InternalGetSLIDoneEventType is a CloudEvent for submitting SLI values
 const InternalGetSLIDoneEventType = "sh.keptn.internal.event.get-sli.done"
+
+const ApprovalTriggeredEventType = "sh.keptn.events.approval.triggered"
+
+const ApprovalFinishedEventType = "sh.keptn.events.approval.finished"
 
 // KeptnBase contains properties that are shared among most Keptn events
 type KeptnBase struct {
@@ -342,6 +347,52 @@ type InternalGetSLIDoneEventData struct {
 	Deployment         string `json:"deployment"`
 	// Labels contains labels
 	Labels map[string]string `json:"labels"`
+}
+
+type ApprovalData struct {
+	TriggeredID string `json:"triggered_id"`
+	Result      string `json:"result"`
+	Status      string `json:"status"`
+}
+
+// ApprovalTriggeredEventData contains information about an approval.triggered event
+type ApprovalTriggeredEventData struct {
+	Project string `json:"project"`
+	// Service is the name of the new service
+	Service string `json:"service"`
+	// Stage is the name of the stage
+	Stage        string  `json:"stage"`
+	TestStrategy *string `json:"teststrategy,omitempty"`
+	// DeploymentStrategy is the deployment strategy
+	DeploymentStrategy *string `json:"deploymentstrategy,omitempty"`
+	// Tag of the new deployed artifact
+	Tag string `json:"tag,omitempty"`
+	// Image of the new deployed artifact
+	Image string `json:"image,omitempty"`
+	// Labels contains labels
+	Labels map[string]string `json:"labels"`
+
+	// Result is the result of an evaluation; possible values are: pass, warning, fail
+	Result string `json:"result"`
+}
+
+// ApprovalTriggeredEventData contains information about an approval.finished event
+type ApprovalFinishedEventData struct {
+	Project string `json:"project"`
+	// Service is the name of the new service
+	Service string `json:"service"`
+	// Stage is the name of the stage
+	Stage        string  `json:"stage"`
+	TestStrategy *string `json:"teststrategy,omitempty"`
+	// DeploymentStrategy is the deployment strategy
+	DeploymentStrategy *string `json:"deploymentstrategy,omitempty"`
+	// Tag of the new deployed artifact
+	Tag string `json:"tag,omitempty"`
+	// Image of the new deployed artifact
+	Image string `json:"image,omitempty"`
+	// Labels contains labels
+	Labels   map[string]string `json:"labels"`
+	Approval ApprovalData      `json:"approval"`
 }
 
 //
