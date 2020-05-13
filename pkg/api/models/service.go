@@ -16,6 +16,9 @@ type Service struct {
 
 	// Service name
 	ServiceName string `json:"serviceName,omitempty"`
+
+	// Creation Date
+	CreationDate string `json:"creationDate,omitempty"`
 }
 
 // Validate validates this service

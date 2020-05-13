@@ -102,7 +102,7 @@ func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models
 	nextPageKey := ""
 
 	for {
-		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + "/v1/project/" + project + "/stage/" + stage + "/service")
+		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + "/configuration-service/v1/project/" + project + "/stage/" + stage + "/service")
 		if err != nil {
 			return nil, err
 		}
