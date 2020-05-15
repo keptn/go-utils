@@ -19,6 +19,7 @@ type EventHandler struct {
 	Scheme     string
 }
 
+// EventFilter allows to filter events based on the provided properties
 type EventFilter struct {
 	Project      string
 	Stage        string
@@ -89,8 +90,9 @@ func (e *EventHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.E
 	return post(e.Scheme+"://"+e.getBaseURL()+"/v1/event", bodyStr, e)
 }
 
+// GetEvents returns all events matching the properties in the passed filter object
 func (e *EventHandler) GetEvents(filter *EventFilter) ([]*models.KeptnContextExtendedCE, *models.Error) {
-	raw := e.Scheme + "://" + e.getBaseURL() + "/datastore/event?"
+	raw := e.Scheme + "://" + e.getBaseURL() + "/mongodb-datastore/event?"
 
 	u, _ := url.Parse(raw)
 
@@ -118,6 +120,8 @@ func (e *EventHandler) GetEvents(filter *EventFilter) ([]*models.KeptnContextExt
 }
 
 // GetEvent returns an event specified by keptnContext and eventType
+//
+// Deprecated: this function is deprecated and should be replaced with the GetEvents function
 func (e *EventHandler) GetEvent(keptnContext string, eventType string) (*models.KeptnContextExtendedCE, *models.Error) {
 	return getEvent(e.Scheme+"://"+e.getBaseURL()+"/v1/event?keptnContext="+keptnContext+"&type="+eventType+"&pageSize=10", e)
 }
