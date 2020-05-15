@@ -17,6 +17,9 @@ import (
 // swagger:model Project
 type Project struct {
 
+	// Creation date of the service
+	CreationDate string `json:"creationDate,omitempty"`
+
 	// Git remote URI
 	GitRemoteURI string `json:"gitRemoteURI,omitempty"`
 

@@ -45,6 +45,9 @@ definitions:
   Project:
     type: object
     properties:
+      creationDate:
+        type: string
+        description: Creation date of the service
       projectName:
         type: string
         description: Project name
