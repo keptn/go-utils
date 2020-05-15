@@ -93,6 +93,45 @@ func (s *ServiceHandler) CreateServiceInStage(project string, stage string, serv
 	return post(s.Scheme+"://"+s.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service", body, s)
 }
 
+func (s *ServiceHandler) GetService(project, stage, service string) (*models.Service, error) {
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+
+	url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + "/configuration-service/v1/project/" + project + "/stage/" + stage + "/service/" + service)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest("GET", url.String(), nil)
+	req.Header.Set("Content-Type", "application/json")
+	addAuthHeader(req, s)
+
+	resp, err := s.HTTPClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode == 200 {
+		var received models.Service
+		err = json.Unmarshal(body, &received)
+		if err != nil {
+			return nil, err
+		}
+		return &received, nil
+	} else {
+		var respErr models.Error
+		err = json.Unmarshal(body, &respErr)
+		if err != nil {
+			return nil, err
+		}
+		return nil, errors.New("Response Error Code: " + string(respErr.Code) + " Message: " + *respErr.Message)
+	}
+}
+
 // GetAllServices returns a list of all services.
 func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models.Service, error) {
 
