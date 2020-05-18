@@ -17,6 +17,9 @@ import (
 // swagger:model Project
 type Project struct {
 
+	// Creation date of the service
+	CreationDate string `json:"creationDate,omitempty"`
+
 	// Git remote URI
 	GitRemoteURI string `json:"gitRemoteURI,omitempty"`
 
@@ -28,9 +31,6 @@ type Project struct {
 
 	// Project name
 	ProjectName string `json:"projectName,omitempty"`
-
-	// Creation Date
-	CreationDate string `json:"creationDate,omitempty"`
 
 	// stages
 	Stages []*Stage `json:"stages"`
