@@ -113,6 +113,9 @@ func (e *EventHandler) GetEvents(filter *EventFilter) ([]*models.KeptnContextExt
 	if filter.EventID != "" {
 		query.Set("eventID", filter.EventID)
 	}
+	if filter.EventType != "" {
+		query.Set("type", filter.EventType)
+	}
 
 	u.RawQuery = query.Encode()
 
