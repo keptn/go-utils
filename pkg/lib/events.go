@@ -66,6 +66,8 @@ const ApprovalTriggeredEventType = "sh.keptn.events.approval.triggered"
 
 const ApprovalFinishedEventType = "sh.keptn.events.approval.finished"
 
+const TestTriggeredEventType = "sh.keptn.event.test.triggered"
+
 // KeptnBase contains properties that are shared among most Keptn events
 type KeptnBase struct {
 	Project string `json:"project"`
@@ -151,6 +153,30 @@ type Canary struct {
 
 // DeploymentFinishedEventData represents the data for a deployment finished event
 type DeploymentFinishedEventData struct {
+	// Project is the name of the project
+	Project string `json:"project"`
+	// Stage is the name of the stage
+	Stage string `json:"stage"`
+	// Service is the name of the new service
+	Service string `json:"service"`
+	// TestStrategy is the testing strategy
+	TestStrategy string `json:"teststrategy"`
+	// DeploymentStrategy is the deployment strategy
+	DeploymentStrategy string `json:"deploymentstrategy"`
+	// Tag of the new deployed artifact
+	Tag string `json:"tag"`
+	// Image of the new deployed artifact
+	Image string `json:"image"`
+	// Labels contains labels
+	Labels map[string]string `json:"labels"`
+	// DeploymentURILocal contains the local URL
+	DeploymentURILocal string `json:"deploymentURILocal,omitempty"`
+	// DeploymentURIPublic contains the public URL
+	DeploymentURIPublic string `json:"deploymentURIPublic,omitempty"`
+}
+
+// TestTriggeredEventData represents the data for a new test
+type TestTriggeredEventData struct {
 	// Project is the name of the project
 	Project string `json:"project"`
 	// Stage is the name of the stage
