@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
@@ -610,6 +611,7 @@ func (k *Keptn) SendCloudEvent(event cloudevents.Event) error {
 	transport, err := cloudeventshttp.New(
 		cloudeventshttp.WithTarget(k.eventBrokerURL),
 		cloudeventshttp.WithEncoding(cloudeventshttp.StructuredV02),
+		cloudeventshttp.WithHeader("x-token", os.Getenv("API_TOKEN")),
 	)
 	if err != nil {
 		return errors.New("Failed to create transport:" + err.Error())
