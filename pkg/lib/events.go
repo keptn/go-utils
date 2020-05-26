@@ -220,12 +220,6 @@ type TestsFinishedEventData struct {
 	Labels map[string]string `json:"labels"`
 	// Result shows the status of the test
 	Result string `json:"result"`
-
-	Test TestData `json:"test"`
-}
-
-type TestData struct {
-	TriggeredID string `json:"triggered_id"`
 }
 
 // StartEvaluationEventData represents the data for a test finished event
