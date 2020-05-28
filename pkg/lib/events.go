@@ -440,7 +440,7 @@ type ActionTriggeredEventData struct {
 	// Stage is the name of the stage
 	Stage string `json:"stage"`
 	// Action describes the type of action
-	Action string `json:"action"`
+	Action ActionInfo `json:"action"`
 	// Problem contains details about the problem
 	Problem ProblemDetails `json:"problem"`
 	// Labels contains labels
