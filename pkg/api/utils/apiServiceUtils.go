@@ -31,7 +31,6 @@ func post(uri string, data []byte, api APIService) (*models.EventContext, *model
 
 	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/json")
-	req.Host = "api.keptn"
 	addAuthHeader(req, api)
 
 	resp, err := api.getHTTPClient().Do(req)
@@ -81,7 +80,6 @@ func delete(uri string, api APIService) (*models.EventContext, *models.Error) {
 
 	req, err := http.NewRequest("DELETE", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.Host = "api.keptn"
 	addAuthHeader(req, api)
 
 	resp, err := api.getHTTPClient().Do(req)

@@ -133,7 +133,6 @@ func getEvent(uri string, api APIService) (*models.KeptnContextExtendedCE, *mode
 
 	req, err := http.NewRequest("GET", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.Host = "api.keptn"
 	addAuthHeader(req, api)
 
 	resp, err := api.getHTTPClient().Do(req)
