@@ -419,6 +419,18 @@ type ProblemDetails struct {
 	Tags string `json:"Tags,omitempty"`
 }
 
+// ActionInfo contains information about the action to be performed
+type ActionInfo struct {
+	// Name is the name of the action
+	Name string `json:"name"`
+	// Action determines the type of action to be executed
+	Action string `json:"action"`
+	// Description contains the description of the action
+	Description string `json:"description"`
+	// Values contains additional values
+	Values map[string]string `json:"values"`
+}
+
 // ActionTriggeredEventData contains information about an action.triggered event
 type ActionTriggeredEventData struct {
 	// Project is the name of the project
@@ -431,11 +443,24 @@ type ActionTriggeredEventData struct {
 	Action string `json:"action"`
 	// Problem contains details about the problem
 	Problem ProblemDetails `json:"problem"`
-	// Values contains additional values
-	Values map[string]string `json:"values"`
 	// Labels contains labels
 	Labels map[string]string `json:"labels"`
 }
+
+type ActionResultType string
+
+const (
+	ActionResultPass   ActionResultType = "pass"
+	ActionResultFailed ActionResultType = "failed"
+)
+
+type ActionStatusType string
+
+const (
+	ActionStatusSucceeded ActionStatusType = "succeeded"
+	ActionStatusErrored   ActionStatusType = "errored"
+	ActionStatusUnknown   ActionStatusType = "unknown"
+)
 
 // ActionResult contains information about the execution of an action
 type ActionResult struct {
