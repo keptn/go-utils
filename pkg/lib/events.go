@@ -480,8 +480,8 @@ type ActionFinishedEventData struct {
 	Action ActionResult `json:"action"`
 	// Problem contains details about the problem
 	Problem ProblemDetails `json:"problem"`
-	// Values contains additional values
-	Values map[string]string `json:"values"`
+	// Value contains additional values
+	Value interface{} `json:"value,omitempty"`
 	// Labels contains labels
 	Labels map[string]string `json:"labels"`
 }
