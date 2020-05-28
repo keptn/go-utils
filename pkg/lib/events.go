@@ -427,8 +427,8 @@ type ActionInfo struct {
 	Action string `json:"action"`
 	// Description contains the description of the action
 	Description string `json:"description"`
-	// Values contains additional values
-	Values map[string]string `json:"values"`
+	// Value contains the value of the action
+	Value interface{} `json:"value,omitempty"`
 }
 
 // ActionTriggeredEventData contains information about an action.triggered event
