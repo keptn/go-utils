@@ -45,6 +45,9 @@ definitions:
   Project:
     type: object
     properties:
+      creationDate:
+        type: string
+        description: Creation date of the service
       projectName:
         type: string
         description: Project name
@@ -127,6 +130,50 @@ definitions:
       serviceName:
         type: string
         description: Service name
+      deployedImage:
+        type: string
+        description: Currently deployed image
+      creationDate:
+        type: string
+        description: Creation date of the service
+      openApprovals:
+        type: array
+        items:
+          $ref: '#/definitions/Approval'
+      lastEventTypes:
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/EventContextInfo'
+
+  Approval:
+    type: object
+    properties:
+      keptnContext:
+        type: string
+        description: Keptn Context ID of the event
+      eventId:
+        type: string
+        description: ID of the event
+      time:
+        type: string
+        description: Time of the event
+      image:
+        type: string
+      tag:
+        type: string
+
+  EventContextInfo:
+    type: object
+    properties:
+      keptnContext:
+        type: string
+        description: Keptn Context ID of the event
+      eventId:
+        type: string
+        description: ID of the event
+      time:
+        type: string
+        description: Time of the event
 
   Services:
     type: object

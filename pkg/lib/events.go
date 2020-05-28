@@ -66,6 +66,12 @@ const ApprovalTriggeredEventType = "sh.keptn.events.approval.triggered"
 
 const ApprovalFinishedEventType = "sh.keptn.events.approval.finished"
 
+// ActionTriggeredEventType is a CloudEvent for triggering actions
+const ActionTriggeredEventType = "sh.keptn.event.action.triggered"
+
+// ActionFinishedEventType is a CloudEvent for indicating that an action has been finished
+const ActionFinishedEventType = "sh.keptn.event.action.finished"
+
 // KeptnBase contains properties that are shared among most Keptn events
 type KeptnBase struct {
 	Project string `json:"project"`
@@ -393,6 +399,91 @@ type ApprovalFinishedEventData struct {
 	// Labels contains labels
 	Labels   map[string]string `json:"labels"`
 	Approval ApprovalData      `json:"approval"`
+}
+
+// ProblemDetails contains information about a problem
+type ProblemDetails struct {
+	// State is the state of the problem; possible values are: OPEN, RESOLVED
+	State string `json:"State,omitempty"`
+	// ProblemID is a unique system identifier of the reported problem
+	ProblemID string `json:"ProblemID"`
+	// ProblemTitle is the display number of the reported problem.
+	ProblemTitle string `json:"ProblemTitle"`
+	// ProblemDetails are all problem event details including root cause
+	ProblemDetails json.RawMessage `json:"ProblemDetails"`
+	// PID is a unique system identifier of the reported problem.
+	PID string `json:"PID"`
+	// ImpcatedEntity is an identifier of the impacted entity
+	ImpactedEntity string `json:"ImpactedEntity,omitempty"`
+	// Tags is a comma separated list of tags that are defined for all impacted entities.
+	Tags string `json:"Tags,omitempty"`
+}
+
+// ActionInfo contains information about the action to be performed
+type ActionInfo struct {
+	// Name is the name of the action
+	Name string `json:"name"`
+	// Action determines the type of action to be executed
+	Action string `json:"action"`
+	// Description contains the description of the action
+	Description string `json:"description"`
+	// Values contains additional values
+	Values map[string]string `json:"values"`
+}
+
+// ActionTriggeredEventData contains information about an action.triggered event
+type ActionTriggeredEventData struct {
+	// Project is the name of the project
+	Project string `json:"project"`
+	// Service is the name of the new service
+	Service string `json:"service"`
+	// Stage is the name of the stage
+	Stage string `json:"stage"`
+	// Action describes the type of action
+	Action ActionInfo `json:"action"`
+	// Problem contains details about the problem
+	Problem ProblemDetails `json:"problem"`
+	// Labels contains labels
+	Labels map[string]string `json:"labels"`
+}
+
+type ActionResultType string
+
+const (
+	ActionResultPass   ActionResultType = "pass"
+	ActionResultFailed ActionResultType = "failed"
+)
+
+type ActionStatusType string
+
+const (
+	ActionStatusSucceeded ActionStatusType = "succeeded"
+	ActionStatusErrored   ActionStatusType = "errored"
+	ActionStatusUnknown   ActionStatusType = "unknown"
+)
+
+// ActionResult contains information about the execution of an action
+type ActionResult struct {
+	Result ActionResultType `json:"result"`
+	Status ActionStatusType `json:"status"`
+}
+
+// ActionFinishedEventData contains information about the execution of an action
+type ActionFinishedEventData struct {
+	// Project is the name of the project
+	Project string `json:"project"`
+	// Service is the name of the new service
+	Service string `json:"service"`
+	// Stage is the name of the stage
+	Stage string `json:"stage"`
+	// Action describes the type of action
+	Action ActionResult `json:"action"`
+	// Problem contains details about the problem
+	Problem ProblemDetails `json:"problem"`
+	// Values contains additional values
+	Values map[string]string `json:"values"`
+	// Labels contains labels
+	Labels map[string]string `json:"labels"`
 }
 
 //
