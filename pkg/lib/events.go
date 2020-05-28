@@ -464,8 +464,8 @@ const (
 
 // ActionResult contains information about the execution of an action
 type ActionResult struct {
-	Result string `json:"result"`
-	Status string `json:"status"`
+	Result ActionResultType `json:"result"`
+	Status ActionStatusType `json:"status"`
 }
 
 // ActionFinishedEventData contains information about the execution of an action
