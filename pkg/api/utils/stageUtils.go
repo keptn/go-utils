@@ -47,6 +47,11 @@ func NewAuthenticatedStageHandler(baseURL string, authToken string, authHeader s
 	httpClient.Transport = getClientTransport()
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
+
+	baseURL = strings.TrimRight(baseURL, "/")
+	if !strings.HasSuffix(baseURL, configurationServiceBaseUrl) {
+		baseURL += "/" + configurationServiceBaseUrl
+	}
 	return &StageHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,
@@ -91,7 +96,7 @@ func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 
 	nextPageKey := ""
 	for {
-		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + "/configuration-service/v1/project/" + project + "/stage")
+		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + "/v1/project/" + project + "/stage")
 		if err != nil {
 			return nil, err
 		}

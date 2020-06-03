@@ -39,6 +39,8 @@ func NewProjectHandler(baseURL string) *ProjectHandler {
 	}
 }
 
+const configurationServiceBaseUrl = "configuration-service"
+
 // NewAuthenticatedProjectHandler returns a new ProjectHandler that authenticates at the endpoint via the provided token
 func NewAuthenticatedProjectHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ProjectHandler {
 	if httpClient == nil {
@@ -48,6 +50,10 @@ func NewAuthenticatedProjectHandler(baseURL string, authToken string, authHeader
 
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
+	baseURL = strings.TrimRight(baseURL, "/")
+	if !strings.HasSuffix(baseURL, configurationServiceBaseUrl) {
+		baseURL += "/" + configurationServiceBaseUrl
+	}
 	return &ProjectHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,
@@ -97,7 +103,7 @@ func (p *ProjectHandler) DeleteProject(project models.Project) (*models.EventCon
 
 // GetProject returns a project
 func (p *ProjectHandler) GetProject(project models.Project) (*models.Project, *models.Error) {
-	return getProject(p.Scheme+"://"+p.getBaseURL()+"/configuration-service/v1/project/"+project.ProjectName, p)
+	return getProject(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.ProjectName, p)
 }
 
 // GetProjects returns a project
@@ -108,7 +114,7 @@ func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
 	nextPageKey := ""
 
 	for {
-		url, err := url.Parse(p.Scheme + "://" + p.getBaseURL() + "/configuration-service/v1/project/")
+		url, err := url.Parse(p.Scheme + "://" + p.getBaseURL() + "/v1/project/")
 		if err != nil {
 			return nil, err
 		}
