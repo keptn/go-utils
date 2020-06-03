@@ -54,6 +54,10 @@ func NewAuthenticatedResourceHandler(baseURL string, authToken string, authHeade
 
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
+	baseURL = strings.TrimRight(baseURL, "/")
+	if !strings.HasSuffix(baseURL, configurationServiceBaseUrl) {
+		baseURL += "/" + configurationServiceBaseUrl
+	}
 	return &ResourceHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,
