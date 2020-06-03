@@ -21,6 +21,7 @@ func TestNewKeptn(t *testing.T) {
 	incomingEvent.SetSource("test")
 	incomingEvent.SetExtension("shkeptncontext", "test-context")
 	incomingEvent.SetDataContentType(cloudevents.ApplicationCloudEventsJSON)
+	incomingEvent.SetID("test-id")
 
 	keptnBase := &KeptnBase{
 		Project:            "sockshop",
@@ -74,6 +75,7 @@ func TestNewKeptn(t *testing.T) {
 					HTTPClient: nil,
 					Scheme:     "",
 				},
+				Logger: NewLogger("test-context", "test-id", "keptn"),
 			},
 		},
 		{
@@ -114,6 +116,7 @@ func TestNewKeptn(t *testing.T) {
 					HTTPClient: nil,
 					Scheme:     "",
 				},
+				Logger: NewLogger("test-context", "test-id", "keptn"),
 			},
 		},
 		{
@@ -154,6 +157,7 @@ func TestNewKeptn(t *testing.T) {
 					HTTPClient: nil,
 					Scheme:     "",
 				},
+				Logger: NewLogger("test-context", "test-id", "keptn"),
 			},
 		},
 		{
@@ -194,6 +198,51 @@ func TestNewKeptn(t *testing.T) {
 					HTTPClient: nil,
 					Scheme:     "",
 				},
+				Logger: NewLogger("test-context", "test-id", "keptn"),
+			},
+		},
+		{
+			name: "Get Keptn with custom logger",
+			args: args{
+				incomingEvent: &incomingEvent,
+				opts: KeptnOpts{
+					UseLocalFileSystem:      false,
+					ConfigurationServiceURL: "custom-config:8080",
+					EventBrokerURL:          "custom-eb:8080",
+					LoggingOptions: &LoggingOpts{
+						ServiceName: stringp("my-service"),
+					},
+				},
+			},
+			want: &Keptn{
+				KeptnBase: &KeptnBase{
+					Project:            "sockshop",
+					Stage:              "dev",
+					Service:            "carts",
+					TestStrategy:       nil,
+					DeploymentStrategy: nil,
+					Tag:                nil,
+					Image:              nil,
+					Labels:             nil,
+				},
+				KeptnContext:       "test-context",
+				eventBrokerURL:     "custom-eb:8080",
+				useLocalFileSystem: false,
+				resourceHandler: &api.ResourceHandler{
+					BaseURL:    "custom-config:8080",
+					AuthHeader: "",
+					AuthToken:  "",
+					HTTPClient: &http.Client{},
+					Scheme:     "http",
+				},
+				eventHandler: &api.EventHandler{
+					BaseURL:    "custom-config:8080",
+					AuthToken:  "",
+					AuthHeader: "",
+					HTTPClient: nil,
+					Scheme:     "",
+				},
+				Logger: NewLogger("test-context", "test-id", "my-service"),
 			},
 		},
 	}
