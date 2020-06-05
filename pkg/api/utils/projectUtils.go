@@ -203,3 +203,11 @@ func getProject(uri string, api APIService) (*models.Project, *models.Error) {
 
 	return nil, &respErr
 }
+
+func (p *ProjectHandler) UpdateConfigurationServiceProject(project models.Project) (*models.EventContext, *models.Error) {
+	bodyStr, err := json.Marshal(project)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
+	return put(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.ProjectName, bodyStr, p)
+}
