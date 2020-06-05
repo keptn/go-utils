@@ -286,6 +286,8 @@ type ProblemEventData struct {
 	ProblemDetails json.RawMessage `json:"ProblemDetails"`
 	// PID is a unique system identifier of the reported problem.
 	PID string `json:"PID"`
+	// ProblemURL is a back link to the original problem
+	ProblemURL string `json:"ProblemURL,omitempty"`
 	// ImpcatedEntity is an identifier of the impacted entity
 	ImpactedEntity string `json:"ImpactedEntity,omitempty"`
 	// Tags is a comma separated list of tags that are defined for all impacted entities.
@@ -414,6 +416,8 @@ type ProblemDetails struct {
 	// PID is a unique system identifier of the reported problem.
 	PID string `json:"PID"`
 	// ImpcatedEntity is an identifier of the impacted entity
+	// ProblemURL is a back link to the original problem
+	ProblemURL string `json:"ProblemURL,omitempty"`
 	ImpactedEntity string `json:"ImpactedEntity,omitempty"`
 	// Tags is a comma separated list of tags that are defined for all impacted entities.
 	Tags string `json:"Tags,omitempty"`
