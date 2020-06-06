@@ -27,7 +27,7 @@ type resourceRequest struct {
 	Resources []*models.Resource `json:"resources"`
 }
 
-// NewResourceHandler returns a new ResourceHandler
+// NewResourceHandler returns a new ResourceHandler which sends all requests directly to the configuration-service
 func NewResourceHandler(baseURL string) *ResourceHandler {
 	scheme := "http"
 	if strings.Contains(baseURL, "https://") {
@@ -45,7 +45,8 @@ func NewResourceHandler(baseURL string) *ResourceHandler {
 	}
 }
 
-// NewAuthenticatedResourceHandler returns a new ResourceHandler that authenticates at the endpoint via the provided token
+// NewAuthenticatedResourceHandler returns a new ResourceHandler that authenticates at the api via the provided token
+// and sends all requests directly to the configuration-service
 func NewAuthenticatedResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ResourceHandler {
 	if httpClient == nil {
 		httpClient = &http.Client{}

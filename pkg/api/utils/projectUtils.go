@@ -21,7 +21,7 @@ type ProjectHandler struct {
 	Scheme     string
 }
 
-// NewProjectHandler returns a new ProjectHandler
+// NewProjectHandler returns a new ProjectHandler which sends all requests directly to the configuration-service
 func NewProjectHandler(baseURL string) *ProjectHandler {
 	scheme := "http"
 	if strings.Contains(baseURL, "https://") {
@@ -41,7 +41,8 @@ func NewProjectHandler(baseURL string) *ProjectHandler {
 
 const configurationServiceBaseUrl = "configuration-service"
 
-// NewAuthenticatedProjectHandler returns a new ProjectHandler that authenticates at the endpoint via the provided token
+// NewAuthenticatedProjectHandler returns a new ProjectHandler that authenticates at the api via the provided token
+// and sends all requests directly to the configuration-service
 func NewAuthenticatedProjectHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ProjectHandler {
 	if httpClient == nil {
 		httpClient = &http.Client{}
@@ -80,15 +81,7 @@ func (p *ProjectHandler) getHTTPClient() *http.Client {
 }
 
 // CreateProject creates a new project
-func (p *ProjectHandler) CreateProject(project models.CreateProject) (*models.EventContext, *models.Error) {
-	bodyStr, err := json.Marshal(project)
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
-	}
-	return post(p.Scheme+"://"+p.getBaseURL()+"/v1/project", bodyStr, p)
-}
-
-func (p *ProjectHandler) CreateConfigurationServiceProject(project models.Project) (*models.EventContext, *models.Error) {
+func (p *ProjectHandler) CreateProject(project models.Project) (*models.EventContext, *models.Error) {
 	bodyStr, err := json.Marshal(project)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
