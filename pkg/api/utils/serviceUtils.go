@@ -21,7 +21,7 @@ type ServiceHandler struct {
 	Scheme     string
 }
 
-// NewServiceHandler returns a new ServiceHandler
+// NewServiceHandler returns a new ServiceHandler which sends all requests directly to the configuration-service
 func NewServiceHandler(baseURL string) *ServiceHandler {
 	scheme := "http"
 	if strings.Contains(baseURL, "https://") {
@@ -39,7 +39,8 @@ func NewServiceHandler(baseURL string) *ServiceHandler {
 	}
 }
 
-// NewAuthenticatedServiceHandler returns a new ServiceHandler that authenticates at the endpoint via the provided token
+// NewAuthenticatedServiceHandler returns a new ServiceHandler that authenticates at the api via the provided token
+// and sends all requests directly to the configuration-service
 func NewAuthenticatedServiceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ServiceHandler {
 	if httpClient == nil {
 		httpClient = &http.Client{}
@@ -76,15 +77,6 @@ func (s *ServiceHandler) getAuthHeader() string {
 
 func (s *ServiceHandler) getHTTPClient() *http.Client {
 	return s.HTTPClient
-}
-
-// CreateService creates a new service
-func (s *ServiceHandler) CreateService(project string, service models.CreateService) (*models.EventContext, *models.Error) {
-	bodyStr, err := json.Marshal(service)
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
-	}
-	return post(s.Scheme+"://"+s.getBaseURL()+"/v1/project/"+project+"/service", bodyStr, s)
 }
 
 // CreateService creates a new service

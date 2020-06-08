@@ -21,7 +21,7 @@ type StageHandler struct {
 	Scheme     string
 }
 
-// NewStageHandler returns a new StageHandler
+// NewStageHandler returns a new StageHandler which sends all requests directly to the configuration-service
 func NewStageHandler(baseURL string) *StageHandler {
 	scheme := "http"
 	if strings.Contains(baseURL, "https://") {
@@ -39,7 +39,8 @@ func NewStageHandler(baseURL string) *StageHandler {
 	}
 }
 
-// NewAuthenticatedStageHandler returns a new StageHandler that authenticates at the endpoint via the provided token
+// NewAuthenticatedStageHandler returns a new StageHandler that authenticates at the api via the provided token
+// and sends all requests directly to the configuration-service
 func NewAuthenticatedStageHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *StageHandler {
 	if httpClient == nil {
 		httpClient = &http.Client{}
