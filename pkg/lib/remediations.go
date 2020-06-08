@@ -37,7 +37,6 @@ type RemediationV02ActionsOnOpen struct {
 	Action      string      `json:"action" yaml:"action"`
 	Description string      `json:"description" yaml:"description"`
 	Value       interface{} `json:"value" yaml:"value"`
-	Hook        string      `json:"hook" yaml:"hook"`
 }
 type RemediationV02Remediations struct {
 	ProblemType   string                        `json:"problemType" yaml:"problemType"`
