@@ -77,6 +77,18 @@ const ActionStartedEventType = "sh.keptn.event.action.started"
 // ActionFinishedEventType is a CloudEvent for indicating that an action has been finished
 const ActionFinishedEventType = "sh.keptn.event.action.finished"
 
+// RemediationTriggeredEventType is a CloudEvent for triggering remediations
+const RemediationTriggeredEventType = "sh.keptn.event.remediation.triggered"
+
+// RemediationTriggeredEventType is a CloudEvent to indicate the start of a remediation
+const RemediationStartedEventType = "sh.keptn.event.remediation.started"
+
+// RemediationStatusChangedEventType is a CloudEvent to indicate that the status of a remediation has been changed
+const RemediationStatusChangedEventType = "sh.keptn.event.remediation.status.changed"
+
+// RemediationFinishedEventType is a CloudEvent to indicate that the status of a remediation has been changed
+const RemediationFinishedEventType = "sh.keptn.event.remediation.finished"
+
 // KeptnBase contains properties that are shared among most Keptn events
 type KeptnBase struct {
 	Project string `json:"project"`
@@ -422,7 +434,7 @@ type ProblemDetails struct {
 	PID string `json:"PID"`
 	// ImpcatedEntity is an identifier of the impacted entity
 	// ProblemURL is a back link to the original problem
-	ProblemURL string `json:"ProblemURL,omitempty"`
+	ProblemURL     string `json:"ProblemURL,omitempty"`
 	ImpactedEntity string `json:"ImpactedEntity,omitempty"`
 	// Tags is a comma separated list of tags that are defined for all impacted entities.
 	Tags string `json:"Tags,omitempty"`
@@ -503,6 +515,104 @@ type ActionFinishedEventData struct {
 	Value interface{} `json:"value,omitempty"`
 	// Labels contains labels
 	Labels map[string]string `json:"labels"`
+}
+
+// RemediationTriggeredEventData is a CloudEvent for triggering remediations
+type RemediationTriggeredEventData struct {
+	// Project is the name of the project
+	Project string `json:"project"`
+	// Service is the name of the new service
+	Service string `json:"service"`
+	// Stage is the name of the stage
+	Stage string `json:"stage"`
+	// Problem contains details about the problem
+	Problem ProblemDetails `json:"problem"`
+	// Labels contains labels
+	Labels map[string]string `json:"labels"`
+	// Remediation describes the remediation
+	Remediation interface{} `json:"remediation"`
+}
+
+// RemediationTriggeredEventType is a CloudEvent to indicate the start of a remediation
+type RemediationStartedEventData struct {
+	// Project is the name of the project
+	Project string `json:"project"`
+	// Service is the name of the new service
+	Service string `json:"service"`
+	// Stage is the name of the stage
+	Stage string `json:"stage"`
+	// Labels contains labels
+	Labels map[string]string `json:"labels"`
+	// Remediation describes the remediation
+	Remediation interface{} `json:"remediation"`
+}
+
+type RemediationStatusType string
+
+const (
+	RemediationStatusSucceeded RemediationStatusType = "succeeded"
+	RemediationStatusErrored   RemediationStatusType = "errored"
+	RemediationStatusUnknown   RemediationStatusType = "unknown"
+)
+
+// RemediationStatus describes the status of a remediation
+type RemediationResult struct {
+	// ActionIndex is the index of the action
+	ActionIndex int `json:"actionIndex"`
+	// ActionName is the name of the action
+	ActionName string `json:"actionName"`
+}
+
+// RemediationStatus describes the result and status of a remediation
+type RemediationStatusChanged struct {
+	// Status describes the status of the remediation
+	Status RemediationStatusType `json:"status"`
+	Result RemediationResult     `json:"result"`
+}
+
+// RemediationStatusChangedEventData is a CloudEvent to indicate that the status of a remediation has been changed
+type RemediationStatusChangedEventData struct {
+	// Project is the name of the project
+	Project string `json:"project"`
+	// Service is the name of the new service
+	Service string `json:"service"`
+	// Stage is the name of the stage
+	Stage string `json:"stage"`
+	// Labels contains labels
+	Labels map[string]string `json:"labels"`
+	// Remediation describes the remediation
+	Remediation RemediationStatusChanged `json:"remediation"`
+}
+
+type RemediationResultType string
+
+const (
+	RemediationResultPass   RemediationResultType = "pass"
+	RemediationResultFailed RemediationResultType = "failed"
+)
+
+// RemediationFinished describes a finished remediation
+type RemediationFinished struct {
+	// Status describes the status
+	Status RemediationStatusType `json:"status"`
+	// Result describes the result
+	Result RemediationResultType `json:"result"`
+}
+
+// RemediationFinishedEventData is a CloudEvent to indicate that the status of a remediation has been changed
+type RemediationFinishedEventData struct {
+	// Project is the name of the project
+	Project string `json:"project"`
+	// Service is the name of the new service
+	Service string `json:"service"`
+	// Stage is the name of the stage
+	Stage string `json:"stage"`
+	// Problem contains details about the problem
+	Problem ProblemDetails `json:"problem"`
+	// Labels contains labels
+	Labels map[string]string `json:"labels"`
+	// Remediation describes the remediation
+	Remediation RemediationFinished `json:"remediation"`
 }
 
 //
