@@ -62,12 +62,17 @@ const InternalGetSLIEventType = "sh.keptn.internal.event.get-sli"
 // InternalGetSLIDoneEventType is a CloudEvent for submitting SLI values
 const InternalGetSLIDoneEventType = "sh.keptn.internal.event.get-sli.done"
 
-const ApprovalTriggeredEventType = "sh.keptn.events.approval.triggered"
+// ApprovalTriggeredEvent is a CloudEvent triggering a new approval
+const ApprovalTriggeredEventType = "sh.keptn.event.approval.triggered"
 
-const ApprovalFinishedEventType = "sh.keptn.events.approval.finished"
+// ApprovalFinishedEventType is a CloudEvent confirming an open approval
+const ApprovalFinishedEventType = "sh.keptn.event.approval.finished"
 
 // ActionTriggeredEventType is a CloudEvent for triggering actions
 const ActionTriggeredEventType = "sh.keptn.event.action.triggered"
+
+// ActionStartedEventType is a CloudEvent for confirming the start of an action
+const ActionStartedEventType = "sh.keptn.event.action.started"
 
 // ActionFinishedEventType is a CloudEvent for indicating that an action has been finished
 const ActionFinishedEventType = "sh.keptn.event.action.finished"
@@ -451,6 +456,18 @@ type ActionTriggeredEventData struct {
 	Labels map[string]string `json:"labels"`
 }
 
+// ActionStartedEventData contains information about an action.started event
+type ActionStartedEventData struct {
+	// Project is the name of the project
+	Project string `json:"project"`
+	// Service is the name of the new service
+	Service string `json:"service"`
+	// Stage is the name of the stage
+	Stage string `json:"stage"`
+	// Labels contains labels
+	Labels map[string]string `json:"labels"`
+}
+
 type ActionResultType string
 
 const (
@@ -482,8 +499,6 @@ type ActionFinishedEventData struct {
 	Stage string `json:"stage"`
 	// Action describes the type of action
 	Action ActionResult `json:"action"`
-	// Problem contains details about the problem
-	Problem ProblemDetails `json:"problem"`
 	// Value contains additional values
 	Value interface{} `json:"value,omitempty"`
 	// Labels contains labels
