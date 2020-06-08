@@ -567,7 +567,8 @@ type RemediationResult struct {
 type RemediationStatusChanged struct {
 	// Status describes the status of the remediation
 	Status RemediationStatusType `json:"status"`
-	Result RemediationResult     `json:"result"`
+	// RemediationResult indicates the result
+	Result RemediationResult `json:"result"`
 }
 
 // RemediationStatusChangedEventData is a CloudEvent to indicate that the status of a remediation has been changed
@@ -597,6 +598,8 @@ type RemediationFinished struct {
 	Status RemediationStatusType `json:"status"`
 	// Result describes the result
 	Result RemediationResultType `json:"result"`
+	// Message contains a message about the status
+	Message string `json:"message"`
 }
 
 // RemediationFinishedEventData is a CloudEvent to indicate that the status of a remediation has been changed
