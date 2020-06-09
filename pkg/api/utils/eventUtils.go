@@ -56,6 +56,7 @@ func NewAuthenticatedEventHandler(baseURL string, authToken string, authHeader s
 
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
+
 	return &EventHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,
@@ -92,7 +93,12 @@ func (e *EventHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.E
 
 // GetEvents returns all events matching the properties in the passed filter object
 func (e *EventHandler) GetEvents(filter *EventFilter) ([]*models.KeptnContextExtendedCE, *models.Error) {
-	raw := e.Scheme + "://" + e.getBaseURL() + "/mongodb-datastore/event?"
+	var raw string
+	if e.AuthToken != "" {
+		raw = e.Scheme + "://" + e.getBaseURL() + "/mongodb-datastore/event?"
+	} else {
+		raw = e.Scheme + "://" + e.getBaseURL() + "/event?"
+	}
 
 	u, _ := url.Parse(raw)
 
