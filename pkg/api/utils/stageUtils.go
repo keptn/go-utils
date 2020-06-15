@@ -23,19 +23,17 @@ type StageHandler struct {
 
 // NewStageHandler returns a new StageHandler which sends all requests directly to the configuration-service
 func NewStageHandler(baseURL string) *StageHandler {
-	scheme := "http"
 	if strings.Contains(baseURL, "https://") {
 		baseURL = strings.TrimPrefix(baseURL, "https://")
 	} else if strings.Contains(baseURL, "http://") {
 		baseURL = strings.TrimPrefix(baseURL, "http://")
-		scheme = "http"
 	}
 	return &StageHandler{
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
 		HTTPClient: &http.Client{},
-		Scheme:     scheme,
+		Scheme:     "http",
 	}
 }
 

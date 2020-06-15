@@ -29,19 +29,17 @@ type resourceRequest struct {
 
 // NewResourceHandler returns a new ResourceHandler which sends all requests directly to the configuration-service
 func NewResourceHandler(baseURL string) *ResourceHandler {
-	scheme := "http"
 	if strings.Contains(baseURL, "https://") {
 		baseURL = strings.TrimPrefix(baseURL, "https://")
 	} else if strings.Contains(baseURL, "http://") {
 		baseURL = strings.TrimPrefix(baseURL, "http://")
-		scheme = "http"
 	}
 	return &ResourceHandler{
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
 		HTTPClient: &http.Client{Transport: getClientTransport()},
-		Scheme:     scheme,
+		Scheme:     "http",
 	}
 }
 
