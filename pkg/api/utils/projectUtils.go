@@ -23,19 +23,17 @@ type ProjectHandler struct {
 
 // NewProjectHandler returns a new ProjectHandler which sends all requests directly to the configuration-service
 func NewProjectHandler(baseURL string) *ProjectHandler {
-	scheme := "http"
 	if strings.Contains(baseURL, "https://") {
 		baseURL = strings.TrimPrefix(baseURL, "https://")
 	} else if strings.Contains(baseURL, "http://") {
 		baseURL = strings.TrimPrefix(baseURL, "http://")
-		scheme = "http"
 	}
 	return &ProjectHandler{
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
 		HTTPClient: &http.Client{Transport: getClientTransport()},
-		Scheme:     scheme,
+		Scheme:     "http",
 	}
 }
 

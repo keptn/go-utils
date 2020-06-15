@@ -18,19 +18,17 @@ type AuthHandler struct {
 
 // NewAuthHandler returns a new AuthHandler
 func NewAuthHandler(baseURL string) *AuthHandler {
-	scheme := "http"
 	if strings.Contains(baseURL, "https://") {
 		baseURL = strings.TrimPrefix(baseURL, "https://")
 	} else if strings.Contains(baseURL, "http://") {
 		baseURL = strings.TrimPrefix(baseURL, "http://")
-		scheme = "http"
 	}
 	return &AuthHandler{
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
 		HTTPClient: &http.Client{Transport: getClientTransport()},
-		Scheme:     scheme,
+		Scheme:     "http",
 	}
 }
 

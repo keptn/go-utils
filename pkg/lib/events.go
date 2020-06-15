@@ -14,7 +14,6 @@ import (
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
-	"github.com/keptn/go-utils/pkg/api/models"
 )
 
 import (
@@ -784,10 +783,6 @@ func (k *Keptn) SendTestsFinishedEvent(incomingEvent *cloudevents.Event, teststr
 	log.Println(fmt.Printf("%s", event))
 
 	return k.SendCloudEvent(event)
-}
-
-func (k *Keptn) GetEvents(eventType string) (*models.KeptnContextExtendedCE, *models.Error) {
-	return k.eventHandler.GetEvent(k.KeptnContext, eventType)
 }
 
 //

@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -49,6 +50,63 @@ func (p *APIHandler) getAuthHeader() string {
 
 func (p *APIHandler) getHTTPClient() *http.Client {
 	return p.HTTPClient
+}
+
+// SendEvent sends an event to Keptn
+func (e *APIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.EventContext, *models.Error) {
+	bodyStr, err := json.Marshal(event)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
+	return post(e.Scheme+"://"+e.getBaseURL()+"/v1/event", bodyStr, e)
+}
+
+// GetEvent returns an event specified by keptnContext and eventType
+//
+// Deprecated: this function is deprecated and should be replaced with the GetEvents function
+func (e *APIHandler) GetEvent(keptnContext string, eventType string) (*models.KeptnContextExtendedCE, *models.Error) {
+	return getEvent(e.Scheme+"://"+e.getBaseURL()+"/v1/event?keptnContext="+keptnContext+"&type="+eventType+"&pageSize=10", e)
+}
+
+func getEvent(uri string, api APIService) (*models.KeptnContextExtendedCE, *models.Error) {
+
+	req, err := http.NewRequest("GET", uri, nil)
+	req.Header.Set("Content-Type", "application/json")
+	addAuthHeader(req, api)
+
+	resp, err := api.getHTTPClient().Do(req)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
+
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+
+		if len(body) > 0 {
+			var cloudEvent models.KeptnContextExtendedCE
+			err = json.Unmarshal(body, &cloudEvent)
+			if err != nil {
+				return nil, buildErrorResponse(err.Error())
+			}
+
+			return &cloudEvent, nil
+		}
+
+		return nil, nil
+	}
+
+	var respErr models.Error
+	err = json.Unmarshal(body, &respErr)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
+
+	return nil, &respErr
 }
 
 // CreateProject creates a new project
