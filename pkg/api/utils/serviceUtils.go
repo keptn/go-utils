@@ -21,25 +21,24 @@ type ServiceHandler struct {
 	Scheme     string
 }
 
-// NewServiceHandler returns a new ServiceHandler
+// NewServiceHandler returns a new ServiceHandler which sends all requests directly to the configuration-service
 func NewServiceHandler(baseURL string) *ServiceHandler {
-	scheme := "http"
 	if strings.Contains(baseURL, "https://") {
 		baseURL = strings.TrimPrefix(baseURL, "https://")
 	} else if strings.Contains(baseURL, "http://") {
 		baseURL = strings.TrimPrefix(baseURL, "http://")
-		scheme = "http"
 	}
 	return &ServiceHandler{
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
 		HTTPClient: &http.Client{Transport: getClientTransport()},
-		Scheme:     scheme,
+		Scheme:     "http",
 	}
 }
 
-// NewAuthenticatedServiceHandler returns a new ServiceHandler that authenticates at the endpoint via the provided token
+// NewAuthenticatedServiceHandler returns a new ServiceHandler that authenticates at the api via the provided token
+// and sends all requests directly to the configuration-service
 func NewAuthenticatedServiceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ServiceHandler {
 	if httpClient == nil {
 		httpClient = &http.Client{}
@@ -48,6 +47,11 @@ func NewAuthenticatedServiceHandler(baseURL string, authToken string, authHeader
 
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
+
+	baseURL = strings.TrimRight(baseURL, "/")
+	if !strings.HasSuffix(baseURL, configurationServiceBaseUrl) {
+		baseURL += "/" + configurationServiceBaseUrl
+	}
 	return &ServiceHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,
@@ -74,15 +78,6 @@ func (s *ServiceHandler) getHTTPClient() *http.Client {
 }
 
 // CreateService creates a new service
-func (s *ServiceHandler) CreateService(project string, service models.CreateService) (*models.EventContext, *models.Error) {
-	bodyStr, err := json.Marshal(service)
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
-	}
-	return post(s.Scheme+"://"+s.getBaseURL()+"/v1/project/"+project+"/service", bodyStr, s)
-}
-
-// CreateService creates a new service
 func (s *ServiceHandler) CreateServiceInStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error) {
 
 	service := models.Service{ServiceName: serviceName}
@@ -96,7 +91,7 @@ func (s *ServiceHandler) CreateServiceInStage(project string, stage string, serv
 func (s *ServiceHandler) GetService(project, stage, service string) (*models.Service, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-	url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + "/configuration-service/v1/project/" + project + "/stage/" + stage + "/service/" + service)
+	url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + "/v1/project/" + project + "/stage/" + stage + "/service/" + service)
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +136,7 @@ func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models
 	nextPageKey := ""
 
 	for {
-		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + "/configuration-service/v1/project/" + project + "/stage/" + stage + "/service")
+		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + "/v1/project/" + project + "/stage/" + stage + "/service")
 		if err != nil {
 			return nil, err
 		}

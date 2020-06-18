@@ -19,12 +19,21 @@ type KeptnOpts struct {
 	ConfigurationServiceURL string
 	EventBrokerURL          string
 	IncomingEvent           *cloudevents.Event
+	LoggingOptions          *LoggingOpts
+}
+
+type LoggingOpts struct {
+	EnableWebsocket   bool
+	WebsocketEndpoint *string
+	ServiceName       *string
 }
 
 type Keptn struct {
 	KeptnContext string
 
 	KeptnBase *KeptnBase
+
+	Logger LoggerInterface
 
 	eventBrokerURL     string
 	useLocalFileSystem bool
@@ -39,6 +48,8 @@ type SLIConfig struct {
 
 const configurationServiceURL = "configuration-service:8080"
 const defaultEventBrokerURL = "http://event-broker.keptn.svc.cluster.local/keptn"
+const defaultWebsocketEndpoint = "ws://api-service.keptn.svc.cluster.local:8080"
+const defaultLoggingServiceName = "keptn"
 
 func NewKeptn(incomingEvent *cloudevents.Event, opts KeptnOpts) (*Keptn, error) {
 	var shkeptncontext string
@@ -75,6 +86,39 @@ func NewKeptn(incomingEvent *cloudevents.Event, opts KeptnOpts) (*Keptn, error) 
 
 	k.resourceHandler = api.NewResourceHandler(csURL)
 	k.eventHandler = api.NewEventHandler(csURL)
+
+	loggingServiceName := defaultLoggingServiceName
+	if opts.LoggingOptions != nil && opts.LoggingOptions.ServiceName != nil {
+		loggingServiceName = *opts.LoggingOptions.ServiceName
+	}
+	k.Logger = NewLogger(k.KeptnContext, incomingEvent.Context.GetID(), loggingServiceName)
+
+	if opts.LoggingOptions != nil && opts.LoggingOptions.EnableWebsocket {
+		wsURL := defaultWebsocketEndpoint
+		if opts.LoggingOptions.WebsocketEndpoint != nil && *opts.LoggingOptions.WebsocketEndpoint != "" {
+			wsURL = *opts.LoggingOptions.WebsocketEndpoint
+		}
+		connData := ConnectionData{}
+		if err := incomingEvent.DataAs(&connData); err != nil ||
+			connData.EventContext.KeptnContext == nil || connData.EventContext.Token == nil ||
+			*connData.EventContext.KeptnContext == "" || *connData.EventContext.Token == "" {
+			k.Logger.Debug("No WebSocket connection data available")
+		} else {
+			apiServiceURL, err := url.Parse(wsURL)
+			if err != nil {
+				k.Logger.Error(err.Error())
+				return k, nil
+			}
+			ws, _, err := OpenWS(connData, *apiServiceURL)
+			if err != nil {
+				k.Logger.Error("Opening WebSocket connection failed:" + err.Error())
+				return k, nil
+			}
+			stdLogger := NewLogger(shkeptncontext, incomingEvent.Context.GetID(), loggingServiceName)
+			combinedLogger := NewCombinedLogger(stdLogger, ws, shkeptncontext)
+			k.Logger = combinedLogger
+		}
+	}
 
 	return k, nil
 }

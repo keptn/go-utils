@@ -21,25 +21,24 @@ type StageHandler struct {
 	Scheme     string
 }
 
-// NewStageHandler returns a new StageHandler
+// NewStageHandler returns a new StageHandler which sends all requests directly to the configuration-service
 func NewStageHandler(baseURL string) *StageHandler {
-	scheme := "http"
 	if strings.Contains(baseURL, "https://") {
 		baseURL = strings.TrimPrefix(baseURL, "https://")
 	} else if strings.Contains(baseURL, "http://") {
 		baseURL = strings.TrimPrefix(baseURL, "http://")
-		scheme = "http"
 	}
 	return &StageHandler{
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
 		HTTPClient: &http.Client{},
-		Scheme:     scheme,
+		Scheme:     "http",
 	}
 }
 
-// NewAuthenticatedStageHandler returns a new StageHandler that authenticates at the endpoint via the provided token
+// NewAuthenticatedStageHandler returns a new StageHandler that authenticates at the api via the provided token
+// and sends all requests directly to the configuration-service
 func NewAuthenticatedStageHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *StageHandler {
 	if httpClient == nil {
 		httpClient = &http.Client{}
@@ -47,6 +46,11 @@ func NewAuthenticatedStageHandler(baseURL string, authToken string, authHeader s
 	httpClient.Transport = getClientTransport()
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
+
+	baseURL = strings.TrimRight(baseURL, "/")
+	if !strings.HasSuffix(baseURL, configurationServiceBaseUrl) {
+		baseURL += "/" + configurationServiceBaseUrl
+	}
 	return &StageHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,
@@ -91,7 +95,7 @@ func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 
 	nextPageKey := ""
 	for {
-		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + "/configuration-service/v1/project/" + project + "/stage")
+		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + "/v1/project/" + project + "/stage")
 		if err != nil {
 			return nil, err
 		}

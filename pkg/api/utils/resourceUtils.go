@@ -27,25 +27,24 @@ type resourceRequest struct {
 	Resources []*models.Resource `json:"resources"`
 }
 
-// NewResourceHandler returns a new ResourceHandler
+// NewResourceHandler returns a new ResourceHandler which sends all requests directly to the configuration-service
 func NewResourceHandler(baseURL string) *ResourceHandler {
-	scheme := "http"
 	if strings.Contains(baseURL, "https://") {
 		baseURL = strings.TrimPrefix(baseURL, "https://")
 	} else if strings.Contains(baseURL, "http://") {
 		baseURL = strings.TrimPrefix(baseURL, "http://")
-		scheme = "http"
 	}
 	return &ResourceHandler{
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
 		HTTPClient: &http.Client{Transport: getClientTransport()},
-		Scheme:     scheme,
+		Scheme:     "http",
 	}
 }
 
-// NewAuthenticatedResourceHandler returns a new ResourceHandler that authenticates at the endpoint via the provided token
+// NewAuthenticatedResourceHandler returns a new ResourceHandler that authenticates at the api via the provided token
+// and sends all requests directly to the configuration-service
 func NewAuthenticatedResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ResourceHandler {
 	if httpClient == nil {
 		httpClient = &http.Client{}
@@ -54,6 +53,10 @@ func NewAuthenticatedResourceHandler(baseURL string, authToken string, authHeade
 
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
+	baseURL = strings.TrimRight(baseURL, "/")
+	if !strings.HasSuffix(baseURL, configurationServiceBaseUrl) {
+		baseURL += "/" + configurationServiceBaseUrl
+	}
 	return &ResourceHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,
