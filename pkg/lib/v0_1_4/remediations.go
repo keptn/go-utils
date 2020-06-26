@@ -1,8 +1,8 @@
-package v0_1_3
+package v0_1_4
 
-///// v0.1.3 Remediation Spec ///////
+///// v0.1.4 Remediation Spec ///////
 
-// Remediation describes a remediation specification according to Keptn spec 0.1.3
+// Remediation describes a remediation specification according to Keptn spec 0.1.4
 type Remediation struct {
 	ApiVersion string              `json:"apiVersion" yaml:"version"`
 	Kind       string              `json:"kind" yaml:"kind"`
