@@ -27,6 +27,8 @@ type resourceRequest struct {
 	Resources []*models.Resource `json:"resources"`
 }
 
+var ResourceNotFoundError = errors.New("Resource not found")
+
 // NewResourceHandler returns a new ResourceHandler which sends all requests directly to the configuration-service
 func NewResourceHandler(baseURL string) *ResourceHandler {
 	if strings.Contains(baseURL, "https://") {
@@ -289,6 +291,10 @@ func (r *ResourceHandler) getResource(uri string) (*models.Resource, error) {
 		return nil, err
 	}
 
+	if resp.StatusCode == 404 {
+		// need to handle this case differently (e.g. https://github.com/keptn/keptn/issues/1480)
+		return nil, ResourceNotFoundError
+	}
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
 		return nil, errors.New(string(body))
 	}
