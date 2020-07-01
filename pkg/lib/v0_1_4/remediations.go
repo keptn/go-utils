@@ -4,7 +4,7 @@ package v0_1_4
 
 // Remediation describes a remediation specification according to Keptn spec 0.1.4
 type Remediation struct {
-	ApiVersion string              `json:"apiVersion" yaml:"version"`
+	ApiVersion string              `json:"apiVersion" yaml:"apiVersion"`
 	Kind       string              `json:"kind" yaml:"kind"`
 	Metadata   RemediationMetadata `json:"metadata" yaml:"metadata"`
 	Spec       RemediationSpec     `json:"spec" yaml:"spec"`
