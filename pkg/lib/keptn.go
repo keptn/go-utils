@@ -3,15 +3,16 @@ package keptn
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/keptn/go-utils/pkg/api/models"
-	api "github.com/keptn/go-utils/pkg/api/utils"
-	"gopkg.in/yaml.v2"
 	"log"
 	"net/url"
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	"github.com/keptn/go-utils/pkg/api/models"
+	api "github.com/keptn/go-utils/pkg/api/utils"
+	"gopkg.in/yaml.v2"
 )
 
 type KeptnOpts struct {
@@ -334,7 +335,12 @@ func ValididateUnixDirectoryName(dirName string) bool {
 
 // getServiceEndpoint gets an endpoint stored in an environment variable and sets http as default scheme
 func GetServiceEndpoint(service string) (url.URL, error) {
-	url, err := url.Parse(os.Getenv(service))
+	envVal := os.Getenv(service)
+	if envVal == "" {
+		return url.URL{}, fmt.Errorf("Provided environment variable %s has no valid value", service)
+	}
+
+	url, err := url.Parse(envVal)
 	if err != nil {
 		return *url, fmt.Errorf("Failed to retrieve value from ENVIRONMENT_VARIABLE: %s", service)
 	}
