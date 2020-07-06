@@ -131,3 +131,8 @@ func (s *APIHandler) CreateService(project string, service models.CreateService)
 	}
 	return post(s.Scheme+"://"+s.getBaseURL()+"/v1/project/"+project+"/service", bodyStr, s)
 }
+
+// GetMetadata retrieve keptn MetaData information
+func (s *APIHandler) GetMetadata() (*models.EventContext, *models.Error) {
+	return get(s.Scheme+"://"+s.getBaseURL()+"/v1/metadata", nil, s)
+}
