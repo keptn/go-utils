@@ -131,3 +131,47 @@ func (s *APIHandler) CreateService(project string, service models.CreateService)
 	}
 	return post(s.Scheme+"://"+s.getBaseURL()+"/v1/project/"+project+"/service", bodyStr, s)
 }
+
+// GetMetadata retrieve keptn MetaData information
+func (s *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
+	//return get(s.Scheme+"://"+s.getBaseURL()+"/v1/metadata", nil, s)
+
+	req, err := http.NewRequest("GET", s.Scheme+"://"+s.getBaseURL()+"/v1/metadata", nil)
+	req.Header.Set("Content-Type", "application/json")
+	addAuthHeader(req, s)
+
+	resp, err := s.getHTTPClient().Do(req)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
+
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+
+		if len(body) > 0 {
+			var respMetadata models.Metadata
+			err = json.Unmarshal(body, &respMetadata)
+			if err != nil {
+				return nil, buildErrorResponse(err.Error())
+			}
+
+			return &respMetadata, nil
+		}
+
+		return nil, nil
+	}
+
+	var respErr models.Error
+	err = json.Unmarshal(body, &respErr)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
+
+	return nil, &respErr
+
+}
