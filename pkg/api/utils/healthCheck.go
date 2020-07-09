@@ -22,7 +22,6 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
-
 }
 
 func RunHealthEndpoint(port string) {
