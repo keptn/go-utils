@@ -54,6 +54,7 @@ func (l *CombinedLogger) Terminate() {
 	if err := WriteLog(l.ws, LogData{LogLevel: "INFO", Message: "", Terminate: true}, l.shKeptnContext); err != nil {
 		l.logWebsocketError(err)
 	}
+	l.ws.Close()
 }
 
 func (l *CombinedLogger) logWebsocketError(err error) {

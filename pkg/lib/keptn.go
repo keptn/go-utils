@@ -3,15 +3,16 @@ package keptn
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	"github.com/keptn/go-utils/pkg/api/models"
-	api "github.com/keptn/go-utils/pkg/api/utils"
-	"gopkg.in/yaml.v2"
 	"log"
 	"net/url"
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	"github.com/keptn/go-utils/pkg/api/models"
+	api "github.com/keptn/go-utils/pkg/api/utils"
+	"gopkg.in/yaml.v2"
 )
 
 type KeptnOpts struct {
@@ -19,12 +20,21 @@ type KeptnOpts struct {
 	ConfigurationServiceURL string
 	EventBrokerURL          string
 	IncomingEvent           *cloudevents.Event
+	LoggingOptions          *LoggingOpts
+}
+
+type LoggingOpts struct {
+	EnableWebsocket   bool
+	WebsocketEndpoint *string
+	ServiceName       *string
 }
 
 type Keptn struct {
 	KeptnContext string
 
 	KeptnBase *KeptnBase
+
+	Logger LoggerInterface
 
 	eventBrokerURL     string
 	useLocalFileSystem bool
@@ -39,6 +49,8 @@ type SLIConfig struct {
 
 const configurationServiceURL = "configuration-service:8080"
 const defaultEventBrokerURL = "http://event-broker.keptn.svc.cluster.local/keptn"
+const defaultWebsocketEndpoint = "ws://api-service.keptn.svc.cluster.local:8080"
+const defaultLoggingServiceName = "keptn"
 
 func NewKeptn(incomingEvent *cloudevents.Event, opts KeptnOpts) (*Keptn, error) {
 	var shkeptncontext string
@@ -75,6 +87,39 @@ func NewKeptn(incomingEvent *cloudevents.Event, opts KeptnOpts) (*Keptn, error) 
 
 	k.resourceHandler = api.NewResourceHandler(csURL)
 	k.eventHandler = api.NewEventHandler(csURL)
+
+	loggingServiceName := defaultLoggingServiceName
+	if opts.LoggingOptions != nil && opts.LoggingOptions.ServiceName != nil {
+		loggingServiceName = *opts.LoggingOptions.ServiceName
+	}
+	k.Logger = NewLogger(k.KeptnContext, incomingEvent.Context.GetID(), loggingServiceName)
+
+	if opts.LoggingOptions != nil && opts.LoggingOptions.EnableWebsocket {
+		wsURL := defaultWebsocketEndpoint
+		if opts.LoggingOptions.WebsocketEndpoint != nil && *opts.LoggingOptions.WebsocketEndpoint != "" {
+			wsURL = *opts.LoggingOptions.WebsocketEndpoint
+		}
+		connData := ConnectionData{}
+		if err := incomingEvent.DataAs(&connData); err != nil ||
+			connData.EventContext.KeptnContext == nil || connData.EventContext.Token == nil ||
+			*connData.EventContext.KeptnContext == "" || *connData.EventContext.Token == "" {
+			k.Logger.Debug("No WebSocket connection data available")
+		} else {
+			apiServiceURL, err := url.Parse(wsURL)
+			if err != nil {
+				k.Logger.Error(err.Error())
+				return k, nil
+			}
+			ws, _, err := OpenWS(connData, *apiServiceURL)
+			if err != nil {
+				k.Logger.Error("Opening WebSocket connection failed:" + err.Error())
+				return k, nil
+			}
+			stdLogger := NewLogger(shkeptncontext, incomingEvent.Context.GetID(), loggingServiceName)
+			combinedLogger := NewCombinedLogger(stdLogger, ws, shkeptncontext)
+			k.Logger = combinedLogger
+		}
+	}
 
 	return k, nil
 }
@@ -290,7 +335,12 @@ func ValididateUnixDirectoryName(dirName string) bool {
 
 // getServiceEndpoint gets an endpoint stored in an environment variable and sets http as default scheme
 func GetServiceEndpoint(service string) (url.URL, error) {
-	url, err := url.Parse(os.Getenv(service))
+	envVal := os.Getenv(service)
+	if envVal == "" {
+		return url.URL{}, fmt.Errorf("Provided environment variable %s has no valid value", service)
+	}
+
+	url, err := url.Parse(envVal)
 	if err != nil {
 		return *url, fmt.Errorf("Failed to retrieve value from ENVIRONMENT_VARIABLE: %s", service)
 	}

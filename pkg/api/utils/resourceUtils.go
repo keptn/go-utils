@@ -28,25 +28,26 @@ type resourceRequest struct {
 	Resources []*models.Resource `json:"resources"`
 }
 
-// NewResourceHandler returns a new ResourceHandler
+var ResourceNotFoundError = errors.New("Resource not found")
+
+// NewResourceHandler returns a new ResourceHandler which sends all requests directly to the configuration-service
 func NewResourceHandler(baseURL string) *ResourceHandler {
-	scheme := "http"
 	if strings.Contains(baseURL, "https://") {
 		baseURL = strings.TrimPrefix(baseURL, "https://")
 	} else if strings.Contains(baseURL, "http://") {
 		baseURL = strings.TrimPrefix(baseURL, "http://")
-		scheme = "http"
 	}
 	return &ResourceHandler{
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
 		HTTPClient: &http.Client{Transport: getClientTransport()},
-		Scheme:     scheme,
+		Scheme:     "http",
 	}
 }
 
-// NewAuthenticatedResourceHandler returns a new ResourceHandler that authenticates at the endpoint via the provided token
+// NewAuthenticatedResourceHandler returns a new ResourceHandler that authenticates at the api via the provided token
+// and sends all requests directly to the configuration-service
 func NewAuthenticatedResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ResourceHandler {
 	if httpClient == nil {
 		httpClient = &http.Client{}
@@ -55,6 +56,10 @@ func NewAuthenticatedResourceHandler(baseURL string, authToken string, authHeade
 
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
+	baseURL = strings.TrimRight(baseURL, "/")
+	if !strings.HasSuffix(baseURL, configurationServiceBaseUrl) {
+		baseURL += "/" + configurationServiceBaseUrl
+	}
 	return &ResourceHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,
@@ -288,6 +293,10 @@ func (r *ResourceHandler) getResource(uri string) (*models.Resource, error) {
 		return nil, err
 	}
 
+	if resp.StatusCode == 404 {
+		// need to handle this case differently (e.g. https://github.com/keptn/keptn/issues/1480)
+		return nil, ResourceNotFoundError
+	}
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
 		return nil, errors.New(string(body))
 	}
