@@ -18,10 +18,14 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("content-type", "application/json")
 
-	w.Write(body)
+	_, err := w.Write(body)
+	if err != nil {
+		log.Println(err)
+	}
+
 }
 
-func RunHealthEndpoint(port int) {
+func RunHealthEndpoint(port string) {
 	http.HandleFunc("/health", healthHandler)
 	err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
 	if err != nil {
