@@ -48,8 +48,8 @@ type SLIConfig struct {
 }
 
 const configurationServiceURL = "configuration-service:8080"
-const defaultEventBrokerURL = "http://event-broker.keptn.svc.cluster.local/keptn"
-const defaultWebsocketEndpoint = "ws://api-service.keptn.svc.cluster.local:8080"
+const defaultEventBrokerURL = "http://event-broker/keptn"
+const defaultWebsocketEndpoint = "ws://api-service:8080/websocket"
 const defaultLoggingServiceName = "keptn"
 
 func NewKeptn(incomingEvent *cloudevents.Event, opts KeptnOpts) (*Keptn, error) {
