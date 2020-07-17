@@ -13,5 +13,6 @@
 ## Fixed Issues
 
 - Allow distinguishing between not-available resource and internal configuration-service error [#1480](https://github.com/keptn/keptn/issues/1480)
+- Removed fixed host header `api.keptn` for http requests to the api [#1797](https://github.com/keptn/keptn/issues/1797)
 
 ## Known Limitations
