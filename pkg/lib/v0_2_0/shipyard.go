@@ -26,11 +26,11 @@ type Stage struct {
 	Workflows []Workflow `json:"workflow" yaml:"workflow"`
 }
 
-// Workflow defines a workflow by its name and tasks. The listen property is optional
+// Workflow defines a workflow by its name and tasks. The triggers property is optional
 type Workflow struct {
-	Name   string   `json:"name" yaml:"name"`
-	Listen []string `json:"listen" yaml:"listen"`
-	Tasks  []Task   `json:"tasks" yaml:"tasks"`
+	Name     string   `json:"name" yaml:"name"`
+	Triggers []string `json:"triggers" yaml:"triggers"`
+	Tasks    []Task   `json:"tasks" yaml:"tasks"`
 }
 
 // Task defines a task by its name and optional properties
