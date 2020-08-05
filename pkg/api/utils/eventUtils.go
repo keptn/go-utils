@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -89,6 +90,14 @@ func (e *EventHandler) getHTTPClient() *http.Client {
 
 // GetEvents returns all events matching the properties in the passed filter object
 func (e *EventHandler) GetEvents(filter *EventFilter) ([]*models.KeptnContextExtendedCE, *models.Error) {
+	if !keptn.EventTypeExists(filter.EventType) {
+		errorMessage := "invalid keptn event type"
+		error := &models.Error{
+			Code: 400,
+			Message: &errorMessage,
+		}
+		return nil, error
+	}
 
 	u, err := url.Parse(e.Scheme + "://" + e.getBaseURL() + "/event?")
 	if err != nil {
