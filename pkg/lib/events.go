@@ -22,6 +22,40 @@ import (
 
 const MAX_SEND_RETRIES = 3
 
+var eventTypes = []string{
+	InternalProjectCreateEventType,
+	InternalProjectDeleteEventType,
+	InternalServiceCreateEventType,
+	ConfigurationChangeEventType,
+	DeploymentFinishedEventType,
+	TestsFinishedEventType,
+	StartEvaluationEventType,
+	EvaluationDoneEventType,
+	ProblemOpenEventType,
+	ProblemEventType,
+	ConfigureMonitoringEventType,
+	InternalGetSLIEventType,
+	InternalGetSLIDoneEventType,
+	ApprovalTriggeredEventType,
+	ApprovalFinishedEventType,
+	ActionTriggeredEventType,
+	ActionStartedEventType,
+	ActionFinishedEventType,
+	RemediationTriggeredEventType,
+	RemediationStartedEventType,
+	RemediationStatusChangedEventType,
+	RemediationFinishedEventType,
+}
+
+func EventTypeExists(typ string) bool {
+	for _, eventTyp := range eventTypes {
+		if eventTyp == typ {
+			return true
+		}
+	}
+	return false
+}
+
 // InternalProjectCreateEventType is a CloudEvent type for creating a new project
 const InternalProjectCreateEventType = "sh.keptn.internal.event.project.create"
 

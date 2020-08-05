@@ -266,3 +266,29 @@ func Test_getExpBackoffTime(t *testing.T) {
 		})
 	}
 }
+
+func TestEventTypeExists(t *testing.T) {
+	tests := []struct{
+		InputTyp string
+		Result	bool
+	} {
+		{"sh.keptn.internal.event.project.create", true},
+		{"sh.keptn.internal.event.project.delete", true},
+		{"sh.keptn.internal.event.service.create", true},
+		{"sh.keptn.events.tests-finished", true},
+		{"sh.keptn.events.problem", true},
+		{"sh.keptn.internal.event.get-sli", true},
+		{"sh.kepntt.internal.event.get-sli", false},
+		{"event.get-sli", false},
+		{"internal.event.get-sli", false},
+		{"create", false},
+		{"", false},
+	}
+
+	for _, tt := range tests {
+		got := EventTypeExists(tt.InputTyp)
+		if got != tt.Result {
+			t.Errorf("EventTypeExists() = %t, wanted %t", got, tt.Result)
+		}
+	}
+}
