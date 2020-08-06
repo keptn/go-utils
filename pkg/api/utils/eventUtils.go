@@ -28,6 +28,7 @@ type EventFilter struct {
 	EventType    string
 	KeptnContext string
 	EventID      string
+	PageSize	 string
 }
 
 // NewEventHandler returns a new EventHandler
@@ -114,6 +115,9 @@ func (e *EventHandler) GetEvents(filter *EventFilter) ([]*models.KeptnContextExt
 	}
 	if filter.EventType != "" {
 		query.Set("type", filter.EventType)
+	}
+	if filter.PageSize != "" {
+		query.Set("pageSize", filter.PageSize)
 	}
 
 	u.RawQuery = query.Encode()
