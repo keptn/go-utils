@@ -20,14 +20,14 @@ type ShipyardSpec struct {
 	Stages []Stage `json:"stages" yaml:"stages"`
 }
 
-// Stage defines a stage by its name and list of workflows
+// Stage defines a stage by its name and list of task sequences
 type Stage struct {
 	Name      string     `json:"name" yaml:"name"`
-	Workflows []Workflow `json:"workflow" yaml:"workflow"`
+	Sequences []Sequence `json:"sequence" yaml:"sequence"`
 }
 
-// Workflow defines a workflow by its name and tasks. The triggers property is optional
-type Workflow struct {
+// Sequence defines a task sequence by its name and tasks. The triggers property is optional
+type Sequence struct {
 	Name     string   `json:"name" yaml:"name"`
 	Triggers []string `json:"triggers" yaml:"triggers"`
 	Tasks    []Task   `json:"tasks" yaml:"tasks"`
