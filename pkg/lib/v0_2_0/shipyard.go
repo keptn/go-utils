@@ -4,14 +4,14 @@ package v0_2_0
 
 // Shipyard describes a shipyard specification according to Keptn spec 0.2.0
 type Shipyard struct {
-	ApiVersion string           `json:"apiVersion" yaml:"apiVersion"`
-	Kind       string           `json:"kind" yaml:"kind"`
-	Metadata   ShipyardMetadata `json:"metadata" yaml:"metadata"`
-	Spec       ShipyardSpec     `json:"spec" yaml:"spec"`
+	ApiVersion string       `json:"apiVersion" yaml:"apiVersion"`
+	Kind       string       `json:"kind" yaml:"kind"`
+	Metadata   Metadata     `json:"metadata" yaml:"metadata"`
+	Spec       ShipyardSpec `json:"spec" yaml:"spec"`
 }
 
-// ShipyardMetadata describes Shipyayrd metadata
-type ShipyardMetadata struct {
+// Metadata contains meta-data of a resource
+type Metadata struct {
 	Name string `json:"name" yaml:"name"`
 }
 
@@ -23,7 +23,7 @@ type ShipyardSpec struct {
 // Stage defines a stage by its name and list of task sequences
 type Stage struct {
 	Name      string     `json:"name" yaml:"name"`
-	Sequences []Sequence `json:"sequence" yaml:"sequence"`
+	Sequences []Sequence `json:"sequences" yaml:"sequences"`
 }
 
 // Sequence defines a task sequence by its name and tasks. The triggers property is optional
