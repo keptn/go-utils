@@ -1,4 +1,4 @@
-package keptn
+package v0_2_0
 
 type StatusType string
 

@@ -1,4 +1,4 @@
-package keptn
+package v0_2_0
 
 // RemediationTriggeredEventData is a CloudEvent for triggering remediations
 type RemediationTriggeredEventData struct {

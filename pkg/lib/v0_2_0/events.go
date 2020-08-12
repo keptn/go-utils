@@ -1,4 +1,4 @@
-package keptn
+package v0_2_0
 
 // GetTriggeredEventType returns for the given task the name of the triggered event type
 func GetTriggeredEventType(task string) string {
