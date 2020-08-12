@@ -9,23 +9,17 @@ type DeploymentTriggeredEventData struct {
 		GitCommit string `json:"gitCommit"`
 	} `json:"configurationChange"`
 
-	Deployment DeploymentStartedData `json:"deployment"`
+	Deployment DeploymentData `json:"deployment"`
 }
 
-type DeploymentStartedData struct {
+type DeploymentData struct {
 	// DeploymentURILocal contains the local URL
 	DeploymentURIsLocal []string `json:"deploymentURIsLocal,omitempty"`
 	// DeploymentURIPublic contains the public URL
 	DeploymentURIsPublic []string `json:"deploymentURIsPublic,omitempty"`
 	// DeploymentNames gives the names of the deployments
 	DeploymentNames []string `json:"deploymentNames"`
-	// GitCommit indicates the version which was deployed
-	GitCommit string `json:"gitCommit"`
-}
-
-type DeploymentFinishedData struct {
-	DeploymentStartedData
-	// GitCommit indicates the version which was deployed
+	// GitCommit indicates the version which should be deployed
 	GitCommit string `json:"gitCommit"`
 }
 
@@ -39,5 +33,5 @@ type DeploymentStatusChangedEventData struct {
 
 type DeploymentFinishedEventData struct {
 	EventData
-	Deployment DeploymentFinishedData `json:"deployment"`
+	Deployment DeploymentData `json:"deployment"`
 }
