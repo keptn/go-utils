@@ -115,7 +115,7 @@ func getLatestEvent(keptnContext string, eventType string, uri string, datastore
 		var respMessage models.Error
 		message := "No Keptn " + eventType + " event found for context: " + keptnContext
 		respMessage.Message = &message
-		respMessage.Code = 400
+		respMessage.Code = 404
 		return nil, &respMessage
 	}
 

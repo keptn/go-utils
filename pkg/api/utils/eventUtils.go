@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
@@ -22,12 +23,14 @@ type EventHandler struct {
 
 // EventFilter allows to filter events based on the provided properties
 type EventFilter struct {
-	Project      string
-	Stage        string
-	Service      string
-	EventType    string
-	KeptnContext string
-	EventID      string
+	Project      	string
+	Stage        	string
+	Service      	string
+	EventType    	string
+	KeptnContext 	string
+	EventID      	string
+	PageSize		string
+	NumberOfPages	int
 }
 
 // NewEventHandler returns a new EventHandler
@@ -115,13 +118,16 @@ func (e *EventHandler) GetEvents(filter *EventFilter) ([]*models.KeptnContextExt
 	if filter.EventType != "" {
 		query.Set("type", filter.EventType)
 	}
+	if filter.PageSize != "" {
+		query.Set("pageSize", filter.PageSize)
+	}
 
 	u.RawQuery = query.Encode()
 
-	return e.getEvents(u.String())
+	return e.getEvents(u.String(), filter.NumberOfPages)
 }
 
-func (e *EventHandler) getEvents(uri string) ([]*models.KeptnContextExtendedCE, *models.Error) {
+func (e *EventHandler) getEvents(uri string, numberOfPages int) ([]*models.KeptnContextExtendedCE, *models.Error) {
 	events := []*models.KeptnContextExtendedCE{}
 	nextPageKey := ""
 
@@ -161,6 +167,13 @@ func (e *EventHandler) getEvents(uri string) ([]*models.KeptnContextExtendedCE, 
 			if received.NextPageKey == "" || received.NextPageKey == "0" {
 				break
 			}
+
+			nextPageKeyInt, _ := strconv.Atoi(received.NextPageKey)
+
+			if numberOfPages > 0 && nextPageKeyInt >= numberOfPages {
+				break
+			}
+
 			nextPageKey = received.NextPageKey
 		} else {
 			var respErr models.Error
