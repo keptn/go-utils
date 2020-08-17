@@ -33,6 +33,7 @@ type LoggerInterface interface {
 	Info(message string)
 	Error(message string)
 	Debug(message string)
+	Terminate(message string)
 }
 
 // Info logs an info message
@@ -48,6 +49,11 @@ func (l *Logger) Error(message string) {
 // Debug logs a debug message
 func (l *Logger) Debug(message string) {
 	l.printLogMessage(keptnLogMessage{Timestamp: time.Now(), Message: message, LogLevel: "DEBUG"})
+}
+
+// Terminate logs an info message
+func (l *Logger) Terminate(message string) {
+	l.printLogMessage(keptnLogMessage{Timestamp: time.Now(), Message: message, LogLevel: "INFO"})
 }
 
 func (l *Logger) printLogMessage(logMessage keptnLogMessage) {

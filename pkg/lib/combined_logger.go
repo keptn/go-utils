@@ -50,8 +50,8 @@ func (l *CombinedLogger) Debug(message string) {
 }
 
 // Terminate sends a terminate message to the websocket
-func (l *CombinedLogger) Terminate() {
-	if err := WriteLog(l.ws, LogData{LogLevel: "INFO", Message: "", Terminate: true}, l.shKeptnContext); err != nil {
+func (l *CombinedLogger) Terminate(message string) {
+	if err := WriteLog(l.ws, LogData{LogLevel: "INFO", Message: message, Terminate: true}, l.shKeptnContext); err != nil {
 		l.logWebsocketError(err)
 	}
 	l.ws.Close()
