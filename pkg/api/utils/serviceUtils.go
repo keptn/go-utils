@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
@@ -123,7 +124,7 @@ func (s *ServiceHandler) GetService(project, stage, service string) (*models.Ser
 		if err != nil {
 			return nil, err
 		}
-		return nil, errors.New("Response Error Code: " + string(respErr.Code) + " Message: " + *respErr.Message)
+		return nil, errors.New("Response Error Code: " + strconv.FormatInt(respErr.Code, 10) + " Message: " + *respErr.Message)
 	}
 }
 
@@ -178,7 +179,7 @@ func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models
 			if err != nil {
 				return nil, err
 			}
-			return nil, errors.New("Response Error Code: " + string(respErr.Code) + " Message: " + *respErr.Message)
+			return nil, errors.New("Response Error Code: " + strconv.FormatInt(respErr.Code, 10) + " Message: " + *respErr.Message)
 		}
 	}
 
