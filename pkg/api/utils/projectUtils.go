@@ -147,7 +147,7 @@ func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
 			if err != nil {
 				return nil, err
 			}
-			return nil, errors.New("Response Error Code: " + string(respErr.Code) + " Message: " + *respErr.Message)
+			return nil, errors.New(*respErr.Message)
 		}
 	}
 

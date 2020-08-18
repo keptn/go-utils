@@ -396,7 +396,7 @@ func (r *ResourceHandler) getAllResources(u *url.URL) ([]*models.Resource, error
 			if err != nil {
 				return nil, err
 			}
-			return nil, errors.New("Response Error Code: " + string(respErr.Code) + " Message: " + *respErr.Message)
+			return nil, errors.New(*respErr.Message)
 		}
 	}
 

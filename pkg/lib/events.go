@@ -31,6 +31,9 @@ const InternalProjectDeleteEventType = "sh.keptn.internal.event.project.delete"
 // InternalServiceCreateEventType is a CloudEvent type for creating a new service
 const InternalServiceCreateEventType = "sh.keptn.internal.event.service.create"
 
+// InternalServiceDeleteEventType is a CloudEvent type for deleting a new service
+const InternalServiceDeleteEventType = "sh.keptn.internal.event.service.delete"
+
 // ConfigurationChangeEventType is a CloudEvent type for changing the configuration
 const ConfigurationChangeEventType = "sh.keptn.event.configuration.change"
 
@@ -136,6 +139,14 @@ type ServiceCreateEventData struct {
 	HelmChart string `json:"helmChart"`
 	// DeploymentStrategies contains the deployment strategy for the stages
 	DeploymentStrategies map[string]DeploymentStrategy `json:"deploymentStrategies"`
+}
+
+// ServiceDeleteEventData represents the data for deleting a new service
+type ServiceDeleteEventData struct {
+	// Project is the name of the project
+	Project string `json:"project"`
+	// Service is the name of the new service
+	Service string `json:"service"`
 }
 
 // ConfigurationChangeEventData represents the data for changing the service configuration
