@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
@@ -135,7 +134,7 @@ func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 			if err != nil {
 				return nil, err
 			}
-			return nil, errors.New("Response Error Code: " + strconv.FormatInt(respErr.Code, 10) + " Message: " + *respErr.Message)
+			return nil, errors.New(*respErr.Message)
 		}
 	}
 	return stages, nil
