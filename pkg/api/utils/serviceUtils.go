@@ -88,6 +88,11 @@ func (s *ServiceHandler) CreateServiceInStage(project string, stage string, serv
 	return post(s.Scheme+"://"+s.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service", body, s)
 }
 
+// DeleteServiceFromStage godoc
+func (s *ServiceHandler) DeleteServiceFromStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error) {
+	return delete(s.Scheme+"://"+s.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+serviceName, s)
+}
+
 func (s *ServiceHandler) GetService(project, stage, service string) (*models.Service, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
