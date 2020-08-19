@@ -132,6 +132,11 @@ func (s *APIHandler) CreateService(project string, service models.CreateService)
 	return post(s.Scheme+"://"+s.getBaseURL()+"/v1/project/"+project+"/service", bodyStr, s)
 }
 
+// DeleteProject deletes a project
+func (p *APIHandler) DeleteService(project, service string) (*models.EventContext, *models.Error) {
+	return delete(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project+"/service/"+service, p)
+}
+
 // GetMetadata retrieve keptn MetaData information
 func (s *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
 	//return get(s.Scheme+"://"+s.getBaseURL()+"/v1/metadata", nil, s)
