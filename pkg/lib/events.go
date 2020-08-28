@@ -520,8 +520,6 @@ type ActionFinishedEventData struct {
 	Stage string `json:"stage"`
 	// Action describes the type of action
 	Action ActionResult `json:"action"`
-	// Value contains additional values
-	Value interface{} `json:"value,omitempty"`
 	// Labels contains labels
 	Labels map[string]string `json:"labels"`
 }
@@ -627,9 +625,7 @@ type RemediationFinishedEventData struct {
 	Remediation RemediationFinished `json:"remediation"`
 }
 
-//
-// Sends a ConfigurationChangeEventType = "sh.keptn.event.configuration.change"
-//
+// SendConfigurationChangeEvent sends a CloudEvent with type "sh.keptn.event.configuration.change"
 func (k *Keptn) SendConfigurationChangeEvent(incomingEvent *cloudevents.Event, labels map[string]string, eventSource string) error {
 	source, _ := url.Parse(eventSource)
 	contentType := "application/json"
@@ -666,14 +662,10 @@ func (k *Keptn) SendConfigurationChangeEvent(incomingEvent *cloudevents.Event, l
 		Data: configurationChangeData,
 	}
 
-	log.Println(fmt.Sprintf("%s", event))
-
 	return k.SendCloudEvent(event)
 }
 
-//
-// Sends a DeploymentFinishedEventType = "sh.keptn.events.deployment-finished"
-//
+// SendDeploymentFinishedEvent sends a CloudEvent with type "sh.keptn.events.deployment-finished"
 func (k *Keptn) SendDeploymentFinishedEvent(incomingEvent *cloudevents.Event, teststrategy, deploymentstrategy, image, tag, deploymentURILocal, deploymentURIPublic string, labels map[string]string, eventSource string) error {
 	source, _ := url.Parse(eventSource)
 	contentType := "application/json"
@@ -731,15 +723,10 @@ func (k *Keptn) SendDeploymentFinishedEvent(incomingEvent *cloudevents.Event, te
 		Data: deploymentFinishedData,
 	}
 
-	log.Println(fmt.Sprintf("%s", event))
-
 	return k.SendCloudEvent(event)
-
 }
 
-//
-// Sends a TestsFinishedEventType = "sh.keptn.events.tests-finished"
-//
+// SendTestsFinishedEvent sends a CloudEvent with type "sh.keptn.events.tests-finished"
 func (k *Keptn) SendTestsFinishedEvent(incomingEvent *cloudevents.Event, teststrategy, deploymentstrategy string, startedAt time.Time, result string, labels map[string]string, eventSource string) error {
 	source, _ := url.Parse(eventSource)
 	contentType := "application/json"
@@ -790,14 +777,100 @@ func (k *Keptn) SendTestsFinishedEvent(incomingEvent *cloudevents.Event, teststr
 		Data: testFinishedData,
 	}
 
-	log.Println(fmt.Printf("%s", event))
+	return k.SendCloudEvent(event)
+}
+
+// SendActionStartedEvent sends a CloudEvent with type "sh.keptn.event.action.started"
+func (k *Keptn) SendActionStartedEvent(incomingEvent *cloudevents.Event, labels map[string]string, eventSource string) error {
+	source, _ := url.Parse(eventSource)
+	contentType := "application/json"
+
+	actionStartedData := ActionStartedEventData{}
+
+	// if we have an incoming event we pre-populate data
+	if incomingEvent != nil {
+		incomingEvent.DataAs(&actionStartedData)
+	}
+
+	if k.KeptnBase.Project != "" {
+		actionStartedData.Project = k.KeptnBase.Project
+	}
+	if k.KeptnBase.Service != "" {
+		actionStartedData.Service = k.KeptnBase.Service
+	}
+	if k.KeptnBase.Stage != "" {
+		actionStartedData.Stage = k.KeptnBase.Stage
+	}
+
+	if labels != nil {
+		actionStartedData.Labels = labels
+	}
+
+	event := cloudevents.Event{
+		Context: cloudevents.EventContextV02{
+			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
+			Type:        ActionStartedEventType,
+			Source:      types.URLRef{URL: *source},
+			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": k.KeptnContext},
+		}.AsV02(),
+		Data: actionStartedData,
+	}
 
 	return k.SendCloudEvent(event)
 }
 
-//
-// Sends a CloudEvent to the event broker
-//
+// SendActionFinishedEvent sends a CloudEvent with type "sh.keptn.event.action.finished"
+func (k *Keptn) SendActionFinishedEvent(incomingEvent *cloudevents.Event, actionResult ActionResult, labels map[string]string, eventSource string) error {
+	source, _ := url.Parse(eventSource)
+	contentType := "application/json"
+
+	actionFinishedData := ActionFinishedEventData{
+		Project: "",
+		Service: "",
+		Stage:   "",
+		Action:  ActionResult{},
+		Labels:  nil,
+	}
+
+	// if we have an incoming event we pre-populate data
+	if incomingEvent != nil {
+		incomingEvent.DataAs(&actionFinishedData)
+	}
+
+	if k.KeptnBase.Project != "" {
+		actionFinishedData.Project = k.KeptnBase.Project
+	}
+	if k.KeptnBase.Service != "" {
+		actionFinishedData.Service = k.KeptnBase.Service
+	}
+	if k.KeptnBase.Stage != "" {
+		actionFinishedData.Stage = k.KeptnBase.Stage
+	}
+
+	actionFinishedData.Action = actionResult
+
+	if labels != nil {
+		actionFinishedData.Labels = labels
+	}
+
+	event := cloudevents.Event{
+		Context: cloudevents.EventContextV02{
+			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
+			Type:        ActionFinishedEventType,
+			Source:      types.URLRef{URL: *source},
+			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": k.KeptnContext},
+		}.AsV02(),
+		Data: actionFinishedData,
+	}
+
+	return k.SendCloudEvent(event)
+}
+
+// SendCloudEvent sends a cloudevent to the event broker
 func (k *Keptn) SendCloudEvent(event cloudevents.Event) error {
 	if k.useLocalFileSystem {
 		log.Println(fmt.Printf("%v", event.Data))
