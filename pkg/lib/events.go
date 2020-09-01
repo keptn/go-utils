@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/url"
 	"time"
-
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 
 	"encoding/json"
