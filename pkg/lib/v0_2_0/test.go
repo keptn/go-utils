@@ -33,5 +33,7 @@ type TestFinishedEventData struct {
 		Start string `json:"start"`
 		// End indicates the end timestamp of the tests
 		End string `json:"end"`
+		// GitCommit indicates the version which should be deployed
+		GitCommit string `json:"gitCommit"`
 	} `json:"test"`
 }

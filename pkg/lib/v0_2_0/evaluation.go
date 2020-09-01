@@ -45,6 +45,8 @@ type EvaluationDetails struct {
 	Score            float64                `json:"score"`
 	SLOFileContent   string                 `json:"sloFileContent"`
 	IndicatorResults []*SLIEvaluationResult `json:"indicatorResults"`
+	// GitCommit indicates the version which should be deployed
+	GitCommit string `json:"gitCommit"`
 }
 
 type SLIResult struct {
