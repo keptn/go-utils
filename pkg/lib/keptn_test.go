@@ -2,18 +2,17 @@ package keptn
 
 import (
 	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
+
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/go-test/deep"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
-	"math/rand"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
-	"os"
-	"reflect"
-	"testing"
-	"time"
+	keptn "github.com/keptn/go-utils/pkg/lib/keptn"
 )
 
 func TestNewKeptn(t *testing.T) {
@@ -23,7 +22,7 @@ func TestNewKeptn(t *testing.T) {
 	incomingEvent.SetDataContentType(cloudevents.ApplicationCloudEventsJSON)
 	incomingEvent.SetID("test-id")
 
-	keptnBase := &KeptnBase{
+	keptnBase := &KeptnBaseEvent{
 		Project:            "sockshop",
 		Stage:              "dev",
 		Service:            "carts",
@@ -43,7 +42,7 @@ func TestNewKeptn(t *testing.T) {
 
 	type args struct {
 		incomingEvent *cloudevents.Event
-		opts          KeptnOpts
+		opts          keptn.KeptnOpts
 	}
 	tests := []struct {
 		name string
@@ -51,204 +50,158 @@ func TestNewKeptn(t *testing.T) {
 		want *Keptn
 	}{
 		{
-			name: "Get 'in-cluster' Keptn",
+			name: "Get 'in-cluster' KeptnBase",
 			args: args{
 				incomingEvent: &incomingEvent,
-				opts:          KeptnOpts{},
+				opts:          keptn.KeptnOpts{},
 			},
 			want: &Keptn{
-				KeptnBase:          keptnBase,
-				KeptnContext:       "test-context",
-				eventBrokerURL:     defaultEventBrokerURL,
-				useLocalFileSystem: false,
-				resourceHandler: &api.ResourceHandler{
-					BaseURL:    configurationServiceURL,
-					AuthHeader: "",
-					AuthToken:  "",
-					HTTPClient: &http.Client{},
-					Scheme:     "http",
+				KeptnBase: keptn.KeptnBase{
+					KeptnContext:       "test-context",
+					Event:              keptnBase,
+					Logger:             keptn.NewLogger("test-context", "test-id", "keptn"),
+					EventBrokerURL:     keptn.DefaultEventBrokerURL,
+					UseLocalFileSystem: false,
+					ResourceHandler:    api.NewResourceHandler(keptn.ConfigurationServiceURL),
+					EventHandler:       api.NewEventHandler(keptn.ConfigurationServiceURL),
 				},
-				eventHandler: &api.EventHandler{
-					BaseURL:    configurationServiceURL,
-					AuthToken:  "",
-					AuthHeader: "",
-					HTTPClient: nil,
-					Scheme:     "",
-				},
-				Logger: NewLogger("test-context", "test-id", "keptn"),
 			},
 		},
 		{
-			name: "Get local Keptn",
+			name: "Get local KeptnBase",
 			args: args{
 				incomingEvent: &incomingEvent,
-				opts: KeptnOpts{
+				opts: keptn.KeptnOpts{
 					UseLocalFileSystem:      true,
 					ConfigurationServiceURL: "",
 					EventBrokerURL:          "",
 				},
 			},
 			want: &Keptn{
-				KeptnBase: &KeptnBase{
-					Project:            "sockshop",
-					Stage:              "dev",
-					Service:            "carts",
-					TestStrategy:       nil,
-					DeploymentStrategy: nil,
-					Tag:                nil,
-					Image:              nil,
-					Labels:             nil,
+				KeptnBase: keptn.KeptnBase{
+					KeptnContext: "test-context",
+					Event: &KeptnBaseEvent{
+						Project:            "sockshop",
+						Stage:              "dev",
+						Service:            "carts",
+						TestStrategy:       nil,
+						DeploymentStrategy: nil,
+						Tag:                nil,
+						Image:              nil,
+						Labels:             nil,
+					},
+					Logger:             keptn.NewLogger("test-context", "test-id", "keptn"),
+					EventBrokerURL:     keptn.DefaultEventBrokerURL,
+					UseLocalFileSystem: true,
+					ResourceHandler:    api.NewResourceHandler(keptn.ConfigurationServiceURL),
+					EventHandler:       api.NewEventHandler(keptn.ConfigurationServiceURL),
 				},
-				KeptnContext:       "test-context",
-				eventBrokerURL:     defaultEventBrokerURL,
-				useLocalFileSystem: true,
-				resourceHandler: &api.ResourceHandler{
-					BaseURL:    configurationServiceURL,
-					AuthHeader: "",
-					AuthToken:  "",
-					HTTPClient: &http.Client{},
-					Scheme:     "http",
-				},
-				eventHandler: &api.EventHandler{
-					BaseURL:    configurationServiceURL,
-					AuthToken:  "",
-					AuthHeader: "",
-					HTTPClient: nil,
-					Scheme:     "",
-				},
-				Logger: NewLogger("test-context", "test-id", "keptn"),
 			},
 		},
 		{
-			name: "Get Keptn with custom configuration service URL",
+			name: "Get KeptnBase with custom configuration service URL",
 			args: args{
 				incomingEvent: &incomingEvent,
-				opts: KeptnOpts{
+				opts: keptn.KeptnOpts{
 					UseLocalFileSystem:      false,
 					ConfigurationServiceURL: "custom-config:8080",
 					EventBrokerURL:          "",
 				},
 			},
 			want: &Keptn{
-				KeptnBase: &KeptnBase{
-					Project:            "sockshop",
-					Stage:              "dev",
-					Service:            "carts",
-					TestStrategy:       nil,
-					DeploymentStrategy: nil,
-					Tag:                nil,
-					Image:              nil,
-					Labels:             nil,
+				KeptnBase: keptn.KeptnBase{
+					Event: &KeptnBaseEvent{
+						Project:            "sockshop",
+						Stage:              "dev",
+						Service:            "carts",
+						TestStrategy:       nil,
+						DeploymentStrategy: nil,
+						Tag:                nil,
+						Image:              nil,
+						Labels:             nil,
+					},
+					KeptnContext:       "test-context",
+					EventBrokerURL:     keptn.DefaultEventBrokerURL,
+					UseLocalFileSystem: false,
+					ResourceHandler:    api.NewResourceHandler("custom-config:8080"),
+					EventHandler:       api.NewEventHandler("custom-config:8080"),
+					Logger:             keptn.NewLogger("test-context", "test-id", "keptn"),
 				},
-				KeptnContext:       "test-context",
-				eventBrokerURL:     defaultEventBrokerURL,
-				useLocalFileSystem: false,
-				resourceHandler: &api.ResourceHandler{
-					BaseURL:    "custom-config:8080",
-					AuthHeader: "",
-					AuthToken:  "",
-					HTTPClient: &http.Client{},
-					Scheme:     "http",
-				},
-				eventHandler: &api.EventHandler{
-					BaseURL:    "custom-config:8080",
-					AuthToken:  "",
-					AuthHeader: "",
-					HTTPClient: nil,
-					Scheme:     "",
-				},
-				Logger: NewLogger("test-context", "test-id", "keptn"),
 			},
 		},
 		{
-			name: "Get Keptn with custom event brokerURL",
+			name: "Get KeptnBase with custom event brokerURL",
 			args: args{
 				incomingEvent: &incomingEvent,
-				opts: KeptnOpts{
+				opts: keptn.KeptnOpts{
 					UseLocalFileSystem:      false,
 					ConfigurationServiceURL: "custom-config:8080",
 					EventBrokerURL:          "custom-eb:8080",
 				},
 			},
 			want: &Keptn{
-				KeptnBase: &KeptnBase{
-					Project:            "sockshop",
-					Stage:              "dev",
-					Service:            "carts",
-					TestStrategy:       nil,
-					DeploymentStrategy: nil,
-					Tag:                nil,
-					Image:              nil,
-					Labels:             nil,
+				KeptnBase: keptn.KeptnBase{
+					Event: &KeptnBaseEvent{
+						Project:            "sockshop",
+						Stage:              "dev",
+						Service:            "carts",
+						TestStrategy:       nil,
+						DeploymentStrategy: nil,
+						Tag:                nil,
+						Image:              nil,
+						Labels:             nil,
+					},
+					KeptnContext:       "test-context",
+					EventBrokerURL:     "custom-eb:8080",
+					UseLocalFileSystem: false,
+					ResourceHandler:    api.NewResourceHandler("custom-config:8080"),
+					EventHandler:       api.NewEventHandler("custom-config:8080"),
+					Logger:             keptn.NewLogger("test-context", "test-id", "keptn"),
 				},
-				KeptnContext:       "test-context",
-				eventBrokerURL:     "custom-eb:8080",
-				useLocalFileSystem: false,
-				resourceHandler: &api.ResourceHandler{
-					BaseURL:    "custom-config:8080",
-					AuthHeader: "",
-					AuthToken:  "",
-					HTTPClient: &http.Client{},
-					Scheme:     "http",
-				},
-				eventHandler: &api.EventHandler{
-					BaseURL:    "custom-config:8080",
-					AuthToken:  "",
-					AuthHeader: "",
-					HTTPClient: nil,
-					Scheme:     "",
-				},
-				Logger: NewLogger("test-context", "test-id", "keptn"),
 			},
 		},
 		{
-			name: "Get Keptn with custom logger",
+			name: "Get KeptnBase with custom logger",
 			args: args{
 				incomingEvent: &incomingEvent,
-				opts: KeptnOpts{
+				opts: keptn.KeptnOpts{
 					UseLocalFileSystem:      false,
 					ConfigurationServiceURL: "custom-config:8080",
 					EventBrokerURL:          "custom-eb:8080",
-					LoggingOptions: &LoggingOpts{
+					LoggingOptions: &keptn.LoggingOpts{
 						ServiceName: stringp("my-service"),
 					},
 				},
 			},
 			want: &Keptn{
-				KeptnBase: &KeptnBase{
-					Project:            "sockshop",
-					Stage:              "dev",
-					Service:            "carts",
-					TestStrategy:       nil,
-					DeploymentStrategy: nil,
-					Tag:                nil,
-					Image:              nil,
-					Labels:             nil,
+				KeptnBase: keptn.KeptnBase{
+					Event: &KeptnBaseEvent{
+						Project:            "sockshop",
+						Stage:              "dev",
+						Service:            "carts",
+						TestStrategy:       nil,
+						DeploymentStrategy: nil,
+						Tag:                nil,
+						Image:              nil,
+						Labels:             nil,
+					},
+					KeptnContext:       "test-context",
+					EventBrokerURL:     "custom-eb:8080",
+					UseLocalFileSystem: false,
+					ResourceHandler:    api.NewResourceHandler("custom-config:8080"),
+					EventHandler:       api.NewEventHandler("custom-config:8080"),
+					Logger:             keptn.NewLogger("test-context", "test-id", "my-service"),
 				},
-				KeptnContext:       "test-context",
-				eventBrokerURL:     "custom-eb:8080",
-				useLocalFileSystem: false,
-				resourceHandler: &api.ResourceHandler{
-					BaseURL:    "custom-config:8080",
-					AuthHeader: "",
-					AuthToken:  "",
-					HTTPClient: &http.Client{},
-					Scheme:     "http",
-				},
-				eventHandler: &api.EventHandler{
-					BaseURL:    "custom-config:8080",
-					AuthToken:  "",
-					AuthHeader: "",
-					HTTPClient: nil,
-					Scheme:     "",
-				},
-				Logger: NewLogger("test-context", "test-id", "my-service"),
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got, _ := NewKeptn(tt.args.incomingEvent, tt.args.opts); deep.Equal(got, tt.want) != nil {
+				fmt.Println(deep.Equal(got.Event, tt.want.Event))
+				fmt.Println(deep.Equal(got.Logger, tt.want.Logger))
+				fmt.Println(deep.Equal(got.ResourceHandler, tt.want.ResourceHandler))
+				fmt.Println(deep.Equal(got.EventHandler, tt.want.EventHandler))
 				t.Errorf("NewKeptn() = %v, want %v", got, tt.want)
 			}
 		})
@@ -273,7 +226,7 @@ func TestKeptn_GetKeptnResource(t *testing.T) {
 	defer ts.Close()
 
 	type fields struct {
-		KeptnBase          *KeptnBase
+		KeptnBase          *KeptnBaseEvent
 		KeptnContext       string
 		eventBrokerURL     string
 		useLocalFileSystem bool
@@ -292,7 +245,7 @@ func TestKeptn_GetKeptnResource(t *testing.T) {
 		{
 			name: "get a resource",
 			fields: fields{
-				KeptnBase: &KeptnBase{
+				KeptnBase: &KeptnBaseEvent{
 					Project:            "sockshop",
 					Stage:              "dev",
 					Service:            "carts",
@@ -317,11 +270,13 @@ func TestKeptn_GetKeptnResource(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			k := &Keptn{
-				KeptnBase:          tt.fields.KeptnBase,
-				KeptnContext:       tt.fields.KeptnContext,
-				eventBrokerURL:     tt.fields.eventBrokerURL,
-				useLocalFileSystem: tt.fields.useLocalFileSystem,
-				resourceHandler:    tt.fields.resourceHandler,
+				KeptnBase: keptn.KeptnBase{
+					KeptnContext:       tt.fields.KeptnContext,
+					Event:              tt.fields.KeptnBase,
+					EventBrokerURL:     tt.fields.eventBrokerURL,
+					UseLocalFileSystem: tt.fields.useLocalFileSystem,
+					ResourceHandler:    tt.fields.resourceHandler,
+				},
 			}
 			got, err := k.GetKeptnResource(tt.args.resource)
 			if (err != nil) != tt.wantErr {
@@ -336,171 +291,6 @@ func TestKeptn_GetKeptnResource(t *testing.T) {
 	}
 }
 
-// generateStringWithSpecialChars generates a string of the given length
-// and containing at least one special character and digit.
-func generateStringWithSpecialChars(length int) string {
-	rand.Seed(time.Now().UnixNano())
-
-	digits := "0123456789"
-	specials := "~=+%^*/()[]{}/!@#$?|"
-	all := "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
-		"abcdefghijklmnopqrstuvwxyz" +
-		digits + specials
-
-	buf := make([]byte, length)
-	buf[0] = digits[rand.Intn(len(digits))]
-	buf[1] = specials[rand.Intn(len(specials))]
-
-	for i := 2; i < length; i++ {
-		buf[i] = all[rand.Intn(len(all))]
-	}
-
-	rand.Shuffle(len(buf), func(i, j int) {
-		buf[i], buf[j] = buf[j], buf[i]
-	})
-
-	str := string(buf)
-
-	return str
-}
-
-// TestInvalidKeptnEntityName tests whether a random string containing a special character or digit
-// does not pass the name validation.
-func TestInvalidKeptnEntityName(t *testing.T) {
-	invalidName := generateStringWithSpecialChars(8)
-	if ValidateKeptnEntityName(invalidName) {
-		t.Fatalf("%s starts with upper case letter(s) or contains special character(s), but passed the name validation", invalidName)
-	}
-}
-
-func TestInvalidKeptnEntityName2(t *testing.T) {
-	if ValidateKeptnEntityName("sockshop-") {
-		t.Fatalf("project name must not end with hyphen")
-	}
-}
-
-func TestValidKeptnEntityName(t *testing.T) {
-	if !ValidateKeptnEntityName("sockshop-test") {
-		t.Fatalf("project should be valid")
-	}
-}
-
-// TestAddResourceContentToSLIMap
-func TestAddResourceContentToSLIMap(t *testing.T) {
-	SLIs := make(map[string]string)
-	resource := &models.Resource{}
-	resourceURI := "provider/sli.yaml"
-	resource.ResourceURI = &resourceURI
-	resource.ResourceContent = `--- 
-indicators: 
-  error_rate: "builtin:service.errors.total.count:merge(0):avg?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"
-  response_time_p50: "builtin:service.response.time:merge(0):percentile(50)?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"
-  response_time_p90: "builtin:service.response.time:merge(0):percentile(90)?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"
-  response_time_p95: "builtin:service.response.time:merge(0):percentile(95)?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"
-  throughput: "builtin:service.requestCount.total:merge(0):count?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"	
-`
-	SLIs, _ = addResourceContentToSLIMap(SLIs, resource)
-
-	if len(SLIs) != 5 {
-		t.Errorf("Unexpected lenght of SLI map")
-	}
-}
-
-// TestAddResourceContentToSLIMap
-func TestAddMultipleResourceContentToSLIMap(t *testing.T) {
-	SLIs := make(map[string]string)
-	resource := &models.Resource{}
-	resourceURI := "provider/sli.yaml"
-	resource.ResourceURI = &resourceURI
-	resource.ResourceContent = `--- 
-indicators: 
-  error_rate: "not defined"
-  response_time_p50: "builtin:service.response.time:merge(0):percentile(50)?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"
-  response_time_p90: "builtin:service.response.time:merge(0):percentile(90)?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"
-  response_time_p95: "builtin:service.response.time:merge(0):percentile(95)?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"
-  throughput: "builtin:service.requestCount.total:merge(0):count?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"	
-`
-	SLIs, _ = addResourceContentToSLIMap(SLIs, resource)
-
-	resource.ResourceContent = `--- 
-indicators: 
-  error_rate: "builtin:service.errors.total.count:merge(0):avg?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"
-  failure_rate: "builtin:service.requestCount.total:merge(0):count?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)"	
-`
-	SLIs, _ = addResourceContentToSLIMap(SLIs, resource)
-
-	if len(SLIs) != 6 {
-		t.Errorf("Unexpected length of SLI map")
-	}
-
-	if SLIs["error_rate"] != "builtin:service.errors.total.count:merge(0):avg?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)" {
-		t.Errorf("Unexpected value of error_rate SLI")
-	}
-}
-
 func stringp(s string) *string {
 	return &s
-}
-
-func TestGetServiceEndpoint(t *testing.T) {
-	type args struct {
-		service string
-	}
-	tests := []struct {
-		name        string
-		args        args
-		envVarValue string
-		want        url.URL
-		wantErr     bool
-	}{
-		{
-			name: "get http endpoint",
-			args: args{
-				service: "CONFIGURATION_SERVICE",
-			},
-			envVarValue: "http://configuration-service",
-			want: url.URL{
-				Scheme: "http",
-				Host:   "configuration-service",
-			},
-			wantErr: false,
-		},
-		{
-			name: "get https endpoint",
-			args: args{
-				service: "CONFIGURATION_SERVICE",
-			},
-			envVarValue: "https://configuration-service",
-			want: url.URL{
-				Scheme: "https",
-				Host:   "configuration-service",
-			},
-			wantErr: false,
-		},
-		{
-			name: "get http endpoint from service-name only",
-			args: args{
-				service: "CONFIGURATION_SERVICE",
-			},
-			envVarValue: "configuration-service",
-			want: url.URL{
-				Scheme: "http",
-				Host:   "configuration-service",
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			os.Setenv(tt.args.service, tt.envVarValue)
-			got, err := GetServiceEndpoint(tt.args.service)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetServiceEndpoint() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetServiceEndpoint() got = %v, want %v", got.Host, tt.want.Host)
-			}
-		})
-	}
 }

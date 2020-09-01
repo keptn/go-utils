@@ -1,10 +1,7 @@
-package keptn
+package v0_2_0
 
 import (
-	"encoding/json"
 	"net/url"
-	"os"
-	"strings"
 
 	keptn "github.com/keptn/go-utils/pkg/lib/keptn"
 
@@ -18,18 +15,16 @@ type Keptn struct {
 }
 
 func NewKeptn(incomingEvent *cloudevents.Event, opts keptn.KeptnOpts) (*Keptn, error) {
-	var shkeptncontext string
-	_ = incomingEvent.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
-
-	// create a base KeptnBase Event
-	keptnBase := &KeptnBaseEvent{}
-
-	bytes, err := incomingEvent.DataBytes()
+	extension, err := incomingEvent.Context.GetExtension("shkeptncontext")
 	if err != nil {
 		return nil, err
 	}
-	err = json.Unmarshal(bytes, keptnBase)
-	if err != nil {
+	shkeptncontext := extension.(string)
+
+	// create a base KeptnBase Event
+	keptnBase := &EventData{}
+
+	if err := incomingEvent.DataAs(keptnBase); err != nil {
 		return nil, err
 	}
 
@@ -104,41 +99,4 @@ func (k *Keptn) GetShipyard() (*Shipyard, error) {
 		return nil, err
 	}
 	return &shipyard, nil
-}
-
-//
-// replaces $ placeholders with actual values
-// $CONTEXT, $EVENT, $SOURCE
-// $PROJECT, $STAGE, $SERVICE, $DEPLOYMENT
-// $TESTSTRATEGY
-// $LABEL.XXXX  -> will replace that with a label called XXXX
-// $ENV.XXXX    -> will replace that with an env variable called XXXX
-//
-func (k *Keptn) ReplaceKeptnPlaceholders(input string) string {
-	result := input
-
-	// first we do the regular keptn values
-	result = strings.Replace(result, "$CONTEXT", k.KeptnContext, -1)
-	result = strings.Replace(result, "$PROJECT", k.Event.GetProject(), -1)
-	result = strings.Replace(result, "$STAGE", k.Event.GetStage(), -1)
-	result = strings.Replace(result, "$SERVICE", k.Event.GetService(), -1)
-	if k.Event.(KeptnBaseEvent).DeploymentStrategy != nil {
-		result = strings.Replace(result, "$DEPLOYMENT", *k.Event.(KeptnBaseEvent).DeploymentStrategy, -1)
-	}
-	if k.Event.(KeptnBaseEvent).TestStrategy != nil {
-		result = strings.Replace(result, "$TESTSTRATEGY", *k.Event.(KeptnBaseEvent).TestStrategy, -1)
-	}
-
-	// now we do the labels
-	for key, value := range k.Event.GetLabels() {
-		result = strings.Replace(result, "$LABEL."+key, value, -1)
-	}
-
-	// now we do all environment variables
-	for _, env := range os.Environ() {
-		pair := strings.SplitN(env, "=", 2)
-		result = strings.Replace(result, "$ENV."+pair[0], pair[1], -1)
-	}
-
-	return result
 }
