@@ -5,7 +5,7 @@ import (
 
 	keptn "github.com/keptn/go-utils/pkg/lib/keptn"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"gopkg.in/yaml.v2"
 )
