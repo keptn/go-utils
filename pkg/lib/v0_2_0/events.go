@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/cloudevents/sdk-go/v2/protocol"
 	"log"
 	"time"
 
@@ -65,24 +66,31 @@ func (e EventData) GetLabels() map[string]string {
 // SendCloudEvent sends a cloudevent to the event broker
 func (k *Keptn) SendCloudEvent(event cloudevents.Event) error {
 	if k.UseLocalFileSystem {
-		log.Println(fmt.Printf("%v", event.Data()))
+		log.Println(fmt.Printf("%v", string(event.Data())))
 		return nil
 	}
 
-	c, err := cloudevents.NewDefaultClient()
+	ctx := cloudevents.ContextWithTarget(context.Background(), k.EventBrokerURL)
+	ctx = cloudevents.WithEncodingStructured(ctx)
+
+	p, err := cloudevents.NewHTTP()
 	if err != nil {
-		return fmt.Errorf("failed to create client, %v", err)
+		log.Fatalf("failed to create protocol: %s", err.Error())
 	}
 
-	// Set a target.
-	ctx := cloudevents.ContextWithTarget(context.Background(), k.EventBrokerURL)
+	c, err := cloudevents.NewClient(p, cloudevents.WithTimeNow(), cloudevents.WithUUIDs())
+	if err != nil {
+		log.Fatalf("failed to create client, %v", err)
+	}
 
+	var result protocol.Result
 	for i := 0; i <= MAX_SEND_RETRIES; i++ {
-		result := c.Send(ctx, event)
-		if cloudevents.IsACK(result) {
+		result = c.Send(ctx, event)
+		if cloudevents.IsUndelivered(result) {
+			<-time.After(keptn.GetExpBackoffTime(i + 1))
+		} else {
 			return nil
 		}
-		<-time.After(keptn.GetExpBackoffTime(i + 1))
 	}
-	return errors.New("Failed to send cloudevent:, " + err.Error())
+	return errors.New("Failed to send cloudevent: " + result.Error())
 }
