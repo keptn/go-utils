@@ -17,10 +17,7 @@ type Keptn struct {
 const DefaultLocalEventBrokerURL = "http://localhost:8081/event"
 
 func NewKeptn(incomingEvent *cloudevents.Event, opts keptn.KeptnOpts) (*Keptn, error) {
-	extension, err := incomingEvent.Context.GetExtension("shkeptncontext")
-	if err != nil {
-		return nil, err
-	}
+	extension, _ := incomingEvent.Context.GetExtension("shkeptncontext")
 	shkeptncontext := extension.(string)
 
 	// create a base KeptnBase Event
