@@ -6,13 +6,15 @@ type DeploymentTriggeredEventData struct {
 	EventData
 
 	ConfigurationChange struct {
-		GitCommit string `json:"gitCommit"`
+		Values map[string]interface{} `json:"values"`
 	} `json:"configurationChange"`
 
 	Deployment DeploymentData `json:"deployment"`
 }
 
 type DeploymentData struct {
+	// DeploymentStrategy defines the used deployment strategy
+	DeploymentStrategy string `json:"deploymentstrategy,omitempty"`
 	// DeploymentURILocal contains the local URL
 	DeploymentURIsLocal []string `json:"deploymentURIsLocal,omitempty"`
 	// DeploymentURIPublic contains the public URL

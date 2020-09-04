@@ -16,4 +16,8 @@ type ReleaseStatusChangedEventData struct {
 
 type ReleaseFinishedEventData struct {
 	EventData
+	Release struct {
+		// GitCommit indicates the version which should be deployed
+		GitCommit string `json:"gitCommit"`
+	} `json:"Release"`
 }
