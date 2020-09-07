@@ -5,19 +5,17 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"math/rand"
 	"net/url"
 	"time"
+	"github.com/keptn/go-utils/pkg/lib/keptn"
+
+	"encoding/json"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
 	"github.com/google/uuid"
-)
-
-import (
-	"encoding/json"
 )
 
 const MAX_SEND_RETRIES = 3
@@ -91,8 +89,8 @@ const RemediationStatusChangedEventType = "sh.keptn.event.remediation.status.cha
 // RemediationFinishedEventType is a CloudEvent to indicate that the status of a remediation has been changed
 const RemediationFinishedEventType = "sh.keptn.event.remediation.finished"
 
-// KeptnBase contains properties that are shared among most Keptn events
-type KeptnBase struct {
+// KeptnBaseEvent contains properties that are shared among most Keptn events
+type KeptnBaseEvent struct {
 	Project string `json:"project"`
 	// Service is the name of the new service
 	Service string `json:"service"`
@@ -107,6 +105,22 @@ type KeptnBase struct {
 	Image *string `json:"image,omitempty"`
 	// Labels contains labels
 	Labels map[string]string `json:"labels"`
+}
+
+func (k KeptnBaseEvent) GetProject() string {
+	return k.Project
+}
+
+func (k KeptnBaseEvent) GetStage() string {
+	return k.Stage
+}
+
+func (k KeptnBaseEvent) GetService() string {
+	return k.Service
+}
+
+func (k KeptnBaseEvent) GetLabels() map[string]string {
+	return k.Labels
 }
 
 // ProjectCreateEventData represents the data for creating a new project
@@ -637,14 +651,14 @@ func (k *Keptn) SendConfigurationChangeEvent(incomingEvent *cloudevents.Event, l
 		incomingEvent.DataAs(&configurationChangeData)
 	}
 
-	if k.KeptnBase.Project != "" {
-		configurationChangeData.Project = k.KeptnBase.Project
+	if k.Event.GetProject() != "" {
+		configurationChangeData.Project = k.Event.GetProject()
 	}
-	if k.KeptnBase.Service != "" {
-		configurationChangeData.Service = k.KeptnBase.Service
+	if k.Event.GetService() != "" {
+		configurationChangeData.Service = k.Event.GetService()
 	}
-	if k.KeptnBase.Stage != "" {
-		configurationChangeData.Stage = k.KeptnBase.Stage
+	if k.Event.GetStage() != "" {
+		configurationChangeData.Stage = k.Event.GetStage()
 	}
 	if labels != nil {
 		configurationChangeData.Labels = labels
@@ -677,14 +691,14 @@ func (k *Keptn) SendDeploymentFinishedEvent(incomingEvent *cloudevents.Event, te
 		incomingEvent.DataAs(&deploymentFinishedData)
 	}
 
-	if k.KeptnBase.Project != "" {
-		deploymentFinishedData.Project = k.KeptnBase.Project
+	if k.Event.GetProject() != "" {
+		deploymentFinishedData.Project = k.Event.GetProject()
 	}
-	if k.KeptnBase.Service != "" {
-		deploymentFinishedData.Service = k.KeptnBase.Service
+	if k.Event.GetService() != "" {
+		deploymentFinishedData.Service = k.Event.GetService()
 	}
-	if k.KeptnBase.Stage != "" {
-		deploymentFinishedData.Stage = k.KeptnBase.Stage
+	if k.Event.GetStage() != "" {
+		deploymentFinishedData.Stage = k.Event.GetStage()
 	}
 	if teststrategy != "" {
 		deploymentFinishedData.TestStrategy = teststrategy
@@ -738,14 +752,14 @@ func (k *Keptn) SendTestsFinishedEvent(incomingEvent *cloudevents.Event, teststr
 		incomingEvent.DataAs(&testFinishedData)
 	}
 
-	if k.KeptnBase.Project != "" {
-		testFinishedData.Project = k.KeptnBase.Project
+	if k.Event.GetProject() != "" {
+		testFinishedData.Project = k.Event.GetProject()
 	}
-	if k.KeptnBase.Service != "" {
-		testFinishedData.Service = k.KeptnBase.Service
+	if k.Event.GetService() != "" {
+		testFinishedData.Service = k.Event.GetService()
 	}
-	if k.KeptnBase.Stage != "" {
-		testFinishedData.Stage = k.KeptnBase.Stage
+	if k.Event.GetStage() != "" {
+		testFinishedData.Stage = k.Event.GetStage()
 	}
 	if teststrategy != "" {
 		testFinishedData.TestStrategy = teststrategy
@@ -792,14 +806,14 @@ func (k *Keptn) SendActionStartedEvent(incomingEvent *cloudevents.Event, labels 
 		incomingEvent.DataAs(&actionStartedData)
 	}
 
-	if k.KeptnBase.Project != "" {
-		actionStartedData.Project = k.KeptnBase.Project
+	if k.Event.GetProject() != "" {
+		actionStartedData.Project = k.Event.GetProject()
 	}
-	if k.KeptnBase.Service != "" {
-		actionStartedData.Service = k.KeptnBase.Service
+	if k.Event.GetService() != "" {
+		actionStartedData.Service = k.Event.GetService()
 	}
-	if k.KeptnBase.Stage != "" {
-		actionStartedData.Stage = k.KeptnBase.Stage
+	if k.Event.GetStage() != "" {
+		actionStartedData.Stage = k.Event.GetStage()
 	}
 
 	if labels != nil {
@@ -839,14 +853,14 @@ func (k *Keptn) SendActionFinishedEvent(incomingEvent *cloudevents.Event, action
 		incomingEvent.DataAs(&actionFinishedData)
 	}
 
-	if k.KeptnBase.Project != "" {
-		actionFinishedData.Project = k.KeptnBase.Project
+	if k.Event.GetProject() != "" {
+		actionFinishedData.Project = k.Event.GetProject()
 	}
-	if k.KeptnBase.Service != "" {
-		actionFinishedData.Service = k.KeptnBase.Service
+	if k.Event.GetService() != "" {
+		actionFinishedData.Service = k.Event.GetService()
 	}
-	if k.KeptnBase.Stage != "" {
-		actionFinishedData.Stage = k.KeptnBase.Stage
+	if k.Event.GetStage() != "" {
+		actionFinishedData.Stage = k.Event.GetStage()
 	}
 
 	actionFinishedData.Action = actionResult
@@ -872,12 +886,12 @@ func (k *Keptn) SendActionFinishedEvent(incomingEvent *cloudevents.Event, action
 
 // SendCloudEvent sends a cloudevent to the event broker
 func (k *Keptn) SendCloudEvent(event cloudevents.Event) error {
-	if k.useLocalFileSystem {
+	if k.UseLocalFileSystem {
 		log.Println(fmt.Printf("%v", event.Data))
 		return nil
 	}
 	transport, err := cloudeventshttp.New(
-		cloudeventshttp.WithTarget(k.eventBrokerURL),
+		cloudeventshttp.WithTarget(k.EventBrokerURL),
 		cloudeventshttp.WithEncoding(cloudeventshttp.StructuredV02),
 	)
 	if err != nil {
@@ -894,23 +908,7 @@ func (k *Keptn) SendCloudEvent(event cloudevents.Event) error {
 		if err == nil {
 			return nil
 		}
-		<-time.After(getExpBackoffTime(i + 1))
+		<-time.After(keptn.GetExpBackoffTime(i + 1))
 	}
 	return errors.New("Failed to send cloudevent:, " + err.Error())
-}
-
-func getExpBackoffTime(retryNr int) time.Duration {
-	f := 1.5 * float64(retryNr)
-	if retryNr <= 1 {
-		f = 1.5
-	}
-	currentInterval := float64(500*time.Millisecond) * f
-	randomizationFactor := 0.5
-	random := rand.Float64()
-
-	var delta = randomizationFactor * currentInterval
-	minInterval := float64(currentInterval) - delta
-	maxInterval := float64(currentInterval) + delta
-
-	return time.Duration(minInterval + (random * (maxInterval - minInterval + 1)))
 }
