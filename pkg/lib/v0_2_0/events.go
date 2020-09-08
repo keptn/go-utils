@@ -11,6 +11,7 @@ import (
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	httpprotocol "github.com/cloudevents/sdk-go/v2/protocol/http"
 )
 
 const MAX_SEND_RETRIES = 3
@@ -86,7 +87,14 @@ func (k *Keptn) SendCloudEvent(event cloudevents.Event) error {
 	var result protocol.Result
 	for i := 0; i <= MAX_SEND_RETRIES; i++ {
 		result = c.Send(ctx, event)
-		if cloudevents.IsUndelivered(result) {
+		httpResult, ok := result.(*httpprotocol.Result)
+		if ok {
+			if httpResult.StatusCode >= 200 && httpResult.StatusCode < 300 {
+				return nil
+			} else {
+				<-time.After(keptn.GetExpBackoffTime(i + 1))
+			}
+		} else if cloudevents.IsUndelivered(result) {
 			<-time.After(keptn.GetExpBackoffTime(i + 1))
 		} else {
 			return nil
