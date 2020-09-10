@@ -1,5 +1,7 @@
 package v0_2_0
 
+const ActionTaskName = "action"
+
 // ActionTriggeredEventData contains information about an action.triggered event
 type ActionTriggeredEventData struct {
 	EventData
