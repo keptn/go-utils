@@ -4,6 +4,7 @@ const ReleaseTaskName = "release"
 
 type ReleaseTriggeredEventData struct {
 	EventData
+	Deployment DeploymentWithStrategy `json:"deployment"`
 }
 
 type ReleaseStartedEventData struct {
