@@ -5,12 +5,16 @@ const DeploymentTaskName = "deployment"
 type DeploymentTriggeredEventData struct {
 	EventData
 
-	ConfigurationChange ConfigurationChange `json:"configurationChange"`
+	ConfigurationChange ConfigurationChange         `json:"configurationChange"`
+	Deployment          DeploymentTriggeredProperty `json:"deployment"`
+}
+
+type DeploymentTriggeredProperty struct {
+	// DeploymentStrategy defines the used deployment strategy
+	DeploymentStrategy string `json:"deploymentstrategy,omitempty"`
 }
 
 type DeploymentData struct {
-	// DeploymentStrategy defines the used deployment strategy
-	DeploymentStrategy string `json:"deploymentstrategy,omitempty"`
 	// DeploymentURILocal contains the local URL
 	DeploymentURIsLocal []string `json:"deploymentURIsLocal,omitempty"`
 	// DeploymentURIPublic contains the public URL
