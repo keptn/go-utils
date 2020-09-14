@@ -7,14 +7,18 @@ package models
 
 import (
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // Resource resource
+//
 // swagger:model Resource
 type Resource struct {
+
+	// branch in git repo containing the resource
+	Branch string `json:"branch,omitempty"`
 
 	// Resource content
 	ResourceContent string `json:"resourceContent,omitempty"`
@@ -22,6 +26,12 @@ type Resource struct {
 	// Resource URI
 	// Required: true
 	ResourceURI *string `json:"resourceURI"`
+
+	// Upstream repository containing the resource
+	UpstreamURL string `json:"upstreamURL,omitempty"`
+
+	// version/git commit id of the resource
+	Version string `json:"version,omitempty"`
 }
 
 // Validate validates this resource
