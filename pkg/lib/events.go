@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"log"
 	"net/url"
 	"time"
-	"github.com/keptn/go-utils/pkg/lib/keptn"
 
 	"encoding/json"
 
@@ -288,6 +288,7 @@ type EvaluationDetails struct {
 	Score            float64                `json:"score"`
 	SLOFileContent   string                 `json:"sloFileContent"`
 	IndicatorResults []*SLIEvaluationResult `json:"indicatorResults"`
+	ComparedEvents   []string               `json:"comparedEvents"`
 }
 
 type SLIFilter struct {
