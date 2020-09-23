@@ -61,6 +61,15 @@ func (e *APIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.Eve
 	return post(e.Scheme+"://"+e.getBaseURL()+"/v1/event", bodyStr, e)
 }
 
+// TriggerEvaluation triggers a new evaluation
+func (e *APIHandler) TriggerEvaluation(project, stage, service string, timeframe models.Timeframe) (*models.EventContext, *models.Error) {
+	bodyStr, err := json.Marshal(timeframe)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
+	return post(e.Scheme+"://"+e.getBaseURL()+"/v1/project/"+project+"/stage/"+stage+"/service/"+service+"/evaluation", bodyStr, e)
+}
+
 // GetEvent returns an event specified by keptnContext and eventType
 //
 // Deprecated: this function is deprecated and should be replaced with the GetEvents function
