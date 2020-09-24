@@ -62,7 +62,7 @@ func (e *APIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.Eve
 }
 
 // TriggerEvaluation triggers a new evaluation
-func (e *APIHandler) TriggerEvaluation(project, stage, service string, timeframe models.Timeframe) (*models.EventContext, *models.Error) {
+func (e *APIHandler) TriggerEvaluation(project, stage, service string, timeframe models.Evaluation) (*models.EventContext, *models.Error) {
 	bodyStr, err := json.Marshal(timeframe)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
