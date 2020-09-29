@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"log"
 	"net/url"
 	"time"
+
+	"github.com/keptn/go-utils/pkg/lib/keptn"
 
 	"encoding/json"
 
@@ -881,6 +882,83 @@ func (k *Keptn) SendActionFinishedEvent(incomingEvent *cloudevents.Event, action
 		}.AsV02(),
 		Data: actionFinishedData,
 	}
+
+	return k.SendCloudEvent(event)
+}
+
+//
+// Sends a GetSLIDoneEvent == "sh.keptn.internal.event.get-sli.done"
+// if err != nil all indicators will be set noMetric and each metric will be be set the error message from error!
+//
+func (k *Keptn) SendInternalGetSLIDoneEvent(incomingEvent *cloudevents.Event, indicators []string, indicatorValues []*SLIResult, labels map[string]string, err error, eventSource string) error {
+
+	source, _ := url.Parse(eventSource)
+	contentType := "application/json"
+
+	// if an error was set - the indicators will be set to failed and error message is set to each
+	if err != nil {
+		errMessage := err.Error()
+
+		if (indicatorValues == nil) || (len(indicatorValues) == 0) {
+			if indicators == nil || len(indicators) == 0 {
+				indicators = []string{"no metric"}
+			}
+
+			for _, indicatorName := range indicators {
+				indicatorValues = []*SLIResult{
+					{
+						Metric: indicatorName,
+						Value:  0.0,
+					},
+				}
+			}
+		}
+
+		for _, indicator := range indicatorValues {
+			indicator.Success = false
+			indicator.Message = errMessage
+		}
+	}
+
+	sliDoneEvent := InternalGetSLIDoneEventData{}
+
+	// reuse data from the incoming GetSLIEventData
+	if incomingEvent != nil {
+		incomingGetSLIEventData := &InternalGetSLIEventData{}
+		incomingEvent.DataAs(incomingGetSLIEventData)
+
+		sliDoneEvent.Project = incomingGetSLIEventData.Project
+		sliDoneEvent.Stage = incomingGetSLIEventData.Stage
+		sliDoneEvent.Service = incomingGetSLIEventData.Service
+
+		sliDoneEvent.Start = incomingGetSLIEventData.Start
+		sliDoneEvent.End = incomingGetSLIEventData.End
+		sliDoneEvent.TestStrategy = incomingGetSLIEventData.TestStrategy
+		sliDoneEvent.DeploymentStrategy = incomingGetSLIEventData.DeploymentStrategy
+		sliDoneEvent.Deployment = incomingGetSLIEventData.Deployment
+	}
+
+	// set values passed as parameters
+	if labels != nil {
+		sliDoneEvent.Labels = labels
+	}
+	if indicatorValues != nil {
+		sliDoneEvent.IndicatorValues = indicatorValues
+	}
+
+	event := cloudevents.Event{
+		Context: cloudevents.EventContextV02{
+			ID:          uuid.New().String(),
+			Time:        &types.Timestamp{Time: time.Now()},
+			Type:        InternalGetSLIDoneEventType,
+			Source:      types.URLRef{URL: *source},
+			ContentType: &contentType,
+			Extensions:  map[string]interface{}{"shkeptncontext": k.KeptnContext},
+		}.AsV02(),
+		Data: sliDoneEvent,
+	}
+
+	log.Println(fmt.Printf("%s", event))
 
 	return k.SendCloudEvent(event)
 }

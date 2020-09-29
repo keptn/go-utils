@@ -204,6 +204,14 @@ func TestKeptn_SendFunctions(t *testing.T) {
 				}
 			}()
 			verifyReceivedEventType(receivedCorrectType, t)
+
+			wantEventType = InternalGetSLIDoneEventType
+			go func() {
+				if err := k.SendInternalGetSLIDoneEvent(tt.args.incomingEvent, nil, nil, tt.args.labels, nil, tt.args.eventSource); (err != nil) != tt.wantErr {
+					t.Errorf("SendInternalGetSLIDoneEvent() error = %v, wantErr %v", err, tt.wantErr)
+				}
+			}()
+			verifyReceivedEventType(receivedCorrectType, t)
 		})
 	}
 }
