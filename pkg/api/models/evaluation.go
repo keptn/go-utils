@@ -3,7 +3,7 @@ package models
 type Evaluation struct {
 
 	// Evaluation start timestamp
-	From string `json:"from,omitempty"`
+	Start string `json:"start,omitempty"`
 
 	// labels
 	Labels map[string]string `json:"labels,omitempty"`
@@ -12,5 +12,5 @@ type Evaluation struct {
 	Timeframe string `json:"timeframe,omitempty"`
 
 	// Evaluation end timestamp
-	To string `json:"to,omitempty"`
+	End string `json:"end,omitempty"`
 }
