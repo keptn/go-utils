@@ -101,3 +101,42 @@ Within [.travis.yml](.travis.yml) we have included an automation that creates a 
  [github.com/keptn/keptn](https://github.com/keptn/keptn) to update `go.mod` files with an updated version of this 
  package (based on the commit hash). To make this work, a `GITHUB_TOKEN` (personal access token) 
  needs to be added within the [travis-ci settings page](https://travis-ci.org/keptn/go-utils/settings).
+ 
+## Upgrade to 0.7.2 from previous versions
+This version introduces a couple of changes within the structure of the module. When upgrading from an earlier version, please follow the following steps:
+
+The following exported types/funcs that have been imported from `github.com/keptn/go-utils/pkg/lib` have been moved to `github.com/keptn/go-utils/pkg/lib/keptn`
+ 
+- `KeptnOpts`
+- `LoggingOpts`
+- `KeptnBase`
+- `EventProperties`
+- `SLIConfig`
+- `CombinedLogger`
+- `NewCombinedLogger()`
+- `NewLogger()`
+- `Logger`
+- `MyCloudEvent`
+- `LogData`
+- `IncompleteCE`
+- `ConnectionData`
+- `OpenWS()`
+- `WriteWSLog()`
+- `WriteLog()`
+- `LoggerInterface`
+- `ValidateKeptnEntityName()`
+- `ValididateUnixDirectoryName()`
+- `GetServiceEndpoint()`
+
+If you have used any of those, you will need to change the import from 
+
+```go
+import github.com/keptn/go-utils/pkg/lib
+```
+
+to 
+
+```go
+import github.com/keptn/go-utils/pkg/lib/keptn
+```
+
