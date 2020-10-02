@@ -11,3 +11,6 @@
 ## Fixed Issues
 
 ## Known Limitations
+
+- This version introduces a couple of changes within the structure of the module. When upgrading from previous versions, please make sure to follow the instructions
+in the [README.md](https://github.com/keptn/go-utils/tree/release-0.7.2#upgrade-to-0.7.2-from-previous-versions)
