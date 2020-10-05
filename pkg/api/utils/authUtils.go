@@ -27,17 +27,18 @@ func NewAuthHandler(baseURL string) *AuthHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: getClientTransport()},
+		HTTPClient: &http.Client{Transport: getClientTransport("", "", "")},
 		Scheme:     "http",
 	}
 }
 
 // NewAuthenticatedAuthHandler returns a new AuthHandler that authenticates at the endpoint via the provided token
-func NewAuthenticatedAuthHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *AuthHandler {
+func NewAuthenticatedAuthHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string, clientCertPath, clientKeyPath, rootCertPath string) *AuthHandler {
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getClientTransport()
+
+	httpClient.Transport = getClientTransport(clientCertPath, clientKeyPath, rootCertPath)
 
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")

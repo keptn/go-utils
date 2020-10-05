@@ -19,11 +19,12 @@ type APIHandler struct {
 }
 
 // NewAuthenticatedAPIHandler returns a new APIHandler that authenticates at the api-service endpoint via the provided token
-func NewAuthenticatedAPIHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *APIHandler {
+func NewAuthenticatedAPIHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string, clientCertPath, clientKeyPath, rootCertPath string) *APIHandler {
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getClientTransport()
+
+	httpClient.Transport = getClientTransport(clientCertPath, clientKeyPath, rootCertPath)
 
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")

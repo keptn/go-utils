@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -19,9 +20,25 @@ type APIService interface {
 	getHTTPClient() *http.Client
 }
 
-func getClientTransport() *http.Transport {
+func getClientTransport(clientCertPath, clientKeyPath, rootCertPath string) *http.Transport {
+	var tlsConfig *tls.Config
+
+	if clientCertPath == "" || clientKeyPath == "" || rootCertPath == "" {
+		tlsConfig = &tls.Config{InsecureSkipVerify: true}
+	} else {
+		caCert, _ := ioutil.ReadFile(rootCertPath)
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+
+		cert, _ := tls.LoadX509KeyPair(clientCertPath, clientKeyPath)
+		tlsConfig = &tls.Config{
+			RootCAs:      caCertPool,
+			Certificates: []tls.Certificate{cert},
+		}
+	}
+
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		TLSClientConfig: tlsConfig,
 		DialContext:     ResolveXipIoWithContext,
 	}
 	return tr

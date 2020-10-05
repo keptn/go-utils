@@ -40,18 +40,19 @@ func NewResourceHandler(baseURL string) *ResourceHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: getClientTransport()},
+		HTTPClient: &http.Client{Transport: getClientTransport("", "", "")},
 		Scheme:     "http",
 	}
 }
 
 // NewAuthenticatedResourceHandler returns a new ResourceHandler that authenticates at the api via the provided token
 // and sends all requests directly to the configuration-service
-func NewAuthenticatedResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ResourceHandler {
+func NewAuthenticatedResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string, clientCertPath, clientKeyPath, rootCertPath string) *ResourceHandler {
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getClientTransport()
+
+	httpClient.Transport = getClientTransport(clientCertPath, clientKeyPath, rootCertPath)
 
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")

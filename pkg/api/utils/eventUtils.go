@@ -23,14 +23,14 @@ type EventHandler struct {
 
 // EventFilter allows to filter events based on the provided properties
 type EventFilter struct {
-	Project      	string
-	Stage        	string
-	Service      	string
-	EventType    	string
-	KeptnContext 	string
-	EventID      	string
-	PageSize		string
-	NumberOfPages	int
+	Project       string
+	Stage         string
+	Service       string
+	EventType     string
+	KeptnContext  string
+	EventID       string
+	PageSize      string
+	NumberOfPages int
 }
 
 // NewEventHandler returns a new EventHandler
@@ -44,7 +44,7 @@ func NewEventHandler(baseURL string) *EventHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: getClientTransport()},
+		HTTPClient: &http.Client{Transport: getClientTransport("", "", "")},
 		Scheme:     "http",
 	}
 }
@@ -52,11 +52,12 @@ func NewEventHandler(baseURL string) *EventHandler {
 const mongodbDatastoreServiceBaseUrl = "mongodb-datastore"
 
 // NewAuthenticatedEventHandler returns a new EventHandler that authenticates at the endpoint via the provided token
-func NewAuthenticatedEventHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *EventHandler {
+func NewAuthenticatedEventHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string, clientCertPath, clientKeyPath, rootCertPath string) *EventHandler {
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getClientTransport()
+
+	httpClient.Transport = getClientTransport(clientCertPath, clientKeyPath, rootCertPath)
 
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")

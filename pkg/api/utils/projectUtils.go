@@ -32,7 +32,7 @@ func NewProjectHandler(baseURL string) *ProjectHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: getClientTransport()},
+		HTTPClient: &http.Client{Transport: getClientTransport("", "", "")},
 		Scheme:     "http",
 	}
 }
@@ -41,11 +41,12 @@ const configurationServiceBaseUrl = "configuration-service"
 
 // NewAuthenticatedProjectHandler returns a new ProjectHandler that authenticates at the api via the provided token
 // and sends all requests directly to the configuration-service
-func NewAuthenticatedProjectHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ProjectHandler {
+func NewAuthenticatedProjectHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string, clientCertPath, clientKeyPath, rootCertPath string) *ProjectHandler {
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getClientTransport()
+
+	httpClient.Transport = getClientTransport(clientCertPath, clientKeyPath, rootCertPath)
 
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
