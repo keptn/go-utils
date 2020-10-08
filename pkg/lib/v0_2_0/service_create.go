@@ -4,11 +4,6 @@ import "net/url"
 
 const ServiceCreateTaskName = "service.create"
 
-type ServiceCreateTriggeredEventData struct {
-	EventData
-	Helm Helm `json:"helm"`
-}
-
 type Helm struct {
 	Chart   string  `json:"chart"`
 	RepoURL url.URL `json:"repoURL"`
@@ -24,10 +19,5 @@ type ServiceCreateStatusChangedEventData struct {
 
 type ServiceCreateFinishedEventData struct {
 	EventData
-	Helm HelmData `json:"helm"`
-}
-
-type HelmData struct {
-	// GitCommit indicates the version which should be deployed
-	GitCommit string `json:"gitCommit"`
+	Helm Helm `json:"helm"`
 }
