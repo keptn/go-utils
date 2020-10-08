@@ -1,12 +1,9 @@
 package v0_2_0
 
-import "net/url"
-
 const ServiceCreateTaskName = "service.create"
 
 type Helm struct {
-	Chart   string  `json:"chart"`
-	RepoURL url.URL `json:"repoURL"`
+	Chart string `json:"chart"`
 }
 
 type ServiceCreateStartedEventData struct {
