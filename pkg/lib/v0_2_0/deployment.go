@@ -5,11 +5,13 @@ const DeploymentTaskName = "deployment"
 type DeploymentTriggeredEventData struct {
 	EventData
 
-	ConfigurationChange struct {
-		Values map[string]interface{} `json:"values"`
-	} `json:"configurationChange"`
+	ConfigurationChange ConfigurationChange    `json:"configurationChange"`
+	Deployment          DeploymentWithStrategy `json:"deployment"`
+}
 
-	Deployment DeploymentData `json:"deployment"`
+type DeploymentWithStrategy struct {
+	// DeploymentStrategy defines the used deployment strategy
+	DeploymentStrategy string `json:"deploymentstrategy,omitempty"`
 }
 
 type DeploymentData struct {

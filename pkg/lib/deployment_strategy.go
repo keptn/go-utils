@@ -38,8 +38,9 @@ var deploymentStrategyToString = map[DeploymentStrategy]string{
 }
 
 var deploymentStrategyToID = map[string]DeploymentStrategy{
-	"direct":    Direct,
-	"duplicate": Duplicate,
+	"direct":             Direct,
+	"duplicate":          Duplicate,
+	"blue_green_service": Duplicate,
 }
 
 // MarshalJSON marshals the enum as a quoted json string
