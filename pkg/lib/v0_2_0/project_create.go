@@ -1,14 +1,18 @@
 package v0_2_0
 
-const CreateProjectTaskName = "project.create"
+const ProjectCreateTaskName = "project.create"
 
-type CreateProjectData struct {
+type ProjectCreateData struct {
 	ProjectName  string `json:"projectName"`
 	GitRemoteURL string `json:"gitRemoteURL"`
 	Shipyard     string `json:"shipyard"`
 }
 
-type CreateProjectFinishedEventData struct {
+type ProjectCreateStartedEventData struct {
 	EventData
-	Project CreateProjectData `json:"project"`
+}
+
+type ProjectCreateFinishedEventData struct {
+	EventData
+	Project ProjectCreateData `json:"project"`
 }
