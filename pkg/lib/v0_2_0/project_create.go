@@ -14,5 +14,5 @@ type ProjectCreateStartedEventData struct {
 
 type ProjectCreateFinishedEventData struct {
 	EventData
-	Project ProjectCreateData `json:"project"`
+	CreatedProject ProjectCreateData `json:"createdProject"`
 }
