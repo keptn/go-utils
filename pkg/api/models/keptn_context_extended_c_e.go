@@ -7,12 +7,13 @@ package models
 
 import (
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // KeptnContextExtendedCE keptn context extended c e
+//
 // swagger:model KeptnContextExtendedCE
 type KeptnContextExtendedCE struct {
 
@@ -42,9 +43,6 @@ type KeptnContextExtendedCE struct {
 	// time
 	// Format: date-time
 	Time strfmt.DateTime `json:"time,omitempty"`
-
-	// triggeredid
-	Triggeredid string `json:"triggeredid,omitempty"`
 
 	// type
 	// Required: true

@@ -85,12 +85,12 @@ func (s *ServiceHandler) CreateServiceInStage(project string, stage string, serv
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return post(s.Scheme+"://"+s.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service", body, s)
+	return postWithEventContext(s.Scheme+"://"+s.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service", body, s)
 }
 
 // DeleteServiceFromStage godoc
 func (s *ServiceHandler) DeleteServiceFromStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error) {
-	return delete(s.Scheme+"://"+s.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+serviceName, s)
+	return deleteWithEventContext(s.Scheme+"://"+s.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+serviceName, s)
 }
 
 func (s *ServiceHandler) GetService(project, stage, service string) (*models.Service, error) {
