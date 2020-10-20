@@ -124,12 +124,12 @@ func (p *APIHandler) CreateProject(project models.CreateProject) (*models.EventC
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return post(p.Scheme+"://"+p.getBaseURL()+"/v1/project", bodyStr, p)
+	return post(p.Scheme+"://"+p.getBaseURL()+"/shipyard-controller/v1/project", bodyStr, p)
 }
 
 // DeleteProject deletes a project
 func (p *APIHandler) DeleteProject(project models.Project) (*models.EventContext, *models.Error) {
-	return delete(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.ProjectName, p)
+	return delete(p.Scheme+"://"+p.getBaseURL()+"/shipyard-controller/v1/project/"+project.ProjectName, p)
 }
 
 // CreateService creates a new service
@@ -138,12 +138,12 @@ func (s *APIHandler) CreateService(project string, service models.CreateService)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return post(s.Scheme+"://"+s.getBaseURL()+"/v1/project/"+project+"/service", bodyStr, s)
+	return post(s.Scheme+"://"+s.getBaseURL()+"/shipyard-controller/v1/project/"+project+"/service", bodyStr, s)
 }
 
 // DeleteProject deletes a project
 func (p *APIHandler) DeleteService(project, service string) (*models.EventContext, *models.Error) {
-	return delete(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project+"/service/"+service, p)
+	return delete(p.Scheme+"://"+p.getBaseURL()+"/shipyard-controller/v1/project/"+project+"/service/"+service, p)
 }
 
 // GetMetadata retrieve keptn MetaData information
