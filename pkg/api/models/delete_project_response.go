@@ -10,22 +10,22 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// Version version
+// DeleteProjectResponse delete project response
 //
-// swagger:model Version
-type Version struct {
+// swagger:model DeleteProjectResponse
+type DeleteProjectResponse struct {
 
-	// Version identifier
-	Version string `json:"version,omitempty"`
+	// message
+	Message string `json:"message,omitempty"`
 }
 
-// Validate validates this version
-func (m *Version) Validate(formats strfmt.Registry) error {
+// Validate validates this delete project response
+func (m *DeleteProjectResponse) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *Version) MarshalBinary() ([]byte, error) {
+func (m *DeleteProjectResponse) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -33,8 +33,8 @@ func (m *Version) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *Version) UnmarshalBinary(b []byte) error {
-	var res Version
+func (m *DeleteProjectResponse) UnmarshalBinary(b []byte) error {
+	var res DeleteProjectResponse
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

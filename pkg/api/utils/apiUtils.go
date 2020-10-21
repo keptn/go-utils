@@ -58,7 +58,7 @@ func (e *APIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.Eve
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return post(e.Scheme+"://"+e.getBaseURL()+"/v1/event", bodyStr, e)
+	return postWithEventContext(e.Scheme+"://"+e.getBaseURL()+"/v1/event", bodyStr, e)
 }
 
 // TriggerEvaluation triggers a new evaluation
@@ -67,7 +67,7 @@ func (e *APIHandler) TriggerEvaluation(project, stage, service string, evaluatio
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return post(e.Scheme+"://"+e.getBaseURL()+"/v1/project/"+project+"/stage/"+stage+"/service/"+service+"/evaluation", bodyStr, e)
+	return postWithEventContext(e.Scheme+"://"+e.getBaseURL()+"/v1/project/"+project+"/stage/"+stage+"/service/"+service+"/evaluation", bodyStr, e)
 }
 
 // GetEvent returns an event specified by keptnContext and eventType
@@ -119,31 +119,62 @@ func getEvent(uri string, api APIService) (*models.KeptnContextExtendedCE, *mode
 }
 
 // CreateProject creates a new project
-func (p *APIHandler) CreateProject(project models.CreateProject) (*models.EventContext, *models.Error) {
+func (p *APIHandler) CreateProject(project models.CreateProject) (string, *models.Error) {
 	bodyStr, err := json.Marshal(project)
 	if err != nil {
-		return nil, buildErrorResponse(err.Error())
+		return "", buildErrorResponse(err.Error())
 	}
-	return post(p.Scheme+"://"+p.getBaseURL()+"/v1/project", bodyStr, p)
+	return post(p.Scheme+"://"+p.getBaseURL()+"/shipyard-controller/v1/project", bodyStr, p)
+}
+
+// UpdateProject updates project
+func (p *APIHandler) UpdateProject(project models.CreateProject) (string, *models.Error) {
+	bodyStr, err := json.Marshal(project)
+	if err != nil {
+		return "", buildErrorResponse(err.Error())
+	}
+	return put(p.Scheme+"://"+p.getBaseURL()+"/shipyard-controller/v1/project", bodyStr, p)
 }
 
 // DeleteProject deletes a project
-func (p *APIHandler) DeleteProject(project models.Project) (*models.EventContext, *models.Error) {
-	return delete(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.ProjectName, p)
+func (p *APIHandler) DeleteProject(project models.Project) (*models.DeleteProjectResponse, *models.Error) {
+	resp, err := delete(p.Scheme+"://"+p.getBaseURL()+"/shipyard-controller/v1/project/"+project.ProjectName, p)
+	if err != nil {
+		return nil, err
+	}
+	deletePrjResponse := &models.DeleteProjectResponse{}
+	if err2 := json.Unmarshal([]byte(resp), deletePrjResponse); err2 != nil {
+		msg := "Could not decode DeleteProjectResponse: " + err2.Error()
+		return nil, &models.Error{
+			Message: &msg,
+		}
+	}
+	return deletePrjResponse, nil
 }
 
 // CreateService creates a new service
-func (s *APIHandler) CreateService(project string, service models.CreateService) (*models.EventContext, *models.Error) {
+func (s *APIHandler) CreateService(project string, service models.CreateService) (string, *models.Error) {
 	bodyStr, err := json.Marshal(service)
 	if err != nil {
-		return nil, buildErrorResponse(err.Error())
+		return "", buildErrorResponse(err.Error())
 	}
-	return post(s.Scheme+"://"+s.getBaseURL()+"/v1/project/"+project+"/service", bodyStr, s)
+	return post(s.Scheme+"://"+s.getBaseURL()+"/shipyard-controller/v1/project/"+project+"/service", bodyStr, s)
 }
 
 // DeleteProject deletes a project
-func (p *APIHandler) DeleteService(project, service string) (*models.EventContext, *models.Error) {
-	return delete(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project+"/service/"+service, p)
+func (p *APIHandler) DeleteService(project, service string) (*models.DeleteServiceResponse, *models.Error) {
+	resp, err := delete(p.Scheme+"://"+p.getBaseURL()+"/shipyard-controller/v1/project/"+project+"/service/"+service, p)
+	if err != nil {
+		return nil, err
+	}
+	deleteSvcResponse := &models.DeleteServiceResponse{}
+	if err2 := json.Unmarshal([]byte(resp), deleteSvcResponse); err2 != nil {
+		msg := "Could not decode DeleteServiceResponse: " + err2.Error()
+		return nil, &models.Error{
+			Message: &msg,
+		}
+	}
+	return deleteSvcResponse, nil
 }
 
 // GetMetadata retrieve keptn MetaData information

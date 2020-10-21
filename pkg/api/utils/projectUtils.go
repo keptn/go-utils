@@ -84,12 +84,12 @@ func (p *ProjectHandler) CreateProject(project models.Project) (*models.EventCon
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return post(p.Scheme+"://"+p.getBaseURL()+"/v1/project", bodyStr, p)
+	return postWithEventContext(p.Scheme+"://"+p.getBaseURL()+"/v1/project", bodyStr, p)
 }
 
 // DeleteProject deletes a project
 func (p *ProjectHandler) DeleteProject(project models.Project) (*models.EventContext, *models.Error) {
-	return delete(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.ProjectName, p)
+	return deleteWithEventContext(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.ProjectName, p)
 }
 
 // GetProject returns a project
@@ -200,5 +200,5 @@ func (p *ProjectHandler) UpdateConfigurationServiceProject(project models.Projec
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return put(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.ProjectName, bodyStr, p)
+	return putWithEventContext(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.ProjectName, bodyStr, p)
 }

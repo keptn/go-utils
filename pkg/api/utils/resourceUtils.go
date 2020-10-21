@@ -102,11 +102,11 @@ func (r *ResourceHandler) CreateResources(project string, stage string, service 
 	}
 
 	if project != "" && stage != "" && service != "" {
-		return post(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+service+"/resource", requestStr, r)
+		return postWithEventContext(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+service+"/resource", requestStr, r)
 	} else if project != "" && stage != "" && service == "" {
-		return post(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/resource", requestStr, r)
+		return postWithEventContext(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/resource", requestStr, r)
 	} else {
-		return post(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/resource", requestStr, r)
+		return postWithEventContext(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/resource", requestStr, r)
 	}
 }
 

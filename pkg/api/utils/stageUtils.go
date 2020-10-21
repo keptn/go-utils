@@ -84,7 +84,7 @@ func (s *StageHandler) CreateStage(project string, stageName string) (*models.Ev
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return post(s.Scheme+"://"+s.BaseURL+"/v1/project/"+project+"/stage", body, s)
+	return postWithEventContext(s.Scheme+"://"+s.BaseURL+"/v1/project/"+project+"/stage", body, s)
 }
 
 // GetAllStages returns a list of all stages.

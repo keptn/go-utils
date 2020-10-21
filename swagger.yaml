@@ -42,6 +42,18 @@ definitions:
       gitRemoteURL:
         type: string
 
+  DeleteProjectResponse:
+    type: object
+    properties:
+      message:
+        type: string
+
+  DeleteServiceResponse:
+    type: object
+    properties:
+      message:
+        type: string
+
   Project:
     type: object
     properties:

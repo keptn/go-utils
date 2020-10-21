@@ -27,7 +27,7 @@ func getClientTransport() *http.Transport {
 	return tr
 }
 
-func put(uri string, data []byte, api APIService) (*models.EventContext, *models.Error) {
+func putWithEventContext(uri string, data []byte, api APIService) (*models.EventContext, *models.Error) {
 
 	req, err := http.NewRequest("PUT", uri, bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/json")
@@ -76,7 +76,46 @@ func put(uri string, data []byte, api APIService) (*models.EventContext, *models
 	return nil, buildErrorResponse(fmt.Sprintf("Received unexptected response: %d %s", resp.StatusCode, resp.Status))
 }
 
-func post(uri string, data []byte, api APIService) (*models.EventContext, *models.Error) {
+func put(uri string, data []byte, api APIService) (string, *models.Error) {
+
+	req, err := http.NewRequest("PUT", uri, bytes.NewBuffer(data))
+	req.Header.Set("Content-Type", "application/json")
+	addAuthHeader(req, api)
+
+	resp, err := api.getHTTPClient().Do(req)
+	if err != nil {
+		return "", buildErrorResponse(err.Error())
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", buildErrorResponse(err.Error())
+	}
+
+	if resp.StatusCode >= 200 && resp.StatusCode <= 204 {
+		if len(body) > 0 {
+			return string(body), nil
+		}
+
+		return "", nil
+	}
+
+	if len(body) > 0 {
+		var respErr models.Error
+		err = json.Unmarshal(body, &respErr)
+		if err != nil {
+			// failed to parse json
+			return "", buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
+		}
+
+		return "", &respErr
+	}
+
+	return "", buildErrorResponse(fmt.Sprintf("Received unexptected response: %d %s", resp.StatusCode, resp.Status))
+}
+
+func postWithEventContext(uri string, data []byte, api APIService) (*models.EventContext, *models.Error) {
 
 	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/json")
@@ -125,7 +164,46 @@ func post(uri string, data []byte, api APIService) (*models.EventContext, *model
 	return nil, buildErrorResponse(fmt.Sprintf("Received unexptected response: %d %s", resp.StatusCode, resp.Status))
 }
 
-func delete(uri string, api APIService) (*models.EventContext, *models.Error) {
+func post(uri string, data []byte, api APIService) (string, *models.Error) {
+
+	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(data))
+	req.Header.Set("Content-Type", "application/json")
+	addAuthHeader(req, api)
+
+	resp, err := api.getHTTPClient().Do(req)
+	if err != nil {
+		return "", buildErrorResponse(err.Error())
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", buildErrorResponse(err.Error())
+	}
+
+	if resp.StatusCode >= 200 && resp.StatusCode <= 204 {
+		if len(body) > 0 {
+			return string(body), nil
+		}
+
+		return "", nil
+	}
+
+	if len(body) > 0 {
+		var respErr models.Error
+		err = json.Unmarshal(body, &respErr)
+		if err != nil {
+			// failed to parse json
+			return "", buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
+		}
+
+		return "", &respErr
+	}
+
+	return "", buildErrorResponse(fmt.Sprintf("Received unexptected response: %d %s", resp.StatusCode, resp.Status))
+}
+
+func deleteWithEventContext(uri string, api APIService) (*models.EventContext, *models.Error) {
 
 	req, err := http.NewRequest("DELETE", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
@@ -164,6 +242,41 @@ func delete(uri string, api APIService) (*models.EventContext, *models.Error) {
 	}
 
 	return nil, &respErr
+}
+
+func delete(uri string, api APIService) (string, *models.Error) {
+
+	req, err := http.NewRequest("DELETE", uri, nil)
+	req.Header.Set("Content-Type", "application/json")
+	addAuthHeader(req, api)
+
+	resp, err := api.getHTTPClient().Do(req)
+	if err != nil {
+		return "", buildErrorResponse(err.Error())
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", buildErrorResponse(err.Error())
+	}
+
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		if len(body) > 0 {
+			return string(body), nil
+		}
+
+		return "", nil
+	}
+
+	var respErr models.Error
+	err = json.Unmarshal(body, &respErr)
+	if err != nil {
+		// failed to parse json
+		return "", buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
+	}
+
+	return "", &respErr
 }
 
 func buildErrorResponse(errorStr string) *models.Error {
