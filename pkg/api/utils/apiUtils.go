@@ -127,6 +127,15 @@ func (p *APIHandler) CreateProject(project models.CreateProject) (string, *model
 	return post(p.Scheme+"://"+p.getBaseURL()+"/shipyard-controller/v1/project", bodyStr, p)
 }
 
+// UpdateProject updates project
+func (p *APIHandler) UpdateProject(project models.CreateProject) (string, *models.Error) {
+	bodyStr, err := json.Marshal(project)
+	if err != nil {
+		return "", buildErrorResponse(err.Error())
+	}
+	return put(p.Scheme+"://"+p.getBaseURL()+"/shipyard-controller/v1/project", bodyStr, p)
+}
+
 // DeleteProject deletes a project
 func (p *APIHandler) DeleteProject(project models.Project) (*models.DeleteProjectResponse, *models.Error) {
 	resp, err := delete(p.Scheme+"://"+p.getBaseURL()+"/shipyard-controller/v1/project/"+project.ProjectName, p)
