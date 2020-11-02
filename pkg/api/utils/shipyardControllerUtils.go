@@ -81,7 +81,7 @@ func (s *ShipyardControllerHandler) getHTTPClient() *http.Client {
 }
 
 // GetOpenTriggeredEvents returns all open triggered events
-func (s *ShipyardControllerHandler) GetOpenTriggeredEvents(project string, filter EventFilter) ([]*models.KeptnContextExtendedCE, error) {
+func (s *ShipyardControllerHandler) GetOpenTriggeredEvents(filter EventFilter) ([]*models.KeptnContextExtendedCE, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
 	events := []*models.KeptnContextExtendedCE{}
@@ -91,10 +91,12 @@ func (s *ShipyardControllerHandler) GetOpenTriggeredEvents(project string, filte
 		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + "/v1/event/triggered/" + filter.EventType)
 
 		q := url.Query()
-		q.Set("project", project)
 		if nextPageKey != "" {
 			q.Set("nextPageKey", nextPageKey)
 			url.RawQuery = q.Encode()
+		}
+		if filter.Project != "" {
+			q.Set("project", filter.Project)
 		}
 		if filter.Service != "" {
 			q.Set("service", filter.Service)
