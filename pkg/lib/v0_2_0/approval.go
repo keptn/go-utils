@@ -4,6 +4,11 @@ const ApprovalTaskName = "approval"
 
 type ApprovalTriggeredEventData struct {
 	EventData
+
+	Approval struct {
+		Pass    string `json:"pass"`
+		Warning string `json:"warning"`
+	} `json:"approval"`
 }
 
 type ApprovalStartedEventData struct {
