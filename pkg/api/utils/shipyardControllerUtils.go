@@ -105,6 +105,8 @@ func (s *ShipyardControllerHandler) GetOpenTriggeredEvents(filter EventFilter) (
 			q.Set("stage", filter.Stage)
 		}
 
+		url.RawQuery = q.Encode()
+
 		if err != nil {
 			return nil, err
 		}
