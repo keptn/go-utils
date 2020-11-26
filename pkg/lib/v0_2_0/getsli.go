@@ -22,5 +22,11 @@ type GetSLIFinishedEventData struct {
 		Start           string       `json:"start"`
 		End             string       `json:"end"`
 		IndicatorValues []*SLIResult `json:"indicatorValues"`
+		CustomFilters   []*SLIFilter `json:"customFilters"`
 	} `json:"get-sli"`
+}
+
+type SLIFilter struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }
