@@ -5,10 +5,11 @@ const GetSLITaskName = "get-sli"
 type GetSLITriggeredEventData struct {
 	EventData
 	GetSLI struct {
-		SLIProvider string   `json:"sliProvider"`
-		Start       string   `json:"start"`
-		End         string   `json:"end"`
-		Indicators  []string `json:"indicators"`
+		SLIProvider   string       `json:"sliProvider"`
+		Start         string       `json:"start"`
+		End           string       `json:"end"`
+		Indicators    []string     `json:"indicators"`
+		CustomFilters []*SLIFilter `json:"customFilters"`
 	} `json:"get-sli"`
 }
 
@@ -22,7 +23,6 @@ type GetSLIFinishedEventData struct {
 		Start           string       `json:"start"`
 		End             string       `json:"end"`
 		IndicatorValues []*SLIResult `json:"indicatorValues"`
-		CustomFilters   []*SLIFilter `json:"customFilters"`
 	} `json:"get-sli"`
 }
 
