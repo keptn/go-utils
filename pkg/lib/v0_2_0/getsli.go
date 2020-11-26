@@ -1,6 +1,6 @@
 package v0_2_0
 
-const GetSliTaskName = "get-sli"
+const GetSLITaskName = "get-sli"
 
 type GetSLITriggeredEventData struct {
 	EventData
