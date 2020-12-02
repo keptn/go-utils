@@ -46,8 +46,13 @@ func NewKeptn(incomingEvent *cloudevents.Event, opts keptn.KeptnOpts) (*Keptn, e
 		k.EventBrokerURL = DefaultLocalEventBrokerURL
 	}
 
+	datastoreURL := keptn.DatastoreURL
+	if opts.DatastoreURL != "" {
+		datastoreURL = opts.DatastoreURL
+	}
+
 	k.ResourceHandler = api.NewResourceHandler(csURL)
-	k.EventHandler = api.NewEventHandler(csURL)
+	k.EventHandler = api.NewEventHandler(datastoreURL)
 
 	loggingServiceName := keptn.DefaultLoggingServiceName
 	if opts.LoggingOptions != nil && opts.LoggingOptions.ServiceName != nil {

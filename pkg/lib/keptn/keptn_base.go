@@ -20,6 +20,7 @@ type KeptnOpts struct {
 	UseLocalFileSystem      bool
 	ConfigurationServiceURL string
 	EventBrokerURL          string
+	DatastoreURL            string
 	IncomingEvent           *cloudevents.Event
 	LoggingOptions          *LoggingOpts
 }
@@ -55,6 +56,7 @@ type SLIConfig struct {
 }
 
 const ConfigurationServiceURL = "configuration-service:8080"
+const DatastoreURL = "mongodb-datastore:8080"
 const DefaultEventBrokerURL = "http://event-broker/keptn"
 const DefaultWebsocketEndpoint = "ws://api-service:8080/websocket"
 const DefaultLoggingServiceName = "keptn"
