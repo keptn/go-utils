@@ -246,11 +246,8 @@ definitions:
   EventContext:
     type: object
     required:
-      - token
       - keptnContext
     properties:
-      token:
-        type: string
       keptnContext:
         type: string
 
@@ -258,6 +255,8 @@ definitions:
     type: object
     properties: # CloudEvents v0.2 properties (https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event)
       shkeptncontext:
+        type: string
+      triggeredid:
         type: string
       specversion:
         type: string
