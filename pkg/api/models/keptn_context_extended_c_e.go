@@ -33,9 +33,6 @@ type KeptnContextExtendedCE struct {
 	// shkeptncontext
 	Shkeptncontext string `json:"shkeptncontext,omitempty"`
 
-	// triggeredid
-	Triggeredid string `json:"triggeredid,omitempty"`
-
 	// source
 	// Required: true
 	Source *string `json:"source"`

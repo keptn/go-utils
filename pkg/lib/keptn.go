@@ -2,7 +2,6 @@ package keptn
 
 import (
 	"encoding/json"
-	"net/url"
 	"os"
 	"strings"
 
@@ -60,33 +59,6 @@ func NewKeptn(incomingEvent *cloudevents.Event, opts keptn.KeptnOpts) (*Keptn, e
 		loggingServiceName = *opts.LoggingOptions.ServiceName
 	}
 	k.Logger = keptn.NewLogger(k.KeptnContext, incomingEvent.Context.GetID(), loggingServiceName)
-
-	if opts.LoggingOptions != nil && opts.LoggingOptions.EnableWebsocket {
-		wsURL := keptn.DefaultWebsocketEndpoint
-		if opts.LoggingOptions.WebsocketEndpoint != nil && *opts.LoggingOptions.WebsocketEndpoint != "" {
-			wsURL = *opts.LoggingOptions.WebsocketEndpoint
-		}
-		connData := keptn.ConnectionData{}
-		if err := incomingEvent.DataAs(&connData); err != nil ||
-			connData.EventContext.KeptnContext == nil || connData.EventContext.Token == nil ||
-			*connData.EventContext.KeptnContext == "" || *connData.EventContext.Token == "" {
-			k.Logger.Debug("No WebSocket connection data available")
-		} else {
-			apiServiceURL, err := url.Parse(wsURL)
-			if err != nil {
-				k.Logger.Error(err.Error())
-				return k, nil
-			}
-			ws, _, err := keptn.OpenWS(connData, *apiServiceURL)
-			if err != nil {
-				k.Logger.Error("Opening WebSocket connection failed:" + err.Error())
-				return k, nil
-			}
-			stdLogger := keptn.NewLogger(shkeptncontext, incomingEvent.Context.GetID(), loggingServiceName)
-			combinedLogger := keptn.NewCombinedLogger(stdLogger, ws, shkeptncontext)
-			k.Logger = combinedLogger
-		}
-	}
 
 	return k, nil
 }
