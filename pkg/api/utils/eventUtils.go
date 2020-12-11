@@ -131,7 +131,7 @@ func (e *EventHandler) GetEvents(filter *EventFilter) ([]*models.KeptnContextExt
 
 // GetEventsWithRetry tries to retrieve events matching the passed filter
 func (e *EventHandler) GetEventsWithRetry(filter *EventFilter, maxRetries int, retrySleepTime time.Duration) ([]*models.KeptnContextExtendedCE, error) {
-	for i := 0; i < maxRetries; i = i + i {
+	for i := 0; i < maxRetries; i = i + 1 {
 		events, errObj := e.GetEvents(filter)
 		if errObj == nil && len(events) > 0 {
 			return events, nil
