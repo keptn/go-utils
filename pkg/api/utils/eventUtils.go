@@ -2,12 +2,14 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 )
@@ -23,14 +25,14 @@ type EventHandler struct {
 
 // EventFilter allows to filter events based on the provided properties
 type EventFilter struct {
-	Project      	string
-	Stage        	string
-	Service      	string
-	EventType    	string
-	KeptnContext 	string
-	EventID      	string
-	PageSize		string
-	NumberOfPages	int
+	Project       string
+	Stage         string
+	Service       string
+	EventType     string
+	KeptnContext  string
+	EventID       string
+	PageSize      string
+	NumberOfPages int
 }
 
 // NewEventHandler returns a new EventHandler
@@ -125,6 +127,18 @@ func (e *EventHandler) GetEvents(filter *EventFilter) ([]*models.KeptnContextExt
 	u.RawQuery = query.Encode()
 
 	return e.getEvents(u.String(), filter.NumberOfPages)
+}
+
+// GetEventsWithRetry tries to retrieve events matching the passed filter
+func (e *EventHandler) GetEventsWithRetry(filter *EventFilter, maxRetries int, retrySleepTime time.Duration) ([]*models.KeptnContextExtendedCE, error) {
+	for i := 0; i < maxRetries; i = i + 1 {
+		events, errObj := e.GetEvents(filter)
+		if errObj == nil && len(events) > 0 {
+			return events, nil
+		}
+		<-time.After(retrySleepTime)
+	}
+	return nil, fmt.Errorf("could not find matching event after %d x %s", maxRetries, retrySleepTime.String())
 }
 
 func (e *EventHandler) getEvents(uri string, numberOfPages int) ([]*models.KeptnContextExtendedCE, *models.Error) {
