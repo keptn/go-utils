@@ -130,15 +130,15 @@ func (e *EventHandler) GetEvents(filter *EventFilter) ([]*models.KeptnContextExt
 }
 
 // GetEventsWithRetry tries to retrieve events matching the passed filter
-func (e *EventHandler) GetEventsWithRetry(filter *EventFilter, maxRetries, retrySleepTime int) ([]*models.KeptnContextExtendedCE, error) {
+func (e *EventHandler) GetEventsWithRetry(filter *EventFilter, maxRetries int, retrySleepTime time.Duration) ([]*models.KeptnContextExtendedCE, error) {
 	for i := 0; i < maxRetries; i = i + i {
 		events, errObj := e.GetEvents(filter)
 		if errObj == nil && len(events) > 0 {
 			return events, nil
 		}
-		<-time.After(time.Duration(retrySleepTime) * time.Second)
+		<-time.After(retrySleepTime)
 	}
-	return nil, fmt.Errorf("could not find matching event after %d seconds", maxRetries*retrySleepTime)
+	return nil, fmt.Errorf("could not find matching event after %d x %s", maxRetries, retrySleepTime.String())
 }
 
 func (e *EventHandler) getEvents(uri string, numberOfPages int) ([]*models.KeptnContextExtendedCE, *models.Error) {
