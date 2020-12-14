@@ -23,11 +23,6 @@ cache:
 
 jobs:
   include:
-    - stage: tests
-      os: linux
-      script:
-        - go test -v -race ./...  # Run all the tests with the race detector enabled
-
     - stage: Auto PR To Keptn
       # auto PR changes on the master branch (or tags) to keptn/keptn
       os: linux
