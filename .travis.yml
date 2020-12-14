@@ -67,7 +67,7 @@ jobs:
         - git status
         # add changes to a new commit
         - git add .
-        - git commit -m "Update keptn/go-utils to $GO_UTILS_TARGET" || travis_terminate 1
+        - git commit -s -m "Update keptn/go-utils to $GO_UTILS_TARGET" || travis_terminate 1
         - git push -f origin $TARGET_BRANCH || travis_terminate 1
         - |
           curl -XPOST -H "Authorization: token $GITHUB_TOKEN" -d "{\"title\":\"Auto-update go-utils to latest version\", \"base\":\"master\", \"head\":\"$TARGET_BRANCH\", \"body\":\"**Beep boop I am a bot**\nThis is an automatically created PR to change [keptn/go-utils](https://github.com/keptn/go-utils) to version $GO_UTILS_TARGET.\"}" https://api.github.com/repos/keptn/keptn/pulls || true
