@@ -1,0 +1,82 @@
+name: Auto PR to keptn/keptn
+on:
+  push:
+    branches:
+      - 'master'
+      - 'release-*'
+    tags:
+      - 'v*'
+jobs:
+  auto-pr:
+    strategy:
+      matrix:
+        go-version: [1.13.x]
+        platform: [ubuntu-latest]
+    runs-on: '${{ matrix.platform }}'
+    env:
+      GO111MODULE: "on"
+      GOPROXY: "https://proxy.golang.org"
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Checkout keptn/keptn repo
+        uses: actions/checkout@v2
+        with:
+          path: 'keptn'
+          repository: 'keptn/keptn'
+          token: ${{ secrets.KEPTN_KEPTN_GITHUB_TOKEN }}
+          ref: 'master'
+      - name: Determine Target CommitIsh
+        id: target_commit
+        run: |
+          GO_UTILS_TARGET="${{ github.sha }}"
+          echo "##[set-output name=GO_UTILS_TARGET;]$(echo ${GO_UTILS_TARGET})"
+          TARGET_BRANCH=patch/go_utils_${GO_UTILS_TARGET}
+          echo "##[set-output name=TARGET_BRANCH;]$(echo ${TARGET_BRANCH})"
+      - name: Configure Git
+        working-directory: 'keptn'
+        env:
+          TARGET_BRANCH: ${{ steps.target_commit.outputs.TARGET_BRANCH }}
+        run: |
+          # set username and email
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git config user.name "${{ github.actor }}"
+          # delete existing branch just in case
+          git branch -D $TARGET_BRANCH &>/dev/null || true
+          # create a new branch (from master)
+          git checkout -b $TARGET_BRANCH
+      - name: Auto update go mod
+        working-directory: 'keptn'
+        env:
+          GO_UTILS_TARGET: ${{ steps.target_commit.outputs.GO_UTILS_TARGET }}
+        run: ../gh-actions-scripts/auto-update-go-mod.sh "${GO_UTILS_TARGET}"
+      - name: Commit and Push changes
+        working-directory: 'keptn'
+        id: commit_and_push
+        env:
+          GO_UTILS_TARGET: ${{ steps.target_commit.outputs.GO_UTILS_TARGET }}
+          TARGET_BRANCH: ${{ steps.target_commit.outputs.TARGET_BRANCH }}
+        run: |
+          git add .
+          git commit -s -m "Update keptn/go-utils to ${GO_UTILS_TARGET}"
+          echo "Pushing changes..."
+          git push -f origin $TARGET_BRANCH
+      - name: Create PR
+        working-directory: 'keptn'
+        env:
+          GITHUB_TOKEN: ${{ secrets.KEPTN_KEPTN_GITHUB_TOKEN }}
+          TARGET_BRANCH: ${{ steps.target_commit.outputs.TARGET_BRANCH }}
+          GO_UTILS_TARGET: ${{ steps.target_commit.outputs.GO_UTILS_TARGET }}
+        run: |
+          curl -XPOST -H "Authorization: token $GITHUB_TOKEN" \
+            -d "{\"title\":\"Auto-update go-utils to latest version\", \
+                 \"base\":\"master\", \"head\":\"$TARGET_BRANCH\", \
+                 \"body\":\":robot: **Beep boop I am a bot**\n\
+                            This is an automatically created PR to change [keptn/go-utils](https://github.com/keptn/go-utils) to version $GO_UTILS_TARGET.\n \
+                            Please consult https://github.com/keptn/go-utils/actions?query=workflow%3A%22Auto+PR+to+keptn%2Fkeptn%22 for more information.\n \
+                            \"}" \
+                 https://api.github.com/repos/keptn/keptn/pulls || true
