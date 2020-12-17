@@ -74,7 +74,7 @@ func (k *KeptnBase) GetSLIConfiguration(project string, stage string, service st
 		res, err = k.ResourceHandler.GetProjectResource(project, resourceURI)
 		if err != nil {
 			// return error except "resource not found" type
-			if !strings.Contains(err.Error(), "resource not found") {
+			if !strings.Contains(strings.ToLower(err.Error()), "resource not found") {
 				return nil, err
 			}
 		}
@@ -89,7 +89,7 @@ func (k *KeptnBase) GetSLIConfiguration(project string, stage string, service st
 		res, err = k.ResourceHandler.GetStageResource(project, stage, resourceURI)
 		if err != nil {
 			// return error except "resource not found" type
-			if !strings.Contains(err.Error(), "resource not found") {
+			if !strings.Contains(strings.ToLower(err.Error()), "resource not found") {
 				return nil, err
 			}
 		}
@@ -104,7 +104,7 @@ func (k *KeptnBase) GetSLIConfiguration(project string, stage string, service st
 		res, err = k.ResourceHandler.GetServiceResource(project, stage, service, resourceURI)
 		if err != nil {
 			// return error except "resource not found" type
-			if !strings.Contains(err.Error(), "resource not found") {
+			if !strings.Contains(strings.ToLower(err.Error()), "resource not found") {
 				return nil, err
 			}
 		}
