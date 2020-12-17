@@ -1,8 +1,10 @@
 package v0_2_0
 
 import (
+	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -126,4 +128,33 @@ func TestKeptn_SendCloudEvent(t *testing.T) {
 	if err := k.SendCloudEvent(eventNew); err != nil {
 		t.Errorf("SendCloudEvent() error = %v", err)
 	}
+}
+
+func TestEventDataAs(t *testing.T) {
+	eventData := DeploymentTriggeredEventData{
+		EventData: EventData{
+			Project: "p",
+			Stage:   "s",
+			Service: "s",
+			Labels:  map[string]string{"1": "2"},
+			Status:  StatusSucceeded,
+			Result:  ResultPass,
+			Message: "m",
+		},
+		ConfigurationChange: ConfigurationChange{
+			Values: map[string]interface{}{"1": 1},
+		},
+		Deployment: DeploymentWithStrategy{
+			DeploymentStrategy: "direct",
+		},
+	}
+
+	ce := models.KeptnContextExtendedCE{
+		Data: eventData,
+	}
+
+	var decodedEventData DeploymentTriggeredEventData
+	err := EventDataAs(ce, &decodedEventData)
+	assert.Nil(t, err)
+	assert.Equal(t, eventData, decodedEventData)
 }

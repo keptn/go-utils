@@ -13,4 +13,5 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/stretchr/testify v1.5.1
 	gopkg.in/yaml.v2 v2.2.8
+	github.com/mitchellh/mapstructure v1.2.2
 )
