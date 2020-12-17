@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/cloudevents/sdk-go/v2/protocol"
+	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/mitchellh/mapstructure"
 	"log"
 	"time"
 
@@ -101,4 +103,23 @@ func (k *Keptn) SendCloudEvent(event cloudevents.Event) error {
 		}
 	}
 	return errors.New("Failed to send cloudevent: " + result.Error())
+}
+
+// Decode decodes the given raw interface to the target pointer specified
+// by the out paratmeter
+func Decode(in, out interface{}) error {
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		Squash: true,
+		Result: out,
+	})
+	if err != nil {
+		return err
+	}
+	return decoder.Decode(in)
+}
+
+// EventDataAs decodes the event data of the given keptn cloud event to the
+// target pointer specified by the out parameter
+func EventDataAs(in models.KeptnContextExtendedCE, out interface{}) error {
+	return Decode(in.Data, out)
 }
