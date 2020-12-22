@@ -5,17 +5,20 @@ const TestTaskName = "test"
 type TestTriggeredEventData struct {
 	EventData
 
-	Test struct {
-		// TestStrategy is the testing strategy and is defined in the shipyard
-		TestStrategy string `json:"teststrategy"`
-	} `json:"test"`
+	Test TestTriggeredDetails `json:"test"`
 
-	Deployment struct {
-		// DeploymentURILocal contains the local URL
-		DeploymentURIsLocal []string `json:"deploymentURIsLocal,omitempty"`
-		// DeploymentURIPublic contains the public URL
-		DeploymentURIsPublic []string `json:"deploymentURIsPublic,omitempty"`
-	} `json:"deployment"`
+	Deployment TestTriggeredDeploymentDetails `json:"deployment"`
+}
+type TestTriggeredDetails struct {
+	// TestStrategy is the testing strategy and is defined in the shipyard
+	TestStrategy string `json:"teststrategy"`
+}
+
+type TestTriggeredDeploymentDetails struct {
+	// DeploymentURILocal contains the local URL
+	DeploymentURIsLocal []string `json:"deploymentURIsLocal,omitempty"`
+	// DeploymentURIPublic contains the public URL
+	DeploymentURIsPublic []string `json:"deploymentURIsPublic,omitempty"`
 }
 
 type TestStartedEventData struct {

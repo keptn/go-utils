@@ -4,25 +4,28 @@ const EvaluationTaskName = "evaluation"
 
 type EvaluationTriggeredEventData struct {
 	EventData
+	Test       Test       `json:"test"`
+	Evaluation Evaluation `json:"evaluation"`
+	Deployment Deployment `json:"deployment"`
+}
 
-	Test struct {
-		// Start indicates the starting timestamp of the tests
-		Start string `json:"start"`
-		// End indicates the end timestamp of the tests
-		End string `json:"end"`
-	} `json:"test"`
+type Test struct {
+	// Start indicates the starting timestamp of the tests
+	Start string `json:"start"`
+	// End indicates the end timestamp of the tests
+	End string `json:"end"`
+}
 
-	Evaluation struct {
-		// Start indicates the starting timestamp of the tests
-		Start string `json:"start"`
-		// End indicates the end timestamp of the tests
-		End string `json:"end"`
-	} `json:"evaluation"`
+type Evaluation struct {
+	// Start indicates the starting timestamp of the tests
+	Start string `json:"start"`
+	// End indicates the end timestamp of the tests
+	End string `json:"end"`
+}
 
-	Deployment struct {
-		// DeploymentNames gives the names of the deployments
-		DeploymentNames []string `json:"deploymentNames"`
-	} `json:"deployment"`
+type Deployment struct {
+	// DeploymentNames gives the names of the deployments
+	DeploymentNames []string `json:"deploymentNames"`
 }
 
 type EvaluationStartedEventData struct {

@@ -10,12 +10,13 @@ const ApprovalManual = "manual"
 
 type ApprovalTriggeredEventData struct {
 	EventData
-
 	// Approval contains information about the approval strategy
-	Approval struct {
-		Pass    string `json:"pass"`
-		Warning string `json:"warning"`
-	} `json:"approval"`
+	Approval Approval `json:"approval"`
+}
+
+type Approval struct {
+	Pass    string `json:"pass"`
+	Warning string `json:"warning"`
 }
 
 type ApprovalStartedEventData struct {
