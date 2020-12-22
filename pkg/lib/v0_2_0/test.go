@@ -31,12 +31,14 @@ type TestStatusChangedEventData struct {
 
 type TestFinishedEventData struct {
 	EventData
-	Test struct {
-		// Start indicates the starting timestamp of the tests
-		Start string `json:"start"`
-		// End indicates the end timestamp of the tests
-		End string `json:"end"`
-		// GitCommit indicates the version which should be deployed
-		GitCommit string `json:"gitCommit"`
-	} `json:"test"`
+	Test TestFinishedDetails `json:"test"`
+}
+
+type TestFinishedDetails struct {
+	// Start indicates the starting timestamp of the tests
+	Start string `json:"start"`
+	// End indicates the end timestamp of the tests
+	End string `json:"end"`
+	// GitCommit indicates the version which should be deployed
+	GitCommit string `json:"gitCommit"`
 }
