@@ -1,6 +1,6 @@
 # Keptn go-utils
-[![Build Status](https://travis-ci.org/keptn/go-utils.svg?branch=master)](https://travis-ci.org/keptn/go-utils)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/keptn/go-utils)
+![tests](https://github.com/keptn/go-utils/workflows/tests/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/keptn/go-utils)](https://goreportcard.com/report/github.com/keptn/go-utils)
 
 This repo serves as a util package for common functionalities such as logging of the [Keptn Project](https://github.com/keptn).
