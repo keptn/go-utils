@@ -2,11 +2,11 @@ package v0_2_0
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/cloudevents/sdk-go/v2/protocol"
 	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/mitchellh/mapstructure"
 	"log"
 	"time"
 
@@ -106,16 +106,13 @@ func (k *Keptn) SendCloudEvent(event cloudevents.Event) error {
 }
 
 // Decode decodes the given raw interface to the target pointer specified
-// by the out paratmeter
+// by the out parameter
 func Decode(in, out interface{}) error {
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Squash: true,
-		Result: out,
-	})
+	bytes, err := json.Marshal(in)
 	if err != nil {
 		return err
 	}
-	return decoder.Decode(in)
+	return json.Unmarshal(bytes, out)
 }
 
 // EventDataAs decodes the event data of the given keptn cloud event to the
