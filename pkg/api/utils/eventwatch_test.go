@@ -1,52 +1,57 @@
 package api
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 type fakeEventGetter struct {
 }
 
+var t0 = time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
+
+var fakeEventsDB = map[string][]*models.KeptnContextExtendedCE{
+	"ctx1": {
+		{
+			ID:             "ID1",
+			Shkeptncontext: "ctx1",
+			Time:           strfmt.DateTime(t0.Add(time.Second)),
+		},
+		{
+			ID:             "ID2",
+			Shkeptncontext: "ctx1",
+			Time:           strfmt.DateTime(t0.Add(time.Second * 2)),
+		},
+		{
+			ID:             "ID3",
+			Shkeptncontext: "ctx1",
+			Time:           strfmt.DateTime(t0.Add(time.Second * 3)),
+		},
+	},
+	"ctx2": {
+		{
+			ID:             "ID1",
+			Shkeptncontext: "ctx2",
+			Time:           strfmt.DateTime(t0.Add(time.Second * 30)),
+		},
+		{
+			ID:             "ID2",
+			Shkeptncontext: "ctx2",
+			Time:           strfmt.DateTime(t0.Add(time.Second * 31)),
+		},
+	},
+}
+
 func (eg fakeEventGetter) Get(filter *EventFilter) ([]*models.KeptnContextExtendedCE, error) {
-
-	ceCtx1_1 := &models.KeptnContextExtendedCE{
-		ID:             "ID1",
-		Shkeptncontext: "ctx1",
-	}
-
-	ceCtx1_2 := &models.KeptnContextExtendedCE{
-		ID:             "ID2",
-		Shkeptncontext: "ctx1",
-	}
-
-	ceCtx2_1 := &models.KeptnContextExtendedCE{
-		ID:             "ID3",
-		Shkeptncontext: "ctx2",
-	}
-
-	ceCtx2_2 := &models.KeptnContextExtendedCE{
-		ID:             "ID4",
-		Shkeptncontext: "ctx2",
-	}
-
-	ceCtx2_3 := &models.KeptnContextExtendedCE{
-		ID:             "ID5",
-		Shkeptncontext: "ctx2",
-	}
-
-	if filter.KeptnContext == "ctx1" {
-
-		return []*models.KeptnContextExtendedCE{ceCtx1_1, ceCtx1_2}, nil
-	}
-
-	if filter.KeptnContext == "ctx2" {
-
-		return []*models.KeptnContextExtendedCE{ceCtx2_1, ceCtx2_2, ceCtx2_3}, nil
-	}
-	return []*models.KeptnContextExtendedCE{ceCtx1_1, ceCtx1_2, ceCtx2_1, ceCtx2_2, ceCtx2_3}, nil
+	events := fakeEventsDB[filter.KeptnContext]
+	fakeEventsDB = map[string][]*models.KeptnContextExtendedCE{}
+	return events, nil
 }
 
 func withFakeEventGetter() EventWatcherOption {
@@ -69,42 +74,54 @@ func withFilingEventGetter() EventWatcherOption {
 }
 
 func TestEventWatcher(t *testing.T) {
-	var event models.KeptnContextExtendedCE
 	watcher := NewEventWatcher(
 		withFakeEventGetter(),
 		WithEventFilter(EventFilter{KeptnContext: "ctx1"}),
 		WithCustomInterval(NewFakeSleeper()),
 	)
 
-	eventStream := watcher.Events()
-	event, ok := <-eventStream
+	stream, _ := watcher.Watch(context.Background())
+	events, ok := <-stream
 	if !ok {
 		t.Fatalf("unexpected closed channel")
 	}
-	assert.Equal(t, "ID1", event.ID)
+	assert.Equal(t, 3, len(events))
+}
 
-	event = <-eventStream
-	if !ok {
-		t.Fatalf("unexpected closed channel")
-	}
-	assert.Equal(t, "ID2", event.ID)
+func TestEventWatcherCancel(t *testing.T) {
+	watcher := NewEventWatcher(
+		withFakeEventGetter(),
+		WithEventFilter(EventFilter{KeptnContext: "ctx1"}),
+		WithCustomInterval(NewFakeSleeper()),
+	)
 
-	watcher.Stop()
-	_, ok = <-eventStream
+	stream, cancel := watcher.Watch(context.Background())
+	cancel()
+
+	_, ok := <-stream
 	if ok {
-		t.Fatalf("unexpected open channel")
+		t.Fatalf("unexpected opened channel")
 	}
 }
 
-func TestEventWatcherWithError(t *testing.T) {
-	watcher := NewEventWatcher(
-		withFilingEventGetter())
+func TestSortedGetter(t *testing.T) {
 
-	eventStream := watcher.Events()
+	firstTime := strfmt.DateTime(t0.Add(-time.Second * 2))
+	secondTime := strfmt.DateTime(t0.Add(-time.Second))
+	thirdTime := strfmt.DateTime(t0)
 
-	_, ok := <-eventStream
-	if ok {
-		t.Fatalf("unexpected open channel")
+	events := []*models.KeptnContextExtendedCE{
+		{Time: strfmt.DateTime(t0.Add(-time.Second))},
+		{Time: strfmt.DateTime(t0)},
+		{Time: strfmt.DateTime(t0.Add(-time.Second * 2))},
 	}
 
+	sortByTime(events)
+	assert.Equal(t, events[0].Time, firstTime)
+	assert.Equal(t, events[1].Time, secondTime)
+	assert.Equal(t, events[2].Time, thirdTime)
+
+	for _, e := range events {
+		fmt.Println(e.Time)
+	}
 }

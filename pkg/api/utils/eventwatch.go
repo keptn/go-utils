@@ -1,95 +1,62 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
-	"sync"
+	"sort"
 	"time"
 )
 
-// EventWatchInterface is the interface for watching events
-type EventWatchInterface interface {
-	// Stop stops the event watch
-	Stop()
-	// Events starts the internal fetching of events and returns a channel to
-	// returns the channel to get the events
-	Events() <-chan models.KeptnContextExtendedCE
-}
-
-// EventWatcher is the implementation of the EventWatchInterface
 type EventWatcher struct {
-	sync.Mutex
-	events      chan models.KeptnContextExtendedCE
 	nextCETime  time.Time
-	stopped     bool
 	eventGetter EventGetter
 	eventFilter EventFilter
 	sleeper     Sleeper
 }
 
-// Stop stops the event watcher
-func (ew *EventWatcher) Stop() {
-	ew.Lock()
-	defer ew.Unlock()
-	if !ew.stopped {
-		ew.stopped = true
-	}
+func (ew *EventWatcher) Watch(ctx context.Context) (<-chan []*models.KeptnContextExtendedCE, context.CancelFunc) {
+	ctx, cancel := context.WithCancel(ctx)
+	ch := make(chan []*models.KeptnContextExtendedCE)
+	go ew.fetch(ctx, cancel, ch, ew.eventFilter)
+	return ch, cancel
 }
 
-// Events starts the query loop and returns the channel to get the events
-func (ew *EventWatcher) Events() <-chan models.KeptnContextExtendedCE {
-	ew.Lock()
-	defer ew.Unlock()
-	if !ew.stopped {
-		go ew.queryPeriodically(ew.eventFilter)
-	}
-	return ew.events
-}
-
-// isStopped checks whether the event watcher is currently running
-func (ew *EventWatcher) isStopped() bool {
-	ew.Lock()
-	defer ew.Unlock()
-	return ew.stopped
-}
-
-// queryPeriodically quiries the database for events based on the given filter
-// if events are found, they get sent down the channel to the client
-func (ew *EventWatcher) queryPeriodically(filter EventFilter) {
-
-	defer close(ew.events)
-	defer ew.Stop()
+func (ew *EventWatcher) fetch(ctx context.Context, cancel context.CancelFunc, ch chan<- []*models.KeptnContextExtendedCE, filter EventFilter) {
+	defer cancel()
 
 	for {
 
-		filter.FromTime = ew.nextCETime.Add(-(time.Second * 10)).Format("2006-01-02T15:04:05.000Z")
-		if ew.isStopped() {
+		select {
+		case <-ctx.Done():
+			close(ch)
 			return
+		default:
 		}
-		events, err := ew.eventGetter.Get(&filter)
 
-		//TODO: implement retry
+		filter.FromTime = ew.nextCETime.Format("2006-01-02T15:04:05.000Z")
+		events, err := ew.eventGetter.Get(&filter)
 		if err != nil {
 			fmt.Errorf("Unable to fetch events")
-			return
+			continue
 		}
 
-		for _, e := range events {
-			ew.events <- *e
+		// if we got some events, send them down the channel
+		if len(events) > 0 {
+			ch <- events
 		}
+
 		ew.sleeper.Sleep()
 		ew.nextCETime = time.Now().UTC()
 	}
+
 }
 
 // NewEventWatcher creates a new event watcher with the given options
 func NewEventWatcher(opts ...EventWatcherOption) *EventWatcher {
 	e := &EventWatcher{
-		Mutex:       sync.Mutex{},
-		events:      make(chan models.KeptnContextExtendedCE),
 		nextCETime:  time.Now(),
-		stopped:     false,
 		eventGetter: NewDefaultEventGetter("localhost/api"),
 		eventFilter: EventFilter{},
 		sleeper:     NewConfigurableSleeper(10 * time.Second),
@@ -123,7 +90,13 @@ func WithStartTime(startTime time.Time) EventWatcherOption {
 // for querying the events against the event database
 func WithAuthenticatedEventGetter(baseUrl, token string) EventWatcherOption {
 	return func(ew *EventWatcher) {
-		ew.eventGetter = NewAuthenticatedEventGetter(baseUrl, token)
+		ew.eventGetter = newAuthenticatedEventGetter(baseUrl, token)
+	}
+}
+
+func WithAuthenticatedSortingEventGetter(baseUrl, token string) EventWatcherOption {
+	return func(ew *EventWatcher) {
+		ew.eventGetter = newAuthenticatedSortingEventGetter(baseUrl, token)
 	}
 }
 
@@ -144,8 +117,19 @@ type EventGetter interface {
 
 // NewAuthenticatedEventGetter creates a new instance of an EventGetter which authenticates itself
 // with a given token
-func NewAuthenticatedEventGetter(baseUrl, token string) CloudEventGetter {
-	return CloudEventGetter{
+func newAuthenticatedEventGetter(baseUrl, token string) DefaultEventGetter {
+	return DefaultEventGetter{
+		handler: NewAuthenticatedEventHandler(
+			baseUrl,
+			token,
+			"x-token",
+			nil,
+			"http"),
+	}
+}
+
+func newAuthenticatedSortingEventGetter(baseUrl, token string) SortingEventGetter {
+	return SortingEventGetter{
 		handler: NewAuthenticatedEventHandler(
 			baseUrl,
 			token,
@@ -156,23 +140,46 @@ func NewAuthenticatedEventGetter(baseUrl, token string) CloudEventGetter {
 }
 
 // NewDefaultEventGetter creates a new instance of an EventGetter
-func NewDefaultEventGetter(baseUrl string) CloudEventGetter {
-	return CloudEventGetter{
+func NewDefaultEventGetter(baseUrl string) DefaultEventGetter {
+	return DefaultEventGetter{
 		handler: NewEventHandler(baseUrl),
 	}
 }
 
-// CloudEventGetter is an implementation of an EventGetter
-type CloudEventGetter struct {
+// DefaultEventGetter is an implementation of an EventGetter
+type DefaultEventGetter struct {
 	handler *EventHandler
 }
 
 // Get queries the event database for events matching the given filter
-func (eg CloudEventGetter) Get(filter *EventFilter) ([]*models.KeptnContextExtendedCE, error) {
+func (eg DefaultEventGetter) Get(filter *EventFilter) ([]*models.KeptnContextExtendedCE, error) {
 
 	events, err := eg.handler.GetEvents(filter)
 	if err != nil {
 		return nil, errors.New(*err.Message)
 	}
 	return events, nil
+}
+
+// SortingEventGetter is an implementation of an EventGetter which returns the events in the chronological
+// time order (oldest to newest)
+type SortingEventGetter struct {
+	handler *EventHandler
+}
+
+// Get queries the event database for events matching the given filter
+// Moreover, it sorts the fetched events by time in increasing order (oldest to newest)
+func (eg SortingEventGetter) Get(filter *EventFilter) ([]*models.KeptnContextExtendedCE, error) {
+	events, err := eg.handler.GetEvents(filter)
+	if err != nil {
+		return nil, errors.New(*err.Message)
+	}
+	sortByTime(events)
+	return events, nil
+}
+
+func sortByTime(events []*models.KeptnContextExtendedCE) {
+	sort.Slice(events, func(i, j int) bool {
+		return time.Time(events[i].Time).Before(time.Time(events[j].Time))
+	})
 }
