@@ -18,7 +18,7 @@ type EventWatcher struct {
 
 func (ew *EventWatcher) Watch(ctx context.Context) (<-chan []*models.KeptnContextExtendedCE, context.CancelFunc) {
 	ctx, cancel := context.WithCancel(ctx)
-	ch := make(chan []*models.KeptnContextExtendedCE)
+	ch := make(chan []*models.KeptnContextExtendedCE, 5)
 	go ew.fetch(ctx, cancel, ch, ew.eventFilter)
 	return ch, cancel
 }
@@ -27,30 +27,28 @@ func (ew *EventWatcher) fetch(ctx context.Context, cancel context.CancelFunc, ch
 	defer cancel()
 
 	for {
-
 		select {
 		case <-ctx.Done():
 			close(ch)
 			return
 		default:
-		}
+			filter.FromTime = ew.nextCETime.Add(-(ew.sleeper.GetSleepDuration())).Format("2006-01-02T15:04:05.000Z")
+			fmt.Println(filter.FromTime)
+			events, err := ew.eventGetter.Get(&filter)
+			if err != nil {
+				fmt.Errorf("Unable to fetch events")
+				continue
+			}
 
-		filter.FromTime = ew.nextCETime.Format("2006-01-02T15:04:05.000Z")
-		events, err := ew.eventGetter.Get(&filter)
-		if err != nil {
-			fmt.Errorf("Unable to fetch events")
-			continue
-		}
+			// if we got some events, send them down the channel
+			if len(events) > 0 {
+				ch <- events
+			}
 
-		// if we got some events, send them down the channel
-		if len(events) > 0 {
-			ch <- events
+			ew.sleeper.Sleep()
+			ew.nextCETime = time.Now().UTC()
 		}
-
-		ew.sleeper.Sleep()
-		ew.nextCETime = time.Now().UTC()
 	}
-
 }
 
 // NewEventWatcher creates a new event watcher with the given options

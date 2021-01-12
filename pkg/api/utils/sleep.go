@@ -5,6 +5,7 @@ import "time"
 // Sleeper defines the interface to sleep
 type Sleeper interface {
 	Sleep()
+	GetSleepDuration() time.Duration
 }
 
 // ConfigurableSleeper is an implementation of a sleeper
@@ -17,6 +18,10 @@ type ConfigurableSleeper struct {
 // Sleep pauses the execution
 func (c *ConfigurableSleeper) Sleep() {
 	c.sleep(c.duration)
+}
+
+func (c *ConfigurableSleeper) GetSleepDuration() time.Duration {
+	return c.duration
 }
 
 // NewConfiguratbleSleeper creates a new instance of a configurable sleeper which will pause execution
@@ -34,6 +39,10 @@ type FakeSleeper struct {
 
 func (f *FakeSleeper) Sleep() {
 	// no-op
+}
+
+func (f *FakeSleeper) GetSleepDuration() time.Duration {
+	return time.Duration(0)
 }
 
 // NewFakeSleeper creates a new instance of a FakeSleeper
