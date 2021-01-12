@@ -3,12 +3,13 @@ package api
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"log"
 	"sort"
 	"time"
 )
 
+// EventWatcher implements the logic to query for events and provide them to the client
 type EventWatcher struct {
 	nextCETime  time.Time
 	eventGetter EventGetter
@@ -16,39 +17,37 @@ type EventWatcher struct {
 	sleeper     Sleeper
 }
 
+// Watch starts the watch loop.
+// It returns a channel to get the actual events as well as a context.CancelFunc in order
+// to stop the watch routine
 func (ew *EventWatcher) Watch(ctx context.Context) (<-chan []*models.KeptnContextExtendedCE, context.CancelFunc) {
 	ctx, cancel := context.WithCancel(ctx)
-	ch := make(chan []*models.KeptnContextExtendedCE, 5)
+	ch := make(chan []*models.KeptnContextExtendedCE)
 	go ew.fetch(ctx, cancel, ch, ew.eventFilter)
 	return ch, cancel
 }
 
 func (ew *EventWatcher) fetch(ctx context.Context, cancel context.CancelFunc, ch chan<- []*models.KeptnContextExtendedCE, filter EventFilter) {
 	defer cancel()
-
 	for {
 		select {
 		case <-ctx.Done():
 			close(ch)
 			return
-		default:
-			filter.FromTime = ew.nextCETime.Add(-(ew.sleeper.GetSleepDuration())).Format("2006-01-02T15:04:05.000Z")
-			fmt.Println(filter.FromTime)
-			events, err := ew.eventGetter.Get(&filter)
-			if err != nil {
-				fmt.Errorf("Unable to fetch events")
-				continue
-			}
-
-			// if we got some events, send them down the channel
-			if len(events) > 0 {
-				ch <- events
-			}
-
+		case ch <- ew.queryEvents(filter):
 			ew.sleeper.Sleep()
-			ew.nextCETime = time.Now().UTC()
 		}
 	}
+}
+
+func (ew *EventWatcher) queryEvents(filter EventFilter) []*models.KeptnContextExtendedCE {
+	filter.FromTime = ew.nextCETime.Format("2006-01-02T15:04:05.000Z")
+	ew.nextCETime = time.Now().UTC()
+	events, err := ew.eventGetter.Get(&filter)
+	if err != nil {
+		log.Fatal("Unable to fetch events")
+	}
+	return events
 }
 
 // NewEventWatcher creates a new event watcher with the given options
@@ -115,8 +114,8 @@ type EventGetter interface {
 
 // NewAuthenticatedEventGetter creates a new instance of an EventGetter which authenticates itself
 // with a given token
-func newAuthenticatedEventGetter(baseUrl, token string) DefaultEventGetter {
-	return DefaultEventGetter{
+func newAuthenticatedEventGetter(baseUrl, token string) *DefaultEventGetter {
+	return &DefaultEventGetter{
 		handler: NewAuthenticatedEventHandler(
 			baseUrl,
 			token,
@@ -126,8 +125,8 @@ func newAuthenticatedEventGetter(baseUrl, token string) DefaultEventGetter {
 	}
 }
 
-func newAuthenticatedSortingEventGetter(baseUrl, token string) SortingEventGetter {
-	return SortingEventGetter{
+func newAuthenticatedSortingEventGetter(baseUrl, token string) *SortingEventGetter {
+	return &SortingEventGetter{
 		handler: NewAuthenticatedEventHandler(
 			baseUrl,
 			token,
@@ -138,8 +137,8 @@ func newAuthenticatedSortingEventGetter(baseUrl, token string) SortingEventGette
 }
 
 // NewDefaultEventGetter creates a new instance of an EventGetter
-func NewDefaultEventGetter(baseUrl string) DefaultEventGetter {
-	return DefaultEventGetter{
+func NewDefaultEventGetter(baseUrl string) *DefaultEventGetter {
+	return &DefaultEventGetter{
 		handler: NewEventHandler(baseUrl),
 	}
 }

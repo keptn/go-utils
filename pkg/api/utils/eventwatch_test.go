@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/go-openapi/strfmt"
 	"github.com/keptn/go-utils/pkg/api/models"
@@ -56,20 +55,7 @@ func (eg fakeEventGetter) Get(filter *EventFilter) ([]*models.KeptnContextExtend
 
 func withFakeEventGetter() EventWatcherOption {
 	return func(ew *EventWatcher) {
-		ew.eventGetter = fakeEventGetter{}
-	}
-}
-
-type failingEventGetter struct {
-}
-
-func (eg failingEventGetter) Get(filter *EventFilter) ([]*models.KeptnContextExtendedCE, error) {
-	return nil, errors.New("FAILED")
-}
-
-func withFilingEventGetter() EventWatcherOption {
-	return func(ew *EventWatcher) {
-		ew.eventGetter = failingEventGetter{}
+		ew.eventGetter = &fakeEventGetter{}
 	}
 }
 
@@ -97,6 +83,9 @@ func TestEventWatcherCancel(t *testing.T) {
 
 	stream, cancel := watcher.Watch(context.Background())
 	cancel()
+	for ev := range stream {
+		fmt.Println(ev)
+	}
 
 	_, ok := <-stream
 	if ok {
