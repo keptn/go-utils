@@ -11,51 +11,57 @@ import (
 )
 
 type fakeEventGetter struct {
+	data map[string][]*models.KeptnContextExtendedCE
+}
+
+func newFakeEventGetter() *fakeEventGetter {
+	return &fakeEventGetter{
+		data: map[string][]*models.KeptnContextExtendedCE{
+			"ctx1": {
+				{
+					ID:             "ID1",
+					Shkeptncontext: "ctx1",
+					Time:           strfmt.DateTime(t0.Add(time.Second)),
+				},
+				{
+					ID:             "ID2",
+					Shkeptncontext: "ctx1",
+					Time:           strfmt.DateTime(t0.Add(time.Second * 2)),
+				},
+				{
+					ID:             "ID3",
+					Shkeptncontext: "ctx1",
+					Time:           strfmt.DateTime(t0.Add(time.Second * 3)),
+				},
+			},
+			"ctx2": {
+				{
+					ID:             "ID1",
+					Shkeptncontext: "ctx2",
+					Time:           strfmt.DateTime(t0.Add(time.Second * 30)),
+				},
+				{
+					ID:             "ID2",
+					Shkeptncontext: "ctx2",
+					Time:           strfmt.DateTime(t0.Add(time.Second * 31)),
+				},
+			},
+		},
+	}
 }
 
 var t0 = time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 
-var fakeEventsDB = map[string][]*models.KeptnContextExtendedCE{
-	"ctx1": {
-		{
-			ID:             "ID1",
-			Shkeptncontext: "ctx1",
-			Time:           strfmt.DateTime(t0.Add(time.Second)),
-		},
-		{
-			ID:             "ID2",
-			Shkeptncontext: "ctx1",
-			Time:           strfmt.DateTime(t0.Add(time.Second * 2)),
-		},
-		{
-			ID:             "ID3",
-			Shkeptncontext: "ctx1",
-			Time:           strfmt.DateTime(t0.Add(time.Second * 3)),
-		},
-	},
-	"ctx2": {
-		{
-			ID:             "ID1",
-			Shkeptncontext: "ctx2",
-			Time:           strfmt.DateTime(t0.Add(time.Second * 30)),
-		},
-		{
-			ID:             "ID2",
-			Shkeptncontext: "ctx2",
-			Time:           strfmt.DateTime(t0.Add(time.Second * 31)),
-		},
-	},
-}
+func (eg fakeEventGetter) Get(filter EventFilter) ([]*models.KeptnContextExtendedCE, error) {
 
-func (eg fakeEventGetter) Get(filter *EventFilter) ([]*models.KeptnContextExtendedCE, error) {
-	events := fakeEventsDB[filter.KeptnContext]
-	fakeEventsDB = map[string][]*models.KeptnContextExtendedCE{}
+	events := eg.data[filter.KeptnContext]
+	eg.data = map[string][]*models.KeptnContextExtendedCE{}
 	return events, nil
 }
 
 func withFakeEventGetter() EventWatcherOption {
 	return func(ew *EventWatcher) {
-		ew.eventGetter = &fakeEventGetter{}
+		ew.eventGetter = newFakeEventGetter()
 	}
 }
 

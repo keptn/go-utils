@@ -43,7 +43,7 @@ func (ew *EventWatcher) fetch(ctx context.Context, cancel context.CancelFunc, ch
 func (ew *EventWatcher) queryEvents(filter EventFilter) []*models.KeptnContextExtendedCE {
 	filter.FromTime = ew.nextCETime.Format("2006-01-02T15:04:05.000Z")
 	ew.nextCETime = time.Now().UTC()
-	events, err := ew.eventGetter.Get(&filter)
+	events, err := ew.eventGetter.Get(filter)
 	if err != nil {
 		log.Fatal("Unable to fetch events")
 	}
@@ -66,7 +66,7 @@ func NewEventWatcher(opts ...EventWatcherOption) *EventWatcher {
 	return e
 }
 
-// EventWatcherOptions can be used to provide functionality to configure the EventWatcher
+// EventWatcherOption can be used to configure the EventWatcher
 type EventWatcherOption func(*EventWatcher)
 
 // WithEventFilter configures the EventWatcher to use a filter
@@ -84,22 +84,23 @@ func WithStartTime(startTime time.Time) EventWatcherOption {
 }
 
 // WithAuthenticatedEventGetter configures the EventWatcher to use a authenticated event handler
-// for querying the events against the event database
-func WithAuthenticatedEventGetter(baseUrl, token string) EventWatcherOption {
+// for fetching the events against the event database
+func WithAuthenticatedEventGetter(baseURL, token string) EventWatcherOption {
 	return func(ew *EventWatcher) {
-		ew.eventGetter = newAuthenticatedEventGetter(baseUrl, token)
+		ew.eventGetter = newAuthenticatedEventGetter(baseURL, token)
 	}
 }
 
-func WithAuthenticatedSortingEventGetter(baseUrl, token string) EventWatcherOption {
+// WithAuthenticatedSortingEventGetter configures the EventWatcher to use an authenticated event handler
+// for fetching the events. Moreover the will be sorted by their time stamp from oldest to newest
+func WithAuthenticatedSortingEventGetter(baseURL, token string) EventWatcherOption {
 	return func(ew *EventWatcher) {
-		ew.eventGetter = newAuthenticatedSortingEventGetter(baseUrl, token)
+		ew.eventGetter = newAuthenticatedSortingEventGetter(baseURL, token)
 	}
 }
 
-// WithCustomInterval configures the EventWatcher to use a cusstom delay between each query
+// WithCustomInterval configures the EventWatcher to use a custom delay between each query
 // You can use this to overwrite the default  which is 10 * time.Second
-
 func WithCustomInterval(sleeper Sleeper) EventWatcherOption {
 	return func(ew *EventWatcher) {
 		ew.sleeper = sleeper
@@ -109,15 +110,15 @@ func WithCustomInterval(sleeper Sleeper) EventWatcherOption {
 // EventGetter defines the interface for getting the events from the event database
 type EventGetter interface {
 	// Get queries the event database for events matching the given filter
-	Get(filter *EventFilter) ([]*models.KeptnContextExtendedCE, error)
+	Get(filter EventFilter) ([]*models.KeptnContextExtendedCE, error)
 }
 
 // NewAuthenticatedEventGetter creates a new instance of an EventGetter which authenticates itself
 // with a given token
-func newAuthenticatedEventGetter(baseUrl, token string) *DefaultEventGetter {
+func newAuthenticatedEventGetter(baseURL, token string) *DefaultEventGetter {
 	return &DefaultEventGetter{
 		handler: NewAuthenticatedEventHandler(
-			baseUrl,
+			baseURL,
 			token,
 			"x-token",
 			nil,
@@ -125,10 +126,10 @@ func newAuthenticatedEventGetter(baseUrl, token string) *DefaultEventGetter {
 	}
 }
 
-func newAuthenticatedSortingEventGetter(baseUrl, token string) *SortingEventGetter {
+func newAuthenticatedSortingEventGetter(baseURL, token string) *SortingEventGetter {
 	return &SortingEventGetter{
 		handler: NewAuthenticatedEventHandler(
-			baseUrl,
+			baseURL,
 			token,
 			"x-token",
 			nil,
@@ -137,9 +138,9 @@ func newAuthenticatedSortingEventGetter(baseUrl, token string) *SortingEventGett
 }
 
 // NewDefaultEventGetter creates a new instance of an EventGetter
-func NewDefaultEventGetter(baseUrl string) *DefaultEventGetter {
+func NewDefaultEventGetter(baseURL string) *DefaultEventGetter {
 	return &DefaultEventGetter{
-		handler: NewEventHandler(baseUrl),
+		handler: NewEventHandler(baseURL),
 	}
 }
 
@@ -149,9 +150,9 @@ type DefaultEventGetter struct {
 }
 
 // Get queries the event database for events matching the given filter
-func (eg DefaultEventGetter) Get(filter *EventFilter) ([]*models.KeptnContextExtendedCE, error) {
+func (eg DefaultEventGetter) Get(filter EventFilter) ([]*models.KeptnContextExtendedCE, error) {
 
-	events, err := eg.handler.GetEvents(filter)
+	events, err := eg.handler.GetEvents(&filter)
 	if err != nil {
 		return nil, errors.New(*err.Message)
 	}
@@ -166,8 +167,8 @@ type SortingEventGetter struct {
 
 // Get queries the event database for events matching the given filter
 // Moreover, it sorts the fetched events by time in increasing order (oldest to newest)
-func (eg SortingEventGetter) Get(filter *EventFilter) ([]*models.KeptnContextExtendedCE, error) {
-	events, err := eg.handler.GetEvents(filter)
+func (eg SortingEventGetter) Get(filter EventFilter) ([]*models.KeptnContextExtendedCE, error) {
+	events, err := eg.handler.GetEvents(&filter)
 	if err != nil {
 		return nil, errors.New(*err.Message)
 	}
