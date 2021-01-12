@@ -10,12 +10,22 @@ import (
 	"time"
 )
 
-type fakeEventGetter struct {
+type fakeEventHandler struct {
 	data map[string][]*models.KeptnContextExtendedCE
 }
 
-func newFakeEventGetter() *fakeEventGetter {
-	return &fakeEventGetter{
+func (fh *fakeEventHandler) GetEvents(filter *EventFilter) ([]*models.KeptnContextExtendedCE, *models.Error) {
+	events := fh.data[filter.KeptnContext]
+	fh.data = map[string][]*models.KeptnContextExtendedCE{}
+	return events, nil
+}
+
+func (fh *fakeEventHandler) GetEventsWithRetry(filter *EventFilter, maxRetries int, retrySleepTime time.Duration) ([]*models.KeptnContextExtendedCE, error) {
+	panic("not implemented")
+}
+
+func newFakeEventHandler() *fakeEventHandler {
+	return &fakeEventHandler{
 		data: map[string][]*models.KeptnContextExtendedCE{
 			"ctx1": {
 				{
@@ -52,22 +62,8 @@ func newFakeEventGetter() *fakeEventGetter {
 
 var t0 = time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 
-func (eg fakeEventGetter) Get(filter EventFilter) ([]*models.KeptnContextExtendedCE, error) {
-
-	events := eg.data[filter.KeptnContext]
-	eg.data = map[string][]*models.KeptnContextExtendedCE{}
-	return events, nil
-}
-
-func withFakeEventGetter() EventWatcherOption {
-	return func(ew *EventWatcher) {
-		ew.eventGetter = newFakeEventGetter()
-	}
-}
-
 func TestEventWatcher(t *testing.T) {
-	watcher := NewEventWatcher(
-		withFakeEventGetter(),
+	watcher := NewEventWatcher(newFakeEventHandler(),
 		WithEventFilter(EventFilter{KeptnContext: "ctx1"}),
 		WithCustomInterval(NewFakeSleeper()),
 	)
@@ -81,8 +77,7 @@ func TestEventWatcher(t *testing.T) {
 }
 
 func TestEventWatcherCancel(t *testing.T) {
-	watcher := NewEventWatcher(
-		withFakeEventGetter(),
+	watcher := NewEventWatcher(newFakeEventHandler(),
 		WithEventFilter(EventFilter{KeptnContext: "ctx1"}),
 		WithCustomInterval(NewFakeSleeper()),
 	)
@@ -111,7 +106,7 @@ func TestSortedGetter(t *testing.T) {
 		{Time: strfmt.DateTime(t0.Add(-time.Second * 2))},
 	}
 
-	sortByTime(events)
+	SortByTime(events)
 	assert.Equal(t, events[0].Time, firstTime)
 	assert.Equal(t, events[1].Time, secondTime)
 	assert.Equal(t, events[2].Time, thirdTime)
