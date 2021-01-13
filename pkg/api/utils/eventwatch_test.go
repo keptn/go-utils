@@ -65,7 +65,7 @@ var t0 = time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 func TestEventWatcher(t *testing.T) {
 	watcher := NewEventWatcher(newFakeEventHandler(),
 		WithEventFilter(EventFilter{KeptnContext: "ctx1"}),
-		WithCustomInterval(NewFakeSleeper()),
+		WithInterval(time.NewTicker(1)),
 	)
 
 	stream, _ := watcher.Watch(context.Background())
@@ -79,7 +79,7 @@ func TestEventWatcher(t *testing.T) {
 func TestEventWatcherCancel(t *testing.T) {
 	watcher := NewEventWatcher(newFakeEventHandler(),
 		WithEventFilter(EventFilter{KeptnContext: "ctx1"}),
-		WithCustomInterval(NewFakeSleeper()),
+		WithInterval(time.NewTicker(1)),
 	)
 
 	stream, cancel := watcher.Watch(context.Background())
@@ -92,6 +92,24 @@ func TestEventWatcherCancel(t *testing.T) {
 	if ok {
 		t.Fatalf("unexpected opened channel")
 	}
+}
+
+func TestEventWatcherTimeout(t *testing.T) {
+	watcher := NewEventWatcher(newFakeEventHandler(),
+		WithEventFilter(EventFilter{KeptnContext: "ctx1"}),
+		WithTimeout(10*time.Millisecond),
+	)
+
+	stream, _ := watcher.Watch(context.Background())
+	for ev := range stream {
+		fmt.Println(ev)
+	}
+
+	_, ok := <-stream
+	if ok {
+		t.Fatalf("unexpected opened channel")
+	}
+
 }
 
 func TestSortedGetter(t *testing.T) {

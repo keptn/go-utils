@@ -13,7 +13,8 @@ type EventWatcher struct {
 	nextCEFetchTime time.Time
 	eventHandler    EventHandlerInterface
 	eventFilter     EventFilter
-	sleeper         Sleeper
+	ticker          *time.Ticker
+	timeout         <-chan time.Time
 	manipulator     EventManipulatorFunc
 }
 
@@ -27,14 +28,22 @@ func (ew *EventWatcher) Watch(ctx context.Context) (<-chan []*models.KeptnContex
 }
 
 func (ew *EventWatcher) fetch(ctx context.Context, cancel context.CancelFunc, ch chan<- []*models.KeptnContextExtendedCE, filter EventFilter) {
-	defer cancel()
+	defer func() {
+		cancel()
+		ew.ticker.Stop()
+	}()
+
 	for {
+		ch <- ew.queryEvents(filter)
 		select {
+		case <-ew.ticker.C:
+			continue
+		case <-ew.timeout:
+			close(ch)
+			return
 		case <-ctx.Done():
 			close(ch)
 			return
-		case ch <- ew.queryEvents(filter):
-			ew.sleeper.Sleep()
 		}
 	}
 }
@@ -56,7 +65,8 @@ func NewEventWatcher(eventHandler EventHandlerInterface, opts ...EventWatcherOpt
 		nextCEFetchTime: time.Now(),
 		eventHandler:    eventHandler,
 		eventFilter:     EventFilter{},
-		sleeper:         NewConfigurableSleeper(10 * time.Second),
+		ticker:          time.NewTicker(10 * time.Second),
+		timeout:         nil,
 		manipulator:     func(ces []*models.KeptnContextExtendedCE) {},
 	}
 
@@ -91,11 +101,19 @@ func WithEventManipulator(sorter EventManipulatorFunc) EventWatcherOption {
 	}
 }
 
-// WithCustomInterval configures the EventWatcher to use a custom delay between each query
-// You can use this to overwrite the default  which is 10 * time.Second
-func WithCustomInterval(sleeper Sleeper) EventWatcherOption {
+// WithInterval configures the EventWatcher to use a custom delay between each query
+// You can use this to overwrite the default which is 10 * time.Second
+func WithInterval(ticker *time.Ticker) EventWatcherOption {
 	return func(ew *EventWatcher) {
-		ew.sleeper = sleeper
+		ew.ticker = ticker
+	}
+}
+
+// WithTimeout configures the EventWatcher to use a custom timeout specifying
+// after which duration the watcher shall stop
+func WithTimeout(duration time.Duration) EventWatcherOption {
+	return func(ew *EventWatcher) {
+		ew.timeout = time.After(duration)
 	}
 }
 
