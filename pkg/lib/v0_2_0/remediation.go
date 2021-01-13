@@ -1,5 +1,7 @@
 package v0_2_0
 
+const RemediationTaskName = "remediation"
+
 // RemediationTriggeredEventData is a CloudEvent for triggering remediations
 type RemediationTriggeredEventData struct {
 	EventData
