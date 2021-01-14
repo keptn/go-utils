@@ -34,13 +34,18 @@ func (ew *EventWatcher) fetch(ctx context.Context, cancel context.CancelFunc, ch
 	}()
 
 	for {
+		// We need to query immediately because a time.Ticker cannot be configured
+		// to emmit a tick event immediately
 		ch <- ew.queryEvents(filter)
 		select {
+		// Query again once we receive a next tick
 		case <-ew.ticker.C:
 			continue
+		// Close the channel and break out once we reach a timeout
 		case <-ew.timeout:
 			close(ch)
 			return
+		// Close the channel and break out once the user cancels via the context
 		case <-ctx.Done():
 			close(ch)
 			return
