@@ -11,14 +11,14 @@ type DeploymentTriggeredEventData struct {
 
 type DeploymentWithStrategy struct {
 	// DeploymentStrategy defines the used deployment strategy
-	DeploymentStrategy string `json:"deploymentstrategy,omitempty"`
+	DeploymentStrategy string `json:"deploymentstrategy" jsonschema:"enum=direct,enum=blue_green_service"`
 }
 
 type DeploymentData struct {
 	// DeploymentStrategy defines the used deployment strategy
-	DeploymentStrategy string `json:"deploymentstrategy,omitempty"`
+	DeploymentStrategy string `json:"deploymentstrategy"`
 	// DeploymentURILocal contains the local URL
-	DeploymentURIsLocal []string `json:"deploymentURIsLocal,omitempty"`
+	DeploymentURIsLocal []string `json:"deploymentURIsLocal"`
 	// DeploymentURIPublic contains the public URL
 	DeploymentURIsPublic []string `json:"deploymentURIsPublic,omitempty"`
 	// DeploymentNames gives the names of the deployments

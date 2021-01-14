@@ -18,7 +18,7 @@ type ActionInfo struct {
 	// Action determines the type of action to be executed
 	Action string `json:"action"`
 	// Description contains the description of the action
-	Description string `json:"description"`
+	Description string `json:"description,omitempty"`
 	// Value contains the value of the action
 	Value interface{} `json:"value,omitempty"`
 }
@@ -36,5 +36,5 @@ type ActionFinishedEventData struct {
 
 type ActionData struct {
 	// GitCommit indicates the action
-	GitCommit string `json:"gitCommit"`
+	GitCommit string `json:"gitCommit,omitempty"`
 }

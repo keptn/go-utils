@@ -40,14 +40,14 @@ func GetFinishedEventType(task string) string {
 
 // EventData contains mandatory fields of all Keptn CloudEvents
 type EventData struct {
-	Project string            `json:"project"`
-	Stage   string            `json:"stage"`
-	Service string            `json:"service"`
-	Labels  map[string]string `json:"labels"`
+	Project string            `json:"project,omitempty"`
+	Stage   string            `json:"stage,omitempty"`
+	Service string            `json:"service,omitempty"`
+	Labels  map[string]string `json:"labels,omitempty"`
 
-	Status  StatusType `json:"status"`
-	Result  ResultType `json:"result"`
-	Message string     `json:"message"`
+	Status  StatusType `json:"status,omitempty" jsonschema:"enum=succeeded,enum=errored,enum=unknown"`
+	Result  ResultType `json:"result,omitempty" jsonschema:"enum=pass,enum=warning,enum=fail"`
+	Message string     `json:"message,omitempty"`
 }
 
 func (e EventData) GetProject() string {

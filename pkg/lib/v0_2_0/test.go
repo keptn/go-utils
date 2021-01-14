@@ -11,12 +11,12 @@ type TestTriggeredEventData struct {
 }
 type TestTriggeredDetails struct {
 	// TestStrategy is the testing strategy and is defined in the shipyard
-	TestStrategy string `json:"teststrategy"`
+	TestStrategy string `json:"teststrategy" jsonschema:"enum=real-user,enum=functional,enum=performance,enum=healthcheck"`
 }
 
 type TestTriggeredDeploymentDetails struct {
 	// DeploymentURILocal contains the local URL
-	DeploymentURIsLocal []string `json:"deploymentURIsLocal,omitempty"`
+	DeploymentURIsLocal []string `json:"deploymentURIsLocal"`
 	// DeploymentURIPublic contains the public URL
 	DeploymentURIsPublic []string `json:"deploymentURIsPublic,omitempty"`
 }

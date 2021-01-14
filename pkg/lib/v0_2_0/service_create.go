@@ -16,5 +16,5 @@ type ServiceCreateStatusChangedEventData struct {
 
 type ServiceCreateFinishedEventData struct {
 	EventData
-	Helm Helm `json:"helm"`
+	Helm Helm `json:"helm,omitempty"`
 }

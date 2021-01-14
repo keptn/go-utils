@@ -15,9 +15,9 @@ type GetSLI struct {
 	// End defines the end timestamp
 	End string `json:"end"`
 	// Indicators defines the SLI names
-	Indicators []string `json:"indicators"`
+	Indicators []string `json:"indicators,omitempty"`
 	// CustomFilters defines filters on the SLIs
-	CustomFilters []*SLIFilter `json:"customFilters"`
+	CustomFilters []*SLIFilter `json:"customFilters,omitempty"`
 }
 
 type GetSLIStartedEventData struct {
@@ -35,7 +35,7 @@ type GetSLIFinished struct {
 	// End defines the end timestamp
 	End string `json:"end"`
 	// IndicatorValues defines the fetched SLI values
-	IndicatorValues []*SLIResult `json:"indicatorValues"`
+	IndicatorValues []*SLIResult `json:"indicatorValues,omitempty"`
 }
 type SLIFilter struct {
 	// Key defines the key of the SLI filter

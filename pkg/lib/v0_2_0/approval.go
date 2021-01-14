@@ -15,8 +15,8 @@ type ApprovalTriggeredEventData struct {
 }
 
 type Approval struct {
-	Pass    string `json:"pass"`
-	Warning string `json:"warning"`
+	Pass    string `json:"pass" jsonschema:"enum=automatic,enum=manual"`
+	Warning string `json:"warning" jsonschema:"enum=automatic,enum=manual"`
 }
 
 type ApprovalStartedEventData struct {
