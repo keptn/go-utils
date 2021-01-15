@@ -54,20 +54,24 @@ func (ew *EventWatcher) fetch(ctx context.Context, cancel context.CancelFunc, ch
 }
 
 func (ew *EventWatcher) queryEvents(filter EventFilter) []*models.KeptnContextExtendedCE {
+
 	filter.FromTime = ew.nextCEFetchTime.Format("2006-01-02T15:04:05.000Z")
-	ew.nextCEFetchTime = time.Now().UTC()
 	events, err := ew.eventHandler.GetEvents(&filter)
 	if err != nil {
 		log.Fatal("Unable to fetch events")
 	}
 	ew.manipulator(events)
+	if len(events) > 0 {
+		ew.nextCEFetchTime = time.Time(events[len(events)-1].Time).UTC()
+	}
+
 	return events
 }
 
 // NewEventWatcher creates a new event watcher with the given options
 func NewEventWatcher(eventHandler EventHandlerInterface, opts ...EventWatcherOption) *EventWatcher {
 	e := &EventWatcher{
-		nextCEFetchTime: time.Now(),
+		nextCEFetchTime: time.Now().UTC(),
 		eventHandler:    eventHandler,
 		eventFilter:     EventFilter{},
 		ticker:          time.NewTicker(10 * time.Second),
