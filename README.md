@@ -105,9 +105,8 @@ watcher := api.NewEventWatcher(eventhandler),
 	api.WithEventFilter(api.EventFilter{  // use custom filter
            Project: "sockshop",
            KeptnContext: "..."}),
-	api.WithEventManipulator(api.SortByTime),         // apply custom logic to fetched events
 	api.WithInterval(time.NewTicker(5*time.Second)), // fetch every 5 seconds
-	api.WithStartTime(time.Now()),                  // fetch events new than this timestamp
+	api.WithStartTime(time.Now()),                  // start fetching events newer than this timestamp
 	api.WithTimeout(time.Second * 15),             // stop fetching events after 15 secs
 )
 

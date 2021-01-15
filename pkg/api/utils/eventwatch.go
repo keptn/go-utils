@@ -15,7 +15,6 @@ type EventWatcher struct {
 	eventFilter     EventFilter
 	ticker          *time.Ticker
 	timeout         <-chan time.Time
-	manipulator     EventManipulatorFunc
 }
 
 // Watch starts the watch loop and returns a channel to get the actual events as well as a context.CancelFunc in order
@@ -60,7 +59,7 @@ func (ew *EventWatcher) queryEvents(filter EventFilter) []*models.KeptnContextEx
 	if err != nil {
 		log.Fatal("Unable to fetch events")
 	}
-	ew.manipulator(events)
+	SortByTime(events)
 	if len(events) > 0 {
 		ew.nextCEFetchTime = time.Time(events[len(events)-1].Time).UTC()
 	}
@@ -76,7 +75,6 @@ func NewEventWatcher(eventHandler EventHandlerInterface, opts ...EventWatcherOpt
 		eventFilter:     EventFilter{},
 		ticker:          time.NewTicker(10 * time.Second),
 		timeout:         nil,
-		manipulator:     func(ces []*models.KeptnContextExtendedCE) {},
 	}
 
 	for _, opt := range opts {
@@ -100,13 +98,6 @@ func WithEventFilter(filter EventFilter) EventWatcherOption {
 func WithStartTime(startTime time.Time) EventWatcherOption {
 	return func(ew *EventWatcher) {
 		ew.nextCEFetchTime = startTime
-	}
-}
-
-// WithEventManipulator configures the EventWatcher to manipulate the fetched events using the given EventSorterFunc
-func WithEventManipulator(sorter EventManipulatorFunc) EventWatcherOption {
-	return func(ew *EventWatcher) {
-		ew.manipulator = sorter
 	}
 }
 
