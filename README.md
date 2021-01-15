@@ -86,6 +86,40 @@ import {
 )
 ```
 
+### Querying Events from event store
+```
+// Create an event Handler
+eventHandler := apiutils.NewAuthenticatedEventHandler("1.2.3.4/api", token, "x-token", nil, "http")
+
+// Create a filter
+filter := &apiutils.EventFilter{KeptnContext:  "03b2b951-9835-4e87-b0b0-0ad0bc288214"}
+
+// Query for event(s)
+events, err := eventHandler.GetEvents(filter)
+```
+
+### Watching for events in event store
+```
+// Create a watcher
+watcher := api.NewEventWatcher(eventhandler),
+	api.WithEventFilter(api.EventFilter{  // use custom filter
+           Project: "sockshop",
+           KeptnContext: "..."}),
+	api.WithInterval(time.NewTicker(5*time.Second)), // fetch every 5 seconds
+	api.WithStartTime(time.Now()),                  // start fetching events newer than this timestamp
+	api.WithTimeout(time.Second * 15),             // stop fetching events after 15 secs
+)
+
+    // start watcher and consume events
+	allEvents, _ := watcher.Watch(context.Background())
+	for events := range allEvents {
+		for _, e := range events {
+			fmt.Println(*e.Type)
+		}
+	}
+``` 
+
+
 ## Updating model definitions
 After updating the model definitions in the `swagger.yaml` file, execute the command
 
@@ -95,48 +129,9 @@ swagger generate model --spec=swagger.yaml -t=./pkg/api/
 
 to update the models located in `./pkg/api/models`
 
+
 ## Automation
 
-Within [.travis.yml](.travis.yml) we have included an automation that creates a Pull Request to 
- [github.com/keptn/keptn](https://github.com/keptn/keptn) to update `go.mod` files with an updated version of this 
- package (based on the commit hash). To make this work, a `GITHUB_TOKEN` (personal access token) 
- needs to be added within the [travis-ci settings page](https://travis-ci.org/keptn/go-utils/settings).
- 
-## Upgrade to 0.7.2 from previous versions
-This version introduces a couple of changes within the structure of the module. When upgrading from an earlier version, please follow the following steps:
-
-The following exported types/funcs that have been imported from `github.com/keptn/go-utils/pkg/lib` have been moved to `github.com/keptn/go-utils/pkg/lib/keptn`
- 
-- `KeptnOpts`
-- `LoggingOpts`
-- `KeptnBase`
-- `EventProperties`
-- `SLIConfig`
-- `CombinedLogger`
-- `NewCombinedLogger()`
-- `NewLogger()`
-- `Logger`
-- `MyCloudEvent`
-- `LogData`
-- `IncompleteCE`
-- `ConnectionData`
-- `OpenWS()`
-- `WriteWSLog()`
-- `WriteLog()`
-- `LoggerInterface`
-- `ValidateKeptnEntityName()`
-- `ValididateUnixDirectoryName()`
-- `GetServiceEndpoint()`
-
-If you have used any of those, you will need to change the import from 
-
-```go
-import github.com/keptn/go-utils/pkg/lib
-```
-
-to 
-
-```go
-import github.com/keptn/go-utils/pkg/lib/keptn
-```
-
+A [Github Action](https://github.com/keptn/go-utils/actions?query=workflow%3A%22Auto+PR+to+keptn%2Fkeptn%22) is used
+that creates a Pull Request to  [github.com/keptn/keptn](https://github.com/keptn/keptn) to update `go.mod`
+files with an updated version of this  package (based on the commit hash).
