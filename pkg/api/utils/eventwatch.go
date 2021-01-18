@@ -57,7 +57,7 @@ func (ew *EventWatcher) queryEvents(filter EventFilter) []*models.KeptnContextEx
 	filter.FromTime = ew.nextCEFetchTime.Format("2006-01-02T15:04:05.000Z")
 	events, err := ew.eventHandler.GetEvents(&filter)
 	if err != nil {
-		log.Fatal("Unable to fetch events")
+		log.Printf("Unable to fetch events: %s", *err.Message)
 	}
 	SortByTime(events)
 	if len(events) > 0 {
