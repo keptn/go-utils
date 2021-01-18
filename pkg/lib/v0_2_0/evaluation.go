@@ -4,25 +4,28 @@ const EvaluationTaskName = "evaluation"
 
 type EvaluationTriggeredEventData struct {
 	EventData
+	Test       Test       `json:"test"`
+	Evaluation Evaluation `json:"evaluation"`
+	Deployment Deployment `json:"deployment"`
+}
 
-	Test struct {
-		// Start indicates the starting timestamp of the tests
-		Start string `json:"start"`
-		// End indicates the end timestamp of the tests
-		End string `json:"end"`
-	} `json:"test"`
+type Test struct {
+	// Start indicates the starting timestamp of the tests
+	Start string `json:"start"`
+	// End indicates the end timestamp of the tests
+	End string `json:"end"`
+}
 
-	Evaluation struct {
-		// Start indicates the starting timestamp of the tests
-		Start string `json:"start"`
-		// End indicates the end timestamp of the tests
-		End string `json:"end"`
-	} `json:"evaluation"`
+type Evaluation struct {
+	// Start indicates the starting timestamp of the tests
+	Start string `json:"start"`
+	// End indicates the end timestamp of the tests
+	End string `json:"end"`
+}
 
-	Deployment struct {
-		// DeploymentNames gives the names of the deployments
-		DeploymentNames []string `json:"deploymentNames"`
-	} `json:"deployment"`
+type Deployment struct {
+	// DeploymentNames gives the names of the deployments
+	DeploymentNames []string `json:"deploymentNames"`
 }
 
 type EvaluationStartedEventData struct {
@@ -35,7 +38,7 @@ type EvaluationStatusChangedEventData struct {
 
 type EvaluationFinishedEventData struct {
 	EventData
-	Evaluation EvaluationDetails `json:"evaluation"`
+	Evaluation EvaluationDetails `json:"evaluation,omitempty"`
 }
 
 type EvaluationDetails struct {
@@ -45,7 +48,7 @@ type EvaluationDetails struct {
 	Score            float64                `json:"score"`
 	SLOFileContent   string                 `json:"sloFileContent"`
 	IndicatorResults []*SLIEvaluationResult `json:"indicatorResults"`
-	ComparedEvents   []string               `json:"comparedEvents"`
+	ComparedEvents   []string               `json:"comparedEvents,omitempty"`
 	// GitCommit indicates the version which should be deployed
 	GitCommit string `json:"gitCommit"`
 }
@@ -61,7 +64,7 @@ type SLIEvaluationResult struct {
 	Score   float64      `json:"score"`
 	Value   *SLIResult   `json:"value"`
 	Targets []*SLITarget `json:"targets"`
-	Status  string       `json:"status"` // pass | warning | fail
+	Status  string       `json:"status" jsonschema:"enum=pass,enum=warning,enum=fail"`
 }
 
 type SLITarget struct {

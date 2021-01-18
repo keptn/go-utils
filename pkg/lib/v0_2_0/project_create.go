@@ -4,7 +4,7 @@ const ProjectCreateTaskName = "project.create"
 
 type ProjectCreateData struct {
 	ProjectName  string `json:"projectName"`
-	GitRemoteURL string `json:"gitRemoteURL"`
+	GitRemoteURL string `json:"gitRemoteURL,omitempty"`
 	Shipyard     string `json:"shipyard"`
 }
 

@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/google/uuid"
 )
 
 type fields struct {
@@ -114,7 +113,7 @@ func TestKeptn_SendCloudEvent(t *testing.T) {
 
 	eventNew := cloudevents.NewEvent()
 	eventNew.SetSource("https://test-source")
-	eventNew.SetID(uuid.New().String())
+	eventNew.SetID("8039eac3-9fb2-454f-8b2e-77f8310a81f1")
 	eventNew.SetType("sh.keptn.events.test")
 	eventNew.SetExtension("shkeptncontext", "test-context")
 	eventNew.SetData(cloudevents.ApplicationJSON, map[string]string{"project": "sockshop"})
