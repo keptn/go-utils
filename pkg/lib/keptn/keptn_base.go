@@ -2,6 +2,7 @@ package keptn
 
 import (
 	"fmt"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"log"
 	"math/rand"
 	"net/url"
@@ -10,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"gopkg.in/yaml.v2"

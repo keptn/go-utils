@@ -91,7 +91,7 @@ func TestGetEventStatusOK(t *testing.T) {
 
 	eventHandler := NewEventHandler("https://localhost")
 	eventHandler.HTTPClient = httpClient
-	cloudEvent, errObj := eventHandler.GetEvent("8929e5e5-3826-488f-9257-708bfa974909", EvaluationDoneEventType)
+	cloudEvent, errObj := eventHandler.GetEvent("8929e5e5-3826-488f-9257-708bfa974909", "sh.keptn.events.evaluation-done")
 
 	if cloudEvent == nil {
 		t.Error("no Keptn event returned")
@@ -127,7 +127,7 @@ func TestGetEventStatusOKNoEvent(t *testing.T) {
 
 	eventHandler := NewEventHandler("https://localhost")
 	eventHandler.HTTPClient = httpClient
-	cloudEvent, errObj := eventHandler.GetEvent("8929e5e5-3826-488f-9257-708bfa974909", EvaluationDoneEventType)
+	cloudEvent, errObj := eventHandler.GetEvent("8929e5e5-3826-488f-9257-708bfa974909", "sh.keptn.events.evaluation-done")
 
 	if cloudEvent != nil {
 		t.Error("do not expect a Keptn Cloud event")
