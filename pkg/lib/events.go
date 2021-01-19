@@ -2,6 +2,9 @@ package keptn
 
 import "encoding/json"
 
+// ProblemEventType is a CloudEvent type to inform about a problem
+const ProblemEventType = "sh.keptn.events.problem"
+
 // ProblemOpenEventType is a CloudEvent type to inform about an open problem
 const ProblemOpenEventType = "sh.keptn.event.problem.open"
 
@@ -43,7 +46,4 @@ type ConfigureMonitoringEventData struct {
 	Project string `json:"project"`
 	// Service is the name of the new service
 	Service string `json:"service"`
-	//ServiceIndicators *models.ServiceIndicators `json:"serviceIndicators"`
-	//ServiceObjectives *models.ServiceObjectives `json:"serviceObjectives"`
-	//Remediation       *models.Remediations      `json:"remediation"`
 }
