@@ -11,11 +11,14 @@ import (
 type DeploymentStrategy int
 
 const (
-	// Direct stores the chart which results in the
+	// Direct generates a second chart to expose the service via istio
 	Direct DeploymentStrategy = iota + 1
 
-	// Duplicate generates a second chart in order to duplicate the deployments
+	// Duplicate generates a second chart in order to support blue/green deployments
 	Duplicate
+
+	// UserManaged does not generate any further charts
+	UserManaged
 )
 
 func (s DeploymentStrategy) String() string {
@@ -33,14 +36,16 @@ func GetDeploymentStrategy(deploymentStrategy string) (DeploymentStrategy, error
 }
 
 var deploymentStrategyToString = map[DeploymentStrategy]string{
-	Direct:    "direct",
-	Duplicate: "duplicate",
+	Direct:      "direct",
+	Duplicate:   "duplicate",
+	UserManaged: "user_managed",
 }
 
 var deploymentStrategyToID = map[string]DeploymentStrategy{
 	"direct":             Direct,
 	"duplicate":          Duplicate,
 	"blue_green_service": Duplicate,
+	"user_managed":       UserManaged,
 }
 
 // MarshalJSON marshals the enum as a quoted json string
