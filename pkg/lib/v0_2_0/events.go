@@ -7,17 +7,13 @@ import (
 	"fmt"
 	"github.com/cloudevents/sdk-go/v2/protocol"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"log"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	httpprotocol "github.com/cloudevents/sdk-go/v2/protocol/http"
 )
-
-// EventSender describes the interface for sending a CloudEvent
-type EventSender interface {
-	SendEvent(event cloudevents.Event) error
-}
 
 const MAX_SEND_RETRIES = 3
 
@@ -47,10 +43,10 @@ func (httpSender CloudEventsHTTPEventSender) SendEvent(event cloudevents.Event) 
 			if httpResult.StatusCode >= 200 && httpResult.StatusCode < 300 {
 				return nil
 			} else {
-				<-time.After(GetExpBackoffTime(i + 1))
+				<-time.After(keptn.GetExpBackoffTime(i + 1))
 			}
 		} else if cloudevents.IsUndelivered(result) {
-			<-time.After(GetExpBackoffTime(i + 1))
+			<-time.After(keptn.GetExpBackoffTime(i + 1))
 		} else {
 			return nil
 		}

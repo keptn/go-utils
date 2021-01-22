@@ -3,6 +3,7 @@ package v0_2_0
 import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -70,7 +71,7 @@ func TestKeptn_SendCloudEventWithRetry(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			k := &Keptn{
-				KeptnBase: KeptnBase{
+				KeptnBase: keptn.KeptnBase{
 					KeptnContext: tt.fields.KeptnContext,
 					Event:        tt.fields.KeptnBase,
 					EventSender: &CloudEventsHTTPEventSender{
@@ -120,7 +121,7 @@ func TestKeptn_SendCloudEvent(t *testing.T) {
 	eventNew.SetData(cloudevents.ApplicationJSON, map[string]string{"project": "sockshop"})
 
 	k := Keptn{
-		KeptnBase: KeptnBase{
+		KeptnBase: keptn.KeptnBase{
 			EventSender: CloudEventsHTTPEventSender{EventsEndpoint: ts.URL},
 		},
 	}

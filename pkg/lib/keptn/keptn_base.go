@@ -1,4 +1,4 @@
-package v0_2_0
+package keptn
 
 import (
 	"fmt"
@@ -52,6 +52,11 @@ type EventProperties interface {
 	GetStage() string
 	GetService() string
 	GetLabels() map[string]string
+}
+
+// EventSender describes the interface for sending a CloudEvent
+type EventSender interface {
+	SendEvent(event cloudevents.Event) error
 }
 
 // SLIConfig represents the struct of a SLI file

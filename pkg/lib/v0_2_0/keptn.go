@@ -3,16 +3,17 @@ package v0_2_0
 import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	api "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"gopkg.in/yaml.v2"
 )
 
 type Keptn struct {
-	KeptnBase
+	keptn.KeptnBase
 }
 
 const DefaultLocalEventBrokerURL = "http://localhost:8081/event"
 
-func NewKeptn(incomingEvent *cloudevents.Event, opts KeptnOpts) (*Keptn, error) {
+func NewKeptn(incomingEvent *cloudevents.Event, opts keptn.KeptnOpts) (*Keptn, error) {
 	extension, _ := incomingEvent.Context.GetExtension("shkeptncontext")
 	shkeptncontext := extension.(string)
 
@@ -24,14 +25,14 @@ func NewKeptn(incomingEvent *cloudevents.Event, opts KeptnOpts) (*Keptn, error) 
 	}
 
 	k := &Keptn{
-		KeptnBase: KeptnBase{
+		KeptnBase: keptn.KeptnBase{
 			Event:              keptnBase,
 			KeptnContext:       shkeptncontext,
 			UseLocalFileSystem: opts.UseLocalFileSystem,
 			ResourceHandler:    nil,
 		}}
 
-	csURL := ConfigurationServiceURL
+	csURL := keptn.ConfigurationServiceURL
 	if opts.ConfigurationServiceURL != "" {
 		csURL = opts.ConfigurationServiceURL
 	}
@@ -48,7 +49,7 @@ func NewKeptn(incomingEvent *cloudevents.Event, opts KeptnOpts) (*Keptn, error) 
 		}
 	}
 
-	datastoreURL := DatastoreURL
+	datastoreURL := keptn.DatastoreURL
 	if opts.DatastoreURL != "" {
 		datastoreURL = opts.DatastoreURL
 	}
@@ -56,11 +57,11 @@ func NewKeptn(incomingEvent *cloudevents.Event, opts KeptnOpts) (*Keptn, error) 
 	k.ResourceHandler = api.NewResourceHandler(csURL)
 	k.EventHandler = api.NewEventHandler(datastoreURL)
 
-	loggingServiceName := DefaultLoggingServiceName
+	loggingServiceName := keptn.DefaultLoggingServiceName
 	if opts.LoggingOptions != nil && opts.LoggingOptions.ServiceName != nil {
 		loggingServiceName = *opts.LoggingOptions.ServiceName
 	}
-	k.Logger = NewLogger(k.KeptnContext, incomingEvent.Context.GetID(), loggingServiceName)
+	k.Logger = keptn.NewLogger(k.KeptnContext, incomingEvent.Context.GetID(), loggingServiceName)
 
 	return k, nil
 }
