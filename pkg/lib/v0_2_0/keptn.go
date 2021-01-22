@@ -1,20 +1,19 @@
 package v0_2_0
 
 import (
-	keptn "github.com/keptn/go-utils/pkg/lib/keptn"
-
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"gopkg.in/yaml.v2"
 )
 
 type Keptn struct {
-	keptn.KeptnBase
+	KeptnBase
+	EventSender EventSender
 }
 
 const DefaultLocalEventBrokerURL = "http://localhost:8081/event"
 
-func NewKeptn(incomingEvent *cloudevents.Event, opts keptn.KeptnOpts) (*Keptn, error) {
+func NewKeptn(incomingEvent *cloudevents.Event, opts KeptnOpts) (*Keptn, error) {
 	extension, _ := incomingEvent.Context.GetExtension("shkeptncontext")
 	shkeptncontext := extension.(string)
 
@@ -26,25 +25,31 @@ func NewKeptn(incomingEvent *cloudevents.Event, opts keptn.KeptnOpts) (*Keptn, e
 	}
 
 	k := &Keptn{
-		KeptnBase: keptn.KeptnBase{
+		KeptnBase: KeptnBase{
 			Event:              keptnBase,
 			KeptnContext:       shkeptncontext,
 			UseLocalFileSystem: opts.UseLocalFileSystem,
 			ResourceHandler:    nil,
 		}}
 
-	csURL := keptn.ConfigurationServiceURL
+	csURL := ConfigurationServiceURL
 	if opts.ConfigurationServiceURL != "" {
 		csURL = opts.ConfigurationServiceURL
 	}
 
-	if opts.EventBrokerURL != "" {
-		k.EventBrokerURL = opts.EventBrokerURL
+	if opts.EventBrokerURL != "" && opts.EventSender == nil {
+		k.EventSender = &CloudEventsHTTPEventSender{
+			EventsEndpoint: k.EventBrokerURL,
+		}
+	} else if opts.EventSender != nil {
+		k.EventSender = opts.EventSender
 	} else {
-		k.EventBrokerURL = DefaultLocalEventBrokerURL
+		k.EventSender = &CloudEventsHTTPEventSender{
+			EventsEndpoint: DefaultLocalEventBrokerURL,
+		}
 	}
 
-	datastoreURL := keptn.DatastoreURL
+	datastoreURL := DatastoreURL
 	if opts.DatastoreURL != "" {
 		datastoreURL = opts.DatastoreURL
 	}
@@ -52,11 +57,11 @@ func NewKeptn(incomingEvent *cloudevents.Event, opts keptn.KeptnOpts) (*Keptn, e
 	k.ResourceHandler = api.NewResourceHandler(csURL)
 	k.EventHandler = api.NewEventHandler(datastoreURL)
 
-	loggingServiceName := keptn.DefaultLoggingServiceName
+	loggingServiceName := DefaultLoggingServiceName
 	if opts.LoggingOptions != nil && opts.LoggingOptions.ServiceName != nil {
 		loggingServiceName = *opts.LoggingOptions.ServiceName
 	}
-	k.Logger = keptn.NewLogger(k.KeptnContext, incomingEvent.Context.GetID(), loggingServiceName)
+	k.Logger = NewLogger(k.KeptnContext, incomingEvent.Context.GetID(), loggingServiceName)
 
 	return k, nil
 }
