@@ -8,7 +8,6 @@ import (
 
 type Keptn struct {
 	KeptnBase
-	EventSender EventSender
 }
 
 const DefaultLocalEventBrokerURL = "http://localhost:8081/event"
@@ -38,13 +37,13 @@ func NewKeptn(incomingEvent *cloudevents.Event, opts KeptnOpts) (*Keptn, error) 
 	}
 
 	if opts.EventBrokerURL != "" && opts.EventSender == nil {
-		k.EventSender = &CloudEventsHTTPEventSender{
+		k.KeptnBase.EventSender = &CloudEventsHTTPEventSender{
 			EventsEndpoint: k.EventBrokerURL,
 		}
 	} else if opts.EventSender != nil {
-		k.EventSender = opts.EventSender
+		k.KeptnBase.EventSender = opts.EventSender
 	} else {
-		k.EventSender = &CloudEventsHTTPEventSender{
+		k.KeptnBase.EventSender = &CloudEventsHTTPEventSender{
 			EventsEndpoint: DefaultLocalEventBrokerURL,
 		}
 	}

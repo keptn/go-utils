@@ -71,9 +71,11 @@ func TestKeptn_SendCloudEventWithRetry(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			k := &Keptn{
 				KeptnBase: KeptnBase{
-					KeptnContext:       tt.fields.KeptnContext,
-					Event:              tt.fields.KeptnBase,
-					EventBrokerURL:     tt.fields.eventBrokerURL,
+					KeptnContext: tt.fields.KeptnContext,
+					Event:        tt.fields.KeptnBase,
+					EventSender: &CloudEventsHTTPEventSender{
+						EventsEndpoint: ts.URL,
+					},
 					UseLocalFileSystem: tt.fields.useLocalFileSystem,
 					ResourceHandler:    tt.fields.resourceHandler,
 					EventHandler:       tt.fields.eventHandler,
@@ -119,7 +121,7 @@ func TestKeptn_SendCloudEvent(t *testing.T) {
 
 	k := Keptn{
 		KeptnBase: KeptnBase{
-			EventBrokerURL: ts.URL,
+			EventSender: CloudEventsHTTPEventSender{EventsEndpoint: ts.URL},
 		},
 	}
 
