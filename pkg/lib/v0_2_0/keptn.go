@@ -39,7 +39,7 @@ func NewKeptn(incomingEvent *cloudevents.Event, opts keptn.KeptnOpts) (*Keptn, e
 
 	if opts.EventBrokerURL != "" && opts.EventSender == nil {
 		k.KeptnBase.EventSender = &CloudEventsHTTPEventSender{
-			EventsEndpoint: k.EventBrokerURL,
+			EventsEndpoint: opts.EventBrokerURL,
 		}
 	} else if opts.EventSender != nil {
 		k.KeptnBase.EventSender = opts.EventSender
