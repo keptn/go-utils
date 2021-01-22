@@ -143,7 +143,7 @@ func TestEventDataAs(t *testing.T) {
 		ConfigurationChange: ConfigurationChange{
 			Values: map[string]interface{}{"image": "my-image:tag"},
 		},
-		Deployment: DeploymentWithStrategy{
+		Deployment: DeploymentTriggeredData{
 			DeploymentStrategy: "direct",
 		},
 	}
