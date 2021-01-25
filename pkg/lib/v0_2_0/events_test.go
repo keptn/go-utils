@@ -143,9 +143,6 @@ func TestEventDataAs(t *testing.T) {
 		ConfigurationChange: ConfigurationChange{
 			Values: map[string]interface{}{"image": "my-image:tag"},
 		},
-		Deployment: DeploymentTriggeredData{
-			DeploymentStrategy: "direct",
-		},
 	}
 
 	ce := models.KeptnContextExtendedCE{
