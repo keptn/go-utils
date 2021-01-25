@@ -8,9 +8,8 @@ type DeploymentTriggeredEventData struct {
 	Deployment          DeploymentTriggeredData `json:"deployment"`
 }
 
+// DeploymentTriggeredData contains the data associated with a .deployment.triggered event
 type DeploymentTriggeredData struct {
-	// DeploymentStrategy defines the used deployment strategy
-	DeploymentStrategy string `json:"deploymentstrategy" jsonschema:"enum=direct,enum=blue_green_service,enum=user_managed"`
 	// DeploymentURILocal contains the local URL
 	DeploymentURIsLocal []string `json:"deploymentURIsLocal"`
 	// DeploymentURIPublic contains the public URL
@@ -30,6 +29,7 @@ type DeploymentFinishedEventData struct {
 	Deployment DeploymentFinishedData `json:"deployment"`
 }
 
+// DeploymentFinishedData contains the data associated with a .deployment.finished event
 type DeploymentFinishedData struct {
 	// DeploymentStrategy defines the used deployment strategy
 	DeploymentStrategy string `json:"deploymentstrategy" jsonschema:"enum=direct,enum=blue_green_service,enum=user_managed"`
