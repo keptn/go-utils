@@ -83,7 +83,7 @@ For unit testing purposes, we offer a mock implementation of the `EventSender` i
 
 ```go
 func MyTest(t *testing.T) {
-    fakeSender := &keptnfake.FakeEventSender{}
+    fakeSender := &keptnfake.EventSender{}
 
     // optionally, you can add custom behavior for certain event types (e.g. returning an error for a certain event type):
     fakeSender.AddReactor("sh.keptn.event.deployment.finished", func(event cloudevents.Event) error {

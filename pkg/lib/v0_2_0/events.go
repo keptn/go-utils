@@ -17,10 +17,12 @@ import (
 
 const MAX_SEND_RETRIES = 3
 
+// CloudEventsHTTPEventSender sends CloudEvents via HTTP
 type CloudEventsHTTPEventSender struct {
 	EventsEndpoint string
 }
 
+// SendEvent sends a CloudEvent
 func (httpSender CloudEventsHTTPEventSender) SendEvent(event cloudevents.Event) error {
 	ctx := cloudevents.ContextWithTarget(context.Background(), httpSender.EventsEndpoint)
 	ctx = cloudevents.WithEncodingStructured(ctx)
@@ -42,9 +44,8 @@ func (httpSender CloudEventsHTTPEventSender) SendEvent(event cloudevents.Event) 
 		if ok {
 			if httpResult.StatusCode >= 200 && httpResult.StatusCode < 300 {
 				return nil
-			} else {
-				<-time.After(keptn.GetExpBackoffTime(i + 1))
 			}
+			<-time.After(keptn.GetExpBackoffTime(i + 1))
 		} else if cloudevents.IsUndelivered(result) {
 			<-time.After(keptn.GetExpBackoffTime(i + 1))
 		} else {

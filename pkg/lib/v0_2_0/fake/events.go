@@ -5,12 +5,14 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
 
-type FakeEventSender struct {
+// EventSender fakes the sending of CloudEvents
+type EventSender struct {
 	SentEvents []cloudevents.Event
 	Reactors   map[string]func(event cloudevents.Event) error
 }
 
-func (es *FakeEventSender) SendEvent(event cloudevents.Event) error {
+// SendEvent fakes the sending of CloudEvents
+func (es *EventSender) SendEvent(event cloudevents.Event) error {
 	if es.Reactors != nil {
 		for eventTypeSelector, reactor := range es.Reactors {
 			if eventTypeSelector == "*" || eventTypeSelector == event.Type() {
@@ -24,7 +26,8 @@ func (es *FakeEventSender) SendEvent(event cloudevents.Event) error {
 	return nil
 }
 
-func (es *FakeEventSender) AssertSentEventTypes(eventTypes []string) error {
+// AssertSentEventTypes checks if the given event types have been passed to the SendEvent function
+func (es *EventSender) AssertSentEventTypes(eventTypes []string) error {
 	if len(es.SentEvents) != len(eventTypes) {
 		return fmt.Errorf("expected %d event, got %d", len(es.SentEvents), len(eventTypes))
 	}
@@ -36,7 +39,8 @@ func (es *FakeEventSender) AssertSentEventTypes(eventTypes []string) error {
 	return nil
 }
 
-func (es *FakeEventSender) AddReactor(eventTypeSelector string, reactor func(event cloudevents.Event) error) {
+// AddReactor adds custom logic that should be applied when SendEvent is called for the given event type
+func (es *EventSender) AddReactor(eventTypeSelector string, reactor func(event cloudevents.Event) error) {
 	if es.Reactors == nil {
 		es.Reactors = map[string]func(event cloudevents.Event) error{}
 	}
