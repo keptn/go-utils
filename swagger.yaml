@@ -72,6 +72,9 @@ definitions:
       gitToken:
         type: string
         description: Git token
+      shipyardVersion:
+        type: string
+        description: Shipyard version
       stages:
         type: array
         items:
