@@ -70,13 +70,12 @@ func TestKeptn_SendCloudEventWithRetry(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			httpSender, _ := NewHTTPEventSender(ts.URL)
 			k := &Keptn{
 				KeptnBase: keptn.KeptnBase{
-					KeptnContext: tt.fields.KeptnContext,
-					Event:        tt.fields.KeptnBase,
-					EventSender: &HTTPEventSender{
-						EventsEndpoint: ts.URL,
-					},
+					KeptnContext:       tt.fields.KeptnContext,
+					Event:              tt.fields.KeptnBase,
+					EventSender:        httpSender,
 					UseLocalFileSystem: tt.fields.useLocalFileSystem,
 					ResourceHandler:    tt.fields.resourceHandler,
 					EventHandler:       tt.fields.eventHandler,
@@ -120,9 +119,10 @@ func TestKeptn_SendCloudEvent(t *testing.T) {
 	eventNew.SetExtension("shkeptncontext", "test-context")
 	eventNew.SetData(cloudevents.ApplicationJSON, map[string]string{"project": "sockshop"})
 
+	httpSender, _ := NewHTTPEventSender(ts.URL)
 	k := Keptn{
 		KeptnBase: keptn.KeptnBase{
-			EventSender: HTTPEventSender{EventsEndpoint: ts.URL},
+			EventSender: httpSender,
 		},
 	}
 
