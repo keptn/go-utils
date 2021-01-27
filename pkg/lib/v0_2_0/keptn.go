@@ -1,6 +1,7 @@
 package v0_2_0
 
 import (
+	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
@@ -38,13 +39,15 @@ func NewKeptn(incomingEvent *cloudevents.Event, opts keptn.KeptnOpts) (*Keptn, e
 	}
 
 	if opts.EventBrokerURL != "" && opts.EventSender == nil {
-		k.KeptnBase.EventSender = &CloudEventsHTTPEventSender{
-			EventsEndpoint: opts.EventBrokerURL,
+		httpSender, err := NewHTTPEventSender(opts.EventBrokerURL)
+		if err != nil {
+			return nil, fmt.Errorf("could not initialize Keptn Handler: %s", err.Error())
 		}
+		k.KeptnBase.EventSender = httpSender
 	} else if opts.EventSender != nil {
 		k.KeptnBase.EventSender = opts.EventSender
 	} else {
-		k.KeptnBase.EventSender = &CloudEventsHTTPEventSender{
+		k.KeptnBase.EventSender = &HTTPEventSender{
 			EventsEndpoint: DefaultLocalEventBrokerURL,
 		}
 	}

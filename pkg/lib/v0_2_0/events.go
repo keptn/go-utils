@@ -17,29 +17,41 @@ import (
 
 const MAX_SEND_RETRIES = 3
 
-// CloudEventsHTTPEventSender sends CloudEvents via HTTP
-type CloudEventsHTTPEventSender struct {
+// HTTPEventSender sends CloudEvents via HTTP
+type HTTPEventSender struct {
+	// EventsEndpoint is the http endpoint the events are sent to
 	EventsEndpoint string
+	// Client is an implementation of the cloudevents.Client interface
+	Client cloudevents.Client
 }
 
-// SendEvent sends a CloudEvent
-func (httpSender CloudEventsHTTPEventSender) SendEvent(event cloudevents.Event) error {
-	ctx := cloudevents.ContextWithTarget(context.Background(), httpSender.EventsEndpoint)
-	ctx = cloudevents.WithEncodingStructured(ctx)
-
+// NewHTTPEventSender creates a new HTTPSender
+func NewHTTPEventSender(endpoint string) (*HTTPEventSender, error) {
 	p, err := cloudevents.NewHTTP()
 	if err != nil {
-		return fmt.Errorf("failed to create protocol: %s", err.Error())
+		return nil, fmt.Errorf("failed to create protocol: %s", err.Error())
 	}
 
 	c, err := cloudevents.NewClient(p, cloudevents.WithTimeNow(), cloudevents.WithUUIDs())
 	if err != nil {
-		return fmt.Errorf("failed to create client, %s", err.Error())
+		return nil, fmt.Errorf("failed to create client, %s", err.Error())
 	}
+
+	httpSender := &HTTPEventSender{
+		EventsEndpoint: endpoint,
+		Client:         c,
+	}
+	return httpSender, nil
+}
+
+// SendEvent sends a CloudEvent
+func (httpSender HTTPEventSender) SendEvent(event cloudevents.Event) error {
+	ctx := cloudevents.ContextWithTarget(context.Background(), httpSender.EventsEndpoint)
+	ctx = cloudevents.WithEncodingStructured(ctx)
 
 	var result protocol.Result
 	for i := 0; i <= MAX_SEND_RETRIES; i++ {
-		result = c.Send(ctx, event)
+		result = httpSender.Client.Send(ctx, event)
 		httpResult, ok := result.(*httpprotocol.Result)
 		if ok {
 			if httpResult.StatusCode >= 200 && httpResult.StatusCode < 300 {
