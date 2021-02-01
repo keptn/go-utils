@@ -17,6 +17,8 @@ import (
 
 const MAX_SEND_RETRIES = 3
 
+const DefaultHTTPEventEndpoint = "http://localhost:8081/event"
+
 // HTTPEventSender sends CloudEvents via HTTP
 type HTTPEventSender struct {
 	// EventsEndpoint is the http endpoint the events are sent to
@@ -27,6 +29,9 @@ type HTTPEventSender struct {
 
 // NewHTTPEventSender creates a new HTTPSender
 func NewHTTPEventSender(endpoint string) (*HTTPEventSender, error) {
+	if endpoint == "" {
+		endpoint = DefaultHTTPEventEndpoint
+	}
 	p, err := cloudevents.NewHTTP()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create protocol: %s", err.Error())

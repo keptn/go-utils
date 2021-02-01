@@ -12,8 +12,6 @@ type Keptn struct {
 	keptn.KeptnBase
 }
 
-const DefaultLocalEventBrokerURL = "http://localhost:8081/event"
-
 func NewKeptn(incomingEvent *cloudevents.Event, opts keptn.KeptnOpts) (*Keptn, error) {
 	extension, _ := incomingEvent.Context.GetExtension("shkeptncontext")
 	shkeptncontext := extension.(string)
@@ -47,9 +45,11 @@ func NewKeptn(incomingEvent *cloudevents.Event, opts keptn.KeptnOpts) (*Keptn, e
 	} else if opts.EventSender != nil {
 		k.KeptnBase.EventSender = opts.EventSender
 	} else {
-		k.KeptnBase.EventSender = &HTTPEventSender{
-			EventsEndpoint: DefaultLocalEventBrokerURL,
+		httpSender, err := NewHTTPEventSender(DefaultHTTPEventEndpoint)
+		if err != nil {
+			return nil, fmt.Errorf("could not initialize Keptn Handler: %s", err.Error())
 		}
+		k.KeptnBase.EventSender = httpSender
 	}
 
 	datastoreURL := keptn.DatastoreURL
