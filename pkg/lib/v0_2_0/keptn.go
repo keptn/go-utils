@@ -1,18 +1,16 @@
 package v0_2_0
 
 import (
-	keptn "github.com/keptn/go-utils/pkg/lib/keptn"
-
+	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	api "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"gopkg.in/yaml.v2"
 )
 
 type Keptn struct {
 	keptn.KeptnBase
 }
-
-const DefaultLocalEventBrokerURL = "http://localhost:8081/event"
 
 func NewKeptn(incomingEvent *cloudevents.Event, opts keptn.KeptnOpts) (*Keptn, error) {
 	extension, _ := incomingEvent.Context.GetExtension("shkeptncontext")
@@ -38,10 +36,20 @@ func NewKeptn(incomingEvent *cloudevents.Event, opts keptn.KeptnOpts) (*Keptn, e
 		csURL = opts.ConfigurationServiceURL
 	}
 
-	if opts.EventBrokerURL != "" {
-		k.EventBrokerURL = opts.EventBrokerURL
+	if opts.EventBrokerURL != "" && opts.EventSender == nil {
+		httpSender, err := NewHTTPEventSender(opts.EventBrokerURL)
+		if err != nil {
+			return nil, fmt.Errorf("could not initialize Keptn Handler: %s", err.Error())
+		}
+		k.KeptnBase.EventSender = httpSender
+	} else if opts.EventSender != nil {
+		k.KeptnBase.EventSender = opts.EventSender
 	} else {
-		k.EventBrokerURL = DefaultLocalEventBrokerURL
+		httpSender, err := NewHTTPEventSender(DefaultHTTPEventEndpoint)
+		if err != nil {
+			return nil, fmt.Errorf("could not initialize Keptn Handler: %s", err.Error())
+		}
+		k.KeptnBase.EventSender = httpSender
 	}
 
 	datastoreURL := keptn.DatastoreURL

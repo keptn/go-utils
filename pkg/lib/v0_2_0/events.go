@@ -7,16 +7,70 @@ import (
 	"fmt"
 	"github.com/cloudevents/sdk-go/v2/protocol"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"log"
 	"time"
-
-	"github.com/keptn/go-utils/pkg/lib/keptn"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	httpprotocol "github.com/cloudevents/sdk-go/v2/protocol/http"
 )
 
 const MAX_SEND_RETRIES = 3
+
+const DefaultHTTPEventEndpoint = "http://localhost:8081/event"
+
+// HTTPEventSender sends CloudEvents via HTTP
+type HTTPEventSender struct {
+	// EventsEndpoint is the http endpoint the events are sent to
+	EventsEndpoint string
+	// Client is an implementation of the cloudevents.Client interface
+	Client cloudevents.Client
+}
+
+// NewHTTPEventSender creates a new HTTPSender
+func NewHTTPEventSender(endpoint string) (*HTTPEventSender, error) {
+	if endpoint == "" {
+		endpoint = DefaultHTTPEventEndpoint
+	}
+	p, err := cloudevents.NewHTTP()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create protocol: %s", err.Error())
+	}
+
+	c, err := cloudevents.NewClient(p, cloudevents.WithTimeNow(), cloudevents.WithUUIDs())
+	if err != nil {
+		return nil, fmt.Errorf("failed to create client, %s", err.Error())
+	}
+
+	httpSender := &HTTPEventSender{
+		EventsEndpoint: endpoint,
+		Client:         c,
+	}
+	return httpSender, nil
+}
+
+// SendEvent sends a CloudEvent
+func (httpSender HTTPEventSender) SendEvent(event cloudevents.Event) error {
+	ctx := cloudevents.ContextWithTarget(context.Background(), httpSender.EventsEndpoint)
+	ctx = cloudevents.WithEncodingStructured(ctx)
+
+	var result protocol.Result
+	for i := 0; i <= MAX_SEND_RETRIES; i++ {
+		result = httpSender.Client.Send(ctx, event)
+		httpResult, ok := result.(*httpprotocol.Result)
+		if ok {
+			if httpResult.StatusCode >= 200 && httpResult.StatusCode < 300 {
+				return nil
+			}
+			<-time.After(keptn.GetExpBackoffTime(i + 1))
+		} else if cloudevents.IsUndelivered(result) {
+			<-time.After(keptn.GetExpBackoffTime(i + 1))
+		} else {
+			return nil
+		}
+	}
+	return errors.New("Failed to send cloudevent: " + result.Error())
+}
 
 // GetTriggeredEventType returns for the given task the name of the triggered event type
 func GetTriggeredEventType(task string) string {
@@ -73,36 +127,7 @@ func (k *Keptn) SendCloudEvent(event cloudevents.Event) error {
 		return nil
 	}
 
-	ctx := cloudevents.ContextWithTarget(context.Background(), k.EventBrokerURL)
-	ctx = cloudevents.WithEncodingStructured(ctx)
-
-	p, err := cloudevents.NewHTTP()
-	if err != nil {
-		log.Fatalf("failed to create protocol: %s", err.Error())
-	}
-
-	c, err := cloudevents.NewClient(p, cloudevents.WithTimeNow(), cloudevents.WithUUIDs())
-	if err != nil {
-		log.Fatalf("failed to create client, %v", err)
-	}
-
-	var result protocol.Result
-	for i := 0; i <= MAX_SEND_RETRIES; i++ {
-		result = c.Send(ctx, event)
-		httpResult, ok := result.(*httpprotocol.Result)
-		if ok {
-			if httpResult.StatusCode >= 200 && httpResult.StatusCode < 300 {
-				return nil
-			} else {
-				<-time.After(keptn.GetExpBackoffTime(i + 1))
-			}
-		} else if cloudevents.IsUndelivered(result) {
-			<-time.After(keptn.GetExpBackoffTime(i + 1))
-		} else {
-			return nil
-		}
-	}
-	return errors.New("Failed to send cloudevent: " + result.Error())
+	return k.EventSender.SendEvent(event)
 }
 
 // Decode decodes the given raw interface to the target pointer specified

@@ -57,6 +57,66 @@ func HandleEvent(event cloudevents.Event) error {
 }
 ```
 
+By default, the `SendCloudEvent` function of the `Keptn` struct will send events to the distributor sidecar that is running within the same pod of the Keptn service (see [the Keptn doc](https://keptn.sh/docs/0.8.x/integrations/custom_integration/#subscription-to-keptn-event) for more details).
+This behavior can be overridden by passing an implementation of the `EventSender` interface via the `KeptnOpts` object that is passed to the `NewKeptn` function, e.g.:
+
+```go
+// custom EventSender
+
+type MyCustomEventSender struct {
+}
+
+func (es *MyCustomEventSender) SendEvent(event cloudevents.Event) error {
+    // custom implementation
+    return nil
+}
+//...
+keptnHandler, err := keptn.NewKeptn(&event, keptn.KeptnOpts{
+    EventSender: &MyCustomEventSender{}
+})
+if err != nil {
+    return nil, err
+}
+```
+
+For unit testing purposes, we offer a mock implementation of the `EventSender` interface in the `keptn/v0_2_0/fake` package. This mock implementation can be used to check if your service sends the expected events. E.g.:
+
+```go
+func MyTest(t *testing.T) {
+    fakeSender := &keptnfake.EventSender{}
+
+    // optionally, you can add custom behavior for certain event types (e.g. returning an error for a certain event type):
+    fakeSender.AddReactor("sh.keptn.event.deployment.finished", func(event cloudevents.Event) error {
+        return errors.New("i throw an error if i should send a 'sh.keptn.event.deployment.finished' event")
+    })
+
+    keptnHandler, err := keptn.NewKeptn(&event, keptn.KeptnOpts{
+        EventSender: fakeSender
+    })
+
+    myService := &MyKeptnService{
+        KeptnHandler: keptnHandler
+    }
+    
+    myService.handleEvent(myReceivedCloudEvent)
+    
+    // check if your service sends out events of the type "sh.keptn.event.deployment.started" and "sh.keptn.event.deployment.finished"
+    if err := fakeSender.AssertSentEventTypes([]string{"sh.keptn.event.deployment.started", "sh.keptn.event.deployment.finished"}); err != nil {
+        t.Errorf("%s", err.Error())
+    }
+
+    // to inspect the sent events in more detail, you can access them via fakeSender.SentEvents
+    for _, event := range fakeSender.SentEvents {
+        // do some validation here
+    }
+
+    if err != nil {
+        return nil, err
+    }
+}
+
+```
+
 ### CloudEvent Data
 If you need to access data within CloudEvents:
 

@@ -19,10 +19,11 @@ import (
 type KeptnOpts struct {
 	UseLocalFileSystem      bool
 	ConfigurationServiceURL string
-	EventBrokerURL          string
+	EventBrokerURL          string // Deprecated: use EventSender instead
 	DatastoreURL            string
 	IncomingEvent           *cloudevents.Event
 	LoggingOptions          *LoggingOpts
+	EventSender             EventSender
 }
 
 type LoggingOpts struct {
@@ -37,7 +38,10 @@ type KeptnBase struct {
 	Event  EventProperties
 	Logger LoggerInterface
 
-	EventBrokerURL     string
+	// EventSender object that is responsible for sending events
+	EventSender EventSender
+
+	EventBrokerURL     string // Deprecated: use EventSender instead
 	UseLocalFileSystem bool
 	ResourceHandler    *api.ResourceHandler
 	EventHandler       *api.EventHandler
@@ -50,6 +54,11 @@ type EventProperties interface {
 	GetLabels() map[string]string
 }
 
+// EventSender describes the interface for sending a CloudEvent
+type EventSender interface {
+	SendEvent(event cloudevents.Event) error
+}
+
 // SLIConfig represents the struct of a SLI file
 type SLIConfig struct {
 	Indicators map[string]string `json:"indicators" yaml:"indicators"`
@@ -57,8 +66,6 @@ type SLIConfig struct {
 
 const ConfigurationServiceURL = "configuration-service:8080"
 const DatastoreURL = "mongodb-datastore:8080"
-const DefaultEventBrokerURL = "http://event-broker/keptn"
-const DefaultWebsocketEndpoint = "ws://api-service:8080/websocket"
 const DefaultLoggingServiceName = "keptn"
 
 // GetSLIConfiguration retrieves the SLI configuration for a service considering SLI configuration on stage and project level.
