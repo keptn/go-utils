@@ -14,7 +14,7 @@ import (
 
 type fields struct {
 	KeptnContext       string
-	KeptnBase          EventData
+	KeptnBase          *EventData
 	eventBrokerURL     string
 	useLocalFileSystem bool
 	resourceHandler    *api.ResourceHandler
@@ -23,7 +23,7 @@ type fields struct {
 
 func getKeptnFields(ts *httptest.Server) fields {
 	return fields{
-		KeptnBase: EventData{
+		KeptnBase: &EventData{
 			Project: "sockshop",
 			Stage:   "dev",
 			Service: "carts",
@@ -158,4 +158,66 @@ func TestEventDataAs(t *testing.T) {
 	err := EventDataAs(ce, &decodedEventData)
 	assert.Nil(t, err)
 	assert.Equal(t, eventData, decodedEventData)
+}
+
+func TestGetEventTypeForTriggeredEvent(t *testing.T) {
+	type args struct {
+		baseTriggeredEventType string
+		newEventTypeSuffix     string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "get .started event",
+			args: args{
+				baseTriggeredEventType: GetTriggeredEventType(EvaluationTaskName),
+				newEventTypeSuffix:     keptnStartedEventSuffix,
+			},
+			want:    GetStartedEventType(EvaluationTaskName),
+			wantErr: false,
+		},
+		{
+			name: "get .status.changed event",
+			args: args{
+				baseTriggeredEventType: GetTriggeredEventType(EvaluationTaskName),
+				newEventTypeSuffix:     keptnStatusChangedEventSuffix,
+			},
+			want:    GetStatusChangedEventType(EvaluationTaskName),
+			wantErr: false,
+		},
+		{
+			name: "get .finished event",
+			args: args{
+				baseTriggeredEventType: GetTriggeredEventType(EvaluationTaskName),
+				newEventTypeSuffix:     keptnFinishedEventSuffix,
+			},
+			want:    GetFinishedEventType(EvaluationTaskName),
+			wantErr: false,
+		},
+		{
+			name: "no .triggered event as input - return error",
+			args: args{
+				baseTriggeredEventType: GetStartedEventType(EvaluationTaskName),
+				newEventTypeSuffix:     keptnFinishedEventSuffix,
+			},
+			want:    "",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetEventTypeForTriggeredEvent(tt.args.baseTriggeredEventType, tt.args.newEventTypeSuffix)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetEventTypeForTriggeredEvent() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("GetEventTypeForTriggeredEvent() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

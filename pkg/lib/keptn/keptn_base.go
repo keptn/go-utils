@@ -35,8 +35,9 @@ type LoggingOpts struct {
 type KeptnBase struct {
 	KeptnContext string
 
-	Event  EventProperties
-	Logger LoggerInterface
+	Event      EventProperties
+	CloudEvent *cloudevents.Event
+	Logger     LoggerInterface
 
 	// EventSender object that is responsible for sending events
 	EventSender EventSender
@@ -52,6 +53,10 @@ type EventProperties interface {
 	GetStage() string
 	GetService() string
 	GetLabels() map[string]string
+	SetProject(string)
+	SetStage(string)
+	SetService(string)
+	SetLabels(map[string]string)
 }
 
 // EventSender describes the interface for sending a CloudEvent
