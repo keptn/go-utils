@@ -22,7 +22,6 @@ type APIService interface {
 func getClientTransport() *http.Transport {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		DialContext:     ResolveXipIoWithContext,
 	}
 	return tr
 }
