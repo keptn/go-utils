@@ -1,6 +1,7 @@
 package v0_2_0
 
 import (
+	"errors"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
@@ -152,9 +153,7 @@ func TestKeptn_SendEventConvenienceFunctions(t *testing.T) {
 			name: "send started event - no error",
 			fields: fields{
 				KeptnBase: keptn.KeptnBase{
-					Event:       nil,
-					CloudEvent:  nil,
-					EventSender: nil,
+					EventSender: &fake.EventSender{},
 				},
 			},
 			args: args{
@@ -182,9 +181,7 @@ func TestKeptn_SendEventConvenienceFunctions(t *testing.T) {
 			name: "send status.changed event - no error",
 			fields: fields{
 				KeptnBase: keptn.KeptnBase{
-					Event:       nil,
-					CloudEvent:  nil,
-					EventSender: nil,
+					EventSender: &fake.EventSender{},
 				},
 			},
 			args: args{
@@ -212,9 +209,7 @@ func TestKeptn_SendEventConvenienceFunctions(t *testing.T) {
 			name: "send finished event - no error",
 			fields: fields{
 				KeptnBase: keptn.KeptnBase{
-					Event:       nil,
-					CloudEvent:  nil,
-					EventSender: nil,
+					EventSender: &fake.EventSender{},
 				},
 			},
 			args: args{
@@ -242,9 +237,7 @@ func TestKeptn_SendEventConvenienceFunctions(t *testing.T) {
 			name: "send finished event with additional attributes- no error",
 			fields: fields{
 				KeptnBase: keptn.KeptnBase{
-					Event:       nil,
-					CloudEvent:  nil,
-					EventSender: nil,
+					EventSender: &fake.EventSender{},
 				},
 			},
 			args: args{
@@ -272,12 +265,57 @@ func TestKeptn_SendEventConvenienceFunctions(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "send finished event - error when sending event",
+			fields: fields{
+				KeptnBase: keptn.KeptnBase{
+					EventSender: &fake.EventSender{
+						Reactors: map[string]func(event cloudevents.Event) error{
+							"*": func(event cloudevents.Event) error {
+								return errors.New("")
+							},
+						},
+					},
+				},
+			},
+			args: args{
+				data: &EventData{
+					Result: ResultPass,
+				},
+				source: "my-source",
+			},
+			sendEventType: keptnFinishedEventSuffix,
+			wantErr:       true,
+			wantEvents:    []wantEventProperties{},
+		},
+		{
+			name: "send event without source - return error",
+			fields: fields{
+				KeptnBase: keptn.KeptnBase{
+					EventSender: &fake.EventSender{
+						Reactors: map[string]func(event cloudevents.Event) error{
+							"*": func(event cloudevents.Event) error {
+								return errors.New("")
+							},
+						},
+					},
+				},
+			},
+			args: args{
+				data: &EventData{
+					Result: ResultPass,
+				},
+				source: "",
+			},
+			sendEventType: keptnFinishedEventSuffix,
+			wantErr:       true,
+			wantEvents:    []wantEventProperties{},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fakeSender := &fake.EventSender{}
 			k, err := NewKeptn(&inputEvent, keptn.KeptnOpts{
-				EventSender: fakeSender,
+				EventSender: tt.fields.KeptnBase.EventSender,
 			})
 			if err != nil {
 				t.Error(err.Error())
@@ -299,15 +337,15 @@ func TestKeptn_SendEventConvenienceFunctions(t *testing.T) {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got == "" {
+			if !tt.wantErr && got == "" {
 				t.Errorf("did not return event ID")
 			}
 
-			if len(fakeSender.SentEvents) != len(tt.wantEvents) {
-				t.Errorf("did not receive expected number of events. Expected %d, got %d", len(tt.wantEvents), len(fakeSender.SentEvents))
+			if len(k.EventSender.(*fake.EventSender).SentEvents) != len(tt.wantEvents) {
+				t.Errorf("did not receive expected number of events. Expected %d, got %d", len(tt.wantEvents), len(k.EventSender.(*fake.EventSender).SentEvents))
 			}
 
-			for index, event := range fakeSender.SentEvents {
+			for index, event := range k.EventSender.(*fake.EventSender).SentEvents {
 				assert.Equal(t, event.Type(), tt.wantEvents[index].eventType)
 				triggeredID, err := event.Context.GetExtension(triggeredIDCEExtenstion)
 				assert.Nil(t, err)
