@@ -77,7 +77,7 @@ indicators:
 	SLIs, _ = addResourceContentToSLIMap(SLIs, resource)
 
 	if len(SLIs) != 5 {
-		t.Errorf("Unexpected lenght of SLI map")
+		t.Errorf("Unexpected length of SLI map")
 	}
 }
 

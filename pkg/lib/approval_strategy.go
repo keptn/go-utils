@@ -29,8 +29,8 @@ var approvalStrategyToID = map[string]ApprovalStrategy{
 }
 
 // MarshalYAML marshalls the enum as a quoted json string
-func (s ApprovalStrategy) MarshalYAML() (interface{}, error) {
-	return approvalStrategyToString[s], nil
+func (a ApprovalStrategy) MarshalYAML() (interface{}, error) {
+	return approvalStrategyToString[a], nil
 	//buffer := bytes.NewBufferString(`"`)
 	//buffer.WriteString(approvalStrategyToString[*s])
 	//buffer.WriteString(`"`)
@@ -38,12 +38,12 @@ func (s ApprovalStrategy) MarshalYAML() (interface{}, error) {
 }
 
 // UnmarshalYAML unmarshalls a quoted json string to the enum value
-func (s *ApprovalStrategy) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (a *ApprovalStrategy) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var j string
 	if err := unmarshal(&j); err != nil {
 		return err
 	}
 	// Note that if the string cannot be found then it will be set to the zero value, 'Created' in this case.
-	*s = approvalStrategyToID[strings.ToLower(j)]
+	*a = approvalStrategyToID[strings.ToLower(j)]
 	return nil
 }
