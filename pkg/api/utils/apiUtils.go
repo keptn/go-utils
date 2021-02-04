@@ -36,45 +36,45 @@ func NewAuthenticatedAPIHandler(baseURL string, authToken string, authHeader str
 	}
 }
 
-func (p *APIHandler) getBaseURL() string {
-	return p.BaseURL
+func (a *APIHandler) getBaseURL() string {
+	return a.BaseURL
 }
 
-func (p *APIHandler) getAuthToken() string {
-	return p.AuthToken
+func (a *APIHandler) getAuthToken() string {
+	return a.AuthToken
 }
 
-func (p *APIHandler) getAuthHeader() string {
-	return p.AuthHeader
+func (a *APIHandler) getAuthHeader() string {
+	return a.AuthHeader
 }
 
-func (p *APIHandler) getHTTPClient() *http.Client {
-	return p.HTTPClient
+func (a *APIHandler) getHTTPClient() *http.Client {
+	return a.HTTPClient
 }
 
 // SendEvent sends an event to Keptn
-func (e *APIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.EventContext, *models.Error) {
+func (a *APIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.EventContext, *models.Error) {
 	bodyStr, err := json.Marshal(event)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(e.Scheme+"://"+e.getBaseURL()+"/v1/event", bodyStr, e)
+	return postWithEventContext(a.Scheme+"://"+a.getBaseURL()+"/v1/event", bodyStr, a)
 }
 
 // TriggerEvaluation triggers a new evaluation
-func (e *APIHandler) TriggerEvaluation(project, stage, service string, evaluation models.Evaluation) (*models.EventContext, *models.Error) {
+func (a *APIHandler) TriggerEvaluation(project, stage, service string, evaluation models.Evaluation) (*models.EventContext, *models.Error) {
 	bodyStr, err := json.Marshal(evaluation)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(e.Scheme+"://"+e.getBaseURL()+"/v1/project/"+project+"/stage/"+stage+"/service/"+service+"/evaluation", bodyStr, e)
+	return postWithEventContext(a.Scheme+"://"+a.getBaseURL()+"/v1/project/"+project+"/stage/"+stage+"/service/"+service+"/evaluation", bodyStr, a)
 }
 
 // GetEvent returns an event specified by keptnContext and eventType
 //
 // Deprecated: this function is deprecated and should be replaced with the GetEvents function
-func (e *APIHandler) GetEvent(keptnContext string, eventType string) (*models.KeptnContextExtendedCE, *models.Error) {
-	return getEvent(e.Scheme+"://"+e.getBaseURL()+"/v1/event?keptnContext="+keptnContext+"&type="+eventType+"&pageSize=10", e)
+func (a *APIHandler) GetEvent(keptnContext string, eventType string) (*models.KeptnContextExtendedCE, *models.Error) {
+	return getEvent(a.Scheme+"://"+a.getBaseURL()+"/v1/event?keptnContext="+keptnContext+"&type="+eventType+"&pageSize=10", a)
 }
 
 func getEvent(uri string, api APIService) (*models.KeptnContextExtendedCE, *models.Error) {
@@ -119,26 +119,26 @@ func getEvent(uri string, api APIService) (*models.KeptnContextExtendedCE, *mode
 }
 
 // CreateProject creates a new project
-func (p *APIHandler) CreateProject(project models.CreateProject) (string, *models.Error) {
+func (a *APIHandler) CreateProject(project models.CreateProject) (string, *models.Error) {
 	bodyStr, err := json.Marshal(project)
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
-	return post(p.Scheme+"://"+p.getBaseURL()+"/shipyard-controller/v1/project", bodyStr, p)
+	return post(a.Scheme+"://"+a.getBaseURL()+"/shipyard-controller/v1/project", bodyStr, a)
 }
 
 // UpdateProject updates project
-func (p *APIHandler) UpdateProject(project models.CreateProject) (string, *models.Error) {
+func (a *APIHandler) UpdateProject(project models.CreateProject) (string, *models.Error) {
 	bodyStr, err := json.Marshal(project)
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
-	return put(p.Scheme+"://"+p.getBaseURL()+"/shipyard-controller/v1/project", bodyStr, p)
+	return put(a.Scheme+"://"+a.getBaseURL()+"/shipyard-controller/v1/project", bodyStr, a)
 }
 
 // DeleteProject deletes a project
-func (p *APIHandler) DeleteProject(project models.Project) (*models.DeleteProjectResponse, *models.Error) {
-	resp, err := delete(p.Scheme+"://"+p.getBaseURL()+"/shipyard-controller/v1/project/"+project.ProjectName, p)
+func (a *APIHandler) DeleteProject(project models.Project) (*models.DeleteProjectResponse, *models.Error) {
+	resp, err := delete(a.Scheme+"://"+a.getBaseURL()+"/shipyard-controller/v1/project/"+project.ProjectName, a)
 	if err != nil {
 		return nil, err
 	}
@@ -153,17 +153,17 @@ func (p *APIHandler) DeleteProject(project models.Project) (*models.DeleteProjec
 }
 
 // CreateService creates a new service
-func (s *APIHandler) CreateService(project string, service models.CreateService) (string, *models.Error) {
+func (a *APIHandler) CreateService(project string, service models.CreateService) (string, *models.Error) {
 	bodyStr, err := json.Marshal(service)
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
-	return post(s.Scheme+"://"+s.getBaseURL()+"/shipyard-controller/v1/project/"+project+"/service", bodyStr, s)
+	return post(a.Scheme+"://"+a.getBaseURL()+"/shipyard-controller/v1/project/"+project+"/service", bodyStr, a)
 }
 
 // DeleteProject deletes a project
-func (p *APIHandler) DeleteService(project, service string) (*models.DeleteServiceResponse, *models.Error) {
-	resp, err := delete(p.Scheme+"://"+p.getBaseURL()+"/shipyard-controller/v1/project/"+project+"/service/"+service, p)
+func (a *APIHandler) DeleteService(project, service string) (*models.DeleteServiceResponse, *models.Error) {
+	resp, err := delete(a.Scheme+"://"+a.getBaseURL()+"/shipyard-controller/v1/project/"+project+"/service/"+service, a)
 	if err != nil {
 		return nil, err
 	}
@@ -178,14 +178,14 @@ func (p *APIHandler) DeleteService(project, service string) (*models.DeleteServi
 }
 
 // GetMetadata retrieve keptn MetaData information
-func (s *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
+func (a *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
 	//return get(s.Scheme+"://"+s.getBaseURL()+"/v1/metadata", nil, s)
 
-	req, err := http.NewRequest("GET", s.Scheme+"://"+s.getBaseURL()+"/v1/metadata", nil)
+	req, err := http.NewRequest("GET", a.Scheme+"://"+a.getBaseURL()+"/v1/metadata", nil)
 	req.Header.Set("Content-Type", "application/json")
-	addAuthHeader(req, s)
+	addAuthHeader(req, a)
 
-	resp, err := s.getHTTPClient().Do(req)
+	resp, err := a.getHTTPClient().Do(req)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}

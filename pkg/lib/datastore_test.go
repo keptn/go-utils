@@ -103,7 +103,7 @@ func TestGetEventStatusOK(t *testing.T) {
 	}
 
 	if errObj != nil {
-		t.Errorf("an error occured %v", errObj.Message)
+		t.Errorf("an error occurred %v", errObj.Message)
 	}
 }
 
@@ -134,10 +134,10 @@ func TestGetEventStatusOKNoEvent(t *testing.T) {
 	}
 
 	if errObj == nil {
-		t.Errorf("an error occured %v", errObj.Message)
+		t.Errorf("an error occurred %v", errObj.Message)
 	}
 
 	if *errObj.Message != "No Keptn sh.keptn.events.evaluation-done event found for context: 8929e5e5-3826-488f-9257-708bfa974909" {
-		t.Error("reponse message has changed")
+		t.Error("response message has changed")
 	}
 }
