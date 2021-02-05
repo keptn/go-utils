@@ -14,6 +14,8 @@ type DeploymentTriggeredData struct {
 	DeploymentURIsLocal []string `json:"deploymentURIsLocal"`
 	// DeploymentURIPublic contains the public URL
 	DeploymentURIsPublic []string `json:"deploymentURIsPublic,omitempty"`
+	// DeploymentStrategy defines the used deployment strategy
+	DeploymentStrategy string `json:"deploymentstrategy" jsonschema:"enum=direct,enum=blue_green_service,enum=user_managed"`
 }
 
 type DeploymentStartedEventData struct {
