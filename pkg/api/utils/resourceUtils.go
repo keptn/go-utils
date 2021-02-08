@@ -278,8 +278,6 @@ func (r *ResourceHandler) getResource(uri string) (*models.Resource, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("GET", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "application/json")
-
 	addAuthHeader(req, r)
 
 	resp, err := r.HTTPClient.Do(req)
