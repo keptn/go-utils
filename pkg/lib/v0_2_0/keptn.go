@@ -101,7 +101,9 @@ func (k *Keptn) SendCloudEvent(event cloudevents.Event) error {
 // SendTaskStartedEvent sends a .started event for the incoming .triggered event the KeptnHandler was initialized with.
 // It returns the ID of the sent CloudEvent or an error
 func (k *Keptn) SendTaskStartedEvent(data keptn.EventProperties, source string) (string, error) {
-
+	if k.CloudEvent == nil {
+		return "", fmt.Errorf("no incoming .triggered CloudEvent provided to the Keptn Handler")
+	}
 	outEventType, err := GetEventTypeForTriggeredEvent(k.CloudEvent.Type(), keptnStartedEventSuffix)
 	if err != nil {
 		return "", fmt.Errorf("could not determine .started event type for base event: %s", err.Error())
@@ -113,9 +115,12 @@ func (k *Keptn) SendTaskStartedEvent(data keptn.EventProperties, source string) 
 // SendTaskStartedEvent sends a .status.changed event for the incoming .triggered event the KeptnHandler was initialized with.
 // It returns the ID of the sent CloudEvent or an error
 func (k *Keptn) SendTaskStatusChangedEvent(data keptn.EventProperties, source string) (string, error) {
+	if k.CloudEvent == nil {
+		return "", fmt.Errorf("no incoming .triggered CloudEvent provided to the Keptn Handler")
+	}
 	outEventType, err := GetEventTypeForTriggeredEvent(k.CloudEvent.Type(), keptnStatusChangedEventSuffix)
 	if err != nil {
-		return "", fmt.Errorf("could not determine .started event type for base event: %s", err.Error())
+		return "", fmt.Errorf("could not determine .status.changed event type for base event: %s", err.Error())
 	}
 
 	return k.sendEventWithBaseEventContext(data, source, err, outEventType)
@@ -124,6 +129,9 @@ func (k *Keptn) SendTaskStatusChangedEvent(data keptn.EventProperties, source st
 // SendTaskStartedEvent sends a .finished event for the incoming .triggered event the KeptnHandler was initialized with.
 // It returns the ID of the sent CloudEvent or an error
 func (k *Keptn) SendTaskFinishedEvent(data keptn.EventProperties, source string) (string, error) {
+	if k.CloudEvent == nil {
+		return "", fmt.Errorf("no incoming .triggered CloudEvent provided to the Keptn Handler")
+	}
 	outEventType, err := GetEventTypeForTriggeredEvent(k.CloudEvent.Type(), keptnFinishedEventSuffix)
 	if err != nil {
 		return "", fmt.Errorf("could not determine .started event type for base event: %s", err.Error())
@@ -152,6 +160,8 @@ func (k *Keptn) sendEventWithBaseEventContext(data keptn.EventProperties, source
 	return ce.ID(), nil
 }
 
+// createCloudEventWithContextAndPayload initializes a new CloudEvent and ensures that context attributes such as the triggeredID, keptnContext,
+// as well as project, stage, service and labels are included in the resulting event
 func (k *Keptn) createCloudEventWithContextAndPayload(outEventType string, keptnContext interface{}, source string, data keptn.EventProperties) (*cloudevents.Event, error) {
 	ce := cloudevents.NewEvent()
 	ce.SetID(uuid.New().String())
