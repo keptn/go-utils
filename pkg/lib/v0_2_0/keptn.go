@@ -134,7 +134,7 @@ func (k *Keptn) SendTaskFinishedEvent(data keptn.EventProperties, source string)
 	}
 	outEventType, err := GetEventTypeForTriggeredEvent(k.CloudEvent.Type(), keptnFinishedEventSuffix)
 	if err != nil {
-		return "", fmt.Errorf("could not determine .started event type for base event: %s", err.Error())
+		return "", fmt.Errorf("could not determine .finished event type for base event: %s", err.Error())
 	}
 
 	return k.sendEventWithBaseEventContext(data, source, err, outEventType)
