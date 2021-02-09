@@ -4,27 +4,18 @@ const DeploymentTaskName = "deployment"
 
 type DeploymentTriggeredEventData struct {
 	EventData
-
-	ConfigurationChange ConfigurationChange    `json:"configurationChange"`
-	Deployment          DeploymentWithStrategy `json:"deployment"`
+	ConfigurationChange ConfigurationChange     `json:"configurationChange"`
+	Deployment          DeploymentTriggeredData `json:"deployment"`
 }
 
-type DeploymentWithStrategy struct {
-	// DeploymentStrategy defines the used deployment strategy
-	DeploymentStrategy string `json:"deploymentstrategy" jsonschema:"enum=direct,enum=blue_green_service"`
-}
-
-type DeploymentData struct {
-	// DeploymentStrategy defines the used deployment strategy
-	DeploymentStrategy string `json:"deploymentstrategy"`
+// DeploymentTriggeredData contains the data associated with a .deployment.triggered event
+type DeploymentTriggeredData struct {
 	// DeploymentURILocal contains the local URL
 	DeploymentURIsLocal []string `json:"deploymentURIsLocal"`
 	// DeploymentURIPublic contains the public URL
 	DeploymentURIsPublic []string `json:"deploymentURIsPublic,omitempty"`
-	// DeploymentNames gives the names of the deployments
-	DeploymentNames []string `json:"deploymentNames"`
-	// GitCommit indicates the version which should be deployed
-	GitCommit string `json:"gitCommit"`
+	// DeploymentStrategy defines the used deployment strategy
+	DeploymentStrategy string `json:"deploymentstrategy" jsonschema:"enum=direct,enum=blue_green_service,enum=user_managed"`
 }
 
 type DeploymentStartedEventData struct {
@@ -37,5 +28,19 @@ type DeploymentStatusChangedEventData struct {
 
 type DeploymentFinishedEventData struct {
 	EventData
-	Deployment DeploymentData `json:"deployment"`
+	Deployment DeploymentFinishedData `json:"deployment"`
+}
+
+// DeploymentFinishedData contains the data associated with a .deployment.finished event
+type DeploymentFinishedData struct {
+	// DeploymentStrategy defines the used deployment strategy
+	DeploymentStrategy string `json:"deploymentstrategy" jsonschema:"enum=direct,enum=blue_green_service,enum=user_managed"`
+	// DeploymentURILocal contains the local URL
+	DeploymentURIsLocal []string `json:"deploymentURIsLocal"`
+	// DeploymentURIPublic contains the public URL
+	DeploymentURIsPublic []string `json:"deploymentURIsPublic,omitempty"`
+	// DeploymentNames gives the names of the deployments
+	DeploymentNames []string `json:"deploymentNames"`
+	// GitCommit indicates the version which should be deployed
+	GitCommit string `json:"gitCommit"`
 }
