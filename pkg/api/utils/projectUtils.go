@@ -50,9 +50,7 @@ func NewAuthenticatedProjectHandler(baseURL string, authToken string, authHeader
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
 	baseURL = strings.TrimRight(baseURL, "/")
-	if !strings.HasSuffix(baseURL, configurationServiceBaseUrl) {
-		baseURL += "/" + configurationServiceBaseUrl
-	}
+
 	return &ProjectHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,
@@ -105,7 +103,7 @@ func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
 	nextPageKey := ""
 
 	for {
-		url, err := url.Parse(p.Scheme + "://" + p.getBaseURL() + "/v1/project/")
+		url, err := url.Parse(p.Scheme + "://" + p.getBaseURL() + "/v1/project")
 		if err != nil {
 			return nil, err
 		}
@@ -130,6 +128,7 @@ func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
 		}
 
 		if resp.StatusCode == 200 {
+
 			var received models.Projects
 			err = json.Unmarshal(body, &received)
 			if err != nil {

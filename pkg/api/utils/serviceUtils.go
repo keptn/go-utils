@@ -49,9 +49,7 @@ func NewAuthenticatedServiceHandler(baseURL string, authToken string, authHeader
 	baseURL = strings.TrimPrefix(baseURL, "https://")
 
 	baseURL = strings.TrimRight(baseURL, "/")
-	if !strings.HasSuffix(baseURL, configurationServiceBaseUrl) {
-		baseURL += "/" + configurationServiceBaseUrl
-	}
+
 	return &ServiceHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,
