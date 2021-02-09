@@ -50,9 +50,7 @@ func NewAuthenticatedProjectHandler(baseURL string, authToken string, authHeader
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
 	baseURL = strings.TrimRight(baseURL, "/")
-	if !strings.HasSuffix(baseURL, configurationServiceBaseUrl) {
-		baseURL += "/" + configurationServiceBaseUrl
-	}
+
 	return &ProjectHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,
