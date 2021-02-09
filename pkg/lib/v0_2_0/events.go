@@ -8,7 +8,7 @@ import (
 	"github.com/cloudevents/sdk-go/v2/protocol"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
-	"log"
+	"strings"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -18,6 +18,15 @@ import (
 const MAX_SEND_RETRIES = 3
 
 const DefaultHTTPEventEndpoint = "http://localhost:8081/event"
+
+const keptnEventTypePrefix = "sh.keptn.event."
+const keptnTriggeredEventSuffix = ".triggered"
+const keptnStartedEventSuffix = ".started"
+const keptnStatusChangedEventSuffix = ".status.changed"
+const keptnFinishedEventSuffix = ".finished"
+
+const keptnContextCEExtension = "shkeptncontext"
+const triggeredIDCEExtenstion = "triggeredid"
 
 // HTTPEventSender sends CloudEvents via HTTP
 type HTTPEventSender struct {
@@ -74,22 +83,31 @@ func (httpSender HTTPEventSender) SendEvent(event cloudevents.Event) error {
 
 // GetTriggeredEventType returns for the given task the name of the triggered event type
 func GetTriggeredEventType(task string) string {
-	return "sh.keptn.event." + task + ".triggered"
+
+	return keptnEventTypePrefix + task + keptnTriggeredEventSuffix
 }
 
 // GetStartedEventType returns for the given task the name of the started event type
 func GetStartedEventType(task string) string {
-	return "sh.keptn.event." + task + ".started"
+	return keptnEventTypePrefix + task + keptnStartedEventSuffix
 }
 
 // GetStatusChangedEventType returns for the given task the name of the status.changed event type
 func GetStatusChangedEventType(task string) string {
-	return "sh.keptn.event." + task + ".status.changed"
+	return keptnEventTypePrefix + task + keptnStatusChangedEventSuffix
 }
 
 // GetFinishedEventType returns for the given task the name of the finished event type
 func GetFinishedEventType(task string) string {
-	return "sh.keptn.event." + task + ".finished"
+	return keptnEventTypePrefix + task + keptnFinishedEventSuffix
+}
+
+func GetEventTypeForTriggeredEvent(baseTriggeredEventType, newEventTypeSuffix string) (string, error) {
+	if !strings.HasSuffix(baseTriggeredEventType, keptnTriggeredEventSuffix) {
+		return "", errors.New("provided baseTriggeredEventType is not a .triggered event type")
+	}
+	trimmed := strings.TrimSuffix(baseTriggeredEventType, keptnTriggeredEventSuffix)
+	return trimmed + newEventTypeSuffix, nil
 }
 
 // EventData contains mandatory fields of all Keptn CloudEvents
@@ -104,30 +122,36 @@ type EventData struct {
 	Message string     `json:"message,omitempty"`
 }
 
-func (e EventData) GetProject() string {
+func (e *EventData) GetProject() string {
 	return e.Project
 }
 
-func (e EventData) GetStage() string {
+func (e *EventData) GetStage() string {
 	return e.Stage
 }
 
-func (e EventData) GetService() string {
+func (e *EventData) GetService() string {
 	return e.Service
 }
 
-func (e EventData) GetLabels() map[string]string {
+func (e *EventData) GetLabels() map[string]string {
 	return e.Labels
 }
 
-// SendCloudEvent sends a cloudevent to the event broker
-func (k *Keptn) SendCloudEvent(event cloudevents.Event) error {
-	if k.UseLocalFileSystem {
-		log.Println(fmt.Printf("%v", string(event.Data())))
-		return nil
-	}
+func (e *EventData) SetProject(project string) {
+	e.Project = project
+}
 
-	return k.EventSender.SendEvent(event)
+func (e *EventData) SetStage(stage string) {
+	e.Stage = stage
+}
+
+func (e *EventData) SetService(service string) {
+	e.Service = service
+}
+
+func (e *EventData) SetLabels(labels map[string]string) {
+	e.Labels = labels
 }
 
 // Decode decodes the given raw interface to the target pointer specified
