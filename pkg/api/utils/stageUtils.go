@@ -48,9 +48,7 @@ func NewAuthenticatedStageHandler(baseURL string, authToken string, authHeader s
 	baseURL = strings.TrimPrefix(baseURL, "https://")
 
 	baseURL = strings.TrimRight(baseURL, "/")
-	if !strings.HasSuffix(baseURL, configurationServiceBaseUrl) {
-		baseURL += "/" + configurationServiceBaseUrl
-	}
+
 	return &StageHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,
