@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// CanaryAction describes the excution of a canary release
+// CanaryAction describes the execution of a canary release
 type CanaryAction int
 
 const (
