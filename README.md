@@ -192,6 +192,6 @@ to update the models located in `./pkg/api/models`
 
 ## Automation
 
-A [Github Action](https://github.com/keptn/go-utils/actions?query=workflow%3A%22Auto+PR+to+keptn%2Fkeptn%22) is used
+A [GitHub Action](https://github.com/keptn/go-utils/actions?query=workflow%3A%22Auto+PR+to+keptn%2Fkeptn%22) is used
 that creates a Pull Request to  [github.com/keptn/keptn](https://github.com/keptn/keptn) to update `go.mod`
 files with an updated version of this  package (based on the commit hash).
