@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// ExecuteCommand exectues the command using the args
+// ExecuteCommand executes the command using the args
 func ExecuteCommand(command string, args []string) (string, error) {
 	cmd := exec.Command(command, args...)
 	out, err := cmd.CombinedOutput()
