@@ -14,7 +14,7 @@ type ProblemDetails struct {
 	ProblemDetails json.RawMessage `json:"ProblemDetails"`
 	// PID is a unique system identifier of the reported problem.
 	PID string `json:"PID"`
-	// ImpcatedEntity is an identifier of the impacted entity
+	// ImpactedEntity is an identifier of the impacted entity
 	// ProblemURL is a back link to the original problem
 	ProblemURL     string `json:"ProblemURL,omitempty"`
 	ImpactedEntity string `json:"ImpactedEntity,omitempty"`
