@@ -26,7 +26,7 @@ const keptnStatusChangedEventSuffix = ".status.changed"
 const keptnFinishedEventSuffix = ".finished"
 
 const keptnContextCEExtension = "shkeptncontext"
-const triggeredIDCEExtenstion = "triggeredid"
+const triggeredIDCEExtension = "triggeredid"
 
 // HTTPEventSender sends CloudEvents via HTTP
 type HTTPEventSender struct {

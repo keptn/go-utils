@@ -154,7 +154,7 @@ func (k *KeptnBase) GetKeptnResource(resource string) (string, error) {
 	// get it from KeptnBase
 	requestedResource, err := k.ResourceHandler.GetServiceResource(k.Event.GetProject(), k.Event.GetStage(), k.Event.GetService(), resource)
 
-	// return Nil in case resource couldnt be retrieved
+	// return Nil in case resource couldn't be retrieved
 	if err != nil || requestedResource.ResourceContent == "" {
 		fmt.Printf("KeptnBase Resource not found: %s - %s", resource, err)
 		return "", err

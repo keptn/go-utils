@@ -25,7 +25,7 @@ type ProblemEventData struct {
 	PID string `json:"PID"`
 	// ProblemURL is a back link to the original problem
 	ProblemURL string `json:"ProblemURL,omitempty"`
-	// ImpcatedEntity is an identifier of the impacted entity
+	// ImpactedEntity is an identifier of the impacted entity
 	ImpactedEntity string `json:"ImpactedEntity,omitempty"`
 	// Tags is a comma separated list of tags that are defined for all impacted entities.
 	Tags string `json:"Tags,omitempty"`
