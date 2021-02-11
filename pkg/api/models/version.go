@@ -15,13 +15,13 @@ import (
 // swagger:model Version
 type Version struct {
 
-	// branch in git repo containing the resource
+	// Branch in repository containing the resource
 	Branch string `json:"branch,omitempty"`
 
-	// Upstream repository containing the resource
+	// Upstream respository containing the resource
 	UpstreamURL string `json:"upstreamURL,omitempty"`
 
-	// version/git commit id of the resource
+	// Version identifier
 	Version string `json:"version,omitempty"`
 }
 
