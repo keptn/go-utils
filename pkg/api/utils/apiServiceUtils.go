@@ -72,7 +72,7 @@ func putWithEventContext(uri string, data []byte, api APIService) (*models.Event
 		return nil, &respErr
 	}
 
-	return nil, buildErrorResponse(fmt.Sprintf("Received unexptected response: %d %s", resp.StatusCode, resp.Status))
+	return nil, buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
 }
 
 func put(uri string, data []byte, api APIService) (string, *models.Error) {
@@ -111,7 +111,7 @@ func put(uri string, data []byte, api APIService) (string, *models.Error) {
 		return "", &respErr
 	}
 
-	return "", buildErrorResponse(fmt.Sprintf("Received unexptected response: %d %s", resp.StatusCode, resp.Status))
+	return "", buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
 }
 
 func postWithEventContext(uri string, data []byte, api APIService) (*models.EventContext, *models.Error) {
@@ -160,7 +160,7 @@ func postWithEventContext(uri string, data []byte, api APIService) (*models.Even
 		return nil, &respErr
 	}
 
-	return nil, buildErrorResponse(fmt.Sprintf("Received unexptected response: %d %s", resp.StatusCode, resp.Status))
+	return nil, buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
 }
 
 func post(uri string, data []byte, api APIService) (string, *models.Error) {
@@ -199,7 +199,7 @@ func post(uri string, data []byte, api APIService) (string, *models.Error) {
 		return "", &respErr
 	}
 
-	return "", buildErrorResponse(fmt.Sprintf("Received unexptected response: %d %s", resp.StatusCode, resp.Status))
+	return "", buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
 }
 
 func deleteWithEventContext(uri string, api APIService) (*models.EventContext, *models.Error) {
