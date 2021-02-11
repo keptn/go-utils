@@ -170,7 +170,7 @@ func (k *Keptn) createCloudEventWithContextAndPayload(outEventType string, keptn
 	// use existing  kekptnContext for the new cloudevent
 	ce.SetExtension(keptnContextCEExtension, keptnContext)
 	// the triggeredID links the sent event to the received .triggered event
-	ce.SetExtension(triggeredIDCEExtenstion, k.CloudEvent.ID())
+	ce.SetExtension(triggeredIDCEExtension, k.CloudEvent.ID())
 	ce.SetSource(source)
 
 	var eventData keptn.EventProperties

@@ -347,7 +347,7 @@ func TestKeptn_SendEventConvenienceFunctions(t *testing.T) {
 
 			for index, event := range k.EventSender.(*fake.EventSender).SentEvents {
 				assert.Equal(t, event.Type(), tt.wantEvents[index].eventType)
-				triggeredID, err := event.Context.GetExtension(triggeredIDCEExtenstion)
+				triggeredID, err := event.Context.GetExtension(triggeredIDCEExtension)
 				assert.Nil(t, err)
 				assert.Equal(t, triggeredID.(string), tt.wantEvents[index].triggeredID)
 				keptnContext, err := event.Context.GetExtension(keptnContextCEExtension)
