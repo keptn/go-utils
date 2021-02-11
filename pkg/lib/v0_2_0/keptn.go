@@ -187,7 +187,7 @@ func (k *Keptn) createCloudEventWithContextAndPayload(outEventType string, keptn
 	return &ce, nil
 }
 
-// ensureContextAttributesAreSet makes sure all properties that remain constant over the course of a task sequence execution are set in the outgoiing event
+// ensureContextAttributesAreSet makes sure all properties that remain constant over the course of a task sequence execution are set in the outgoing event
 func ensureContextAttributesAreSet(srcEvent, newEvent keptn.EventProperties) keptn.EventProperties {
 	newEvent.SetProject(srcEvent.GetProject())
 	newEvent.SetStage(srcEvent.GetStage())
