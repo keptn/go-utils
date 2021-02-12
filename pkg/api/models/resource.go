@@ -17,7 +17,7 @@ import (
 // swagger:model Resource
 type Resource struct {
 
-	// metadata
+	// Metadata
 	Metadata *Version `json:"metadata,omitempty"`
 
 	// Resource content

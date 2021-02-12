@@ -17,12 +17,6 @@ import (
 // swagger:model CreateService
 type CreateService struct {
 
-	// deployment strategies
-	DeploymentStrategies map[string]string `json:"deploymentStrategies,omitempty"`
-
-	// helm chart
-	HelmChart string `json:"helmChart,omitempty"`
-
 	// service name
 	// Required: true
 	ServiceName *string `json:"serviceName"`
