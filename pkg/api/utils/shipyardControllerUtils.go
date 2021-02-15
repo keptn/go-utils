@@ -13,7 +13,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 )
 
-const shipyardControllerBaseURL = "shipyard-controller"
+const shipyardControllerBaseURL = "controlPlane"
 
 // ShipyardControllerHandler handles services
 type ShipyardControllerHandler struct {

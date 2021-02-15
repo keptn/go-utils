@@ -50,6 +50,10 @@ func NewAuthenticatedServiceHandler(baseURL string, authToken string, authHeader
 
 	baseURL = strings.TrimRight(baseURL, "/")
 
+	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
+		baseURL += "/" + shipyardControllerBaseURL
+	}
+
 	return &ServiceHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,
