@@ -87,18 +87,18 @@ func (s *ServiceHandler) CreateServiceInStage(project string, stage string, serv
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(s.Scheme+"://"+s.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service", body, s)
+	return postWithEventContext(s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+"/stage/"+stage+"/service", body, s)
 }
 
 // DeleteServiceFromStage godoc
 func (s *ServiceHandler) DeleteServiceFromStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error) {
-	return deleteWithEventContext(s.Scheme+"://"+s.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/service/"+serviceName, s)
+	return deleteWithEventContext(s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+"/stage/"+stage+"/service/"+serviceName, s)
 }
 
 func (s *ServiceHandler) GetService(project, stage, service string) (*models.Service, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-	url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + "/v1/project/" + project + "/stage/" + stage + "/service/" + service)
+	url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + v1ProjectPath + "/" + project + "/stage/" + stage + "/service/" + service)
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +143,7 @@ func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models
 	nextPageKey := ""
 
 	for {
-		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + "/v1/project/" + project + "/stage/" + stage + "/service")
+		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + v1ProjectPath + "/" + project + "/stage/" + stage + "/service")
 		if err != nil {
 			return nil, err
 		}

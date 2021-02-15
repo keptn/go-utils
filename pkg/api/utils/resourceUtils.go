@@ -27,6 +27,8 @@ type resourceRequest struct {
 	Resources []*models.Resource `json:"resources"`
 }
 
+const configurationServiceBaseUrl = "configuration-service"
+
 var ResourceNotFoundError = errors.New("Resource not found")
 
 // NewResourceHandler returns a new ResourceHandler which sends all requests directly to the configuration-service

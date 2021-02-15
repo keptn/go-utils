@@ -12,6 +12,8 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 )
 
+const v1ProjectPath = "/v1/project"
+
 // ProjectHandler handles projects
 type ProjectHandler struct {
 	BaseURL    string
@@ -36,8 +38,6 @@ func NewProjectHandler(baseURL string) *ProjectHandler {
 		Scheme:     "http",
 	}
 }
-
-const configurationServiceBaseUrl = "configuration-service"
 
 // NewAuthenticatedProjectHandler returns a new ProjectHandler that authenticates at the api via the provided token
 // and sends all requests directly to the configuration-service
@@ -86,17 +86,17 @@ func (p *ProjectHandler) CreateProject(project models.Project) (*models.EventCon
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(p.Scheme+"://"+p.getBaseURL()+"/v1/project", bodyStr, p)
+	return postWithEventContext(p.Scheme+"://"+p.getBaseURL()+v1ProjectPath, bodyStr, p)
 }
 
 // DeleteProject deletes a project
 func (p *ProjectHandler) DeleteProject(project models.Project) (*models.EventContext, *models.Error) {
-	return deleteWithEventContext(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.ProjectName, p)
+	return deleteWithEventContext(p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, p)
 }
 
 // GetProject returns a project
 func (p *ProjectHandler) GetProject(project models.Project) (*models.Project, *models.Error) {
-	return getProject(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.ProjectName, p)
+	return getProject(p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, p)
 }
 
 // GetProjects returns a project
@@ -107,7 +107,7 @@ func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
 	nextPageKey := ""
 
 	for {
-		url, err := url.Parse(p.Scheme + "://" + p.getBaseURL() + "/v1/project")
+		url, err := url.Parse(p.Scheme + "://" + p.getBaseURL() + v1ProjectPath)
 		if err != nil {
 			return nil, err
 		}
@@ -203,5 +203,5 @@ func (p *ProjectHandler) UpdateConfigurationServiceProject(project models.Projec
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return putWithEventContext(p.Scheme+"://"+p.getBaseURL()+"/v1/project/"+project.ProjectName, bodyStr, p)
+	return putWithEventContext(p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, bodyStr, p)
 }
