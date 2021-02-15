@@ -44,7 +44,7 @@ type Trigger struct {
 	Selector Selector `json:"selector" yaml:"selector"`
 }
 
-// Selector defines conditions that need to that need to evaluate to true for a trigger to fire
+// Selector defines conditions that need to evaluate to true for a trigger to fire
 type Selector struct {
 	Match map[string]string `json:"match" yaml:"match"`
 }
