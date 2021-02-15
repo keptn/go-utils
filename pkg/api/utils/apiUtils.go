@@ -9,6 +9,9 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 )
 
+const v1EventPath = "/v1/event"
+const v1MetadataPath = "/v1/metadata"
+
 // APIHandler handles projects
 type APIHandler struct {
 	BaseURL    string
@@ -58,7 +61,7 @@ func (a *APIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.Eve
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(a.Scheme+"://"+a.getBaseURL()+"/v1/event", bodyStr, a)
+	return postWithEventContext(a.Scheme+"://"+a.getBaseURL()+v1EventPath, bodyStr, a)
 }
 
 // TriggerEvaluation triggers a new evaluation
@@ -67,55 +70,7 @@ func (a *APIHandler) TriggerEvaluation(project, stage, service string, evaluatio
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(a.Scheme+"://"+a.getBaseURL()+"/v1/project/"+project+"/stage/"+stage+"/service/"+service+"/evaluation", bodyStr, a)
-}
-
-// GetEvent returns an event specified by keptnContext and eventType
-//
-// Deprecated: this function is deprecated and should be replaced with the GetEvents function
-func (a *APIHandler) GetEvent(keptnContext string, eventType string) (*models.KeptnContextExtendedCE, *models.Error) {
-	return getEvent(a.Scheme+"://"+a.getBaseURL()+"/v1/event?keptnContext="+keptnContext+"&type="+eventType+"&pageSize=10", a)
-}
-
-func getEvent(uri string, api APIService) (*models.KeptnContextExtendedCE, *models.Error) {
-
-	req, err := http.NewRequest("GET", uri, nil)
-	req.Header.Set("Content-Type", "application/json")
-	addAuthHeader(req, api)
-
-	resp, err := api.getHTTPClient().Do(req)
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
-	}
-
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-
-		if len(body) > 0 {
-			var cloudEvent models.KeptnContextExtendedCE
-			err = json.Unmarshal(body, &cloudEvent)
-			if err != nil {
-				return nil, buildErrorResponse(err.Error())
-			}
-
-			return &cloudEvent, nil
-		}
-
-		return nil, nil
-	}
-
-	var respErr models.Error
-	err = json.Unmarshal(body, &respErr)
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
-	}
-
-	return nil, &respErr
+	return postWithEventContext(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath+"/"+project+"/stage/"+stage+"/service/"+service+"/evaluation", bodyStr, a)
 }
 
 // CreateProject creates a new project
@@ -124,7 +79,7 @@ func (a *APIHandler) CreateProject(project models.CreateProject) (string, *model
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
-	return post(a.Scheme+"://"+a.getBaseURL()+"/shipyard-controller/v1/project", bodyStr, a)
+	return post(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath, bodyStr, a)
 }
 
 // UpdateProject updates project
@@ -133,12 +88,12 @@ func (a *APIHandler) UpdateProject(project models.CreateProject) (string, *model
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
-	return put(a.Scheme+"://"+a.getBaseURL()+"/shipyard-controller/v1/project", bodyStr, a)
+	return put(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath, bodyStr, a)
 }
 
 // DeleteProject deletes a project
 func (a *APIHandler) DeleteProject(project models.Project) (*models.DeleteProjectResponse, *models.Error) {
-	resp, err := delete(a.Scheme+"://"+a.getBaseURL()+"/shipyard-controller/v1/project/"+project.ProjectName, a)
+	resp, err := delete(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath+"/"+project.ProjectName, a)
 	if err != nil {
 		return nil, err
 	}
@@ -158,12 +113,12 @@ func (a *APIHandler) CreateService(project string, service models.CreateService)
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
-	return post(a.Scheme+"://"+a.getBaseURL()+"/shipyard-controller/v1/project/"+project+"/service", bodyStr, a)
+	return post(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath+"/"+project+"/service", bodyStr, a)
 }
 
 // DeleteProject deletes a project
 func (a *APIHandler) DeleteService(project, service string) (*models.DeleteServiceResponse, *models.Error) {
-	resp, err := delete(a.Scheme+"://"+a.getBaseURL()+"/shipyard-controller/v1/project/"+project+"/service/"+service, a)
+	resp, err := delete(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath+"/"+project+"/service/"+service, a)
 	if err != nil {
 		return nil, err
 	}
@@ -179,9 +134,7 @@ func (a *APIHandler) DeleteService(project, service string) (*models.DeleteServi
 
 // GetMetadata retrieve keptn MetaData information
 func (a *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
-	//return get(s.Scheme+"://"+s.getBaseURL()+"/v1/metadata", nil, s)
-
-	req, err := http.NewRequest("GET", a.Scheme+"://"+a.getBaseURL()+"/v1/metadata", nil)
+	req, err := http.NewRequest("GET", a.Scheme+"://"+a.getBaseURL()+v1MetadataPath, nil)
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, a)
 

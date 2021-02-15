@@ -13,7 +13,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 )
 
-const shipyardControllerBaseURL = "shipyard-controller"
+const shipyardControllerBaseURL = "controlPlane"
 
 // ShipyardControllerHandler handles services
 type ShipyardControllerHandler struct {
@@ -88,7 +88,7 @@ func (s *ShipyardControllerHandler) GetOpenTriggeredEvents(filter EventFilter) (
 	nextPageKey := ""
 
 	for {
-		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + "/v1/event/triggered/" + filter.EventType)
+		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + v1EventPath + "/triggered/" + filter.EventType)
 
 		q := url.Query()
 		if nextPageKey != "" {
