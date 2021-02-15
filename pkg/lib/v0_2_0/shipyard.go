@@ -29,7 +29,7 @@ type Stage struct {
 // Sequence defines a task sequence by its name and tasks. The triggers property is optional
 type Sequence struct {
 	Name        string             `json:"name" yaml:"name"`
-	TriggeredOn map[string]Trigger `json:"triggered-on" yaml:"triggered-on"`
+	TriggeredOn map[string]Trigger `json:"triggeredOon" yaml:"triggeredOn"`
 	Tasks       []Task             `json:"tasks" yaml:"tasks"`
 }
 
