@@ -28,9 +28,9 @@ type Stage struct {
 
 // Sequence defines a task sequence by its name and tasks. The triggers property is optional
 type Sequence struct {
-	Name        string             `json:"name" yaml:"name"`
-	TriggeredOn map[string]Trigger `json:"triggeredOn" yaml:"triggeredOn"`
-	Tasks       []Task             `json:"tasks" yaml:"tasks"`
+	Name        string    `json:"name" yaml:"name"`
+	TriggeredOn []Trigger `json:"triggeredOn" yaml:"triggeredOn"`
+	Tasks       []Task    `json:"tasks" yaml:"tasks"`
 }
 
 // Task defines a task by its name and optional properties
@@ -41,7 +41,8 @@ type Task struct {
 
 // Trigger defines a trigger which causes a sequence to get activated
 type Trigger struct {
-	Selector Selector `json:"selector" yaml:"selector"`
+	Event    string   `json:"event" yaml:"event"`
+	Selector Selector `json:"selector,omitempty" yaml:"selector,omitempty"`
 }
 
 // Selector defines conditions that need to evaluate to true for a trigger to fire
