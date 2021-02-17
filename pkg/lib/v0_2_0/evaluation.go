@@ -61,10 +61,12 @@ type SLIResult struct {
 }
 
 type SLIEvaluationResult struct {
-	Score   float64      `json:"score"`
-	Value   *SLIResult   `json:"value"`
-	Targets []*SLITarget `json:"targets"`
-	Status  string       `json:"status" jsonschema:"enum=pass,enum=warning,enum=fail"`
+	Score          float64      `json:"score"`
+	Value          *SLIResult   `json:"value"`
+	PassTargets    []*SLITarget `json:"passTargets"`
+	WarningTargets []*SLITarget `json:"warningTargets"`
+	KeySLI         bool         `json:"keySli"`
+	Status         string       `json:"status" jsonschema:"enum=pass,enum=warning,enum=fail"`
 }
 
 type SLITarget struct {
