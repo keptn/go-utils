@@ -102,6 +102,11 @@ func GetFinishedEventType(task string) string {
 	return keptnEventTypePrefix + task + keptnFinishedEventSuffix
 }
 
+// GetInvalidatedType returns for the given task the name of the finished event type
+func GetInvalidatedType(task string) string {
+	return keptnEventTypePrefix + task + keptnFinishedEventSuffix
+}
+
 func GetEventTypeForTriggeredEvent(baseTriggeredEventType, newEventTypeSuffix string) (string, error) {
 	if !strings.HasSuffix(baseTriggeredEventType, keptnTriggeredEventSuffix) {
 		return "", errors.New("provided baseTriggeredEventType is not a .triggered event type")
