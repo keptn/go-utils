@@ -104,7 +104,7 @@ func GetFinishedEventType(task string) string {
 }
 
 // GetInvalidatedType returns for the given task the name of the finished event type
-func GetInvalidatedType(task string) string {
+func GetInvalidatedEventType(task string) string {
 	return keptnEventTypePrefix + task + keptnInvalidatedEventSuffix
 }
 
