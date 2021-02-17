@@ -24,6 +24,7 @@ const keptnTriggeredEventSuffix = ".triggered"
 const keptnStartedEventSuffix = ".started"
 const keptnStatusChangedEventSuffix = ".status.changed"
 const keptnFinishedEventSuffix = ".finished"
+const keptnInvalidatedEventSuffix = ".invalidated"
 
 const keptnContextCEExtension = "shkeptncontext"
 const triggeredIDCEExtension = "triggeredid"
@@ -104,7 +105,7 @@ func GetFinishedEventType(task string) string {
 
 // GetInvalidatedType returns for the given task the name of the finished event type
 func GetInvalidatedType(task string) string {
-	return keptnEventTypePrefix + task + keptnFinishedEventSuffix
+	return keptnEventTypePrefix + task + keptnInvalidatedEventSuffix
 }
 
 func GetEventTypeForTriggeredEvent(baseTriggeredEventType, newEventTypeSuffix string) (string, error) {
