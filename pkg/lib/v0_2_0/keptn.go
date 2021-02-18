@@ -173,6 +173,11 @@ func (k *Keptn) createCloudEventWithContextAndPayload(outEventType string, keptn
 	ce.SetExtension(triggeredIDCEExtension, k.CloudEvent.ID())
 	ce.SetSource(source)
 
+	// if available, add the keptnspecversion extension to the CloudEvent context
+	if keptnSpecVersion, err := k.CloudEvent.Context.GetExtension(keptnSpecVersionCEExtension); err == nil && keptnSpecVersion != "" {
+		ce.SetExtension(keptnSpecVersionCEExtension, keptnSpecVersion)
+	}
+
 	var eventData keptn.EventProperties
 	if data != nil {
 		eventData = data

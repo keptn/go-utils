@@ -33,6 +33,9 @@ type KeptnContextExtendedCE struct {
 	// shkeptncontext
 	Shkeptncontext string `json:"shkeptncontext,omitempty"`
 
+	// shkeptnspecversion
+	Shkeptnspecversion string `json:"shkeptnspecversion,omitempty"`
+
 	// source
 	// Required: true
 	Source *string `json:"source"`
