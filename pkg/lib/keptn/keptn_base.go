@@ -216,10 +216,10 @@ func ValidateKeptnEntityName(name string) bool {
 	return len(processedString) == len(name)
 }
 
-// ValididateUnixDirectoryName checks whether the provided dirName contains
+// ValidateUnixDirectoryName checks whether the provided dirName contains
 // any special character according to
 // https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/
-func ValididateUnixDirectoryName(dirName string) bool {
+func ValidateUnixDirectoryName(dirName string) bool {
 	return !(dirName == "." ||
 		dirName == ".." ||
 		strings.Contains(dirName, "/") ||
