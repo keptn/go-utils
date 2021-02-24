@@ -117,6 +117,7 @@ func TestKeptn_SendEventConvenienceFunctions(t *testing.T) {
 	inputEvent := cloudevents.NewEvent()
 	inputEvent.SetType(GetTriggeredEventType(EvaluationTaskName))
 	inputEvent.SetExtension(keptnContextCEExtension, "my-context")
+	inputEvent.SetExtension(keptnSpecVersionCEExtension, "0.2.0")
 	inputEvent.SetID("my-triggered-id")
 	inputEvent.SetDataContentType(cloudevents.ApplicationJSON)
 	inputEvent.SetData(cloudevents.ApplicationJSON, &EventData{
@@ -136,10 +137,11 @@ func TestKeptn_SendEventConvenienceFunctions(t *testing.T) {
 		source string
 	}
 	type wantEventProperties struct {
-		eventType    string
-		keptnContext string
-		triggeredID  string
-		eventData    keptn.EventProperties
+		eventType        string
+		keptnContext     string
+		triggeredID      string
+		keptnSpecVersion string
+		eventData        keptn.EventProperties
 	}
 	tests := []struct {
 		name          string
@@ -163,9 +165,10 @@ func TestKeptn_SendEventConvenienceFunctions(t *testing.T) {
 			wantErr:       false,
 			wantEvents: []wantEventProperties{
 				{
-					eventType:    GetStartedEventType(EvaluationTaskName),
-					keptnContext: "my-context",
-					triggeredID:  "my-triggered-id",
+					eventType:        GetStartedEventType(EvaluationTaskName),
+					keptnContext:     "my-context",
+					triggeredID:      "my-triggered-id",
+					keptnSpecVersion: "0.2.0",
 					eventData: &EventData{
 						Project: "my-project",
 						Stage:   "my-stage",
@@ -191,9 +194,10 @@ func TestKeptn_SendEventConvenienceFunctions(t *testing.T) {
 			wantErr:       false,
 			wantEvents: []wantEventProperties{
 				{
-					eventType:    GetStatusChangedEventType(EvaluationTaskName),
-					keptnContext: "my-context",
-					triggeredID:  "my-triggered-id",
+					eventType:        GetStatusChangedEventType(EvaluationTaskName),
+					keptnContext:     "my-context",
+					triggeredID:      "my-triggered-id",
+					keptnSpecVersion: "0.2.0",
 					eventData: &EventData{
 						Project: "my-project",
 						Stage:   "my-stage",
@@ -219,9 +223,10 @@ func TestKeptn_SendEventConvenienceFunctions(t *testing.T) {
 			wantErr:       false,
 			wantEvents: []wantEventProperties{
 				{
-					eventType:    GetFinishedEventType(EvaluationTaskName),
-					keptnContext: "my-context",
-					triggeredID:  "my-triggered-id",
+					eventType:        GetFinishedEventType(EvaluationTaskName),
+					keptnContext:     "my-context",
+					triggeredID:      "my-triggered-id",
+					keptnSpecVersion: "0.2.0",
 					eventData: &EventData{
 						Project: "my-project",
 						Stage:   "my-stage",
@@ -250,9 +255,10 @@ func TestKeptn_SendEventConvenienceFunctions(t *testing.T) {
 			wantErr:       false,
 			wantEvents: []wantEventProperties{
 				{
-					eventType:    GetFinishedEventType(EvaluationTaskName),
-					keptnContext: "my-context",
-					triggeredID:  "my-triggered-id",
+					eventType:        GetFinishedEventType(EvaluationTaskName),
+					keptnContext:     "my-context",
+					triggeredID:      "my-triggered-id",
+					keptnSpecVersion: "0.2.0",
 					eventData: &EventData{
 						Project: "my-project",
 						Stage:   "my-stage",
@@ -353,6 +359,9 @@ func TestKeptn_SendEventConvenienceFunctions(t *testing.T) {
 				keptnContext, err := event.Context.GetExtension(keptnContextCEExtension)
 				assert.Nil(t, err)
 				assert.Equal(t, keptnContext.(string), tt.wantEvents[index].keptnContext)
+				keptnSpecVersion, err := event.Context.GetExtension(keptnSpecVersionCEExtension)
+				assert.Nil(t, err)
+				assert.Equal(t, keptnSpecVersion.(string), tt.wantEvents[index].keptnSpecVersion)
 				data := &EventData{}
 				err = event.DataAs(data)
 				assert.Nil(t, err)
