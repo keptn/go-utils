@@ -63,6 +63,7 @@ type SLIResult struct {
 type SLIEvaluationResult struct {
 	Score          float64      `json:"score"`
 	Value          *SLIResult   `json:"value"`
+	DisplayName    string       `json: displayName`
 	PassTargets    []*SLITarget `json:"passTargets"`
 	WarningTargets []*SLITarget `json:"warningTargets"`
 	KeySLI         bool         `json:"keySli"`

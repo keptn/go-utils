@@ -12,11 +12,12 @@ type SLOCriteria struct {
 }
 
 type SLO struct {
-	SLI     string         `json:"sli" yaml:"sli"`
-	Pass    []*SLOCriteria `json:"pass" yaml:"pass"`
-	Warning []*SLOCriteria `json:"warning" yaml:"warning"`
-	Weight  int            `json:"weight" yaml:"weight"`
-	KeySLI  bool           `json:"key_sli" yaml:"key_sli"`
+	SLI         string         `json:"sli" yaml:"sli"`
+	DisplayName string         `json:"displayName" yaml:"displayName"`
+	Pass        []*SLOCriteria `json:"pass" yaml:"pass"`
+	Warning     []*SLOCriteria `json:"warning" yaml:"warning"`
+	Weight      int            `json:"weight" yaml:"weight"`
+	KeySLI      bool           `json:"key_sli" yaml:"key_sli"`
 }
 
 type SLOScore struct {
