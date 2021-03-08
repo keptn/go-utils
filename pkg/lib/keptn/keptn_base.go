@@ -144,6 +144,7 @@ func addResourceContentToSLIMap(SLIs map[string]string, resource *models.Resourc
 	return SLIs, nil
 }
 
+// GetKeptnResource returns a resource from the configuration repo based on the incoming cloud events project, service and stage
 func (k *KeptnBase) GetKeptnResource(resource string) (string, error) {
 
 	// if we run in a runlocal mode we are just getting the file from the local disk
@@ -160,34 +161,7 @@ func (k *KeptnBase) GetKeptnResource(resource string) (string, error) {
 		return "", err
 	}
 
-	// now store that file on the same directory structure locally
-	os.RemoveAll(resource)
-	pathArr := strings.Split(resource, "/")
-	directory := ""
-	for _, pathItem := range pathArr[0 : len(pathArr)-1] {
-		directory += pathItem + "/"
-	}
-
-	if directory != "" {
-		err = os.MkdirAll(directory, os.ModePerm)
-		if err != nil {
-			return "", err
-		}
-	}
-	resourceFile, err := os.Create(resource)
-	if err != nil {
-		fmt.Errorf(err.Error())
-		return "", err
-	}
-	defer resourceFile.Close()
-
-	_, err = resourceFile.Write([]byte(requestedResource.ResourceContent))
-
-	if err != nil {
-		fmt.Errorf(err.Error())
-		return "", err
-	}
-
+	// ToDo: Verify why we need TrimSuffix here
 	return strings.TrimSuffix(requestedResource.ResourceContent, "\n"), nil
 }
 
