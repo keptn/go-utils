@@ -161,8 +161,7 @@ func (k *KeptnBase) GetKeptnResource(resource string) (string, error) {
 		return "", err
 	}
 
-	// ToDo: Verify why we need TrimSuffix here
-	return strings.TrimSuffix(requestedResource.ResourceContent, "\n"), nil
+	return requestedResource.ResourceContent, nil
 }
 
 /**
