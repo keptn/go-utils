@@ -4,7 +4,8 @@ const GetSLITaskName = "get-sli"
 
 type GetSLITriggeredEventData struct {
 	EventData
-	GetSLI GetSLI `json:"get-sli"`
+	GetSLI     GetSLI `json:"get-sli"`
+	Deployment string `json:"deployment"`
 }
 
 type GetSLI struct {
