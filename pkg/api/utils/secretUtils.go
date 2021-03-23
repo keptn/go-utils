@@ -10,6 +10,13 @@ import (
 const secretServiceBaseURL = "secrets"
 const v1SecretPath = "v1/secret"
 
+//go:generate moq -pkg utils_mock -skip-ensure -out ./fake/secret_handler_mock.go . SecretHandlerInterface
+type SecretHandlerInterface interface {
+	CreateSecret(secret models.Secret) (string, *models.Error)
+	UpdateSecret(secret models.Secret) (string, *models.Error)
+	DeleteSecret(secretName, secretScope string) (string, *models.Error)
+}
+
 // SecretHandler handles services
 type SecretHandler struct {
 	BaseURL    string
