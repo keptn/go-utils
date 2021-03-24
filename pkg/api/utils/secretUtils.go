@@ -26,7 +26,7 @@ type SecretHandler struct {
 	Scheme     string
 }
 
-// NewSecretHandler returns a new SecretHandler which sends all requests directly to the configuration-service
+// NewSecretHandler returns a new SecretHandler which sends all requests directly to the secret-service
 func NewSecretHandler(baseURL string) *SecretHandler {
 	if strings.Contains(baseURL, "https://") {
 		baseURL = strings.TrimPrefix(baseURL, "https://")
@@ -43,7 +43,7 @@ func NewSecretHandler(baseURL string) *SecretHandler {
 }
 
 // NewAuthenticatedSecretHandler returns a new SecretHandler that authenticates at the api via the provided token
-// and sends all requests directly to the configuration-service
+// and sends all requests directly to the secret-service
 func NewAuthenticatedSecretHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SecretHandler {
 	if httpClient == nil {
 		httpClient = &http.Client{}
