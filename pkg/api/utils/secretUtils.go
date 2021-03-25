@@ -8,7 +8,7 @@ import (
 )
 
 const secretServiceBaseURL = "secrets"
-const v1SecretPath = "/v1/secrets"
+const v1SecretPath = "/v1/secret"
 
 //go:generate moq -pkg utils_mock -skip-ensure -out ./fake/secret_handler_mock.go . SecretHandlerInterface
 type SecretHandlerInterface interface {
