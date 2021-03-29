@@ -149,7 +149,7 @@ func (k *KeptnBase) GetKeptnResource(resource string) ([]byte, error) {
 
 	// if we run in a runlocal mode we are just getting the file from the local disk
 	if k.UseLocalFileSystem {
-		return _getKeptnResourceFromLocal(resource)
+		return getKeptnResourceFromLocal(resource)
 	}
 
 	// get it from KeptnBase
@@ -166,7 +166,7 @@ func (k *KeptnBase) GetKeptnResource(resource string) ([]byte, error) {
 /**
  * Retrieves a resource (=file) from the local file system. Basically checks if the file is available and if so returns it
  */
-func _getKeptnResourceFromLocal(resource string) ([]byte, error) {
+func getKeptnResourceFromLocal(resource string) ([]byte, error) {
 	if _, err := os.Stat(resource); err == nil {
 		return []byte(resource), nil
 	} else {
