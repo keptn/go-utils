@@ -1,7 +1,6 @@
 package keptn
 
 import (
-	"errors"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"log"
@@ -158,7 +157,7 @@ func (k *KeptnBase) GetKeptnResource(resource string) ([]byte, error) {
 
 	// return Nil in case resource couldn't be retrieved
 	if err != nil || requestedResource.ResourceContent == "" {
-		return nil, errors.New(fmt.Sprintf("resource not found: %s - %s", resource, err))
+		return nil, fmt.Errorf("resource not found: %s - %s", resource, err)
 	}
 
 	return []byte(requestedResource.ResourceContent), nil
