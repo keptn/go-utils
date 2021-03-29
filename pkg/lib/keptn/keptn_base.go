@@ -145,11 +145,11 @@ func addResourceContentToSLIMap(SLIs map[string]string, resource *models.Resourc
 }
 
 // GetKeptnResource returns a resource from the configuration repo based on the incoming cloud events project, service and stage
-func (k *KeptnBase) GetKeptnResource(resource string) (string, error) {
+func (k *KeptnBase) GetKeptnResource(resource string) ([]byte, error) {
 
 	// if we run in a runlocal mode we are just getting the file from the local disk
 	if k.UseLocalFileSystem {
-		return _getKeptnResourceFromLocal(resource)
+		return getKeptnResourceFromLocal(resource)
 	}
 
 	// get it from KeptnBase
@@ -157,22 +157,20 @@ func (k *KeptnBase) GetKeptnResource(resource string) (string, error) {
 
 	// return Nil in case resource couldn't be retrieved
 	if err != nil || requestedResource.ResourceContent == "" {
-		fmt.Printf("KeptnBase Resource not found: %s - %s", resource, err)
-		return "", err
+		return nil, fmt.Errorf("resource not found: %s - %s", resource, err)
 	}
 
-	// ToDo: Verify why we need TrimSuffix here
-	return strings.TrimSuffix(requestedResource.ResourceContent, "\n"), nil
+	return []byte(requestedResource.ResourceContent), nil
 }
 
 /**
  * Retrieves a resource (=file) from the local file system. Basically checks if the file is available and if so returns it
  */
-func _getKeptnResourceFromLocal(resource string) (string, error) {
+func getKeptnResourceFromLocal(resource string) ([]byte, error) {
 	if _, err := os.Stat(resource); err == nil {
-		return resource, nil
+		return []byte(resource), nil
 	} else {
-		return "", err
+		return nil, err
 	}
 }
 
