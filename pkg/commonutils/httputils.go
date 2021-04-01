@@ -6,11 +6,13 @@ import (
 	"time"
 )
 
-func DownloadFromURL(url string) ([]byte, error) {
+// DownloadFromURL downloads a file from the given url and returns
+// its content as a slice of bytes
+func DownloadFromURL(URL string) ([]byte, error) {
 	c := http.Client{
 		Timeout: 5 * time.Second,
 	}
-	resp, err := c.Get(url)
+	resp, err := c.Get(URL)
 	if err != nil {
 		return nil, err
 	}

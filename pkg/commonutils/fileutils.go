@@ -9,8 +9,10 @@ import (
 	"strings"
 )
 
+// ReadFile reads a file with the given file name and returns its content
+// as a slice of bytes. This function also supports file paths which are pointing to the
+// user's home directory, i.e. starting with ~/
 func ReadFile(fileName string) ([]byte, error) {
-
 	fileName = ExpandTilde(fileName)
 	if _, err := os.Stat(fileName); os.IsNotExist(err) {
 		return nil, fmt.Errorf("Cannot find file %s", fileName)
@@ -22,6 +24,8 @@ func ReadFile(fileName string) ([]byte, error) {
 	return data, nil
 }
 
+// ReadFileAsStr does the same thing as ReadFile but ruturns the content
+// of the file as a string
 func ReadFileAsStr(fileName string) (string, error) {
 	content, err := ReadFile(fileName)
 	if err != nil {
@@ -30,14 +34,19 @@ func ReadFileAsStr(fileName string) (string, error) {
 	return string(content), err
 }
 
-func FileExists(filename string) bool {
-	info, err := os.Stat(ExpandTilde(filename))
+// FileExists checks if the file with the gieven name exists.
+// This function also supports file paths which are pointing to the
+// user's home directory, i.e. starting with ~/
+func FileExists(fileName string) bool {
+	info, err := os.Stat(ExpandTilde(fileName))
 	if os.IsNotExist(err) {
 		return false
 	}
 	return !info.IsDir()
 }
 
+// ExpandTilde expands the tilde symbol (~) to the user's home directory
+// This function is also useful for expanding file paths like "~/a/b/c"
 func ExpandTilde(fileName string) string {
 	if fileName == "~" {
 		return UserHomeDir()
@@ -47,6 +56,7 @@ func ExpandTilde(fileName string) string {
 	return fileName
 }
 
+// UserHomeDir returns the user's home directory
 func UserHomeDir() string {
 	if runtime.GOOS == "windows" {
 		home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
