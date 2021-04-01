@@ -1,4 +1,4 @@
-package commonutils
+package httputils
 
 import (
 	"github.com/stretchr/testify/assert"

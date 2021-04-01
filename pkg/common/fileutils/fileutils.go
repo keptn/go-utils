@@ -1,4 +1,4 @@
-package commonutils
+package fileutils
 
 import (
 	"fmt"

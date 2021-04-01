@@ -1,8 +1,9 @@
-package commonutils
+package httputils
 
 import (
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -22,4 +23,17 @@ func DownloadFromURL(URL string) ([]byte, error) {
 		return nil, err
 	}
 	return body, nil
+}
+
+// IsValidURL checks whether the given string is a valid URL or not
+func IsValidURL(strURL string) bool {
+	_, err := url.ParseRequestURI(strURL)
+	if err != nil {
+		return false
+	}
+	u, err := url.Parse(strURL)
+	if err != nil || u.Scheme == "" || u.Host == "" {
+		return false
+	}
+	return true
 }
