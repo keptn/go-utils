@@ -1,5 +1,7 @@
 package v0_2_0
 
+import "gopkg.in/yaml.v2"
+
 ///// v0.2.0 Shipyard Spec ///////
 
 // Shipyard describes a shipyard specification according to Keptn spec 0.2.0
@@ -48,4 +50,15 @@ type Trigger struct {
 // Selector defines conditions that need to evaluate to true for a trigger to fire
 type Selector struct {
 	Match map[string]string `json:"match" yaml:"match"`
+}
+
+// DecodeShipyardYAML takes a shipyard string formatted as YAML and decodes it to
+// Shipyard value
+func DecodeShipyardYAML(shipyardYaml []byte) (*Shipyard, error) {
+	shipyardDecoded := &Shipyard{}
+
+	if err := yaml.Unmarshal(shipyardYaml, shipyardDecoded); err != nil {
+		return nil, err
+	}
+	return shipyardDecoded, nil
 }
