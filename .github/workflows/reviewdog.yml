@@ -2,14 +2,17 @@
 name: reviewdog
 on: [pull_request]
 jobs:
-  golangci-lint:
-    name: runner / golangci-lint
+  # You can add more and more supported linters with different config.
+  errcheck:
+    name: runner / errcheck
     runs-on: ubuntu-latest
     steps:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v1
-      - name: golangci-lint
+      - name: errcheck
         uses: reviewdog/action-golangci-lint@v1
         with:
-          golangci_lint_flags: "--enable-all --exclude-use-default=false"
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          golangci_lint_flags: "--disable-all -E errcheck"
+          tool_name: errcheck
+          level: info
