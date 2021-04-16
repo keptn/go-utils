@@ -22,6 +22,7 @@ func KeptnEvent(eventType string, payload interface{}) *KeptnEventBuilder {
 	ce := models.KeptnContextExtendedCE{
 		Contenttype:        contentType,
 		Data:               payload,
+		Source:             strutils.Stringp(""),
 		Shkeptnspecversion: defaultKeptnSpecVersion,
 		Specversion:        defaultSpecVersion,
 		Time:               strfmt.DateTime(time.Now().UTC()),
