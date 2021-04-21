@@ -7,6 +7,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"strings"
 	"time"
 )
 
@@ -121,4 +122,59 @@ func ToKeptnEvent(event cloudevents.Event) (models.KeptnContextExtendedCE, error
 	}
 
 	return keptnEvent, nil
+}
+
+func IsTaskEventType(eventType string) bool {
+	parts := strings.Split(eventType, ".")
+	return len(parts) == 5
+}
+
+func IsSequenceEventType(eventType string) bool {
+	parts := strings.Split(eventType, ".")
+	return len(parts) == 6
+}
+
+func IsValidEventType(eventType string) bool {
+	return IsSequenceEventType(eventType) || IsTaskEventType(eventType)
+}
+
+func ParseSequenceEventType(sequenceTriggeredEventType string) (string, string, string, error) {
+	parts := strings.Split(sequenceTriggeredEventType, ".")
+	if IsSequenceEventType(sequenceTriggeredEventType) {
+		return parts[3], parts[4], parts[5], nil
+	}
+	return "", "", "", fmt.Errorf("%s is not a valid keptn sequence triggered event type", sequenceTriggeredEventType)
+}
+
+func ParseTaskEventType(taskEventType string) (string, string, error) {
+	if !IsTaskEventType(taskEventType) {
+		return "", "", fmt.Errorf("%s is not a valid keptn task event type", taskEventType)
+	}
+	parts := strings.Split(taskEventType, ".")
+	return parts[3], parts[4], nil
+}
+
+func ParseEventKind(eventType string) (string, error) {
+	if !IsValidEventType(eventType) {
+		return "", fmt.Errorf("%s is not a valid keptn event type", eventType)
+	}
+	parts := strings.Split(eventType, ".")
+	return parts[len(parts)-1], nil
+}
+
+func ParseEventTypeWithoutKind(eventType string) (string, error) {
+	if !IsValidEventType(eventType) {
+		return "", fmt.Errorf("%s is not a valid keptn event type", eventType)
+	}
+	kind, _ := ParseEventKind(eventType)
+	return strings.TrimSuffix(eventType, "."+kind), nil
+}
+
+func ReplaceEventTypeKind(eventType, newKind string) (string, error) {
+	if !IsValidEventType(eventType) {
+		return "", fmt.Errorf("%s is not a valid keptn event type", eventType)
+	}
+	parts := strings.Split(eventType, ".")
+	parts[len(parts)-1] = newKind
+	return strings.Join(parts, "."), nil
 }
