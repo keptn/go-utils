@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/cloudevents/sdk-go/v2/protocol"
 	"github.com/go-openapi/strfmt"
+	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
@@ -269,6 +270,7 @@ func EventDataAs(in models.KeptnContextExtendedCE, out interface{}) error {
 func KeptnEvent(eventType string, payload interface{}) *KeptnEventBuilder {
 
 	ce := models.KeptnContextExtendedCE{
+		ID:                 uuid.NewString(),
 		Contenttype:        cloudevents.ApplicationJSON,
 		Data:               payload,
 		Source:             strutils.Stringp(""),
