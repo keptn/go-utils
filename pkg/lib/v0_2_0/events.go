@@ -210,7 +210,7 @@ func GetEventTypeForTriggeredEvent(baseTriggeredEventType, newEventTypeSuffix st
 // EventData contains mandatory fields of all Keptn CloudEvents
 type EventData struct {
 	Project string            `json:"project,omitempty"`
-	Stage   string            `json:"stage,omitempty"`
+	Stage   string            `json:"stage,omitempty" bson:"stage"`
 	Service string            `json:"service,omitempty"`
 	Labels  map[string]string `json:"labels,omitempty"`
 
