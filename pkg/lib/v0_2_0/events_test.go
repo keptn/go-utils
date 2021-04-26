@@ -235,7 +235,7 @@ func TestCreateKeptnEvent_MissingInformation(t *testing.T) {
 				Service: "my-service",
 			},
 		}
-		_, err := KeptnEvent("sh.keptn.event.dev.delivery.triggered", testData).Build()
+		_, err := KeptnEvent("sh.keptn.event.dev.delivery.triggered", "source", testData).Build()
 		assert.NotNil(t, err)
 	})
 
@@ -246,7 +246,7 @@ func TestCreateKeptnEvent_MissingInformation(t *testing.T) {
 				Service: "my-service",
 			},
 		}
-		_, err := KeptnEvent("sh.keptn.event.dev.delivery.triggered", testData).Build()
+		_, err := KeptnEvent("sh.keptn.event.dev.delivery.triggered", "source", testData).Build()
 		assert.NotNil(t, err)
 	})
 
@@ -257,7 +257,7 @@ func TestCreateKeptnEvent_MissingInformation(t *testing.T) {
 				Stage:   "my-stage",
 			},
 		}
-		_, err := KeptnEvent("sh.keptn.event.dev.delivery.triggered", testData).Build()
+		_, err := KeptnEvent("sh.keptn.event.dev.delivery.triggered", "source", testData).Build()
 		assert.NotNil(t, err)
 	})
 }
@@ -277,7 +277,7 @@ func TestCreateSimpleKeptnEvent(t *testing.T) {
 		Content: "some-content",
 	}
 
-	event, err := KeptnEvent("sh.keptn.event.dev.delivery.triggered", testData).Build()
+	event, err := KeptnEvent("sh.keptn.event.dev.delivery.triggered", "source", testData).Build()
 	require.Nil(t, err)
 	require.Equal(t, "application/json", event.Contenttype)
 	require.Equal(t, testData, event.Data)
@@ -291,10 +291,9 @@ func TestCreateSimpleKeptnEvent(t *testing.T) {
 
 func TestCreateKeptnEvent(t *testing.T) {
 
-	event, _ := KeptnEvent("sh.keptn.event.dev.delivery.triggered", map[string]interface{}{}).
+	event, _ := KeptnEvent("sh.keptn.event.dev.delivery.triggered", "source", map[string]interface{}{}).
 		WithID("my-id").
 		WithKeptnContext("my-keptn-context").
-		WithSource("my-source").
 		WithTriggeredID("my-triggered-id").
 		WithKeptnSpecVersion("2.0").
 		Build()
@@ -305,7 +304,7 @@ func TestCreateKeptnEvent(t *testing.T) {
 	require.Equal(t, defaultSpecVersion, event.Specversion)
 	require.Equal(t, "my-id", event.ID)
 	require.Equal(t, time.Now().UTC().Round(time.Minute), time.Time(event.Time).Round(time.Minute))
-	require.Equal(t, strutils.Stringp("my-source"), event.Source)
+	require.Equal(t, strutils.Stringp("source"), event.Source)
 	require.Equal(t, "my-keptn-context", event.Shkeptncontext)
 	require.Equal(t, "my-triggered-id", event.Triggeredid)
 	require.Equal(t, strutils.Stringp("sh.keptn.event.dev.delivery.triggered"), event.Type)
@@ -320,7 +319,7 @@ func TestToCloudEvent(t *testing.T) {
 	expected := cloudevents.NewEvent()
 	expected.SetType("sh.keptn.event.dev.delivery.triggered")
 	expected.SetID("my-id")
-	expected.SetSource("my-source")
+	expected.SetSource("source")
 	expected.SetData(cloudevents.ApplicationJSON, TestData{Content: "testdata"})
 	expected.SetDataContentType(cloudevents.ApplicationJSON)
 	expected.SetSpecVersion(defaultSpecVersion)
@@ -333,7 +332,7 @@ func TestToCloudEvent(t *testing.T) {
 		Data:               TestData{Content: "testdata"},
 		ID:                 "my-id",
 		Shkeptncontext:     "my-keptn-context",
-		Source:             strutils.Stringp("my-source"),
+		Source:             strutils.Stringp("source"),
 		Shkeptnspecversion: defaultKeptnSpecVersion,
 		Specversion:        defaultSpecVersion,
 		Triggeredid:        "my-triggered-id",

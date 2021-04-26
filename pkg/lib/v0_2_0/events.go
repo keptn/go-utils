@@ -267,13 +267,13 @@ func EventDataAs(in models.KeptnContextExtendedCE, out interface{}) error {
 	return Decode(in.Data, out)
 }
 
-func KeptnEvent(eventType string, payload interface{}) *KeptnEventBuilder {
+func KeptnEvent(eventType string, source string, payload interface{}) *KeptnEventBuilder {
 
 	ce := models.KeptnContextExtendedCE{
 		ID:                 uuid.NewString(),
 		Contenttype:        cloudevents.ApplicationJSON,
 		Data:               payload,
-		Source:             strutils.Stringp(""),
+		Source:             strutils.Stringp(source),
 		Shkeptnspecversion: defaultKeptnSpecVersion,
 		Specversion:        defaultSpecVersion,
 		Time:               strfmt.DateTime(time.Now().UTC()),
@@ -307,11 +307,6 @@ func (eb *KeptnEventBuilder) WithKeptnSpecVersion(keptnSpecVersion string) *Kept
 
 func (eb *KeptnEventBuilder) WithKeptnContext(keptnContext string) *KeptnEventBuilder {
 	eb.Shkeptncontext = keptnContext
-	return eb
-}
-
-func (eb *KeptnEventBuilder) WithSource(source string) *KeptnEventBuilder {
-	eb.Source = &source
 	return eb
 }
 
