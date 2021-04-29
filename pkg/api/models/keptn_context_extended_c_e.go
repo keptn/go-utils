@@ -6,6 +6,7 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -53,6 +54,16 @@ type KeptnContextExtendedCE struct {
 	// type
 	// Required: true
 	Type *string `json:"type"`
+}
+
+// DataAs attempts to populate the provided data object with the event payload.
+// data should be a pointer type.
+func (m *KeptnContextExtendedCE) DataAs(out interface{}) error {
+	bytes, err := json.Marshal(m.Data)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(bytes, out)
 }
 
 // Validate validates this keptn context extended c e

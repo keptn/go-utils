@@ -6,7 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/cloudevents/sdk-go/v2/protocol"
+	"github.com/go-openapi/strfmt"
+	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"strings"
 	"time"
@@ -18,6 +21,9 @@ import (
 const MAX_SEND_RETRIES = 3
 
 const DefaultHTTPEventEndpoint = "http://localhost:8081/event"
+
+const defaultSpecVersion = "1.0"
+const defaultKeptnSpecVersion = "0.2.1"
 
 const keptnEventTypePrefix = "sh.keptn.event."
 const keptnTriggeredEventSuffix = ".triggered"
@@ -85,7 +91,6 @@ func (httpSender HTTPEventSender) SendEvent(event cloudevents.Event) error {
 
 // GetTriggeredEventType returns for the given task the name of the triggered event type
 func GetTriggeredEventType(task string) string {
-
 	return keptnEventTypePrefix + task + keptnTriggeredEventSuffix
 }
 
@@ -107,6 +112,91 @@ func GetFinishedEventType(task string) string {
 // GetInvalidatedEventType returns for the given task the name of the finished event type
 func GetInvalidatedEventType(task string) string {
 	return keptnEventTypePrefix + task + keptnInvalidatedEventSuffix
+}
+
+// IsTaskEventType checks whether the given eventType is a task event type like e.g. "sh.keptn.event.task.triggered"
+func IsTaskEventType(eventType string) bool {
+	parts := strings.Split(eventType, ".")
+	if len(parts) != 5 {
+		return false
+	}
+	for _, p := range parts {
+		if p == "" {
+			return false
+		}
+	}
+	return true
+}
+
+// IsSequenceEventType checks whether the given event type is a sequence event type like e.g. "sh.keptn.event.stage.sequence.triggered"
+func IsSequenceEventType(eventType string) bool {
+	parts := strings.Split(eventType, ".")
+	if len(parts) != 6 {
+		return false
+	}
+	for _, p := range parts {
+		if p == "" {
+			return false
+		}
+	}
+	return true
+}
+
+// IsValidEventType checks whether the given event type is a valid event type, i.e. a valid task event type or sequence event type
+func IsValidEventType(eventType string) bool {
+	return IsSequenceEventType(eventType) || IsTaskEventType(eventType)
+}
+
+// ParseSequenceEventType parses the given sequence event type and returns the stage name, sequence name, event type as well as an error which
+// is eventually nil
+func ParseSequenceEventType(sequenceTriggeredEventType string) (string, string, string, error) {
+	parts := strings.Split(sequenceTriggeredEventType, ".")
+	if IsSequenceEventType(sequenceTriggeredEventType) {
+		return parts[3], parts[4], parts[5], nil
+	}
+	return "", "", "", fmt.Errorf("%s is not a valid keptn sequence triggered event type", sequenceTriggeredEventType)
+}
+
+// ParseTaskEventType parses the given task event type and returns the task name, event type as well as an error which
+// is eventually nil
+func ParseTaskEventType(taskEventType string) (string, string, error) {
+	if !IsTaskEventType(taskEventType) {
+		return "", "", fmt.Errorf("%s is not a valid keptn task event type", taskEventType)
+	}
+	parts := strings.Split(taskEventType, ".")
+	return parts[3], parts[4], nil
+}
+
+// ParseEventKind parses the given event type and returns the last element which is the "kind" of the event (e.g. triggered, finished, ...)
+func ParseEventKind(eventType string) (string, error) {
+	if !IsValidEventType(eventType) {
+		return "", fmt.Errorf("%s is not a valid keptn event type", eventType)
+	}
+	parts := strings.Split(eventType, ".")
+	return parts[len(parts)-1], nil
+}
+
+// ParseEventTypeWithoutKind parses the given event type and trims away the last element of the event which is the "kind"  of the event (e.g. triggered, finished, ...)
+func ParseEventTypeWithoutKind(eventType string) (string, error) {
+	if !IsValidEventType(eventType) {
+		return "", fmt.Errorf("%s is not a valid keptn event type", eventType)
+	}
+	kind, _ := ParseEventKind(eventType)
+	return strings.TrimSuffix(eventType, "."+kind), nil
+}
+
+// ReplaceEventTypeKind replaces the last element of the event which is the "kind" of the event (e.g. triggered, finished, ...) with a new value
+// This is useful e.g. to transform a .started event type into a .finished event type
+func ReplaceEventTypeKind(eventType, newKind string) (string, error) {
+	if !IsValidEventType(eventType) {
+		return "", fmt.Errorf("%s is not a valid keptn event type", eventType)
+	}
+	if newKind == "" {
+		return ParseEventTypeWithoutKind(eventType)
+	}
+	parts := strings.Split(eventType, ".")
+	parts[len(parts)-1] = newKind
+	return strings.Join(parts, "."), nil
 }
 
 func GetEventTypeForTriggeredEvent(baseTriggeredEventType, newEventTypeSuffix string) (string, error) {
@@ -175,4 +265,116 @@ func Decode(in, out interface{}) error {
 // target pointer specified by the out parameter
 func EventDataAs(in models.KeptnContextExtendedCE, out interface{}) error {
 	return Decode(in.Data, out)
+}
+
+// KeptnEvent creates a builder for a new KeptnContextExtendedCE
+func KeptnEvent(eventType string, source string, payload interface{}) *KeptnEventBuilder {
+
+	ce := models.KeptnContextExtendedCE{
+		ID:                 uuid.NewString(),
+		Contenttype:        cloudevents.ApplicationJSON,
+		Data:               payload,
+		Source:             strutils.Stringp(source),
+		Shkeptnspecversion: defaultKeptnSpecVersion,
+		Specversion:        defaultSpecVersion,
+		Time:               strfmt.DateTime(time.Now().UTC()),
+		Type:               strutils.Stringp(eventType),
+	}
+
+	return &KeptnEventBuilder{ce}
+}
+
+// KeptnEventBuilder is used for constructing a new KeptnContextExtendedCE
+type KeptnEventBuilder struct {
+	models.KeptnContextExtendedCE
+}
+
+// Build creates a value of KeptnContextExtendedCE from the current builder
+// It also does basic validation like the presence of project, service and stage in the event data
+func (eb *KeptnEventBuilder) Build() (models.KeptnContextExtendedCE, error) {
+
+	commonEventData := EventData{}
+	if err := eb.DataAs(&commonEventData); err != nil {
+		return eb.KeptnContextExtendedCE, err
+	}
+	if commonEventData.Project == "" || commonEventData.Service == "" || commonEventData.Stage == "" {
+		return eb.KeptnContextExtendedCE, fmt.Errorf("cannot create keptn cloud event as it does not contain project, service and stage information")
+	}
+
+	return eb.KeptnContextExtendedCE, nil
+}
+
+// WithKeptnSpecVersion can be used to override the keptn spec version
+func (eb *KeptnEventBuilder) WithKeptnSpecVersion(keptnSpecVersion string) *KeptnEventBuilder {
+	eb.Shkeptnspecversion = keptnSpecVersion
+	return eb
+}
+
+// WithKeptnContext can be used to set a keptn context
+func (eb *KeptnEventBuilder) WithKeptnContext(keptnContext string) *KeptnEventBuilder {
+	eb.Shkeptncontext = keptnContext
+	return eb
+}
+
+// WithTriggeredID can be used to set the triggered ID
+func (eb *KeptnEventBuilder) WithTriggeredID(triggeredID string) *KeptnEventBuilder {
+	eb.Triggeredid = triggeredID
+	return eb
+}
+
+// WithID can be used to override the ID, which is auto generated by default
+func (eb *KeptnEventBuilder) WithID(id string) *KeptnEventBuilder {
+	eb.ID = id
+	return eb
+}
+
+// ToCloudEvent takes a KeptnContextExtendedCE and converts it to an ordinary CloudEvent
+func ToCloudEvent(keptnEvent models.KeptnContextExtendedCE) cloudevents.Event {
+	event := cloudevents.NewEvent()
+	event.SetType(*keptnEvent.Type)
+	event.SetID(keptnEvent.ID)
+	event.SetSource(*keptnEvent.Source)
+	event.SetDataContentType(keptnEvent.Contenttype)
+	event.SetSpecVersion(keptnEvent.Specversion)
+	event.SetData(cloudevents.ApplicationJSON, keptnEvent.Data)
+	event.SetExtension(keptnContextCEExtension, keptnEvent.Shkeptncontext)
+	event.SetExtension(triggeredIDCEExtension, keptnEvent.Triggeredid)
+	event.SetExtension(keptnSpecVersionCEExtension, keptnEvent.Shkeptnspecversion)
+	return event
+}
+
+// ToKeptnEvent takes a CloudEvent and converts it into a KeptnContextExtendedCE
+func ToKeptnEvent(event cloudevents.Event) (models.KeptnContextExtendedCE, error) {
+	keptnContext := ""
+	if err := event.ExtensionAs(keptnContextCEExtension, &keptnContext); err != nil {
+		return models.KeptnContextExtendedCE{}, err
+	}
+
+	triggeredID := ""
+	if err := event.ExtensionAs(triggeredIDCEExtension, &triggeredID); err != nil {
+		return models.KeptnContextExtendedCE{}, err
+	}
+
+	keptnSpecVersion := ""
+	if err := event.ExtensionAs(keptnSpecVersionCEExtension, &keptnSpecVersion); err != nil {
+		return models.KeptnContextExtendedCE{}, err
+	}
+
+	var data interface{}
+	event.DataAs(&data)
+
+	keptnEvent := models.KeptnContextExtendedCE{
+		Contenttype:        cloudevents.ApplicationJSON,
+		Data:               data,
+		ID:                 event.ID(),
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: keptnSpecVersion,
+		Source:             strutils.Stringp(event.Source()),
+		Specversion:        event.SpecVersion(),
+		Time:               strfmt.DateTime(event.Time()),
+		Triggeredid:        triggeredID,
+		Type:               strutils.Stringp(event.Type()),
+	}
+
+	return keptnEvent, nil
 }

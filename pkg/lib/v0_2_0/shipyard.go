@@ -37,8 +37,9 @@ type Sequence struct {
 
 // Task defines a task by its name and optional properties
 type Task struct {
-	Name       string      `json:"name" yaml:"name"`
-	Properties interface{} `json:"properties" yaml:"properties"`
+	Name           string      `json:"name" yaml:"name"`
+	TriggeredAfter string      `json:"triggeredAfter,omitempty" yaml:"triggeredAfter,omitempty"`
+	Properties     interface{} `json:"properties" yaml:"properties"`
 }
 
 // Trigger defines a trigger which causes a sequence to get activated
