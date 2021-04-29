@@ -2,7 +2,7 @@ package osutils
 
 import "os"
 
-// GetOSEnv retrieves the value of the environment variable named by the key.
+// GetOSEnvOrDefault retrieves the value of the environment variable named by the key.
 // If the environment variable is not present the default value will be returned
 func GetOSEnvOrDefault(key, defaultVal string) string {
 	v := os.Getenv(key)
