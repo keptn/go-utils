@@ -2,8 +2,8 @@ package v0_2_0
 
 type GetActionTriggeredEventData struct {
 	EventData
-	ProblemDetails ProblemDetails `json:"problemDetails"`
-	ActionIndex    int            `json:"actionIndex"`
+	Problem     ProblemDetails `json:"problem"`
+	ActionIndex int            `json:"actionIndex"`
 }
 
 type GetActionStartedEventData struct {
