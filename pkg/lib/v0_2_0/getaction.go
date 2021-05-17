@@ -1,5 +1,7 @@
 package v0_2_0
 
+const GetActionTaskName = "get-action"
+
 type GetActionTriggeredEventData struct {
 	EventData
 	Problem     ProblemDetails `json:"problem"`
