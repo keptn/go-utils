@@ -1,6 +1,7 @@
 package timeutils
 
 import (
+	"errors"
 	"fmt"
 	"time"
 )
@@ -15,37 +16,47 @@ func GetKeptnTimeStamp(timestamp time.Time) string {
 	return timestamp.Format(keptnTimeFormatISO8601)
 }
 
+type GetStartEndTimeParams struct {
+	StartDate  string
+	EndDate    string
+	Timeframe  string
+	TimeFormat string
+}
+
+func (params *GetStartEndTimeParams) Validate() error {
+	if params.StartDate != "" && params.EndDate == "" {
+		// if a start date is set, but no end date is set, we require the timeframe to be set
+		if params.Timeframe == "" {
+			return fmt.Errorf("no timeframe or end date provided")
+		}
+	}
+	if params.EndDate != "" && params.Timeframe != "" {
+		return fmt.Errorf("'end' and 'timeframe' are mutually exclusive")
+	}
+	if params.EndDate != "" && params.StartDate == "" {
+		return errors.New("start date is required when using an end date")
+	}
+	return nil
+}
+
 // GetStartEndTime parses the provided start date, end date and/or timeframe
-func GetStartEndTime(startDatePoint, endDatePoint, timeframe, timeFormat string) (*time.Time, *time.Time, error) {
-	if timeFormat == "" {
+func GetStartEndTime(params GetStartEndTimeParams) (*time.Time, *time.Time, error) {
+	var timeFormat string
+	if params.TimeFormat == "" {
 		timeFormat = keptnTimeFormatISO8601
+	} else {
+		timeFormat = params.TimeFormat
 	}
 	var err error
 	// input validation
-	if startDatePoint != "" && endDatePoint == "" {
-		// if a start date is set, but no end date is set, we require the timeframe to be set
-		if timeframe == "" {
-			errMsg := "no timeframe or end date provided"
-
-			return nil, nil, fmt.Errorf(errMsg)
-		}
-	}
-	if endDatePoint != "" && timeframe != "" {
-		// can not use end date and timeframe at the same time
-		errMsg := "You can not use 'end' together with 'timeframe'"
-
-		return nil, nil, fmt.Errorf(errMsg)
-	}
-	if endDatePoint != "" && startDatePoint == "" {
-		errMsg := "start date is required when using an end date"
-
-		return nil, nil, fmt.Errorf(errMsg)
+	if err := params.Validate(); err != nil {
+		return nil, nil, err
 	}
 
 	// parse timeframe
 	var timeframeDuration time.Duration
-	if timeframe != "" {
-		timeframeDuration, err = time.ParseDuration(timeframe)
+	if params.Timeframe != "" {
+		timeframeDuration, err = time.ParseDuration(params.Timeframe)
 	} else {
 		timeframeDuration, err = time.ParseDuration(defaultEvaluationTimeframe)
 	}
@@ -58,8 +69,8 @@ func GetStartEndTime(startDatePoint, endDatePoint, timeframe, timeFormat string)
 	start := time.Now().UTC().Add(-timeframeDuration)
 
 	// Parse start date
-	if startDatePoint != "" {
-		start, err = time.Parse(timeFormat, startDatePoint)
+	if params.StartDate != "" {
+		start, err = time.Parse(timeFormat, params.StartDate)
 
 		if err != nil {
 			return nil, nil, err
@@ -67,8 +78,8 @@ func GetStartEndTime(startDatePoint, endDatePoint, timeframe, timeFormat string)
 	}
 
 	// Parse end date
-	if endDatePoint != "" {
-		end, err = time.Parse(timeFormat, endDatePoint)
+	if params.EndDate != "" {
+		end, err = time.Parse(timeFormat, params.EndDate)
 
 		if err != nil {
 			return nil, nil, err
@@ -76,7 +87,7 @@ func GetStartEndTime(startDatePoint, endDatePoint, timeframe, timeFormat string)
 	}
 
 	// last but not least: if a start date and a timeframe is provided, we set the end date to start date + timeframe
-	if startDatePoint != "" && endDatePoint == "" && timeframe != "" {
+	if params.StartDate != "" && params.EndDate == "" && params.Timeframe != "" {
 		end = start.Add(timeframeDuration)
 	}
 

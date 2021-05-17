@@ -7,25 +7,19 @@ import (
 )
 
 func TestGetStartEndTime(t *testing.T) {
-	type args struct {
-		startDatePoint string
-		endDatePoint   string
-		timeframe      string
-		timeFormat     string
-	}
 	tests := []struct {
 		name      string
-		args      args
+		args      GetStartEndTimeParams
 		wantStart time.Time
 		wantEnd   time.Time
 		wantErr   bool
 	}{
 		{
 			name: "start and end date provided - return those",
-			args: args{
-				startDatePoint: time.Now().Round(time.Minute).UTC().Format(keptnTimeFormatISO8601),
-				endDatePoint:   time.Now().Add(5 * time.Minute).UTC().Round(time.Minute).Format(keptnTimeFormatISO8601),
-				timeframe:      "",
+			args: GetStartEndTimeParams{
+				StartDate: time.Now().Round(time.Minute).UTC().Format(keptnTimeFormatISO8601),
+				EndDate:   time.Now().Add(5 * time.Minute).UTC().Round(time.Minute).Format(keptnTimeFormatISO8601),
+				Timeframe: "",
 			},
 			wantStart: time.Now().Round(time.Minute).UTC(),
 			wantEnd:   time.Now().Add(5 * time.Minute).Round(time.Minute).UTC(),
@@ -33,11 +27,11 @@ func TestGetStartEndTime(t *testing.T) {
 		},
 		{
 			name: "start and end date provided (different time format) - return those",
-			args: args{
-				startDatePoint: time.Now().Round(time.Minute).UTC().Format("2006-01-02T15:04:05"),
-				endDatePoint:   time.Now().Add(5 * time.Minute).UTC().Round(time.Minute).Format("2006-01-02T15:04:05"),
-				timeframe:      "",
-				timeFormat:     "2006-01-02T15:04:05",
+			args: GetStartEndTimeParams{
+				StartDate:  time.Now().Round(time.Minute).UTC().Format("2006-01-02T15:04:05"),
+				EndDate:    time.Now().Add(5 * time.Minute).UTC().Round(time.Minute).Format("2006-01-02T15:04:05"),
+				Timeframe:  "",
+				TimeFormat: "2006-01-02T15:04:05",
 			},
 			wantStart: time.Now().Round(time.Minute).UTC(),
 			wantEnd:   time.Now().Add(5 * time.Minute).Round(time.Minute).UTC(),
@@ -45,10 +39,10 @@ func TestGetStartEndTime(t *testing.T) {
 		},
 		{
 			name: "start and timeframe - return startdate and startdate + timeframe",
-			args: args{
-				startDatePoint: time.Now().Round(time.Minute).UTC().Format(keptnTimeFormatISO8601),
-				endDatePoint:   "",
-				timeframe:      "10m",
+			args: GetStartEndTimeParams{
+				StartDate: time.Now().Round(time.Minute).UTC().Format(keptnTimeFormatISO8601),
+				EndDate:   "",
+				Timeframe: "10m",
 			},
 			wantStart: time.Now().Round(time.Minute).UTC(),
 			wantEnd:   time.Now().Add(10 * time.Minute).Round(time.Minute).UTC(),
@@ -56,10 +50,10 @@ func TestGetStartEndTime(t *testing.T) {
 		},
 		{
 			name: "only timeframe provided - return time.Now - timeframe and time.Now",
-			args: args{
-				startDatePoint: "",
-				endDatePoint:   "",
-				timeframe:      "10m",
+			args: GetStartEndTimeParams{
+				StartDate: "",
+				EndDate:   "",
+				Timeframe: "10m",
 			},
 			wantStart: time.Now().UTC().Add(-10 * time.Minute).Round(time.Minute).UTC(),
 			wantEnd:   time.Now().UTC().Round(time.Minute).UTC(),
@@ -67,80 +61,80 @@ func TestGetStartEndTime(t *testing.T) {
 		},
 		{
 			name: "startDate > endDate provided - return error",
-			args: args{
-				startDatePoint: time.Now().Add(1 * time.Minute).UTC().Format(keptnTimeFormatISO8601),
-				endDatePoint:   time.Now().UTC().Format(keptnTimeFormatISO8601),
-				timeframe:      "",
+			args: GetStartEndTimeParams{
+				StartDate: time.Now().Add(1 * time.Minute).UTC().Format(keptnTimeFormatISO8601),
+				EndDate:   time.Now().UTC().Format(keptnTimeFormatISO8601),
+				Timeframe: "",
 			},
 			wantErr: true,
 		},
 		{
 			name: "startDate, endDate and timeframe provided - return error",
-			args: args{
-				startDatePoint: time.Now().Add(1 * time.Minute).UTC().Format(keptnTimeFormatISO8601),
-				endDatePoint:   time.Now().UTC().Format(keptnTimeFormatISO8601),
-				timeframe:      "5m",
+			args: GetStartEndTimeParams{
+				StartDate: time.Now().Add(1 * time.Minute).UTC().Format(keptnTimeFormatISO8601),
+				EndDate:   time.Now().UTC().Format(keptnTimeFormatISO8601),
+				Timeframe: "5m",
 			},
 			wantErr: true,
 		},
 		{
 			name: "startDate provided, but no endDate or timeframe - return error",
-			args: args{
-				startDatePoint: time.Now().Add(1 * time.Minute).UTC().Format(keptnTimeFormatISO8601),
-				endDatePoint:   "",
-				timeframe:      "",
+			args: GetStartEndTimeParams{
+				StartDate: time.Now().Add(1 * time.Minute).UTC().Format(keptnTimeFormatISO8601),
+				EndDate:   "",
+				Timeframe: "",
 			},
 			wantErr: true,
 		},
 		{
 			name: "endDate provided, but no startDate or timeframe - return error",
-			args: args{
-				startDatePoint: "",
-				endDatePoint:   time.Now().Add(1 * time.Minute).UTC().Format(keptnTimeFormatISO8601),
-				timeframe:      "",
+			args: GetStartEndTimeParams{
+				StartDate: "",
+				EndDate:   time.Now().Add(1 * time.Minute).UTC().Format(keptnTimeFormatISO8601),
+				Timeframe: "",
 			},
 			wantErr: true,
 		},
 		{
 			name: "invalid timeframe string - return error",
-			args: args{
-				startDatePoint: "",
-				endDatePoint:   "",
-				timeframe:      "xyz",
+			args: GetStartEndTimeParams{
+				StartDate: "",
+				EndDate:   "",
+				Timeframe: "xyz",
 			},
 			wantErr: true,
 		},
 		{
 			name: "invalid timeframe string - return error",
-			args: args{
-				startDatePoint: "",
-				endDatePoint:   "",
-				timeframe:      "xym",
+			args: GetStartEndTimeParams{
+				StartDate: "",
+				EndDate:   "",
+				Timeframe: "xym",
 			},
 			wantErr: true,
 		},
 		{
 			name: "invalid startDate string - return error",
-			args: args{
-				startDatePoint: "abc",
-				endDatePoint:   "",
-				timeframe:      "5m",
+			args: GetStartEndTimeParams{
+				StartDate: "abc",
+				EndDate:   "",
+				Timeframe: "5m",
 			},
 			wantErr: true,
 		},
 		{
 			name: "invalid endDate string - return error",
-			args: args{
-				startDatePoint: time.Now().Add(1 * time.Minute).UTC().Format(keptnTimeFormatISO8601),
-				endDatePoint:   "abc",
-				timeframe:      "",
+			args: GetStartEndTimeParams{
+				StartDate: time.Now().Add(1 * time.Minute).UTC().Format(keptnTimeFormatISO8601),
+				EndDate:   "abc",
+				Timeframe: "",
 			},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotStart, gotEnd, err := GetStartEndTime(tt.args.startDatePoint, tt.args.endDatePoint, tt.args.timeframe, tt.args.timeFormat)
+			gotStart, gotEnd, err := GetStartEndTime(tt.args)
 			if tt.wantErr {
 				require.NotNil(t, err)
 				require.Nil(t, gotStart)
