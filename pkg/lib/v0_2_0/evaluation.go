@@ -21,6 +21,8 @@ type Evaluation struct {
 	Start string `json:"start"`
 	// End indicates the end timestamp of the tests
 	End string `json:"end"`
+	// Timeframe indicates the timeframe of the evaluation
+	Timeframe string `json:"timeframe"`
 }
 
 type Deployment struct {
