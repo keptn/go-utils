@@ -7,6 +7,7 @@ import (
 )
 
 func TestGetStartEndTime(t *testing.T) {
+	const userFriendlyTimeFormat = "2006-01-02T15:04:05"
 	tests := []struct {
 		name      string
 		args      GetStartEndTimeParams
@@ -28,10 +29,10 @@ func TestGetStartEndTime(t *testing.T) {
 		{
 			name: "start and end date provided (different time format) - return those",
 			args: GetStartEndTimeParams{
-				StartDate:  time.Now().Round(time.Minute).UTC().Format("2006-01-02T15:04:05"),
-				EndDate:    time.Now().Add(5 * time.Minute).UTC().Round(time.Minute).Format("2006-01-02T15:04:05"),
+				StartDate:  time.Now().Round(time.Minute).UTC().Format(userFriendlyTimeFormat),
+				EndDate:    time.Now().Add(5 * time.Minute).UTC().Round(time.Minute).Format(userFriendlyTimeFormat),
 				Timeframe:  "",
-				TimeFormat: "2006-01-02T15:04:05",
+				TimeFormat: userFriendlyTimeFormat,
 			},
 			wantStart: time.Now().Round(time.Minute).UTC(),
 			wantEnd:   time.Now().Add(5 * time.Minute).Round(time.Minute).UTC(),
