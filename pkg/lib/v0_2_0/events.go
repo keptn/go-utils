@@ -345,20 +345,15 @@ func ToCloudEvent(keptnEvent models.KeptnContextExtendedCE) cloudevents.Event {
 
 // ToKeptnEvent takes a CloudEvent and converts it into a KeptnContextExtendedCE
 func ToKeptnEvent(event cloudevents.Event) (models.KeptnContextExtendedCE, error) {
-	keptnContext := ""
-	if err := event.ExtensionAs(keptnContextCEExtension, &keptnContext); err != nil {
-		return models.KeptnContextExtendedCE{}, err
-	}
 
-	triggeredID := ""
-	if err := event.ExtensionAs(triggeredIDCEExtension, &triggeredID); err != nil {
-		return models.KeptnContextExtendedCE{}, err
-	}
+	var keptnContext string
+	event.ExtensionAs(keptnContextCEExtension, &keptnContext)
 
-	keptnSpecVersion := ""
-	if err := event.ExtensionAs(keptnSpecVersionCEExtension, &keptnSpecVersion); err != nil {
-		return models.KeptnContextExtendedCE{}, err
-	}
+	var triggeredID string
+	event.ExtensionAs(triggeredIDCEExtension, &triggeredID)
+
+	var keptnSpecVersion string
+	event.ExtensionAs(keptnSpecVersionCEExtension, &keptnSpecVersion)
 
 	var data interface{}
 	event.DataAs(&data)
