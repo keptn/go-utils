@@ -3,8 +3,8 @@ package api
 import (
 	"context"
 	"fmt"
-	"github.com/go-openapi/strfmt"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -31,29 +31,29 @@ func newFakeEventHandler() *fakeEventHandler {
 				{
 					ID:             "ID1",
 					Shkeptncontext: "ctx1",
-					Time:           strfmt.DateTime(t0.Add(time.Second)),
+					Time:           timeutils.GetKeptnTimeStamp(t0.Add(time.Second)),
 				},
 				{
 					ID:             "ID2",
 					Shkeptncontext: "ctx1",
-					Time:           strfmt.DateTime(t0.Add(time.Second * 2)),
+					Time:           timeutils.GetKeptnTimeStamp(t0.Add(time.Second * 2)),
 				},
 				{
 					ID:             "ID3",
 					Shkeptncontext: "ctx1",
-					Time:           strfmt.DateTime(t0.Add(time.Second * 3)),
+					Time:           timeutils.GetKeptnTimeStamp(t0.Add(time.Second * 3)),
 				},
 			},
 			"ctx2": {
 				{
 					ID:             "ID1",
 					Shkeptncontext: "ctx2",
-					Time:           strfmt.DateTime(t0.Add(time.Second * 30)),
+					Time:           timeutils.GetKeptnTimeStamp(t0.Add(time.Second * 30)),
 				},
 				{
 					ID:             "ID2",
 					Shkeptncontext: "ctx2",
-					Time:           strfmt.DateTime(t0.Add(time.Second * 31)),
+					Time:           timeutils.GetKeptnTimeStamp(t0.Add(time.Second * 31)),
 				},
 			},
 		},
@@ -114,14 +114,14 @@ func TestEventWatcherTimeout(t *testing.T) {
 
 func TestSortedGetter(t *testing.T) {
 
-	firstTime := strfmt.DateTime(t0.Add(-time.Second * 2))
-	secondTime := strfmt.DateTime(t0.Add(-time.Second))
-	thirdTime := strfmt.DateTime(t0)
+	firstTime := timeutils.GetKeptnTimeStamp(t0.Add(-time.Second * 2))
+	secondTime := timeutils.GetKeptnTimeStamp(t0.Add(-time.Second))
+	thirdTime := timeutils.GetKeptnTimeStamp(t0)
 
 	events := []*models.KeptnContextExtendedCE{
-		{Time: strfmt.DateTime(t0.Add(-time.Second))},
-		{Time: strfmt.DateTime(t0)},
-		{Time: strfmt.DateTime(t0.Add(-time.Second * 2))},
+		{Time: timeutils.GetKeptnTimeStamp(t0.Add(-time.Second))},
+		{Time: timeutils.GetKeptnTimeStamp(t0)},
+		{Time: timeutils.GetKeptnTimeStamp(t0.Add(-time.Second * 2))},
 	}
 
 	SortByTime(events)

@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
-	"time"
 )
 
 // Datastore represents the interface for accessing Keptn's datastore
@@ -102,7 +101,7 @@ func getLatestEvent(keptnContext string, eventType string, uri string, datastore
 			// find latest event
 			var latest *models.KeptnContextExtendedCE
 			for _, event := range response.Events {
-				if latest == nil || time.Time(latest.Time).Before(time.Time(event.Time)) {
+				if latest == nil || latest.GetTimeValue().Before(event.GetTimeValue()) {
 					latest = event
 				}
 			}
