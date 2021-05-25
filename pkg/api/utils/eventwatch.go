@@ -61,9 +61,8 @@ func (ew *EventWatcher) queryEvents(filter EventFilter) []*models.KeptnContextEx
 	}
 	SortByTime(events)
 	if len(events) > 0 {
-		timeValue := events[len(events)-1].GetTimeValue()
-		if timeValue.After(ew.nextCEFetchTime) {
-			ew.nextCEFetchTime = timeValue.UTC()
+		if events[len(events)-1].Time.After(ew.nextCEFetchTime) {
+			ew.nextCEFetchTime = events[len(events)-1].Time
 		}
 	}
 
@@ -132,6 +131,6 @@ type EventManipulatorFunc func([]*models.KeptnContextExtendedCE)
 // SortByTime sorts the event slice by time (oldest to newest)
 func SortByTime(events []*models.KeptnContextExtendedCE) {
 	sort.Slice(events, func(i, j int) bool {
-		return events[i].GetTimeValue().Before(events[j].GetTimeValue())
+		return events[i].Time.Before(events[j].Time)
 	})
 }

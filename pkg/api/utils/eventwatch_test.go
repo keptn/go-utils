@@ -31,29 +31,29 @@ func newFakeEventHandler() *fakeEventHandler {
 				{
 					ID:             "ID1",
 					Shkeptncontext: "ctx1",
-					Time:           timeutils.GetKeptnTimeStamp(t0.Add(time.Second)),
+					Time:           t0.Add(time.Second),
 				},
 				{
 					ID:             "ID2",
 					Shkeptncontext: "ctx1",
-					Time:           timeutils.GetKeptnTimeStamp(t0.Add(time.Second * 2)),
+					Time:           t0.Add(time.Second * 2),
 				},
 				{
 					ID:             "ID3",
 					Shkeptncontext: "ctx1",
-					Time:           timeutils.GetKeptnTimeStamp(t0.Add(time.Second * 3)),
+					Time:           t0.Add(time.Second * 3),
 				},
 			},
 			"ctx2": {
 				{
 					ID:             "ID1",
 					Shkeptncontext: "ctx2",
-					Time:           timeutils.GetKeptnTimeStamp(t0.Add(time.Second * 30)),
+					Time:           t0.Add(time.Second * 30),
 				},
 				{
 					ID:             "ID2",
 					Shkeptncontext: "ctx2",
-					Time:           timeutils.GetKeptnTimeStamp(t0.Add(time.Second * 31)),
+					Time:           t0.Add(time.Second * 31),
 				},
 			},
 		},
@@ -119,15 +119,15 @@ func TestSortedGetter(t *testing.T) {
 	thirdTime := timeutils.GetKeptnTimeStamp(t0)
 
 	events := []*models.KeptnContextExtendedCE{
-		{Time: timeutils.GetKeptnTimeStamp(t0.Add(-time.Second))},
-		{Time: timeutils.GetKeptnTimeStamp(t0)},
-		{Time: timeutils.GetKeptnTimeStamp(t0.Add(-time.Second * 2))},
+		{Time: t0.Add(-time.Second)},
+		{Time: t0},
+		{Time: t0.Add(-time.Second * 2)},
 	}
 
 	SortByTime(events)
-	assert.Equal(t, events[0].Time, firstTime)
-	assert.Equal(t, events[1].Time, secondTime)
-	assert.Equal(t, events[2].Time, thirdTime)
+	assert.Equal(t, timeutils.GetKeptnTimeStamp(events[0].Time), firstTime)
+	assert.Equal(t, timeutils.GetKeptnTimeStamp(events[1].Time), secondTime)
+	assert.Equal(t, timeutils.GetKeptnTimeStamp(events[2].Time), thirdTime)
 
 	for _, e := range events {
 		fmt.Println(e.Time)

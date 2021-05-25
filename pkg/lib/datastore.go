@@ -101,7 +101,7 @@ func getLatestEvent(keptnContext string, eventType string, uri string, datastore
 			// find latest event
 			var latest *models.KeptnContextExtendedCE
 			for _, event := range response.Events {
-				if latest == nil || latest.GetTimeValue().Before(event.GetTimeValue()) {
+				if latest == nil || latest.Time.Before(event.Time) {
 					latest = event
 				}
 			}

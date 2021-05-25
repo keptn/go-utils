@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/strutils"
-	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"strings"
 	"time"
@@ -277,7 +276,7 @@ func KeptnEvent(eventType string, source string, payload interface{}) *KeptnEven
 		Source:             strutils.Stringp(source),
 		Shkeptnspecversion: defaultKeptnSpecVersion,
 		Specversion:        defaultSpecVersion,
-		Time:               timeutils.GetKeptnTimeStamp(time.Now().UTC()),
+		Time:               time.Now().UTC(),
 		Type:               strutils.Stringp(eventType),
 	}
 
@@ -366,7 +365,7 @@ func ToKeptnEvent(event cloudevents.Event) (models.KeptnContextExtendedCE, error
 		Shkeptnspecversion: keptnSpecVersion,
 		Source:             strutils.Stringp(event.Source()),
 		Specversion:        event.SpecVersion(),
-		Time:               timeutils.GetKeptnTimeStamp(event.Time()),
+		Time:               event.Time(),
 		Triggeredid:        triggeredID,
 		Type:               strutils.Stringp(event.Type()),
 	}

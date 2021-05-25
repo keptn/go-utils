@@ -4,7 +4,6 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/common/strutils"
-	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -283,7 +282,7 @@ func TestCreateSimpleKeptnEvent(t *testing.T) {
 	require.Equal(t, "application/json", event.Contenttype)
 	require.Equal(t, testData, event.Data)
 	require.Equal(t, "", event.Shkeptncontext)
-	require.Equal(t, time.Now().UTC().Round(time.Minute), event.GetTimeValue().Round(time.Minute))
+	require.Equal(t, time.Now().UTC().Round(time.Minute), event.Time.Round(time.Minute))
 	require.Equal(t, defaultKeptnSpecVersion, event.Shkeptnspecversion)
 	require.Equal(t, defaultSpecVersion, event.Specversion)
 	require.Equal(t, "", event.Triggeredid)
@@ -304,7 +303,7 @@ func TestCreateKeptnEvent(t *testing.T) {
 	require.Equal(t, "2.0", event.Shkeptnspecversion)
 	require.Equal(t, defaultSpecVersion, event.Specversion)
 	require.Equal(t, "my-id", event.ID)
-	require.Equal(t, time.Now().UTC().Round(time.Minute), event.GetTimeValue().Round(time.Minute))
+	require.Equal(t, time.Now().UTC().Round(time.Minute), event.Time.Round(time.Minute))
 	require.Equal(t, strutils.Stringp("source"), event.Source)
 	require.Equal(t, "my-keptn-context", event.Shkeptncontext)
 	require.Equal(t, "my-triggered-id", event.Triggeredid)
@@ -360,7 +359,7 @@ func TestToKeptnEvent(t *testing.T) {
 		Specversion:        defaultSpecVersion,
 		Triggeredid:        "my-triggered-id",
 		Type:               strutils.Stringp("sh.keptn.event.dev.delivery.triggered"),
-		Time:               timeutils.GetKeptnTimeStamp(time.Time{}),
+		Time:               time.Time{},
 	}
 
 	ce := cloudevents.NewEvent()

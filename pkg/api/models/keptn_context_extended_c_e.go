@@ -2,7 +2,6 @@ package models
 
 import (
 	"encoding/json"
-	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"time"
 )
 
@@ -37,7 +36,7 @@ type KeptnContextExtendedCE struct {
 
 	// time
 	// Format: date-time
-	Time string `json:"time,omitempty"`
+	Time time.Time `json:"time,omitempty"`
 
 	// triggeredid
 	Triggeredid string `json:"triggeredid,omitempty"`
@@ -55,12 +54,4 @@ func (ce *KeptnContextExtendedCE) DataAs(out interface{}) error {
 		return err
 	}
 	return json.Unmarshal(bytes, out)
-}
-
-func (ce *KeptnContextExtendedCE) GetTimeValue() time.Time {
-	timeValue, err := time.Parse(timeutils.KeptnTimeFormatISO8601, ce.Time)
-	if err != nil {
-		return time.Time{}.UTC()
-	}
-	return timeValue.UTC()
 }
