@@ -17,8 +17,8 @@ func TestGetStartEndTime(t *testing.T) {
 		{
 			name: "start and end date provided - return those",
 			args: GetStartEndTimeParams{
-				StartDate: time.Now().Round(time.Minute).UTC().Format(keptnTimeFormatISO8601),
-				EndDate:   time.Now().Add(5 * time.Minute).UTC().Round(time.Minute).Format(keptnTimeFormatISO8601),
+				StartDate: time.Now().Round(time.Minute).UTC().Format(KeptnTimeFormatISO8601),
+				EndDate:   time.Now().Add(5 * time.Minute).UTC().Round(time.Minute).Format(KeptnTimeFormatISO8601),
 				Timeframe: "",
 			},
 			wantStart: time.Now().Round(time.Minute).UTC(),
@@ -40,7 +40,7 @@ func TestGetStartEndTime(t *testing.T) {
 		{
 			name: "start and timeframe - return startdate and startdate + timeframe",
 			args: GetStartEndTimeParams{
-				StartDate: time.Now().Round(time.Minute).UTC().Format(keptnTimeFormatISO8601),
+				StartDate: time.Now().Round(time.Minute).UTC().Format(KeptnTimeFormatISO8601),
 				EndDate:   "",
 				Timeframe: "10m",
 			},
@@ -62,8 +62,8 @@ func TestGetStartEndTime(t *testing.T) {
 		{
 			name: "startDate > endDate provided - return error",
 			args: GetStartEndTimeParams{
-				StartDate: time.Now().Add(1 * time.Minute).UTC().Format(keptnTimeFormatISO8601),
-				EndDate:   time.Now().UTC().Format(keptnTimeFormatISO8601),
+				StartDate: time.Now().Add(1 * time.Minute).UTC().Format(KeptnTimeFormatISO8601),
+				EndDate:   time.Now().UTC().Format(KeptnTimeFormatISO8601),
 				Timeframe: "",
 			},
 			wantErr: true,
@@ -71,8 +71,8 @@ func TestGetStartEndTime(t *testing.T) {
 		{
 			name: "startDate, endDate and timeframe provided - return error",
 			args: GetStartEndTimeParams{
-				StartDate: time.Now().Add(1 * time.Minute).UTC().Format(keptnTimeFormatISO8601),
-				EndDate:   time.Now().UTC().Format(keptnTimeFormatISO8601),
+				StartDate: time.Now().Add(1 * time.Minute).UTC().Format(KeptnTimeFormatISO8601),
+				EndDate:   time.Now().UTC().Format(KeptnTimeFormatISO8601),
 				Timeframe: "5m",
 			},
 			wantErr: true,
@@ -80,7 +80,7 @@ func TestGetStartEndTime(t *testing.T) {
 		{
 			name: "startDate provided, but no endDate or timeframe - return error",
 			args: GetStartEndTimeParams{
-				StartDate: time.Now().Add(1 * time.Minute).UTC().Format(keptnTimeFormatISO8601),
+				StartDate: time.Now().Add(1 * time.Minute).UTC().Format(KeptnTimeFormatISO8601),
 				EndDate:   "",
 				Timeframe: "",
 			},
@@ -90,7 +90,7 @@ func TestGetStartEndTime(t *testing.T) {
 			name: "endDate provided, but no startDate or timeframe - return error",
 			args: GetStartEndTimeParams{
 				StartDate: "",
-				EndDate:   time.Now().Add(1 * time.Minute).UTC().Format(keptnTimeFormatISO8601),
+				EndDate:   time.Now().Add(1 * time.Minute).UTC().Format(KeptnTimeFormatISO8601),
 				Timeframe: "",
 			},
 			wantErr: true,
@@ -125,7 +125,7 @@ func TestGetStartEndTime(t *testing.T) {
 		{
 			name: "invalid endDate string - return error",
 			args: GetStartEndTimeParams{
-				StartDate: time.Now().Add(1 * time.Minute).UTC().Format(keptnTimeFormatISO8601),
+				StartDate: time.Now().Add(1 * time.Minute).UTC().Format(KeptnTimeFormatISO8601),
 				EndDate:   "abc",
 				Timeframe: "",
 			},

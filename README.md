@@ -180,16 +180,6 @@ watcher := api.NewEventWatcher(eventhandler),
 ``` 
 
 
-## Updating model definitions
-After updating the model definitions in the `swagger.yaml` file, execute the command
-
-```
-swagger generate model --spec=swagger.yaml -t=./pkg/api/
-```
-
-to update the models located in `./pkg/api/models`
-
-
 ## Automation
 
 A [GitHub Action](https://github.com/keptn/go-utils/actions?query=workflow%3A%22Auto+PR+to+keptn%2Fkeptn%22) is used

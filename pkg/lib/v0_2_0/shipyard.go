@@ -1,6 +1,6 @@
 package v0_2_0
 
-import "gopkg.in/yaml.v2"
+import "gopkg.in/yaml.v3"
 
 ///// v0.2.0 Shipyard Spec ///////
 

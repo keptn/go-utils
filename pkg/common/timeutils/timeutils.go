@@ -6,14 +6,14 @@ import (
 	"time"
 )
 
-const keptnTimeFormatISO8601 = "2006-01-02T15:04:05.000Z"
+const KeptnTimeFormatISO8601 = "2006-01-02T15:04:05.000Z"
 
 const defaultEvaluationTimeframe = "5m"
 
 // GetKeptnTimeStamp formats a given timestamp into the format used by
 // Keptn which is following the ISO 8601 standard
 func GetKeptnTimeStamp(timestamp time.Time) string {
-	return timestamp.Format(keptnTimeFormatISO8601)
+	return timestamp.Format(KeptnTimeFormatISO8601)
 }
 
 type GetStartEndTimeParams struct {
@@ -43,7 +43,7 @@ func (params *GetStartEndTimeParams) Validate() error {
 func GetStartEndTime(params GetStartEndTimeParams) (*time.Time, *time.Time, error) {
 	var timeFormat string
 	if params.TimeFormat == "" {
-		timeFormat = keptnTimeFormatISO8601
+		timeFormat = KeptnTimeFormatISO8601
 	} else {
 		timeFormat = params.TimeFormat
 	}

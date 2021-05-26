@@ -2,7 +2,7 @@ package keptn
 
 import (
 	"context"
-	"github.com/go-openapi/strfmt"
+	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"github.com/stretchr/testify/assert"
 	"net"
 	"net/http"
@@ -98,7 +98,7 @@ func TestGetEventStatusOK(t *testing.T) {
 	}
 
 	// check whether the last event is returned
-	if strfmt.DateTime(cloudEvent.Time).String() != "2019-10-21T14:12:48.000Z" {
+	if timeutils.GetKeptnTimeStamp(cloudEvent.Time) != "2019-10-21T14:12:48.000Z" {
 		t.Error("did not receive the latest event")
 	}
 
