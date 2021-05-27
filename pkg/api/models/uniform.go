@@ -7,10 +7,10 @@ import (
 )
 
 type Integration struct {
-	ID            string       `json:"id" bson:"_id"`
-	Name          string       `json:"name" bson:"name"`
-	MetaData      MetaData     `json:"metadata" bson:"metadata"`
-	Subscriptions Subscription `json:"subscriptions" bson:"subscriptions"`
+	ID           string       `json:"id" bson:"_id"`
+	Name         string       `json:"name" bson:"name"`
+	MetaData     MetaData     `json:"metadata" bson:"metadata"`
+	Subscription Subscription `json:"subscription" bson:"subscription"`
 }
 
 type MetaData struct {
