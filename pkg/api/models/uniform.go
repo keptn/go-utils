@@ -7,10 +7,10 @@ import (
 )
 
 type Integration struct {
-	ID            string         `json:"id" bson:"_id"`
-	Name          string         `json:"name" bson:"name"`
-	MetaData      MetaData       `json:"metadata" bson:"metadata"`
-	Subscriptions []Subscription `json:"subscriptions" bson:"subscriptions"`
+	ID            string       `json:"id" bson:"_id"`
+	Name          string       `json:"name" bson:"name"`
+	MetaData      MetaData     `json:"metadata" bson:"metadata"`
+	Subscriptions Subscription `json:"subscriptions" bson:"subscriptions"`
 }
 
 type MetaData struct {
@@ -24,7 +24,7 @@ type MetaData struct {
 }
 
 type Subscription struct {
-	Name   string             `json:"name" bson:"name"`
+	Topics []string           `json:"topics" bson:"topics"`
 	Status string             `json:"status" bson:"status"`
 	Filter SubscriptionFilter `json:"filter" bson:"filter"`
 }
@@ -51,7 +51,7 @@ type IntegrationID struct {
 
 func (i IntegrationID) Hash() (string, error) {
 	if !i.validate() {
-		return "", fmt.Errorf("incomplete integratino ID. All fields must be set.")
+		return "", fmt.Errorf("incomplete integration ID. At least 'name' and 'namespace' must be set.")
 	}
 	raw := fmt.Sprintf("%s-%s-%s-%s-%s", i.Name, i.Namespace, i.Project, i.Stage, i.Service)
 	hasher := sha1.New()
@@ -60,5 +60,5 @@ func (i IntegrationID) Hash() (string, error) {
 }
 
 func (i IntegrationID) validate() bool {
-	return i.Name != "" && i.Namespace != "" && i.Project != "" && i.Stage != "" && i.Service != ""
+	return i.Name != "" && i.Namespace != ""
 }
