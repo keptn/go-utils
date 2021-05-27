@@ -52,8 +52,8 @@ func TestIntegrationID_Hash(t *testing.T) {
 			Stage:     "st",
 			Service:   "svc",
 		},
-			"",
-			true},
+			"49a6b635c8a4588db5986bf888126bc56238c9df",
+			false},
 		{"missing stage", fields{
 			Name:      "int",
 			Namespace: "ns",
@@ -61,8 +61,8 @@ func TestIntegrationID_Hash(t *testing.T) {
 			Stage:     "",
 			Service:   "svc",
 		},
-			"",
-			true},
+			"d7065a3f06078d28f00e44733d840a32d0ee2a07",
+			false},
 		{"missing service", fields{
 			Name:      "int",
 			Namespace: "ns",
@@ -70,8 +70,8 @@ func TestIntegrationID_Hash(t *testing.T) {
 			Stage:     "st",
 			Service:   "",
 		},
-			"",
-			true},
+			"3ce10a2ca2c2d5a69f42cf9cd1e392186c124c8e",
+			false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
