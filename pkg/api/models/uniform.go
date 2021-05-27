@@ -51,10 +51,10 @@ type IntegrationID struct {
 
 func (i IntegrationID) Hash() (string, error) {
 	if !i.validate() {
-		return "", fmt.Errorf("incomplete integratino ID. All fields must be set.")
+		return "", fmt.Errorf("incomplete integration id. All fields must be set")
 	}
 	raw := fmt.Sprintf("%s-%s-%s-%s-%s", i.Name, i.Namespace, i.Project, i.Stage, i.Service)
-	hasher := sha1.New()
+	hasher := sha1.New() //nolint:gosec
 	hasher.Write([]byte(raw))
 	return hex.EncodeToString(hasher.Sum(nil)), nil
 }
