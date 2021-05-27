@@ -54,7 +54,7 @@ func (i IntegrationID) Hash() (string, error) {
 		return "", fmt.Errorf("incomplete integration ID. At least 'name' and 'namespace' must be set.")
 	}
 	raw := fmt.Sprintf("%s-%s-%s-%s-%s", i.Name, i.Namespace, i.Project, i.Stage, i.Service)
-	hasher := sha1.New()
+	hasher := sha1.New() //nolint:gosec
 	hasher.Write([]byte(raw))
 	return hex.EncodeToString(hasher.Sum(nil)), nil
 }
