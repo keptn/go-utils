@@ -65,7 +65,7 @@ func (l *Logger) Debug(message string) {
 	l.printLogMessage(keptnLogMessage{Timestamp: time.Now(), Message: message, LogLevel: "DEBUG"})
 }
 
-// Debugf formats and logs an debug message
+// Debugf formats and logs a debug message
 func (l *Logger) Debugf(format string, v ...interface{}) {
 	l.Debug(fmt.Sprintf(format, v...))
 }
@@ -75,7 +75,7 @@ func (l *Logger) Terminate(message string) {
 	l.printLogMessage(keptnLogMessage{Timestamp: time.Now(), Message: message, LogLevel: "INFO"})
 }
 
-// Terminatef formats and logs an debug message
+// Terminatef formats and logs a terminate message
 func (l *Logger) Terminatef(format string, v ...interface{}) {
 	l.Terminate(fmt.Sprintf(format, v...))
 }
