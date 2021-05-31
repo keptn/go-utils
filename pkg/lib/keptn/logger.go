@@ -31,9 +31,13 @@ type Logger struct {
 // LoggerInterface collects signatures of the logger
 type LoggerInterface interface {
 	Info(message string)
+	Infof(format string, v ...interface{})
 	Error(message string)
+	Errorf(format string, v ...interface{})
 	Debug(message string)
+	Debugf(format string, v ...interface{})
 	Terminate(message string)
+	Terminatef(format string, v ...interface{})
 }
 
 // Info logs an info message
@@ -41,9 +45,19 @@ func (l *Logger) Info(message string) {
 	l.printLogMessage(keptnLogMessage{Timestamp: time.Now(), Message: message, LogLevel: "INFO"})
 }
 
+// Infof formats and logs an info message
+func (l *Logger) Infof(format string, v ...interface{}) {
+	l.Info(fmt.Sprintf(format, v...))
+}
+
 // Error logs an error message
 func (l *Logger) Error(message string) {
 	l.printLogMessage(keptnLogMessage{Timestamp: time.Now(), Message: message, LogLevel: "ERROR"})
+}
+
+// Errorf formats and logs an error message
+func (l *Logger) Errorf(format string, v ...interface{}) {
+	l.Error(fmt.Sprintf(format, v...))
 }
 
 // Debug logs a debug message
@@ -51,9 +65,19 @@ func (l *Logger) Debug(message string) {
 	l.printLogMessage(keptnLogMessage{Timestamp: time.Now(), Message: message, LogLevel: "DEBUG"})
 }
 
+// Debugf formats and logs a debug message
+func (l *Logger) Debugf(format string, v ...interface{}) {
+	l.Debug(fmt.Sprintf(format, v...))
+}
+
 // Terminate logs an info message
 func (l *Logger) Terminate(message string) {
 	l.printLogMessage(keptnLogMessage{Timestamp: time.Now(), Message: message, LogLevel: "INFO"})
+}
+
+// Terminatef formats and logs a terminate message
+func (l *Logger) Terminatef(format string, v ...interface{}) {
+	l.Terminate(fmt.Sprintf(format, v...))
 }
 
 func (l *Logger) printLogMessage(logMessage keptnLogMessage) {
