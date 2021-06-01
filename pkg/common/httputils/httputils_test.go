@@ -22,7 +22,6 @@ func TestDownloadFromURL(t *testing.T) {
 }
 
 func TestIsValidURL(t *testing.T) {
-
 	testURLS := map[string]bool{
 		"keptn.sh":                    false,
 		"keptn..sh":                   false,
@@ -41,5 +40,25 @@ func TestIsValidURL(t *testing.T) {
 	for k, v := range testURLS {
 		res := IsValidURL(k)
 		assert.Equal(t, v, res, "Value mismatch.\nExpected: %v\nActual: %v", res, v)
+	}
+}
+
+func TestTrimHTTPScheme(t *testing.T) {
+	tests := []struct {
+		name           string
+		arg            string
+		wantTrimmedURL string
+	}{
+		{"str with leading http scheme", "http://keptn.sh", "keptn.sh"},
+		{"str with leading https scheme", "https://keptn.sh", "keptn.sh"},
+		{"str contains valid http scheme", "tcp://kepn.shttp://", "tcp://kepn.shttp://"},
+		{"str with different scheme", "tcp://keptn.sh", "tcp://keptn.sh"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotTrimmedURL := TrimHTTPScheme(tt.arg); gotTrimmedURL != tt.wantTrimmedURL {
+				t.Errorf("TrimHTTPScheme() = %v, want %v", gotTrimmedURL, tt.wantTrimmedURL)
+			}
+		})
 	}
 }
