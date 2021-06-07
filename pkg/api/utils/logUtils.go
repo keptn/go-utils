@@ -26,9 +26,9 @@ type LogFilter struct {
 }
 
 type ILogHandler interface {
-	Log(logEntry models.LogEntry) (string, *models.Error)
+	Log(logs []models.LogEntry) *models.Error
 	GetLogs(params GetLogsParams) ([]models.LogEntry, *models.Error)
-	DeleteLogs(filter LogFilter) (string, *models.Error)
+	DeleteLogs(filter LogFilter) *models.Error
 }
 
 type LogHandler struct {
@@ -37,6 +37,7 @@ type LogHandler struct {
 	AuthHeader string
 	HTTPClient *http.Client
 	Scheme     string
+	logCache   []models.LogEntry
 }
 
 func NewLogHandler(baseURL string) *LogHandler {
@@ -92,12 +93,15 @@ func (lh *LogHandler) getHTTPClient() *http.Client {
 	return lh.HTTPClient
 }
 
-func (lh *LogHandler) Log(logEntry models.LogEntry) (string, *models.Error) {
-	bodyStr, err := json.Marshal(logEntry)
+func (lh *LogHandler) Log(logs []models.LogEntry) *models.Error {
+	bodyStr, err := json.Marshal(logs)
 	if err != nil {
-		return "", buildErrorResponse(err.Error())
+		return buildErrorResponse(err.Error())
 	}
-	return post(lh.Scheme+"://"+lh.getBaseURL()+v1LogPath, bodyStr, lh)
+	if _, err := post(lh.Scheme+"://"+lh.getBaseURL()+v1LogPath, bodyStr, lh); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (lh *LogHandler) GetLogs(params GetLogsParams) ([]models.LogEntry, *models.Error) {
@@ -153,7 +157,7 @@ func (lh *LogHandler) GetLogs(params GetLogsParams) ([]models.LogEntry, *models.
 	return nil, nil
 }
 
-func (lh *LogHandler) DeleteLogs(params LogFilter) (string, *models.Error) {
+func (lh *LogHandler) DeleteLogs(params LogFilter) *models.Error {
 	u, err := url.Parse(lh.Scheme + "://" + lh.getBaseURL() + v1LogPath)
 	if err != nil {
 		log.Fatal("error parsing url")
@@ -170,5 +174,8 @@ func (lh *LogHandler) DeleteLogs(params LogFilter) (string, *models.Error) {
 	if params.BeforeTime != "" {
 		query.Set("beforeTim", params.BeforeTime)
 	}
-	return delete(u.String(), lh)
+	if _, err := delete(u.String(), lh); err != nil {
+		return err
+	}
+	return nil
 }
