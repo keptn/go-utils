@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"io/ioutil"
 	"net/http"
 	"strings"
 )
@@ -15,6 +16,7 @@ type SecretHandlerInterface interface {
 	CreateSecret(secret models.Secret) (string, *models.Error)
 	UpdateSecret(secret models.Secret) (string, *models.Error)
 	DeleteSecret(secretName, secretScope string) (string, *models.Error)
+	GetSecrets() (*models.GetSecretsResponse, *models.Error)
 }
 
 // SecretHandler handles services
@@ -105,4 +107,38 @@ func (s *SecretHandler) UpdateSecret(secret models.Secret) (string, *models.Erro
 // DeleteSecret deletes a secret
 func (s *SecretHandler) DeleteSecret(secretName, secretScope string) (string, *models.Error) {
 	return delete(s.Scheme+"://"+s.BaseURL+v1SecretPath+"?name="+secretName+"&scope="+secretScope, s)
+}
+
+// GetSecrets returns a list of created secrets
+func (s *SecretHandler) GetSecrets() (*models.GetSecretsResponse, *models.Error) {
+	req, err := http.NewRequest("GET", s.Scheme+"://"+s.BaseURL+v1SecretPath, nil)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
+	req.Header.Set("Content-Type", "application/json")
+	addAuthHeader(req, s)
+
+	resp, err := s.HTTPClient.Do(req)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		errObj := &models.Error{}
+		if err := json.Unmarshal(body, errObj); err != nil {
+			return nil, buildErrorResponse(err.Error())
+		}
+		return nil, errObj
+	}
+	result := &models.GetSecretsResponse{}
+	if err := json.Unmarshal(body, result); err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
+	return result, nil
 }

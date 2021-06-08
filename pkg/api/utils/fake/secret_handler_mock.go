@@ -20,6 +20,9 @@ import (
 // 			DeleteSecretFunc: func(secretName string, secretScope string) (string, *models.Error) {
 // 				panic("mock out the DeleteSecret method")
 // 			},
+// 			GetSecretsFunc: func() (*models.GetSecretsResponse, *models.Error) {
+// 				panic("mock out the GetSecrets method")
+// 			},
 // 			UpdateSecretFunc: func(secret models.Secret) (string, *models.Error) {
 // 				panic("mock out the UpdateSecret method")
 // 			},
@@ -35,6 +38,9 @@ type SecretHandlerInterfaceMock struct {
 
 	// DeleteSecretFunc mocks the DeleteSecret method.
 	DeleteSecretFunc func(secretName string, secretScope string) (string, *models.Error)
+
+	// GetSecretsFunc mocks the GetSecrets method.
+	GetSecretsFunc func() (*models.GetSecretsResponse, *models.Error)
 
 	// UpdateSecretFunc mocks the UpdateSecret method.
 	UpdateSecretFunc func(secret models.Secret) (string, *models.Error)
@@ -53,6 +59,9 @@ type SecretHandlerInterfaceMock struct {
 			// SecretScope is the secretScope argument value.
 			SecretScope string
 		}
+		// GetSecrets holds details about calls to the GetSecrets method.
+		GetSecrets []struct {
+		}
 		// UpdateSecret holds details about calls to the UpdateSecret method.
 		UpdateSecret []struct {
 			// Secret is the secret argument value.
@@ -61,6 +70,7 @@ type SecretHandlerInterfaceMock struct {
 	}
 	lockCreateSecret sync.RWMutex
 	lockDeleteSecret sync.RWMutex
+	lockGetSecrets   sync.RWMutex
 	lockUpdateSecret sync.RWMutex
 }
 
@@ -127,6 +137,32 @@ func (mock *SecretHandlerInterfaceMock) DeleteSecretCalls() []struct {
 	mock.lockDeleteSecret.RLock()
 	calls = mock.calls.DeleteSecret
 	mock.lockDeleteSecret.RUnlock()
+	return calls
+}
+
+// GetSecrets calls GetSecretsFunc.
+func (mock *SecretHandlerInterfaceMock) GetSecrets() (*models.GetSecretsResponse, *models.Error) {
+	if mock.GetSecretsFunc == nil {
+		panic("SecretHandlerInterfaceMock.GetSecretsFunc: method is nil but SecretHandlerInterface.GetSecrets was just called")
+	}
+	callInfo := struct {
+	}{}
+	mock.lockGetSecrets.Lock()
+	mock.calls.GetSecrets = append(mock.calls.GetSecrets, callInfo)
+	mock.lockGetSecrets.Unlock()
+	return mock.GetSecretsFunc()
+}
+
+// GetSecretsCalls gets all the calls that were made to GetSecrets.
+// Check the length with:
+//     len(mockedSecretHandlerInterface.GetSecretsCalls())
+func (mock *SecretHandlerInterfaceMock) GetSecretsCalls() []struct {
+} {
+	var calls []struct {
+	}
+	mock.lockGetSecrets.RLock()
+	calls = mock.calls.GetSecrets
+	mock.lockGetSecrets.RUnlock()
 	return calls
 }
 

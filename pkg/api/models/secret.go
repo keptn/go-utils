@@ -7,6 +7,10 @@ type Secret struct {
 	// Required: true
 	Data map[string]string `json:"data"`
 
+	SecretMetadata
+}
+
+type SecretMetadata struct {
 	// The name of the secret
 	// Required: true
 	Name *string `json:"name"`
@@ -14,4 +18,8 @@ type Secret struct {
 	// The scope of the secret
 	// Required: true
 	Scope *string `json:"scope"`
+}
+
+type GetSecretsResponse struct {
+	Secrets []SecretMetadata `json:"secrets"`
 }
