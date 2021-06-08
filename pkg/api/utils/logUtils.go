@@ -1,43 +1,41 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/benbjohnson/clock"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
+	"time"
 )
 
 const v1LogPath = "/v1/log"
 
-type GetLogsParams struct {
-	LogFilter
-	PageSize    int
-	NextPageKey int
-}
-
-type LogFilter struct {
-	IntegrationID string
-	FromTime      string
-	BeforeTime    string
-}
+var defaultSyncInterval = 1 * time.Minute
 
 type ILogHandler interface {
-	Log(logs []models.LogEntry) *models.Error
-	GetLogs(params GetLogsParams) ([]models.LogEntry, *models.Error)
-	DeleteLogs(filter LogFilter) *models.Error
+	Log(logs []models.LogEntry)
+	Flush() *models.Error
+	GetLogs(params models.GetLogsParams) ([]models.LogEntry, *models.Error)
+	DeleteLogs(filter models.LogFilter) *models.Error
 }
 
 type LogHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
-	logCache   []models.LogEntry
+	BaseURL      string
+	AuthToken    string
+	AuthHeader   string
+	HTTPClient   *http.Client
+	Scheme       string
+	LogCache     []models.LogEntry
+	TheClock     clock.Clock
+	SyncInterval time.Duration
+	lock         sync.Mutex
 }
 
 func NewLogHandler(baseURL string) *LogHandler {
@@ -47,11 +45,14 @@ func NewLogHandler(baseURL string) *LogHandler {
 		baseURL = strings.TrimPrefix(baseURL, "http://")
 	}
 	return &LogHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: getClientTransport()},
-		Scheme:     "http",
+		BaseURL:      baseURL,
+		AuthHeader:   "",
+		AuthToken:    "",
+		HTTPClient:   &http.Client{Transport: getClientTransport()},
+		Scheme:       "http",
+		LogCache:     []models.LogEntry{},
+		TheClock:     clock.New(),
+		SyncInterval: defaultSyncInterval,
 	}
 }
 
@@ -69,11 +70,14 @@ func NewAuthenticatedLogHandler(baseURL string, authToken string, authHeader str
 	}
 
 	return &LogHandler{
-		BaseURL:    baseURL,
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
+		BaseURL:      baseURL,
+		AuthHeader:   authHeader,
+		AuthToken:    authToken,
+		HTTPClient:   httpClient,
+		Scheme:       scheme,
+		LogCache:     []models.LogEntry{},
+		TheClock:     clock.New(),
+		SyncInterval: defaultSyncInterval,
 	}
 }
 
@@ -93,18 +97,13 @@ func (lh *LogHandler) getHTTPClient() *http.Client {
 	return lh.HTTPClient
 }
 
-func (lh *LogHandler) Log(logs []models.LogEntry) *models.Error {
-	bodyStr, err := json.Marshal(logs)
-	if err != nil {
-		return buildErrorResponse(err.Error())
-	}
-	if _, err := post(lh.Scheme+"://"+lh.getBaseURL()+v1LogPath, bodyStr, lh); err != nil {
-		return err
-	}
-	return nil
+func (lh *LogHandler) Log(logs []models.LogEntry) {
+	lh.lock.Lock()
+	defer lh.lock.Unlock()
+	lh.LogCache = append(lh.LogCache, logs...)
 }
 
-func (lh *LogHandler) GetLogs(params GetLogsParams) ([]models.LogEntry, *models.Error) {
+func (lh *LogHandler) GetLogs(params models.GetLogsParams) (*models.GetLogsResponse, *models.Error) {
 	u, err := url.Parse(lh.Scheme + "://" + lh.getBaseURL() + v1LogPath)
 	if err != nil {
 		log.Fatal("error parsing url")
@@ -122,7 +121,7 @@ func (lh *LogHandler) GetLogs(params GetLogsParams) ([]models.LogEntry, *models.
 		query.Set("fromTime", params.FromTime)
 	}
 	if params.BeforeTime != "" {
-		query.Set("beforeTim", params.BeforeTime)
+		query.Set("beforeTime", params.BeforeTime)
 	}
 
 	u.RawQuery = query.Encode()
@@ -146,18 +145,25 @@ func (lh *LogHandler) GetLogs(params GetLogsParams) ([]models.LogEntry, *models.
 	}
 
 	if resp.StatusCode == http.StatusOK {
-		var received []models.LogEntry
-		err := json.Unmarshal(body, &received)
+		received := &models.GetLogsResponse{}
+		err := json.Unmarshal(body, received)
 		if err != nil {
 			return nil, buildErrorResponse(err.Error())
 		}
 		return received, nil
+	} else {
+		errResponse := &models.Error{}
+		err := json.Unmarshal(body, errResponse)
+		if err != nil {
+			return nil, buildErrorResponse(err.Error())
+		}
+		return nil, errResponse
 	}
 
 	return nil, nil
 }
 
-func (lh *LogHandler) DeleteLogs(params LogFilter) *models.Error {
+func (lh *LogHandler) DeleteLogs(params models.LogFilter) *models.Error {
 	u, err := url.Parse(lh.Scheme + "://" + lh.getBaseURL() + v1LogPath)
 	if err != nil {
 		log.Fatal("error parsing url")
@@ -172,10 +178,38 @@ func (lh *LogHandler) DeleteLogs(params LogFilter) *models.Error {
 		query.Set("fromTime", params.FromTime)
 	}
 	if params.BeforeTime != "" {
-		query.Set("beforeTim", params.BeforeTime)
+		query.Set("beforeTime", params.BeforeTime)
 	}
 	if _, err := delete(u.String(), lh); err != nil {
 		return err
 	}
+	return nil
+}
+
+func (lh *LogHandler) Start(ctx context.Context) {
+	ticker := lh.TheClock.Ticker(lh.SyncInterval)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				lh.Flush()
+			}
+		}
+	}()
+}
+
+func (lh *LogHandler) Flush() *models.Error {
+	lh.lock.Lock()
+	defer lh.lock.Unlock()
+	bodyStr, err := json.Marshal(lh.LogCache)
+	if err != nil {
+		return buildErrorResponse(err.Error())
+	}
+	if _, err := post(lh.Scheme+"://"+lh.getBaseURL()+v1LogPath, bodyStr, lh); err != nil {
+		return err
+	}
+	lh.LogCache = []models.LogEntry{}
 	return nil
 }
