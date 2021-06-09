@@ -17,7 +17,7 @@ type SecretMetadata struct {
 
 	// The scope of the secret
 	// Required: true
-	Scope *string `json:"scope"`
+	Scope *string `json:"scope,omitempty"`
 }
 
 type GetSecretsResponse struct {
