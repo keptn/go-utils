@@ -203,6 +203,10 @@ func (lh *LogHandler) Start(ctx context.Context) {
 func (lh *LogHandler) Flush() *models.Error {
 	lh.lock.Lock()
 	defer lh.lock.Unlock()
+	if len(lh.LogCache) == 0 {
+		// only send a request if we actually have some logs to send
+		return nil
+	}
 	bodyStr, err := json.Marshal(lh.LogCache)
 	if err != nil {
 		return buildErrorResponse(err.Error())
