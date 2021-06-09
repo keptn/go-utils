@@ -3,6 +3,7 @@ package models
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 )
 
@@ -61,4 +62,20 @@ func (i IntegrationID) Hash() (string, error) {
 
 func (i IntegrationID) validate() bool {
 	return i.Name != "" && i.Namespace != ""
+}
+
+func (i *Integration) ToJSON() ([]byte, error) {
+	if i == nil {
+		return nil, nil
+	}
+	return json.Marshal(i)
+}
+
+func (i *Integration) FromJSON(b []byte) error {
+	var res Integration
+	if err := json.Unmarshal(b, &res); err != nil {
+		return err
+	}
+	*i = res
+	return nil
 }
