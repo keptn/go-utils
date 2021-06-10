@@ -152,16 +152,13 @@ func (lh *LogHandler) GetLogs(params models.GetLogsParams) (*models.GetLogsRespo
 			return nil, err
 		}
 		return received, nil
-	} else {
-		errResponse := &models.Error{}
-		err := json.Unmarshal(body, errResponse)
-		if err != nil {
-			return nil, err
-		}
-		return nil, errors.New(*errResponse.Message)
 	}
+	errResponse := &models.Error{}
+	if err := json.Unmarshal(body, errResponse); err != nil {
+		return nil, err
+	}
+	return nil, errors.New(errResponse.GetMessage())
 
-	return nil, nil
 }
 
 func (lh *LogHandler) DeleteLogs(params models.LogFilter) error {
