@@ -14,16 +14,16 @@ import (
 //
 // 		// make and configure a mocked api.SecretHandlerInterface
 // 		mockedSecretHandlerInterface := &SecretHandlerInterfaceMock{
-// 			CreateSecretFunc: func(secret models.Secret) (string, *models.Error) {
+// 			CreateSecretFunc: func(secret models.Secret) error {
 // 				panic("mock out the CreateSecret method")
 // 			},
-// 			DeleteSecretFunc: func(secretName string, secretScope string) (string, *models.Error) {
+// 			DeleteSecretFunc: func(secretName string, secretScope string) error {
 // 				panic("mock out the DeleteSecret method")
 // 			},
-// 			GetSecretsFunc: func() (*models.GetSecretsResponse, *models.Error) {
+// 			GetSecretsFunc: func() (*models.GetSecretsResponse, error) {
 // 				panic("mock out the GetSecrets method")
 // 			},
-// 			UpdateSecretFunc: func(secret models.Secret) (string, *models.Error) {
+// 			UpdateSecretFunc: func(secret models.Secret) error {
 // 				panic("mock out the UpdateSecret method")
 // 			},
 // 		}
@@ -34,16 +34,16 @@ import (
 // 	}
 type SecretHandlerInterfaceMock struct {
 	// CreateSecretFunc mocks the CreateSecret method.
-	CreateSecretFunc func(secret models.Secret) (string, *models.Error)
+	CreateSecretFunc func(secret models.Secret) error
 
 	// DeleteSecretFunc mocks the DeleteSecret method.
-	DeleteSecretFunc func(secretName string, secretScope string) (string, *models.Error)
+	DeleteSecretFunc func(secretName string, secretScope string) error
 
 	// GetSecretsFunc mocks the GetSecrets method.
-	GetSecretsFunc func() (*models.GetSecretsResponse, *models.Error)
+	GetSecretsFunc func() (*models.GetSecretsResponse, error)
 
 	// UpdateSecretFunc mocks the UpdateSecret method.
-	UpdateSecretFunc func(secret models.Secret) (string, *models.Error)
+	UpdateSecretFunc func(secret models.Secret) error
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -75,7 +75,7 @@ type SecretHandlerInterfaceMock struct {
 }
 
 // CreateSecret calls CreateSecretFunc.
-func (mock *SecretHandlerInterfaceMock) CreateSecret(secret models.Secret) (string, *models.Error) {
+func (mock *SecretHandlerInterfaceMock) CreateSecret(secret models.Secret) error {
 	if mock.CreateSecretFunc == nil {
 		panic("SecretHandlerInterfaceMock.CreateSecretFunc: method is nil but SecretHandlerInterface.CreateSecret was just called")
 	}
@@ -106,7 +106,7 @@ func (mock *SecretHandlerInterfaceMock) CreateSecretCalls() []struct {
 }
 
 // DeleteSecret calls DeleteSecretFunc.
-func (mock *SecretHandlerInterfaceMock) DeleteSecret(secretName string, secretScope string) (string, *models.Error) {
+func (mock *SecretHandlerInterfaceMock) DeleteSecret(secretName string, secretScope string) error {
 	if mock.DeleteSecretFunc == nil {
 		panic("SecretHandlerInterfaceMock.DeleteSecretFunc: method is nil but SecretHandlerInterface.DeleteSecret was just called")
 	}
@@ -141,7 +141,7 @@ func (mock *SecretHandlerInterfaceMock) DeleteSecretCalls() []struct {
 }
 
 // GetSecrets calls GetSecretsFunc.
-func (mock *SecretHandlerInterfaceMock) GetSecrets() (*models.GetSecretsResponse, *models.Error) {
+func (mock *SecretHandlerInterfaceMock) GetSecrets() (*models.GetSecretsResponse, error) {
 	if mock.GetSecretsFunc == nil {
 		panic("SecretHandlerInterfaceMock.GetSecretsFunc: method is nil but SecretHandlerInterface.GetSecrets was just called")
 	}
@@ -167,7 +167,7 @@ func (mock *SecretHandlerInterfaceMock) GetSecretsCalls() []struct {
 }
 
 // UpdateSecret calls UpdateSecretFunc.
-func (mock *SecretHandlerInterfaceMock) UpdateSecret(secret models.Secret) (string, *models.Error) {
+func (mock *SecretHandlerInterfaceMock) UpdateSecret(secret models.Secret) error {
 	if mock.UpdateSecretFunc == nil {
 		panic("SecretHandlerInterfaceMock.UpdateSecretFunc: method is nil but SecretHandlerInterface.UpdateSecret was just called")
 	}
