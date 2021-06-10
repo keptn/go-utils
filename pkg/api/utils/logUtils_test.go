@@ -186,9 +186,9 @@ func TestLogHandler_Log(t *testing.T) {
 }
 
 func TestLogHandler_Start(t *testing.T) {
-	endpointCalled := false
+	endpointCalled := make(chan struct{})
 	ts := getTestHTTPServer(func(writer http.ResponseWriter, request *http.Request) {
-		endpointCalled = true
+		endpointCalled <- struct{}{}
 		writer.WriteHeader(http.StatusOK)
 		writer.Write([]byte(""))
 	})
@@ -209,7 +209,11 @@ func TestLogHandler_Start(t *testing.T) {
 
 	mockClock.Add(60 * time.Second)
 
-	require.Eventually(t, func() bool {
-		return endpointCalled
-	}, 5*time.Second, 1*time.Second)
+	select {
+	case <-time.After(2 * time.Second):
+		t.Errorf("endpoint was not called")
+		return
+	case <-endpointCalled:
+		t.Log("endpoint was called as expected")
+	}
 }
