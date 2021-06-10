@@ -16,10 +16,8 @@ type Integration struct {
 
 type MetaData struct {
 	Hostname           string             `json:"hostname" bson:"hostname"`
-	DeploymentName     string             `json:"deplyomentname" bson:"deploymentname"`
 	IntegrationVersion string             `json:"integrationversion" bson:"integrationversion"`
 	DistributorVersion string             `json:"distributorversion" bson:"distributorversion"`
-	Status             string             `json:"status" bson:"status"`
 	Location           string             `json:"location" bson:"location"`
 	KubernetesMetaData KubernetesMetaData `json:"kubernetesmetadata" bson:"kubernetesmetadata"`
 }

@@ -97,35 +97,35 @@ func (u *UniformHandler) UnregisterIntegration(integrationID string) error {
 	return nil
 }
 
-func (u *UniformHandler) GetRegistrations() ([]*models.Integration, *models.Error) {
+func (u *UniformHandler) GetRegistrations() ([]*models.Integration, error) {
 	url, err := url.Parse(u.Scheme + "://" + u.getBaseURL() + v1UniformPath)
 	if err != nil {
-		return nil, buildErrorResponse(err.Error())
+		return nil, err
 	}
 
 	req, err := http.NewRequest("GET", url.String(), nil)
 	if err != nil {
-		return nil, buildErrorResponse(err.Error())
+		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, u)
 
 	resp, err := u.HTTPClient.Do(req)
 	if err != nil {
-		return nil, buildErrorResponse(err.Error())
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, buildErrorResponse(err.Error())
+		return nil, err
 	}
 
 	if resp.StatusCode == http.StatusOK {
 		var received []*models.Integration
 		err := json.Unmarshal(body, &received)
 		if err != nil {
-			return nil, buildErrorResponse(err.Error())
+			return nil, err
 		}
 		return received, nil
 	}
