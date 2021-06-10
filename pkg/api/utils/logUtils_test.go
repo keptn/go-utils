@@ -199,6 +199,12 @@ func TestLogHandler_Start(t *testing.T) {
 	lh := NewLogHandler(ts.URL)
 	lh.TheClock = mockClock
 
+	lh.Log([]models.LogEntry{
+		{
+			IntegrationID: "my-id",
+		},
+	})
+
 	lh.Start(context.Background())
 
 	mockClock.Add(60 * time.Second)
