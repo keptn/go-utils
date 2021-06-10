@@ -14,10 +14,10 @@ const v1SecretPath = "/v1/secret"
 
 //go:generate moq -pkg utils_mock -skip-ensure -out ./fake/secret_handler_mock.go . SecretHandlerInterface
 type SecretHandlerInterface interface {
-	CreateSecret(secret models.Secret) (string, *models.Error)
-	UpdateSecret(secret models.Secret) (string, *models.Error)
-	DeleteSecret(secretName, secretScope string) (string, *models.Error)
-	GetSecrets() (*models.GetSecretsResponse, *models.Error)
+	CreateSecret(secret models.Secret) error
+	UpdateSecret(secret models.Secret) error
+	DeleteSecret(secretName, secretScope string) error
+	GetSecrets() (*models.GetSecretsResponse, error)
 }
 
 // SecretHandler handles services
