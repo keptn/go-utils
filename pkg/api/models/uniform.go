@@ -3,6 +3,7 @@ package models
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 )
 
@@ -15,10 +16,8 @@ type Integration struct {
 
 type MetaData struct {
 	Hostname           string             `json:"hostname" bson:"hostname"`
-	DeploymentName     string             `json:"deplyomentname" bson:"deploymentname"`
 	IntegrationVersion string             `json:"integrationversion" bson:"integrationversion"`
 	DistributorVersion string             `json:"distributorversion" bson:"distributorversion"`
-	Status             string             `json:"status" bson:"status"`
 	Location           string             `json:"location" bson:"location"`
 	KubernetesMetaData KubernetesMetaData `json:"kubernetesmetadata" bson:"kubernetesmetadata"`
 }
@@ -61,4 +60,20 @@ func (i IntegrationID) Hash() (string, error) {
 
 func (i IntegrationID) validate() bool {
 	return i.Name != "" && i.Namespace != ""
+}
+
+func (i *Integration) ToJSON() ([]byte, error) {
+	if i == nil {
+		return nil, nil
+	}
+	return json.Marshal(i)
+}
+
+func (i *Integration) FromJSON(b []byte) error {
+	var res Integration
+	if err := json.Unmarshal(b, &res); err != nil {
+		return err
+	}
+	*i = res
+	return nil
 }

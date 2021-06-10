@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -69,4 +70,15 @@ func IsValidURL(strURL string) bool {
 		return false
 	}
 	return true
+}
+
+// TrimScheme takes a string of an URL and removes the leading scheme (http or https)
+func TrimHTTPScheme(strURL string) string {
+	trimmedURL := strURL
+	if strings.HasPrefix(strURL, "https://") {
+		trimmedURL = strings.TrimPrefix(strURL, "https://")
+	} else if strings.HasPrefix(strURL, "http://") {
+		trimmedURL = strings.TrimPrefix(strURL, "http://")
+	}
+	return trimmedURL
 }

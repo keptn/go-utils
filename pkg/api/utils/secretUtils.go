@@ -2,7 +2,9 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"io/ioutil"
 	"net/http"
 	"strings"
 )
@@ -12,9 +14,10 @@ const v1SecretPath = "/v1/secret"
 
 //go:generate moq -pkg utils_mock -skip-ensure -out ./fake/secret_handler_mock.go . SecretHandlerInterface
 type SecretHandlerInterface interface {
-	CreateSecret(secret models.Secret) (string, *models.Error)
-	UpdateSecret(secret models.Secret) (string, *models.Error)
-	DeleteSecret(secretName, secretScope string) (string, *models.Error)
+	CreateSecret(secret models.Secret) error
+	UpdateSecret(secret models.Secret) error
+	DeleteSecret(secretName, secretScope string) error
+	GetSecrets() (*models.GetSecretsResponse, error)
 }
 
 // SecretHandler handles services
@@ -85,24 +88,70 @@ func (s *SecretHandler) getHTTPClient() *http.Client {
 }
 
 // CreateSecret creates a new secret
-func (s *SecretHandler) CreateSecret(secret models.Secret) (string, *models.Error) {
+func (s *SecretHandler) CreateSecret(secret models.Secret) error {
 	body, err := json.Marshal(secret)
 	if err != nil {
-		return "", buildErrorResponse(err.Error())
+		return err
 	}
-	return post(s.Scheme+"://"+s.BaseURL+v1SecretPath, body, s)
+	_, errObj := post(s.Scheme+"://"+s.BaseURL+v1SecretPath, body, s)
+	if errObj != nil {
+		return errors.New(*errObj.Message)
+	}
+	return nil
 }
 
 // UpdateSecret creates a new secret
-func (s *SecretHandler) UpdateSecret(secret models.Secret) (string, *models.Error) {
+func (s *SecretHandler) UpdateSecret(secret models.Secret) error {
 	body, err := json.Marshal(secret)
 	if err != nil {
-		return "", buildErrorResponse(err.Error())
+		return err
 	}
-	return put(s.Scheme+"://"+s.BaseURL+v1SecretPath, body, s)
+	_, errObj := put(s.Scheme+"://"+s.BaseURL+v1SecretPath, body, s)
+	if errObj != nil {
+		return errors.New(*errObj.Message)
+	}
+	return nil
 }
 
 // DeleteSecret deletes a secret
-func (s *SecretHandler) DeleteSecret(secretName, secretScope string) (string, *models.Error) {
-	return delete(s.Scheme+"://"+s.BaseURL+v1SecretPath+"?name="+secretName+"&scope="+secretScope, s)
+func (s *SecretHandler) DeleteSecret(secretName, secretScope string) error {
+	_, err := delete(s.Scheme+"://"+s.BaseURL+v1SecretPath+"?name="+secretName+"&scope="+secretScope, s)
+	if err != nil {
+		return errors.New(*err.Message)
+	}
+	return nil
+}
+
+// GetSecrets returns a list of created secrets
+func (s *SecretHandler) GetSecrets() (*models.GetSecretsResponse, error) {
+	req, err := http.NewRequest("GET", s.Scheme+"://"+s.BaseURL+v1SecretPath, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	addAuthHeader(req, s)
+
+	resp, err := s.HTTPClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		errObj := &models.Error{}
+		if err := json.Unmarshal(body, errObj); err != nil {
+			return nil, err
+		}
+		return nil, errors.New(*errObj.Message)
+	}
+	result := &models.GetSecretsResponse{}
+	if err := json.Unmarshal(body, result); err != nil {
+		return nil, err
+	}
+	return result, nil
 }
