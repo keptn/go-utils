@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"github.com/benbjohnson/clock"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/stretchr/testify/require"
@@ -26,7 +27,7 @@ func TestLogHandler_DeleteLogs(t *testing.T) {
 		name             string
 		args             args
 		httpResponseFunc func(writer http.ResponseWriter, request *http.Request)
-		want             *models.Error
+		want             error
 	}{
 		{
 			name: "deletion successful",
@@ -48,10 +49,7 @@ func TestLogHandler_DeleteLogs(t *testing.T) {
 				writer.WriteHeader(http.StatusBadRequest)
 				writer.Write([]byte(`{"code":0, "message":"oops"}`))
 			},
-			want: &models.Error{
-				Code:    0,
-				Message: stringp("oops"),
-			},
+			want: errors.New("oops"),
 		},
 	}
 	for _, tt := range tests {
@@ -76,7 +74,7 @@ func TestLogHandler_Flush(t *testing.T) {
 	tests := []struct {
 		name             string
 		httpResponseFunc func(writer http.ResponseWriter, request *http.Request)
-		want             *models.Error
+		wantErr          bool
 	}{
 		{
 			name: "writing logs successful",
@@ -84,7 +82,7 @@ func TestLogHandler_Flush(t *testing.T) {
 				writer.WriteHeader(http.StatusOK)
 				writer.Write([]byte(""))
 			},
-			want: nil,
+			wantErr: false,
 		},
 		{
 			name: "writing logs failed",
@@ -92,10 +90,7 @@ func TestLogHandler_Flush(t *testing.T) {
 				writer.WriteHeader(http.StatusBadRequest)
 				writer.Write([]byte(`{"code":0, "message":"oops"}`))
 			},
-			want: &models.Error{
-				Code:    0,
-				Message: stringp("oops"),
-			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -106,8 +101,17 @@ func TestLogHandler_Flush(t *testing.T) {
 
 			lh := NewLogHandler(ts.URL)
 
+			lh.LogCache = []models.LogEntry{
+				{
+					IntegrationID: "id",
+				},
+			}
 			got := lh.Flush()
-			require.Equal(t, tt.want, got)
+			if tt.wantErr {
+				require.NotNil(t, got)
+			} else {
+				require.Nil(t, got)
+			}
 		})
 	}
 }
@@ -117,7 +121,7 @@ func TestLogHandler_GetLogs(t *testing.T) {
 		name             string
 		httpResponseFunc func(writer http.ResponseWriter, request *http.Request)
 		want             *models.GetLogsResponse
-		wantErr          *models.Error
+		wantErr          error
 	}{
 		{
 			name: "retrieve logs",
@@ -142,10 +146,7 @@ func TestLogHandler_GetLogs(t *testing.T) {
 				writer.WriteHeader(http.StatusBadRequest)
 				writer.Write([]byte(`{"code":0, "message":"oops"}`))
 			},
-			wantErr: &models.Error{
-				Code:    0,
-				Message: stringp("oops"),
-			},
+			wantErr: errors.New("oops"),
 		},
 	}
 	for _, tt := range tests {

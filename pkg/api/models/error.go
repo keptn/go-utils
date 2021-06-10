@@ -10,3 +10,10 @@ type Error struct {
 	// Required: true
 	Message *string `json:"message"`
 }
+
+func (e Error) GetMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}

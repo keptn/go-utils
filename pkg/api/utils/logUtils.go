@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/benbjohnson/clock"
 	"github.com/keptn/go-utils/pkg/api/models"
@@ -103,7 +104,7 @@ func (lh *LogHandler) Log(logs []models.LogEntry) {
 	lh.LogCache = append(lh.LogCache, logs...)
 }
 
-func (lh *LogHandler) GetLogs(params models.GetLogsParams) (*models.GetLogsResponse, *models.Error) {
+func (lh *LogHandler) GetLogs(params models.GetLogsParams) (*models.GetLogsResponse, error) {
 	u, err := url.Parse(lh.Scheme + "://" + lh.getBaseURL() + v1LogPath)
 	if err != nil {
 		log.Fatal("error parsing url")
@@ -128,42 +129,42 @@ func (lh *LogHandler) GetLogs(params models.GetLogsParams) (*models.GetLogsRespo
 
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
-		return nil, buildErrorResponse(err.Error())
+		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, lh)
 
 	resp, err := lh.HTTPClient.Do(req)
 	if err != nil {
-		return nil, buildErrorResponse(err.Error())
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, buildErrorResponse(err.Error())
+		return nil, err
 	}
 
 	if resp.StatusCode == http.StatusOK {
 		received := &models.GetLogsResponse{}
 		err := json.Unmarshal(body, received)
 		if err != nil {
-			return nil, buildErrorResponse(err.Error())
+			return nil, err
 		}
 		return received, nil
 	} else {
 		errResponse := &models.Error{}
 		err := json.Unmarshal(body, errResponse)
 		if err != nil {
-			return nil, buildErrorResponse(err.Error())
+			return nil, err
 		}
-		return nil, errResponse
+		return nil, errors.New(*errResponse.Message)
 	}
 
 	return nil, nil
 }
 
-func (lh *LogHandler) DeleteLogs(params models.LogFilter) *models.Error {
+func (lh *LogHandler) DeleteLogs(params models.LogFilter) error {
 	u, err := url.Parse(lh.Scheme + "://" + lh.getBaseURL() + v1LogPath)
 	if err != nil {
 		log.Fatal("error parsing url")
@@ -181,7 +182,7 @@ func (lh *LogHandler) DeleteLogs(params models.LogFilter) *models.Error {
 		query.Set("beforeTime", params.BeforeTime)
 	}
 	if _, err := delete(u.String(), lh); err != nil {
-		return err
+		return errors.New(err.GetMessage())
 	}
 	return nil
 }
@@ -200,7 +201,7 @@ func (lh *LogHandler) Start(ctx context.Context) {
 	}()
 }
 
-func (lh *LogHandler) Flush() *models.Error {
+func (lh *LogHandler) Flush() error {
 	lh.lock.Lock()
 	defer lh.lock.Unlock()
 	if len(lh.LogCache) == 0 {
@@ -209,10 +210,10 @@ func (lh *LogHandler) Flush() *models.Error {
 	}
 	bodyStr, err := json.Marshal(lh.LogCache)
 	if err != nil {
-		return buildErrorResponse(err.Error())
+		return err
 	}
 	if _, err := post(lh.Scheme+"://"+lh.getBaseURL()+v1LogPath, bodyStr, lh); err != nil {
-		return err
+		return errors.New(err.GetMessage())
 	}
 	lh.LogCache = []models.LogEntry{}
 	return nil
