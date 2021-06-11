@@ -3,6 +3,7 @@ module github.com/keptn/go-utils
 go 1.16
 
 require (
+	github.com/benbjohnson/clock v1.1.0
 	github.com/cloudevents/sdk-go/v2 v2.4.1
 	github.com/google/go-cmp v0.5.2 // indirect
 	github.com/google/uuid v1.2.0

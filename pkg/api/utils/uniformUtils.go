@@ -78,7 +78,7 @@ func (u *UniformHandler) RegisterIntegration(integration models.Integration) (st
 
 	resp, errResponse := post(u.Scheme+"://"+u.getBaseURL()+v1UniformPath, bodyStr, u)
 	if errResponse != nil {
-		return "", fmt.Errorf(*errResponse.Message)
+		return "", fmt.Errorf(errResponse.GetMessage())
 	}
 
 	registerIntegrationResponse := &models.RegisterIntegrationResponse{}
@@ -92,7 +92,7 @@ func (u *UniformHandler) RegisterIntegration(integration models.Integration) (st
 func (u *UniformHandler) UnregisterIntegration(integrationID string) error {
 	_, err := delete(u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID, u)
 	if err != nil {
-		return fmt.Errorf(*err.Message)
+		return fmt.Errorf(err.GetMessage())
 	}
 	return nil
 }

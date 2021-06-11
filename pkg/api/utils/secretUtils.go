@@ -95,7 +95,7 @@ func (s *SecretHandler) CreateSecret(secret models.Secret) error {
 	}
 	_, errObj := post(s.Scheme+"://"+s.BaseURL+v1SecretPath, body, s)
 	if errObj != nil {
-		return errors.New(*errObj.Message)
+		return errors.New(errObj.GetMessage())
 	}
 	return nil
 }
@@ -108,7 +108,7 @@ func (s *SecretHandler) UpdateSecret(secret models.Secret) error {
 	}
 	_, errObj := put(s.Scheme+"://"+s.BaseURL+v1SecretPath, body, s)
 	if errObj != nil {
-		return errors.New(*errObj.Message)
+		return errors.New(errObj.GetMessage())
 	}
 	return nil
 }
@@ -117,7 +117,7 @@ func (s *SecretHandler) UpdateSecret(secret models.Secret) error {
 func (s *SecretHandler) DeleteSecret(secretName, secretScope string) error {
 	_, err := delete(s.Scheme+"://"+s.BaseURL+v1SecretPath+"?name="+secretName+"&scope="+secretScope, s)
 	if err != nil {
-		return errors.New(*err.Message)
+		return errors.New(err.GetMessage())
 	}
 	return nil
 }
