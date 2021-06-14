@@ -20,6 +20,7 @@ const v1LogPath = "/v1/log"
 
 var defaultSyncInterval = 1 * time.Minute
 
+//go:generate moq -pkg utils_mock -skip-ensure -out ./fake/log_handler_mock.go . ILogHandler
 type ILogHandler interface {
 	Log(logs []models.LogEntry)
 	Flush() error
