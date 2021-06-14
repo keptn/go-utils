@@ -92,7 +92,6 @@ func TestKeptn_SendCloudEventWithRetry(t *testing.T) {
 }
 
 func getTestEvent() cloudevents.Event {
-
 	event := cloudevents.NewEvent()
 	event.SetType("test-type")
 	event.SetSource("test-source")
@@ -100,21 +99,7 @@ func getTestEvent() cloudevents.Event {
 }
 
 func TestKeptn_SendCloudEvent(t *testing.T) {
-	failOnFirstTry := true
-	ts := httptest.NewServer(
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Add("Content-Type", "application/json")
-			if failOnFirstTry {
-				failOnFirstTry = false
-				w.WriteHeader(500)
-				w.Write([]byte(`{}`))
-			}
-			w.WriteHeader(200)
-			w.Write([]byte(`{}`))
-		}),
-	)
-	defer ts.Close()
-
+	testEventSender := &TestSender{}
 	eventNew := cloudevents.NewEvent()
 	eventNew.SetSource("https://test-source")
 	eventNew.SetID("8039eac3-9fb2-454f-8b2e-77f8310a81f1")
@@ -122,16 +107,24 @@ func TestKeptn_SendCloudEvent(t *testing.T) {
 	eventNew.SetExtension("shkeptncontext", "test-context")
 	eventNew.SetData(cloudevents.ApplicationJSON, map[string]string{"project": "sockshop"})
 
-	httpSender, _ := NewHTTPEventSender(ts.URL)
 	k := Keptn{
 		KeptnBase: keptn.KeptnBase{
-			EventSender: httpSender,
+			EventSender: testEventSender,
 		},
 	}
 
-	if err := k.SendCloudEvent(eventNew); err != nil {
-		t.Errorf("SendCloudEvent() error = %v", err)
-	}
+	err := k.SendCloudEvent(eventNew)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(testEventSender.SentEvents))
+	keptnEvent, err := ToKeptnEvent(testEventSender.SentEvents[0])
+	assert.Nil(t, err)
+	assert.Equal(t, defaultKeptnSpecVersion, keptnEvent.Shkeptnspecversion)
+	assert.Equal(t, defaultSpecVersion, keptnEvent.Specversion)
+	assert.Equal(t, "sh.keptn.events.test", *keptnEvent.Type)
+	assert.Equal(t, "test-context", keptnEvent.Shkeptncontext)
+	assert.Equal(t, "8039eac3-9fb2-454f-8b2e-77f8310a81f1", keptnEvent.ID)
+	assert.Equal(t, "https://test-source", *keptnEvent.Source)
+	assert.Equal(t, map[string]interface{}{"project": "sockshop"}, keptnEvent.Data)
 }
 
 func TestEventDataAs(t *testing.T) {
