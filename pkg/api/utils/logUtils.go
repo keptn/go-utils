@@ -23,8 +23,9 @@ var defaultSyncInterval = 1 * time.Minute
 type ILogHandler interface {
 	Log(logs []models.LogEntry)
 	Flush() error
-	GetLogs(params models.GetLogsParams) ([]models.LogEntry, error)
+	GetLogs(params models.GetLogsParams) (*models.GetLogsResponse, error)
 	DeleteLogs(filter models.LogFilter) error
+	Start(ctx context.Context)
 }
 
 type LogHandler struct {
