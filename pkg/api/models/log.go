@@ -29,3 +29,8 @@ type LogFilter struct {
 	FromTime      string
 	BeforeTime    string
 }
+
+type CreateLogsRequest struct {
+	// logs
+	Logs []LogEntry `form:"logs" json:"logs"`
+}

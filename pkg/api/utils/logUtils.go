@@ -206,7 +206,10 @@ func (lh *LogHandler) Flush() error {
 		// only send a request if we actually have some logs to send
 		return nil
 	}
-	bodyStr, err := json.Marshal(lh.LogCache)
+	createLogsPayload := &models.CreateLogsRequest{
+		Logs: lh.LogCache,
+	}
+	bodyStr, err := json.Marshal(createLogsPayload)
 	if err != nil {
 		return err
 	}
