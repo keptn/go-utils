@@ -4,6 +4,6 @@ const ErrorLogEventName = "sh.keptn.log.error"
 
 type ErrorLogEvent struct {
 	Message       string `json:"message"`
-	IntegrationID string `json:"integrationId"`
+	IntegrationID string `json:"integrationid"`
 	Task          string `json:"task"`
 }
