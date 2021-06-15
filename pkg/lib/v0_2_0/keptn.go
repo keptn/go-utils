@@ -90,6 +90,7 @@ func (k *Keptn) GetShipyard() (*Shipyard, error) {
 
 // SendCloudEvent sends a cloudevent to the event broker
 func (k *Keptn) SendCloudEvent(event cloudevents.Event) error {
+	event.SetExtension(keptnSpecVersionCEExtension, defaultKeptnSpecVersion)
 	if k.UseLocalFileSystem {
 		log.Println(fmt.Printf("%v", string(event.Data())))
 		return nil
