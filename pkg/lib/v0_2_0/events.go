@@ -249,6 +249,18 @@ func GetEventTypeForTriggeredEvent(baseTriggeredEventType, newEventTypeSuffix st
 	return trimmed + newEventTypeSuffix, nil
 }
 
+func IsFinishedEventType(eventType string) bool {
+	return strings.HasSuffix(eventType, keptnFinishedEventSuffix)
+}
+
+func IsStartedEventType(eventType string) bool {
+	return strings.HasSuffix(eventType, keptnStartedEventSuffix)
+}
+
+func IsTriggeredEventType(eventType string) bool {
+	return strings.HasSuffix(eventType, keptnTriggeredEventSuffix)
+}
+
 // EventData contains mandatory fields of all Keptn CloudEvents
 type EventData struct {
 	Project string            `json:"project,omitempty"`
