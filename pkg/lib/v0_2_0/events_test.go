@@ -1,6 +1,7 @@
 package v0_2_0
 
 import (
+	"github.com/keptn/go-utils/config"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/common/strutils"
@@ -118,7 +119,7 @@ func TestKeptn_SendCloudEvent(t *testing.T) {
 	assert.Equal(t, 1, len(testEventSender.SentEvents))
 	keptnEvent, err := ToKeptnEvent(testEventSender.SentEvents[0])
 	assert.Nil(t, err)
-	assert.Equal(t, defaultKeptnSpecVersion, keptnEvent.Shkeptnspecversion)
+	assert.Equal(t, config.GetKeptnGoUtilsConfig().ShKeptnSpecVersion, keptnEvent.Shkeptnspecversion)
 	assert.Equal(t, defaultSpecVersion, keptnEvent.Specversion)
 	assert.Equal(t, "sh.keptn.events.test", *keptnEvent.Type)
 	assert.Equal(t, "test-context", keptnEvent.Shkeptncontext)
@@ -276,7 +277,7 @@ func TestCreateSimpleKeptnEvent(t *testing.T) {
 	require.Equal(t, testData, event.Data)
 	require.Equal(t, "", event.Shkeptncontext)
 	require.Equal(t, time.Now().UTC().Round(time.Minute), event.Time.Round(time.Minute))
-	require.Equal(t, defaultKeptnSpecVersion, event.Shkeptnspecversion)
+	require.NotEmpty(t, event.Shkeptnspecversion)
 	require.Equal(t, defaultSpecVersion, event.Specversion)
 	require.Equal(t, "", event.Triggeredid)
 	require.Equal(t, strutils.Stringp("sh.keptn.event.dev.delivery.triggered"), event.Type)
@@ -318,7 +319,7 @@ func TestToCloudEvent(t *testing.T) {
 	expected.SetSpecVersion(defaultSpecVersion)
 	expected.SetExtension(keptnContextCEExtension, "my-keptn-context")
 	expected.SetExtension(triggeredIDCEExtension, "my-triggered-id")
-	expected.SetExtension(keptnSpecVersionCEExtension, defaultKeptnSpecVersion)
+	expected.SetExtension(keptnSpecVersionCEExtension, config.GetKeptnGoUtilsConfig().ShKeptnSpecVersion)
 
 	keptnEvent := models.KeptnContextExtendedCE{
 		Contenttype:        "application/json",
@@ -326,7 +327,7 @@ func TestToCloudEvent(t *testing.T) {
 		ID:                 "my-id",
 		Shkeptncontext:     "my-keptn-context",
 		Source:             strutils.Stringp("source"),
-		Shkeptnspecversion: defaultKeptnSpecVersion,
+		Shkeptnspecversion: config.GetKeptnGoUtilsConfig().ShKeptnSpecVersion,
 		Specversion:        defaultSpecVersion,
 		Triggeredid:        "my-triggered-id",
 		Type:               strutils.Stringp("sh.keptn.event.dev.delivery.triggered"),
@@ -348,7 +349,7 @@ func TestToKeptnEvent(t *testing.T) {
 		ID:                 "my-id",
 		Shkeptncontext:     "my-keptn-context",
 		Source:             strutils.Stringp("my-source"),
-		Shkeptnspecversion: defaultKeptnSpecVersion,
+		Shkeptnspecversion: config.GetKeptnGoUtilsConfig().ShKeptnSpecVersion,
 		Specversion:        defaultSpecVersion,
 		Triggeredid:        "my-triggered-id",
 		Type:               strutils.Stringp("sh.keptn.event.dev.delivery.triggered"),
@@ -364,7 +365,7 @@ func TestToKeptnEvent(t *testing.T) {
 	ce.SetData(cloudevents.ApplicationJSON, TestData{Content: "testdata"})
 	ce.SetExtension(keptnContextCEExtension, "my-keptn-context")
 	ce.SetExtension(triggeredIDCEExtension, "my-triggered-id")
-	ce.SetExtension(keptnSpecVersionCEExtension, defaultKeptnSpecVersion)
+	ce.SetExtension(keptnSpecVersionCEExtension, config.GetKeptnGoUtilsConfig().ShKeptnSpecVersion)
 
 	keptnEvent, err := ToKeptnEvent(ce)
 
