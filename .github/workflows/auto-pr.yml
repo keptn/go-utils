@@ -8,11 +8,7 @@ on:
       - 'v*'
 jobs:
   auto-pr:
-    strategy:
-      matrix:
-        go-version: [1.16.x]
-        platform: [ubuntu-latest]
-    runs-on: '${{ matrix.platform }}'
+    runs-on: ubuntu-20.04
     env:
       GO111MODULE: "on"
       GOPROXY: "https://proxy.golang.org"
@@ -20,7 +16,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v2.1.3
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: 1.16.x
       - name: Checkout code
         uses: actions/checkout@v2.3.4
       - name: Checkout keptn/keptn repo
