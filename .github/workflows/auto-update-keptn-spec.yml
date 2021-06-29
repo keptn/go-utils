@@ -23,7 +23,7 @@ jobs:
         env:
           SPEC_TAG: ${{ env.SPEC_TAG }}
         run: |
-          echo 'shkeptnspecversion: "$SPEC_TAG"' > ./config/config.yaml
+          echo "shkeptnspecversion: '$SPEC_TAG'" > ./config/config.yaml
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
