@@ -50,29 +50,23 @@ jobs:
         env:
           GO_UTILS_TARGET: ${{ steps.target_commit.outputs.GO_UTILS_TARGET }}
         run: ../gh-actions-scripts/auto-update-go-mod.sh "${GO_UTILS_TARGET}"
-      - name: Commit and Push changes
-        working-directory: 'keptn'
-        id: commit_and_push
-        env:
-          GO_UTILS_TARGET: ${{ steps.target_commit.outputs.GO_UTILS_TARGET }}
-          TARGET_BRANCH: ${{ steps.target_commit.outputs.TARGET_BRANCH }}
-        run: |
-          git add .
-          git commit -s -m "Update keptn/go-utils to ${GO_UTILS_TARGET}"
-          echo "Pushing changes..."
-          git push -f origin $TARGET_BRANCH
-      - name: Create PR
-        working-directory: 'keptn'
-        env:
-          GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
-          TARGET_BRANCH: ${{ steps.target_commit.outputs.TARGET_BRANCH }}
-          GO_UTILS_TARGET: ${{ steps.target_commit.outputs.GO_UTILS_TARGET }}
-        run: |
-          curl -XPOST -H "Authorization: token $GITHUB_TOKEN" \
-            -d "{\"title\":\"Auto-update go-utils to latest version\", \
-                 \"base\":\"master\", \"head\":\"$TARGET_BRANCH\", \
-                 \"body\":\":robot: **Beep boop I am a bot**\n\
-                            This is an automatically created PR to change [keptn/go-utils](https://github.com/keptn/go-utils) to version $GO_UTILS_TARGET.\n \
-                            Please consult https://github.com/keptn/go-utils/actions?query=workflow%3A%22Auto+PR+to+keptn%2Fkeptn%22 for more information.\n \
-                            \"}" \
-                 https://api.github.com/repos/keptn/keptn/pulls || true
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          path: 'keptn'
+          token: ${{ secrets.KEPTN_BOT_TOKEN }}
+          commit-message: "Update keptn/go-utils to ${{ steps.target_commit.outputs.GO_UTILS_TARGET }}"
+          committer: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
+          author: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
+          signoff: true
+          branch: ${{ steps.target_commit.outputs.TARGET_BRANCH }}
+          delete-branch: true
+          base: master
+          labels: "area:go-utils,automated pr,dependencies"
+          title: "Auto-update go-utils to latest version"
+          body: |
+            **This is an automated PR!**
+
+            This is an automatically created PR to change [keptn/go-utils](https://github.com/keptn/go-utils) to version ${{ steps.target_commit.outputs.GO_UTILS_TARGET }}.
+            Please consult https://github.com/keptn/go-utils/actions?query=workflow%3A%22Auto+PR+to+keptn%2Fkeptn%22 for more information.
