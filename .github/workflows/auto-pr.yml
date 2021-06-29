@@ -28,7 +28,7 @@ jobs:
         with:
           path: 'keptn'
           repository: 'keptn/keptn'
-          token: ${{ secrets.KEPTN_KEPTN_GITHUB_TOKEN }}
+          token: ${{ secrets.KEPTN_BOT_TOKEN }}
           ref: 'master'
       - name: Determine Target CommitIsh
         id: target_commit
@@ -68,7 +68,7 @@ jobs:
       - name: Create PR
         working-directory: 'keptn'
         env:
-          GITHUB_TOKEN: ${{ secrets.KEPTN_KEPTN_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
           TARGET_BRANCH: ${{ steps.target_commit.outputs.TARGET_BRANCH }}
           GO_UTILS_TARGET: ${{ steps.target_commit.outputs.GO_UTILS_TARGET }}
         run: |

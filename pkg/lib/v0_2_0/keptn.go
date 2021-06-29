@@ -5,6 +5,7 @@ import (
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
+	"github.com/keptn/go-utils/config"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"gopkg.in/yaml.v3"
@@ -90,7 +91,7 @@ func (k *Keptn) GetShipyard() (*Shipyard, error) {
 
 // SendCloudEvent sends a cloudevent to the event broker
 func (k *Keptn) SendCloudEvent(event cloudevents.Event) error {
-	event.SetExtension(keptnSpecVersionCEExtension, defaultKeptnSpecVersion)
+	event.SetExtension(keptnSpecVersionCEExtension, config.GetKeptnGoUtilsConfig().ShKeptnSpecVersion)
 	if k.UseLocalFileSystem {
 		log.Println(fmt.Printf("%v", string(event.Data())))
 		return nil
