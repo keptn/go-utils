@@ -14,7 +14,9 @@ for file in *; do
       echo "Yes, updating go-utils now..."
       cd $file || exit
       # fetch the desired version (this will update go.mod and go.sum)
-      go get "github.com/keptn/go-utils@$GO_UTILS_TARGET"
+      go get "github.com/keptn/go-utils@$GO_UTILS_TARGET" && \
+      go get ./... && \
+      go mod tidy
       cd - || exit
     fi
   fi
