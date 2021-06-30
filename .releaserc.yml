@@ -1,0 +1,6 @@
+release:
+  branches: ["release-*"]
+tagFormat:
+  "v${version}"
+ci: true
+dryRun: true
