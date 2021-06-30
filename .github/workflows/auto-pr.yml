@@ -33,18 +33,6 @@ jobs:
           echo "##[set-output name=GO_UTILS_TARGET;]$(echo ${GO_UTILS_TARGET})"
           TARGET_BRANCH=patch/go_utils_${GO_UTILS_TARGET}
           echo "##[set-output name=TARGET_BRANCH;]$(echo ${TARGET_BRANCH})"
-      - name: Configure Git
-        working-directory: 'keptn'
-        env:
-          TARGET_BRANCH: ${{ steps.target_commit.outputs.TARGET_BRANCH }}
-        run: |
-          # set username and email
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
-          git config user.name "${{ github.actor }}"
-          # delete existing branch just in case
-          git branch -D $TARGET_BRANCH &>/dev/null || true
-          # create a new branch (from master)
-          git checkout -b $TARGET_BRANCH
       - name: Auto update go mod
         working-directory: 'keptn'
         env:
