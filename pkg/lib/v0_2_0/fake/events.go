@@ -1,6 +1,7 @@
 package fake
 
 import (
+	"context"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
@@ -13,6 +14,10 @@ type EventSender struct {
 
 // SendEvent fakes the sending of CloudEvents
 func (es *EventSender) SendEvent(event cloudevents.Event) error {
+	return es.Send(context.TODO(), event)
+}
+
+func (es *EventSender) Send(ctx context.Context, event cloudevents.Event) error {
 	if es.Reactors != nil {
 		for eventTypeSelector, reactor := range es.Reactors {
 			if eventTypeSelector == "*" || eventTypeSelector == event.Type() {
