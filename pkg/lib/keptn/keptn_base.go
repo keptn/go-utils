@@ -1,6 +1,7 @@
 package keptn
 
 import (
+	"context"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"log"
@@ -59,9 +60,13 @@ type EventProperties interface {
 	SetLabels(map[string]string)
 }
 
-// EventSender describes the interface for sending a CloudEvent
 type EventSender interface {
+	// SendEvent sends a cloud event
+	// Deprecated: use EventSender.Send instead
 	SendEvent(event cloudevents.Event) error
+
+	// Send sends a cloud event
+	Send(ctx context.Context, event cloudevents.Event) error
 }
 
 // SLIConfig represents the struct of a SLI file
