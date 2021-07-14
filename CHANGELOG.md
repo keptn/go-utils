@@ -67,7 +67,7 @@
 
 ### Known Limitations
 
-- This version introduces a couple of changes within the structure of the module. When upgrading from previous versions, please make sure to follow the instructions
+* This version introduces a couple of changes within the structure of the module. When upgrading from previous versions, please make sure to follow the instructions
   in the [README.md](https://github.com/keptn/go-utils/tree/release-0.7.2#upgrade-to-072-from-previous-versions)
 
 ### [0.7.2](https://github.com/keptn/go-utils/compare/v0.7.1...v0.7.2-alpha)
@@ -85,7 +85,7 @@
 
 ### Known Limitations
 
-- This version introduces a couple of changes within the structure of the module. When upgrading from previous versions,
+* This version introduces a couple of changes within the structure of the module. When upgrading from previous versions,
   please make sure to follow the instructions in
   the [README.md](https://github.com/keptn/go-utils/tree/release-0.7.2#upgrade-to-072-from-previous-versions)
 
