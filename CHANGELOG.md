@@ -1,5 +1,3 @@
-this is a test
-
 ### [0.8.5](https://github.com/keptn/go-utils/compare/v0.8.4...v0.8.5)
 
 
