@@ -8,6 +8,8 @@ on:
         required: false
 env:
   NODE_VERSION: 14
+  KEPTN_BOT_NAME: "Keptn Bot"
+  KEPTN_BOT_EMAIL: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
 defaults:
   run:
     shell: bash
@@ -48,9 +50,9 @@ jobs:
 
       - name: Release to GitHub
         env:
-          GITHUB_TOKEN: ${{ secrets.ADVANCED_GITHUB_TOKEN }}
-          GIT_AUTHOR_NAME: "Moritz Wiesinger"
-          GIT_AUTHOR_EMAIL: moritz.wiesinger@dynatrace.com
-          GIT_COMMITTER_NAME: "Moritz Wiesinger"
-          GIT_COMMITTER_EMAIL: moritz.wiesinger@dynatrace.com
+          GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
+          GIT_AUTHOR_NAME: ${{ env.KEPTN_BOT_NAME }}
+          GIT_AUTHOR_EMAIL: ${{ env.KEPTN_BOT_EMAIL }}
+          GIT_COMMITTER_NAME: ${{ env.KEPTN_BOT_NAME }}
+          GIT_COMMITTER_EMAIL: ${{ env.KEPTN_BOT_EMAIL }}
         run: npx semantic-release
