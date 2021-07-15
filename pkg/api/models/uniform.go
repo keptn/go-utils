@@ -8,10 +8,10 @@ import (
 )
 
 type Integration struct {
-	ID           string         `json:"id" bson:"_id"`
-	Name         string         `json:"name" bson:"name"`
-	MetaData     MetaData       `json:"metadata" bson:"metadata"`
-	Subscription []Subscription `json:"subscription" bson:"subscription"`
+	ID            string         `json:"id" bson:"_id"`
+	Name          string         `json:"name" bson:"name"`
+	MetaData      MetaData       `json:"metadata" bson:"metadata"`
+	Subscriptions []Subscription `json:"subscriptions" bson:"subscriptions"`
 }
 
 type MetaData struct {
@@ -29,9 +29,9 @@ type Subscription struct {
 }
 
 type SubscriptionFilter struct {
-	Project string   `json:"project" bson:"project"`
-	Stage   []string `json:"stage" bson:"stage"`
-	Service []string `json:"service" bson:"service"`
+	Project  string   `json:"project" bson:"project"`
+	Stages   []string `json:"stages" bson:"stage"`
+	Services []string `json:"services" bson:"service"`
 }
 
 type KubernetesMetaData struct {
