@@ -29,7 +29,7 @@ type Subscription struct {
 }
 
 type SubscriptionFilter struct {
-	Project string   `json:"project" bson:"project"`
+	Project []string `json:"project" bson:"project"`
 	Stage   []string `json:"stage" bson:"stage"`
 	Service []string `json:"service" bson:"service"`
 }
