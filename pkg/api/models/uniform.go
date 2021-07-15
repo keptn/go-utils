@@ -29,9 +29,9 @@ type Subscription struct {
 }
 
 type SubscriptionFilter struct {
-	Project  string   `json:"project" bson:"project"`
-	Stages   []string `json:"stages" bson:"stage"`
-	Services []string `json:"services" bson:"service"`
+	Project string   `json:"project" bson:"project"`
+	Stage   []string `json:"stage" bson:"stage"`
+	Service []string `json:"service" bson:"service"`
 }
 
 type KubernetesMetaData struct {
