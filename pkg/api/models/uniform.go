@@ -43,20 +43,21 @@ type KubernetesMetaData struct {
 type IntegrationID struct {
 	Name      string `json:"name" bson:"name"`
 	Namespace string `json:"namespace" bson:"namespace"`
+	NodeName  string `json:"nodename" bson:"nodename"`
 }
 
 func (i IntegrationID) Hash() (string, error) {
 	if !i.validate() {
-		return "", fmt.Errorf("incomplete integration ID. At least 'name' and 'namespace' must be set")
+		return "", fmt.Errorf("incomplete integration ID. At least 'name','namespace' and 'nodename' must be set")
 	}
-	raw := fmt.Sprintf("%s-%s", i.Name, i.Namespace)
+	raw := fmt.Sprintf("%s-%s-%s", i.Name, i.Namespace, i.NodeName)
 	hasher := sha1.New() //nolint:gosec
 	hasher.Write([]byte(raw))
 	return hex.EncodeToString(hasher.Sum(nil)), nil
 }
 
 func (i IntegrationID) validate() bool {
-	return i.Name != "" && i.Namespace != ""
+	return i.Name != "" && i.Namespace != "" && i.NodeName != ""
 }
 
 func (i *Integration) ToJSON() ([]byte, error) {

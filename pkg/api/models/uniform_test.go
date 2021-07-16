@@ -8,6 +8,7 @@ func TestIntegrationID_Hash(t *testing.T) {
 	type fields struct {
 		Name      string
 		Namespace string
+		NodeName  string
 	}
 	tests := []struct {
 		name    string
@@ -18,18 +19,28 @@ func TestIntegrationID_Hash(t *testing.T) {
 		{"ok", fields{
 			Name:      "int",
 			Namespace: "ns",
+			NodeName:  "n1",
 		},
-			"34722d8839d1a4d9498467b96b1a4893a79bfd4b",
+			"ea4caa30233315068a5d2e3e7bb480851379c1e9",
 			false},
 		{"missing name", fields{
 			Name:      "",
 			Namespace: "ns",
+			NodeName:  "n1",
 		},
 			"",
 			true},
 		{"missing namespace", fields{
 			Name:      "int",
 			Namespace: "",
+			NodeName:  "n1",
+		},
+			"",
+			true},
+		{"missing nodename", fields{
+			Name:      "int",
+			Namespace: "ns",
+			NodeName:  "",
 		},
 			"",
 			true},
@@ -39,6 +50,7 @@ func TestIntegrationID_Hash(t *testing.T) {
 			i := IntegrationID{
 				Name:      tt.fields.Name,
 				Namespace: tt.fields.Namespace,
+				NodeName:  tt.fields.NodeName,
 			}
 			got, err := i.Hash()
 			if (err != nil) != tt.wantErr {
