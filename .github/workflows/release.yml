@@ -5,6 +5,7 @@ env:
   NODE_VERSION: 14
   KEPTN_BOT_NAME: "Keptn Bot"
   KEPTN_BOT_EMAIL: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
+  RELEASE_NOTES_FILE: "RELEASE-BODY.md"
 defaults:
   run:
     shell: bash
@@ -33,6 +34,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
@@ -49,21 +52,22 @@ jobs:
 
       - name: Prepare GitHub Release Notes
         run: |
-          npx standard-version -i RELEASE-BODY.md --skip.commit --skip.tag --skip.bump --header ""
+          npx standard-version@^9.3.1 -i "${{ env.RELEASE_NOTES_FILE }}" --skip.commit --skip.tag --header ""
 
       - name: Create release package
         id: create-release-package
         env:
           GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
         run: |
-          npx standard-version
-          echo ::set-output name=tag-name::$(git describe --tags --abbrev=0)
+          echo "🚀 Creating release package now..."
+          npx standard-version@^9.3.1
+
+          echo "::set-output name=tag-name::$(git describe --tags --abbrev=0)"
+          echo "⚡️ Pushing changes to remote repository..."
+          git push --follow-tags
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          release_name: ${{ steps.create-release-package.tag-name }}
-          tag_name: ${{ steps.create-release-package.tag-name }}
-          body_path: RELEASE-BODY.md
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
+        run: |
+          gh release create "${{ steps.create-release-package.outputs.tag-name }}" --notes-file "${{ env.RELEASE_NOTES_FILE }}"
