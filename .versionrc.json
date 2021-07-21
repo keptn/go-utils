@@ -1,5 +1,6 @@
 {
   "preMajor": true,
+  "issueUrlFormat": "https://github.com/keptn/keptn/issues/{{id}}",
   "types": [
     {
       "type": "feat",
