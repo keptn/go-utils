@@ -19,10 +19,6 @@
       "section": "Docs"
     },
     {
-      "type": "example",
-      "section": "Examples"
-    },
-    {
       "type": "perf",
       "section": "Performance"
     },
