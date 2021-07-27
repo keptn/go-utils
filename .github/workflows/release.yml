@@ -70,4 +70,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
         run: |
-          gh release create "${{ steps.create-release-package.outputs.tag-name }}" --notes-file "${{ env.RELEASE_NOTES_FILE }}"
+          gh release create "${{ steps.create-release-package.outputs.tag-name }}" --draft --notes-file "${{ env.RELEASE_NOTES_FILE }}"
