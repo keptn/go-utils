@@ -55,17 +55,17 @@ jobs:
         run: |
           npx standard-version@^9.3.1 --prerelease "${{ env.PRERELEASE_KEYWORD }}" -i "${{ env.RELEASE_NOTES_FILE }}" --skip.commit --skip.tag --header ""
 
-      - name: Enhance Release Notes
+      - name: Enhance Release Notes with Build Metadata
         run: |
           echo "#### Build Information\n\n" >> "${{ env.RELEASE_NOTES_FILE }}"
           echo "**GitHub Actions Run:** $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> "${{ env.RELEASE_NOTES_FILE }}"
 
-      - name: Create release package
+      - name: Create pre-release package
         id: create-release-package
         env:
           GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
         run: |
-          echo "🚀 Creating release package now..."
+          echo "🚀 Creating pre-release package now..."
           npx standard-version@^9.3.1 --prerelease "${{ env.PRERELEASE_KEYWORD }}"
 
           echo "::set-output name=tag-name::$(git describe --tags --abbrev=0)"
