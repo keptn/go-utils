@@ -1,4 +1,4 @@
-name: Release
+name: Pre-Release
 on:
   workflow_dispatch:
 env:
@@ -6,6 +6,7 @@ env:
   KEPTN_BOT_NAME: "Keptn Bot"
   KEPTN_BOT_EMAIL: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
   RELEASE_NOTES_FILE: "RELEASE-BODY.md"
+  PRERELEASE_KEYWORD: "next"
 defaults:
   run:
     shell: bash
@@ -28,8 +29,8 @@ jobs:
         uses: actions/checkout@v2.3.4
       - name: Test
         run: go test -race -v ./...
-  release:
-    name: "Release"
+  pre-release:
+    name: Pre-Release
     runs-on: ubuntu-20.04
     needs: [test]
     steps:
@@ -53,15 +54,21 @@ jobs:
 
       - name: Prepare GitHub Release Notes
         run: |
-          npx standard-version@^9.3.1 -i "${{ env.RELEASE_NOTES_FILE }}" --skip.commit --skip.tag --header ""
+          npx standard-version@^9.3.1 --prerelease "${{ env.PRERELEASE_KEYWORD }}" -i "${{ env.RELEASE_NOTES_FILE }}" --skip.commit --skip.tag --header ""
 
-      - name: Create release package
+      - name: Enhance Release Notes with Build Metadata
+        run: |
+          echo "#### Build Information" >> "${{ env.RELEASE_NOTES_FILE }}"
+          echo "" >> "${{ env.RELEASE_NOTES_FILE }}"
+          echo "**GitHub Actions Run:** $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> "${{ env.RELEASE_NOTES_FILE }}"
+
+      - name: Create pre-release package
         id: create-release-package
         env:
           GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
         run: |
-          echo "🚀 Creating release package now..."
-          npx standard-version@^9.3.1
+          echo "🚀 Creating pre-release package now..."
+          npx standard-version@^9.3.1 --prerelease "${{ env.PRERELEASE_KEYWORD }}" --skip.commit --skip.changelog
 
           echo "::set-output name=tag-name::$(git describe --tags --abbrev=0)"
           echo "⚡️ Pushing changes to remote repository..."
@@ -71,4 +78,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
         run: |
-          gh release create "${{ steps.create-release-package.outputs.tag-name }}" --draft --notes-file "${{ env.RELEASE_NOTES_FILE }}"
+          gh release create "${{ steps.create-release-package.outputs.tag-name }}" --prerelease --notes-file "${{ env.RELEASE_NOTES_FILE }}"
