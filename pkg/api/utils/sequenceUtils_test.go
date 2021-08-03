@@ -13,14 +13,14 @@ func TestAbortSequence(t *testing.T) {
 
 }
 
-func TestSequenceControlHandler_AbortSequence(t *testing.T) {
+func TestSequenceControlHandler_ControlSequence(t *testing.T) {
 	tests := []struct {
 		name    string
 		Handler http.HandlerFunc
 		params  SequenceControlParams
 		wantErr bool
 	}{
-		{"test abort sequence - empty params",
+		{"test control sequence - empty params",
 			nil,
 			SequenceControlParams{},
 			true},
@@ -32,7 +32,7 @@ func TestSequenceControlHandler_AbortSequence(t *testing.T) {
 				Stage:        "s1",
 				State:        "s1",
 			}, true},
-		{"test abort sequence - missing context",
+		{"test control sequence - missing context",
 			nil,
 			SequenceControlParams{
 				Project:      "p1",
@@ -40,7 +40,7 @@ func TestSequenceControlHandler_AbortSequence(t *testing.T) {
 				Stage:        "s1",
 				State:        "s1",
 			}, true},
-		{"test abort sequence - missing state",
+		{"test control sequence - missing state",
 			nil,
 			SequenceControlParams{
 				Project:      "p1",
@@ -48,7 +48,7 @@ func TestSequenceControlHandler_AbortSequence(t *testing.T) {
 				Stage:        "s1",
 				State:        "",
 			}, true},
-		{"test abort sequence - valid params",
+		{"test control sequence - valid params",
 			func(writer http.ResponseWriter, request *http.Request) {
 				assert.Equal(t, "/v1/sequence/p1/c1/control", request.RequestURI)
 				payload, _ := io.ReadAll(request.Body)
@@ -72,7 +72,7 @@ func TestSequenceControlHandler_AbortSequence(t *testing.T) {
 			ts := httptest.NewServer(tt.Handler)
 			defer ts.Close()
 			s := NewSequenceControlHandler(ts.URL)
-			if err := s.AbortSequence(tt.params); (err != nil) != tt.wantErr {
+			if err := s.ControlSequence(tt.params); (err != nil) != tt.wantErr {
 				t.Errorf("AbortSequence() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

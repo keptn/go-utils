@@ -10,6 +10,12 @@ import (
 
 const v1SequenceControlPath = "/v1/sequence/%s/%s/control"
 
+const (
+	pauseSequence  string = "pause"
+	resumeSequence string = "resume"
+	abortSequence  string = "abort"
+)
+
 type SequenceControlHandler struct {
 	BaseURL    string
 	AuthToken  string
@@ -26,19 +32,19 @@ type SequenceControlParams struct {
 }
 
 func (s *SequenceControlParams) Validate() error {
-	var missingFieldsErr []string
+	var errMsg []string
 	if s.Project == "" {
-		missingFieldsErr = append(missingFieldsErr, "project parameter not set")
+		errMsg = append(errMsg, "project parameter not set")
 	}
 	if s.KeptnContext == "" {
-		missingFieldsErr = append(missingFieldsErr, "keptn context parameter not set")
+		errMsg = append(errMsg, "keptn context parameter not set")
 	}
 	if s.State == "" {
-		missingFieldsErr = append(missingFieldsErr, "sequence state parameter not set")
+		errMsg = append(errMsg, "sequence state parameter not set")
 	}
-	errStr := strings.Join(missingFieldsErr, ",")
+	errStr := strings.Join(errMsg, ",")
 
-	if len(missingFieldsErr) > 0 {
+	if len(errMsg) > 0 {
 		return fmt.Errorf("failed to validate sequence control parameters: %s", errStr)
 	}
 	return nil
@@ -54,12 +60,6 @@ func (s *SequenceControlBody) ToJSON() ([]byte, error) {
 		return nil, nil
 	}
 	return json.Marshal(s)
-}
-
-type PauseSequenceParams struct {
-}
-
-type ResumeSequenceParams struct {
 }
 
 func NewSequenceControlHandler(baseURL string) *SequenceControlHandler {
@@ -112,7 +112,7 @@ func (s *SequenceControlHandler) getHTTPClient() *http.Client {
 	return s.HTTPClient
 }
 
-func (s *SequenceControlHandler) AbortSequence(params SequenceControlParams) error {
+func (s *SequenceControlHandler) ControlSequence(params SequenceControlParams) error {
 	err := params.Validate()
 	if err != nil {
 		return err
@@ -136,13 +136,5 @@ func (s *SequenceControlHandler) AbortSequence(params SequenceControlParams) err
 		return fmt.Errorf(errResponse.GetMessage())
 	}
 
-	return nil
-}
-
-func (s *SequenceControlHandler) PauseSequence(params PauseSequenceParams) error {
-	return nil
-}
-
-func (s *SequenceControlHandler) ResumeSequence(params ResumeSequenceParams) error {
 	return nil
 }
