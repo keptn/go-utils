@@ -10,12 +10,6 @@ import (
 
 const v1SequenceControlPath = "/v1/sequence/%s/%s/control"
 
-const (
-	pauseSequence  string = "pause"
-	resumeSequence string = "resume"
-	abortSequence  string = "abort"
-)
-
 type SequenceControlHandler struct {
 	BaseURL    string
 	AuthToken  string
