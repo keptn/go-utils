@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 type Integration struct {
@@ -20,6 +21,7 @@ type MetaData struct {
 	DistributorVersion string             `json:"distributorversion" bson:"distributorversion"`
 	Location           string             `json:"location" bson:"location"`
 	KubernetesMetaData KubernetesMetaData `json:"kubernetesmetadata" bson:"kubernetesmetadata"`
+	LastSeen           time.Time          `json:"lastseen" bson:"lastseen"`
 }
 
 type Subscription struct {

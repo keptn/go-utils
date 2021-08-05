@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"errors"
 	"time"
 )
 
@@ -54,4 +55,21 @@ func (ce *KeptnContextExtendedCE) DataAs(out interface{}) error {
 		return err
 	}
 	return json.Unmarshal(bytes, out)
+}
+
+// Validate checks whether the required properties 'time', 'type', 'id' and 'source' are defined and non-empty
+func (ce *KeptnContextExtendedCE) Validate() error {
+	if ce.Time.IsZero() {
+		return errors.New("time must be specified")
+	}
+	if ce.Type == nil || *ce.Type == "" {
+		return errors.New("type must be specified")
+	}
+	if ce.ID == "" {
+		return errors.New("id must be specified")
+	}
+	if ce.Source == nil || *ce.Source == "" {
+		return errors.New("source must be specified")
+	}
+	return nil
 }
