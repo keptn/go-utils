@@ -9,10 +9,10 @@ import (
 )
 
 type Integration struct {
-	ID           string       `json:"id" bson:"_id"`
-	Name         string       `json:"name" bson:"name"`
-	MetaData     MetaData     `json:"metadata" bson:"metadata"`
-	Subscription Subscription `json:"subscription" bson:"subscription"`
+	ID            string         `json:"id" bson:"_id"`
+	Name          string         `json:"name" bson:"name"`
+	MetaData      MetaData       `json:"metadata" bson:"metadata"`
+	Subscriptions []Subscription `json:"subscriptions" bson:"subscriptions"`
 }
 
 type MetaData struct {
@@ -31,9 +31,9 @@ type Subscription struct {
 }
 
 type SubscriptionFilter struct {
-	Project string `json:"project" bson:"project"`
-	Stage   string `json:"stage" bson:"stage"`
-	Service string `json:"service" bson:"service"`
+	Project []string `json:"project" bson:"project"`
+	Stage   []string `json:"stage" bson:"stage"`
+	Service []string `json:"service" bson:"service"`
 }
 
 type KubernetesMetaData struct {
@@ -45,23 +45,21 @@ type KubernetesMetaData struct {
 type IntegrationID struct {
 	Name      string `json:"name" bson:"name"`
 	Namespace string `json:"namespace" bson:"namespace"`
-	Project   string `json:"project" bson:"project"`
-	Stage     string `json:"stage" bson:"stage"`
-	Service   string `json:"service" bson:"service"`
+	NodeName  string `json:"nodename" bson:"nodename"`
 }
 
 func (i IntegrationID) Hash() (string, error) {
 	if !i.validate() {
-		return "", fmt.Errorf("incomplete integration ID. At least 'name' and 'namespace' must be set")
+		return "", fmt.Errorf("incomplete integration ID. At least 'name','namespace' and 'nodename' must be set")
 	}
-	raw := fmt.Sprintf("%s-%s-%s-%s-%s", i.Name, i.Namespace, i.Project, i.Stage, i.Service)
+	raw := fmt.Sprintf("%s-%s-%s", i.Name, i.Namespace, i.NodeName)
 	hasher := sha1.New() //nolint:gosec
 	hasher.Write([]byte(raw))
 	return hex.EncodeToString(hasher.Sum(nil)), nil
 }
 
 func (i IntegrationID) validate() bool {
-	return i.Name != "" && i.Namespace != ""
+	return i.Name != "" && i.Namespace != "" && i.NodeName != ""
 }
 
 func (i *Integration) ToJSON() ([]byte, error) {
