@@ -9,9 +9,12 @@ import (
 )
 
 type Integration struct {
-	ID            string         `json:"id" bson:"_id"`
-	Name          string         `json:"name" bson:"name"`
-	MetaData      MetaData       `json:"metadata" bson:"metadata"`
+	ID       string   `json:"id" bson:"_id"`
+	Name     string   `json:"name" bson:"name"`
+	MetaData MetaData `json:"metadata" bson:"metadata"`
+	// Deprecated: for backwards compatibility Subscription is populated
+	// but new code shall use Subscriptions
+	Subscription  Subscription   `json:"subscription" bson:"subscription"`
 	Subscriptions []Subscription `json:"subscriptions" bson:"subscriptions"`
 }
 
@@ -31,9 +34,19 @@ type Subscription struct {
 }
 
 type SubscriptionFilter struct {
-	Project []string `json:"project" bson:"project"`
-	Stage   []string `json:"stage" bson:"stage"`
-	Service []string `json:"service" bson:"service"`
+	// Deprecated: for backwards compatibility Project is still populated
+	// but new code shall use Projects
+	Project string `json:"project" bson:"project"`
+	// Deprecated: for backwards compatibility Stage is still populated
+	// but new code shall use Stages
+	Stage string `json:"stage" bson:"stage"`
+	// Deprecated: for backwards compatibility Service is still populated
+	// but new code shall use Services
+	Service string `json:"service" bson:"service"`
+
+	Projects []string `json:"projects" bson:"projects"`
+	Stages   []string `json:"stages" bson:"stages"`
+	Services []string `json:"services" bson:"services"`
 }
 
 type KubernetesMetaData struct {
