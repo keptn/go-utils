@@ -14,8 +14,8 @@ type Integration struct {
 	MetaData MetaData `json:"metadata" bson:"metadata"`
 	// Deprecated: for backwards compatibility Subscription is populated
 	// but new code shall use Subscriptions
-	Subscription  Subscription   `json:"subscription" bson:"subscription"`
-	Subscriptions []Subscription `json:"subscriptions" bson:"subscriptions"`
+	Subscription  Subscription        `json:"subscription" bson:"subscription"`
+	Subscriptions []TopicSubscription `json:"subscriptions" bson:"subscriptions"`
 }
 
 type MetaData struct {
@@ -27,12 +27,20 @@ type MetaData struct {
 	LastSeen           time.Time          `json:"lastseen" bson:"lastseen"`
 }
 
+// Deprecated
 type Subscription struct {
 	Topics []string           `json:"topics" bson:"topics"`
 	Status string             `json:"status" bson:"status"`
 	Filter SubscriptionFilter `json:"filter" bson:"filter"`
 }
 
+type TopicSubscription struct {
+	Topics []string                `json:"topics" bson:"topics"`
+	Status string                  `json:"status" bson:"status"`
+	Filter TopicSubscriptionFilter `json:"filter" bson:"filter"`
+}
+
+// Deprecated
 type SubscriptionFilter struct {
 	// Deprecated: for backwards compatibility Project is still populated
 	// but new code shall use Projects
@@ -43,7 +51,9 @@ type SubscriptionFilter struct {
 	// Deprecated: for backwards compatibility Service is still populated
 	// but new code shall use Services
 	Service string `json:"service" bson:"service"`
+}
 
+type TopicSubscriptionFilter struct {
 	Projects []string `json:"projects" bson:"projects"`
 	Stages   []string `json:"stages" bson:"stages"`
 	Services []string `json:"services" bson:"services"`
