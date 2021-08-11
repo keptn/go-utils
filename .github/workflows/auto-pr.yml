@@ -52,7 +52,7 @@ jobs:
           delete-branch: true
           base: master
           labels: "area:go-utils,automated pr,dependencies"
-          title: "Auto-update go-utils to latest version"
+          title: "build(deps): Auto-update go-utils to latest version"
           body: |
             **This is an automated PR!**
 
