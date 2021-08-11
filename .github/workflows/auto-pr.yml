@@ -6,6 +6,7 @@ on:
       - 'release-*'
     tags:
       - 'v*'
+  workflow_dispatch:
 jobs:
   send_webhook:
     runs-on: ubuntu-20.04
