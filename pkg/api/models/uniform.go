@@ -36,7 +36,7 @@ type Subscription struct {
 
 type TopicSubscription struct {
 	ID     string                  `json:"id" bson:"id"`
-	Topics string                  `json:"topics" bson:"topics"`
+	Topic  string                  `json:"topic" bson:"topic"`
 	Status string                  `json:"status" bson:"status"`
 	Filter TopicSubscriptionFilter `json:"filter" bson:"filter"`
 }
