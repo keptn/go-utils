@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/httputils"
@@ -68,6 +69,20 @@ func (u *UniformHandler) getAuthHeader() string {
 
 func (u *UniformHandler) getHTTPClient() *http.Client {
 	return u.HTTPClient
+}
+
+func (u *UniformHandler) Ping(integrationID string) (*models.Integration, error) {
+	resp, err := put(u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/ping", nil, u)
+	if err != nil {
+		return nil, errors.New(err.GetMessage())
+	}
+
+	response := &models.Integration{}
+	if err := json.Unmarshal([]byte(resp), response); err != nil {
+		return nil, err
+	}
+
+	return response, nil
 }
 
 func (u *UniformHandler) RegisterIntegration(integration models.Integration) (string, error) {
