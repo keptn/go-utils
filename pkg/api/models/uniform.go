@@ -33,7 +33,7 @@ type MetaData struct {
 }
 
 // Subscription describes to what events the Keptn service is subscribed to
-// Deprecated: use EventSubscription instead
+// Deprecated
 type Subscription struct {
 	Topics []string           `json:"topics" bson:"topics"`
 	Status string             `json:"status" bson:"status"`
@@ -48,7 +48,7 @@ type EventSubscription struct {
 }
 
 // SubscriptionFilter is used to filter subscriptions by project stage or service
-// Deprecated: use EventSubcriptionFilter instead
+// Deprecated
 type SubscriptionFilter struct {
 	Project string `json:"project" bson:"project"`
 	Stage   string `json:"stage" bson:"stage"`
