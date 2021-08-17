@@ -93,7 +93,6 @@ func (i IntegrationID) validate() bool {
 	return i.Name != "" && i.Namespace != "" && i.NodeName != ""
 }
 
-// ToJSON serializes an Integration object into JSON format
 func (i *Integration) ToJSON() ([]byte, error) {
 	if i == nil {
 		return nil, nil
@@ -101,7 +100,6 @@ func (i *Integration) ToJSON() ([]byte, error) {
 	return json.Marshal(i)
 }
 
-// FromJSON deserializes integration data as JSON into a Integration value
 func (i *Integration) FromJSON(b []byte) error {
 	var res Integration
 	if err := json.Unmarshal(b, &res); err != nil {
@@ -109,4 +107,11 @@ func (i *Integration) FromJSON(b []byte) error {
 	}
 	*i = res
 	return nil
+}
+
+func (s *EventSubscription) ToJSON() ([]byte, error) {
+	if s == nil {
+		return nil, nil
+	}
+	return json.Marshal(s)
 }

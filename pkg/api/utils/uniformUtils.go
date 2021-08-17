@@ -104,6 +104,25 @@ func (u *UniformHandler) RegisterIntegration(integration models.Integration) (st
 	return registerIntegrationResponse.ID, nil
 }
 
+func (u *UniformHandler) CreateSubscription(integrationID string, subscription models.EventSubscription) (string, error) {
+	bodyStr, err := subscription.ToJSON()
+	if err != nil {
+		return "", err
+	}
+	resp, errResponse := post(u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/subscription", bodyStr, u)
+	if errResponse != nil {
+		return "", fmt.Errorf(errResponse.GetMessage())
+	}
+	_ = resp
+
+	createSubscriptionResponse := &models.CreateSubscriptionResponse{}
+	if err := createSubscriptionResponse.FromJSON([]byte(resp)); err != nil {
+		return "", err
+	}
+
+	return createSubscriptionResponse.ID, nil
+}
+
 func (u *UniformHandler) UnregisterIntegration(integrationID string) error {
 	_, err := delete(u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID, u)
 	if err != nil {
