@@ -1,0 +1,29 @@
+name: Update go-utils in keptn/keptn
+on:
+  push:
+    branches:
+      - 'master'
+      - 'release-*'
+    tags:
+      - 'v*'
+  workflow_dispatch:
+jobs:
+  send_webhook:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Trigger go-utils auto update in core repo
+        if: github.event_name == 'workflow_dispatch'
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.KEPTN_BOT_TOKEN }}
+          repository: 'keptn/keptn'
+          event-type: go-utils-update
+          client-payload: '{"go-utils-target": "${{ github.sha }}"}'
+      - name: Trigger go-utils auto update in core repo
+        if: github.event_name == 'push'
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.KEPTN_BOT_TOKEN }}
+          repository: 'keptn/keptn'
+          event-type: go-utils-update
+          client-payload: '{"go-utils-target": "${{ github.sha }}"}'
