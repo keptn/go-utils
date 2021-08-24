@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/httputils"
@@ -70,6 +71,20 @@ func (u *UniformHandler) getHTTPClient() *http.Client {
 	return u.HTTPClient
 }
 
+func (u *UniformHandler) Ping(integrationID string) (*models.Integration, error) {
+	resp, err := put(u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/ping", nil, u)
+	if err != nil {
+		return nil, errors.New(err.GetMessage())
+	}
+
+	response := &models.Integration{}
+	if err := json.Unmarshal([]byte(resp), response); err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
 func (u *UniformHandler) RegisterIntegration(integration models.Integration) (string, error) {
 	bodyStr, err := integration.ToJSON()
 	if err != nil {
@@ -87,6 +102,25 @@ func (u *UniformHandler) RegisterIntegration(integration models.Integration) (st
 	}
 
 	return registerIntegrationResponse.ID, nil
+}
+
+func (u *UniformHandler) CreateSubscription(integrationID string, subscription models.EventSubscription) (string, error) {
+	bodyStr, err := subscription.ToJSON()
+	if err != nil {
+		return "", err
+	}
+	resp, errResponse := post(u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/subscription", bodyStr, u)
+	if errResponse != nil {
+		return "", fmt.Errorf(errResponse.GetMessage())
+	}
+	_ = resp
+
+	createSubscriptionResponse := &models.CreateSubscriptionResponse{}
+	if err := createSubscriptionResponse.FromJSON([]byte(resp)); err != nil {
+		return "", err
+	}
+
+	return createSubscriptionResponse.ID, nil
 }
 
 func (u *UniformHandler) UnregisterIntegration(integrationID string) error {
