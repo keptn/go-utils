@@ -22,6 +22,7 @@ type APIService interface {
 func getClientTransport() *http.Transport {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		Proxy:           http.ProxyFromEnvironment,
 	}
 	return tr
 }
