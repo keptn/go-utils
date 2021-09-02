@@ -20,6 +20,11 @@ type SecretMetadata struct {
 	Scope *string `json:"scope,omitempty" yaml:"scope,omitempty"`
 }
 
+type GetSecretResponseItem struct {
+	SecretMetadata
+	Keys []string `json:"keys"`
+}
+
 type GetSecretsResponse struct {
-	Secrets []SecretMetadata `json:"secrets"`
+	Secrets []GetSecretResponseItem
 }
