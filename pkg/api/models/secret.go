@@ -22,9 +22,9 @@ type SecretMetadata struct {
 
 type GetSecretResponseItem struct {
 	SecretMetadata `yaml:",inline"`
-	Keys           []string `json:"keys"`
+	Keys           []string `json:"keys" yaml:"keys"`
 }
 
 type GetSecretsResponse struct {
-	Secrets []GetSecretResponseItem
+	Secrets []GetSecretResponseItem `json:"secrets" yaml:"secrets"`
 }
