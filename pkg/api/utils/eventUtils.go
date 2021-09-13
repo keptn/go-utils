@@ -47,7 +47,7 @@ func NewEventHandler(baseURL string) *EventHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: getClientTransport()},
+		HTTPClient: &http.Client{Transport: getInstrumentedClientTransport()},
 		Scheme:     "http",
 	}
 }
@@ -59,7 +59,7 @@ func NewAuthenticatedEventHandler(baseURL string, authToken string, authHeader s
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getClientTransport()
+	httpClient.Transport = getInstrumentedClientTransport()
 
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
@@ -159,6 +159,7 @@ func (e *EventHandler) getEvents(uri string, numberOfPages int) ([]*models.Keptn
 			q.Set("nextPageKey", nextPageKey)
 			url.RawQuery = q.Encode()
 		}
+		// TODO: NewRequestWithContext in order to get proper traces
 		req, err := http.NewRequest("GET", url.String(), nil)
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, e)

@@ -4,11 +4,12 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	"github.com/keptn/go-utils/pkg/common/httputils"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/keptn/go-utils/pkg/common/httputils"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 )
@@ -31,7 +32,7 @@ func NewProjectHandler(baseURL string) *ProjectHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: getClientTransport()},
+		HTTPClient: &http.Client{Transport: getInstrumentedClientTransport()},
 		Scheme:     "http",
 	}
 }
@@ -42,7 +43,7 @@ func NewAuthenticatedProjectHandler(baseURL string, authToken string, authHeader
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getClientTransport()
+	httpClient.Transport = getInstrumentedClientTransport()
 
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
@@ -113,6 +114,7 @@ func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
 			q.Set("nextPageKey", nextPageKey)
 			url.RawQuery = q.Encode()
 		}
+		// TODO: NewRequestWithContext in order to get proper traces
 		req, err := http.NewRequest("GET", url.String(), nil)
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, p)
@@ -156,6 +158,7 @@ func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
 
 func getProject(uri string, api APIService) (*models.Project, *models.Error) {
 
+	// TODO: NewRequestWithContext in order to get proper traces
 	req, err := http.NewRequest("GET", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, api)

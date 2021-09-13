@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 // StageHandler handles stages
@@ -32,7 +33,7 @@ func NewStageHandler(baseURL string) *StageHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{},
+		HTTPClient: &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)},
 		Scheme:     "http",
 	}
 }
@@ -43,7 +44,7 @@ func NewAuthenticatedStageHandler(baseURL string, authToken string, authHeader s
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getClientTransport()
+	httpClient.Transport = getInstrumentedClientTransport()
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
 
@@ -104,6 +105,7 @@ func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 			q.Set("nextPageKey", nextPageKey)
 			url.RawQuery = q.Encode()
 		}
+		// TODO: NewRequestWithContext in order to get proper traces
 		req, err := http.NewRequest("GET", url.String(), nil)
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, s)

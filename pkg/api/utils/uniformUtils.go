@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/go-utils/pkg/common/httputils"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 const uniformRegistrationBaseURL = "uniform/registration"
@@ -29,7 +30,7 @@ func NewUniformHandler(baseURL string) *UniformHandler {
 		BaseURL:    baseURL,
 		AuthToken:  "",
 		AuthHeader: "",
-		HTTPClient: &http.Client{Transport: getClientTransport()},
+		HTTPClient: &http.Client{Transport: getInstrumentedClientTransport()},
 		Scheme:     "http",
 	}
 }
@@ -38,7 +39,7 @@ func NewAuthenticatedUniformHandler(baseURL string, authToken string, authHeader
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getClientTransport()
+	httpClient.Transport = getInstrumentedClientTransport()
 	baseURL = httputils.TrimHTTPScheme(baseURL)
 	baseURL = strings.TrimRight(baseURL, "/")
 
@@ -137,6 +138,7 @@ func (u *UniformHandler) GetRegistrations() ([]*models.Integration, error) {
 		return nil, err
 	}
 
+	// TODO: NewRequestWithContext in order to get proper traces
 	req, err := http.NewRequest("GET", url.String(), nil)
 	if err != nil {
 		return nil, err

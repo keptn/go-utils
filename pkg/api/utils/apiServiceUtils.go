@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 // APIService represents the interface for accessing the configuration service
@@ -27,7 +28,14 @@ func getClientTransport() *http.Transport {
 	return tr
 }
 
+// Wraps the provided http.RoundTripper with one that
+// starts a span and injects the span context into the outbound request headers.
+func getInstrumentedClientTransport() *otelhttp.Transport {
+	return otelhttp.NewTransport(getClientTransport())
+}
+
 func putWithEventContext(uri string, data []byte, api APIService) (*models.EventContext, *models.Error) {
+	// TODO: NewRequestWithContext in order to get proper traces
 	req, err := http.NewRequest("PUT", uri, bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, api)
@@ -76,6 +84,7 @@ func putWithEventContext(uri string, data []byte, api APIService) (*models.Event
 }
 
 func put(uri string, data []byte, api APIService) (string, *models.Error) {
+	// TODO: NewRequestWithContext in order to get proper traces
 	req, err := http.NewRequest("PUT", uri, bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, api)
@@ -114,6 +123,7 @@ func put(uri string, data []byte, api APIService) (string, *models.Error) {
 }
 
 func postWithEventContext(uri string, data []byte, api APIService) (*models.EventContext, *models.Error) {
+	// TODO: NewRequestWithContext in order to get proper traces
 	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, api)
@@ -162,6 +172,7 @@ func postWithEventContext(uri string, data []byte, api APIService) (*models.Even
 }
 
 func post(uri string, data []byte, api APIService) (string, *models.Error) {
+	// TODO: NewRequestWithContext in order to get proper traces
 	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, api)
@@ -200,6 +211,7 @@ func post(uri string, data []byte, api APIService) (string, *models.Error) {
 }
 
 func deleteWithEventContext(uri string, api APIService) (*models.EventContext, *models.Error) {
+	// TODO: NewRequestWithContext in order to get proper traces
 	req, err := http.NewRequest("DELETE", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, api)
@@ -240,6 +252,7 @@ func deleteWithEventContext(uri string, api APIService) (*models.EventContext, *
 }
 
 func delete(uri string, api APIService) (string, *models.Error) {
+	// TODO: NewRequestWithContext in order to get proper traces
 	req, err := http.NewRequest("DELETE", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, api)

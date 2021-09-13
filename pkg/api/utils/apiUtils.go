@@ -26,7 +26,7 @@ func NewAuthenticatedAPIHandler(baseURL string, authToken string, authHeader str
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getClientTransport()
+	httpClient.Transport = getInstrumentedClientTransport()
 
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
@@ -134,6 +134,7 @@ func (a *APIHandler) DeleteService(project, service string) (*models.DeleteServi
 
 // GetMetadata retrieve keptn MetaData information
 func (a *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
+	// TODO: NewRequestWithContext in order to get proper traces
 	req, err := http.NewRequest("GET", a.Scheme+"://"+a.getBaseURL()+v1MetadataPath, nil)
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, a)

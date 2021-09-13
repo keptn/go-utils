@@ -45,6 +45,12 @@ type KeptnContextExtendedCE struct {
 	// type
 	// Required: true
 	Type *string `json:"type"`
+
+	// traceparent
+	TraceParent string `json:"traceparent,omitempty"`
+
+	// tracestate
+	TraceState string `json:"tracestate,omitempty"`
 }
 
 // DataAs attempts to populate the provided data object with the event payload.

@@ -3,10 +3,12 @@ package keptn
 import (
 	"crypto/tls"
 	"encoding/json"
-	"github.com/keptn/go-utils/pkg/api/models"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/keptn/go-utils/pkg/api/models"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 // Datastore represents the interface for accessing Keptn's datastore
@@ -45,7 +47,7 @@ func NewEventHandler(baseURL string) *EventHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{},
+		HTTPClient: &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)},
 		Scheme:     "http",
 	}
 }

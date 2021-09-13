@@ -32,7 +32,7 @@ func NewServiceHandler(baseURL string) *ServiceHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: getClientTransport()},
+		HTTPClient: &http.Client{Transport: getInstrumentedClientTransport()},
 		Scheme:     "http",
 	}
 }
@@ -43,7 +43,7 @@ func NewAuthenticatedServiceHandler(baseURL string, authToken string, authHeader
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getClientTransport()
+	httpClient.Transport = getInstrumentedClientTransport()
 
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
@@ -102,6 +102,7 @@ func (s *ServiceHandler) GetService(project, stage, service string) (*models.Ser
 	if err != nil {
 		return nil, err
 	}
+	// TODO: NewRequestWithContext in order to get proper traces
 	req, err := http.NewRequest("GET", url.String(), nil)
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, s)
@@ -152,6 +153,7 @@ func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models
 			q.Set("nextPageKey", nextPageKey)
 			url.RawQuery = q.Encode()
 		}
+		// TODO: NewRequestWithContext in order to get proper traces
 		req, err := http.NewRequest("GET", url.String(), nil)
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, s)

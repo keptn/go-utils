@@ -5,14 +5,20 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
+	"github.com/cloudevents/sdk-go/v2/client"
+	"github.com/cloudevents/sdk-go/v2/extensions"
 	"github.com/cloudevents/sdk-go/v2/protocol"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/config"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/observability"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
-	"strings"
-	"time"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	httpprotocol "github.com/cloudevents/sdk-go/v2/protocol/http"
@@ -41,6 +47,15 @@ type HTTPEventSender struct {
 	EventsEndpoint string
 	// Client is an implementation of the cloudevents.Client interface
 	Client cloudevents.Client
+
+	// Context to be used when calling SendEvent on the sender.
+	//
+	// This field is intended to be used only when an HTTPEventSender is created
+	// every time a new event is received.
+	// Used as a POC to propagate the context for OpenTelemetry instrumentation.
+	// The best solution would be that each method/func accepted a Context parameter
+	// but for now this is not possible due to breaking changes.
+	Context context.Context
 }
 
 // NewHTTPEventSender creates a new HTTPSender
@@ -48,12 +63,28 @@ func NewHTTPEventSender(endpoint string) (*HTTPEventSender, error) {
 	if endpoint == "" {
 		endpoint = DefaultHTTPEventEndpoint
 	}
-	p, err := cloudevents.NewHTTP()
+	p, err := cloudevents.NewHTTP(
+		cloudevents.WithRoundTripper(otelhttp.NewTransport(http.DefaultTransport)),
+		cloudevents.WithMiddleware(func(next http.Handler) http.Handler {
+			// the middleware will ensure that the traceparent is injected into the context
+			// that is passed to the StartReceiver handler func
+			// https://github.com/cloudevents/sdk-go/pull/708
+			return otelhttp.NewHandler(next, "receive")
+		}),
+	)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to create protocol: %s", err.Error())
 	}
 
-	c, err := cloudevents.NewClient(p, cloudevents.WithTimeNow(), cloudevents.WithUUIDs())
+	// the cloudevents HTTP client will invoke our observability service
+	// in certain moments (send event, receive event, etc) so we can record the spans
+	c, err := cloudevents.NewClient(
+		p, cloudevents.WithTimeNow(),
+		cloudevents.WithUUIDs(),
+		client.WithObservabilityService(observability.NewOTelObservabilityService()),
+	)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to create client, %s", err.Error())
 	}
@@ -67,7 +98,18 @@ func NewHTTPEventSender(endpoint string) (*HTTPEventSender, error) {
 
 // SendEvent sends a CloudEvent
 func (httpSender HTTPEventSender) SendEvent(event cloudevents.Event) error {
-	ctx := cloudevents.ContextWithTarget(context.Background(), httpSender.EventsEndpoint)
+	ctx := context.Background()
+
+	// TODO: Callers should be using the Send method below. Unfortunately it is not easy to change everything
+	// so this still needs to be here until a new API is introduced that requires passing the context object.
+
+	// If we have a context, use that instead since it most likely
+	// contains the current tracecontext information.
+	if httpSender.Context != nil {
+		ctx = httpSender.Context
+	}
+
+	ctx = cloudevents.ContextWithTarget(ctx, httpSender.EventsEndpoint)
 	ctx = cloudevents.WithEncodingStructured(ctx)
 	return httpSender.Send(ctx, event)
 }
@@ -400,6 +442,13 @@ func ToCloudEvent(keptnEvent models.KeptnContextExtendedCE) cloudevents.Event {
 	event.SetExtension(keptnContextCEExtension, keptnEvent.Shkeptncontext)
 	event.SetExtension(triggeredIDCEExtension, keptnEvent.Triggeredid)
 	event.SetExtension(keptnSpecVersionCEExtension, keptnEvent.Shkeptnspecversion)
+
+	dte := extensions.DistributedTracingExtension{
+		TraceParent: keptnEvent.TraceParent,
+		TraceState:  keptnEvent.TraceState,
+	}
+	dte.AddTracingAttributes(&event)
+
 	return event
 }
 
@@ -428,6 +477,11 @@ func ToKeptnEvent(event cloudevents.Event) (models.KeptnContextExtendedCE, error
 		Time:               event.Time(),
 		Triggeredid:        triggeredID,
 		Type:               strutils.Stringp(event.Type()),
+	}
+
+	if dte, ok := extensions.GetDistributedTracingExtension(event); ok {
+		keptnEvent.TraceParent = dte.TraceParent
+		keptnEvent.TraceState = dte.TraceState
 	}
 
 	return keptnEvent, nil

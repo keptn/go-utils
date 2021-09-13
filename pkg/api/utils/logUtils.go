@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/benbjohnson/clock"
-	"github.com/keptn/go-utils/pkg/api/models"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -14,6 +12,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/benbjohnson/clock"
+	"github.com/keptn/go-utils/pkg/api/models"
 )
 
 const v1LogPath = "/v1/log"

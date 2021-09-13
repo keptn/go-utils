@@ -3,10 +3,11 @@ package api
 import (
 	"encoding/json"
 	"errors"
-	"github.com/keptn/go-utils/pkg/api/models"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/keptn/go-utils/pkg/api/models"
 )
 
 const secretServiceBaseURL = "secrets"
@@ -40,7 +41,7 @@ func NewSecretHandler(baseURL string) *SecretHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: getClientTransport()},
+		HTTPClient: &http.Client{Transport: getInstrumentedClientTransport()},
 		Scheme:     "http",
 	}
 }
@@ -51,7 +52,7 @@ func NewAuthenticatedSecretHandler(baseURL string, authToken string, authHeader 
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getClientTransport()
+	httpClient.Transport = getInstrumentedClientTransport()
 
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
@@ -124,6 +125,7 @@ func (s *SecretHandler) DeleteSecret(secretName, secretScope string) error {
 
 // GetSecrets returns a list of created secrets
 func (s *SecretHandler) GetSecrets() (*models.GetSecretsResponse, error) {
+	// TODO: NewRequestWithContext in order to get proper traces
 	req, err := http.NewRequest("GET", s.Scheme+"://"+s.BaseURL+v1SecretPath, nil)
 	if err != nil {
 		return nil, err
