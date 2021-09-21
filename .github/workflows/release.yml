@@ -53,6 +53,11 @@ jobs:
 
       - name: Prepare GitHub Release Notes
         run: |
+          # Delete pre-release tags to be able to generate a changelog from last 'real' release
+          # This is a workaround for a known limitation of standard-version
+          # Reference: https://github.com/conventional-changelog/standard-version/issues/203#issuecomment-872415140
+          git tag -l | grep -vE '^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$' | xargs git tag -d
+
           npx standard-version@^9.3.1 -i "${{ env.RELEASE_NOTES_FILE }}" --skip.commit --skip.tag --header ""
 
       - name: Temporarily disable "include administrators" branch protection
@@ -71,6 +76,9 @@ jobs:
           npx standard-version@^9.3.1
 
           echo "::set-output name=tag-name::$(git describe --tags --abbrev=0)"
+
+          echo "Fetching previously deleted old tags..."
+          git fetch origin --tags -f
           echo "⚡️ Pushing changes to remote repository..."
           git push --follow-tags
 
