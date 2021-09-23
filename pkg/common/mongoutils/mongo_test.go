@@ -13,17 +13,19 @@ func TestGetMongoConnectionStringFromEnv(t *testing.T) {
 		mongoDbNameEnvVar              string
 		mongoDbUserEnvVar              string
 		mongoDbPasswordEnvVar          string
-		want                           string
+		wantConnectionString           string
+		wantDbName                     string
 		wantErr                        bool
 	}{
 		{
 			name:                           "get external connection string",
-			externalConnectionStringEnvVar: "mongo://my-external-connection",
+			externalConnectionStringEnvVar: "mongodb+srv://user:password@keptn.1erb6.mongodb.net/keptn?retryWrites=true&w=majority",
 			mongoDbHostEnvVar:              "mongo:27017",
-			mongoDbNameEnvVar:              "",
+			mongoDbNameEnvVar:              "keptn",
 			mongoDbUserEnvVar:              "",
 			mongoDbPasswordEnvVar:          "",
-			want:                           "mongo://my-external-connection",
+			wantConnectionString:           "mongodb+srv://user:password@keptn.1erb6.mongodb.net/keptn?retryWrites=true&w=majority",
+			wantDbName:                     "keptn",
 			wantErr:                        false,
 		},
 		{
@@ -33,7 +35,8 @@ func TestGetMongoConnectionStringFromEnv(t *testing.T) {
 			mongoDbNameEnvVar:              "keptn",
 			mongoDbUserEnvVar:              "user",
 			mongoDbPasswordEnvVar:          "pw",
-			want:                           "mongodb://user:pw@mongo:27017/keptn",
+			wantConnectionString:           "mongodb://user:pw@mongo:27017/keptn",
+			wantDbName:                     "keptn",
 			wantErr:                        false,
 		},
 		{
@@ -43,7 +46,7 @@ func TestGetMongoConnectionStringFromEnv(t *testing.T) {
 			mongoDbNameEnvVar:              "keptn",
 			mongoDbUserEnvVar:              "user",
 			mongoDbPasswordEnvVar:          "pw",
-			want:                           "",
+			wantConnectionString:           "",
 			wantErr:                        true,
 		},
 		{
@@ -53,7 +56,7 @@ func TestGetMongoConnectionStringFromEnv(t *testing.T) {
 			mongoDbNameEnvVar:              "",
 			mongoDbUserEnvVar:              "user",
 			mongoDbPasswordEnvVar:          "pw",
-			want:                           "",
+			wantConnectionString:           "",
 			wantErr:                        true,
 		},
 		{
@@ -63,7 +66,7 @@ func TestGetMongoConnectionStringFromEnv(t *testing.T) {
 			mongoDbNameEnvVar:              "keptn",
 			mongoDbUserEnvVar:              "",
 			mongoDbPasswordEnvVar:          "pw",
-			want:                           "",
+			wantConnectionString:           "",
 			wantErr:                        true,
 		},
 		{
@@ -73,7 +76,7 @@ func TestGetMongoConnectionStringFromEnv(t *testing.T) {
 			mongoDbNameEnvVar:              "keptn",
 			mongoDbUserEnvVar:              "user",
 			mongoDbPasswordEnvVar:          "",
-			want:                           "",
+			wantConnectionString:           "",
 			wantErr:                        true,
 		},
 	}
@@ -84,13 +87,16 @@ func TestGetMongoConnectionStringFromEnv(t *testing.T) {
 			os.Setenv("MONGO_DB_NAME", tt.mongoDbNameEnvVar)
 			os.Setenv("MONGODB_USER", tt.mongoDbUserEnvVar)
 			os.Setenv("MONGODB_PASSWORD", tt.mongoDbPasswordEnvVar)
-			got, err := GetMongoConnectionStringFromEnv()
+			gotConnectionString, gotDbName, err := GetMongoConnectionStringFromEnv()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetMongoConnectionStringFromEnv() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got != tt.want {
-				t.Errorf("GetMongoConnectionStringFromEnv() got = %v, want %v", got, tt.want)
+			if gotConnectionString != tt.wantConnectionString {
+				t.Errorf("GetMongoConnectionStringFromEnv() gotConnectionString = %v, wantConnectionString %v", gotConnectionString, tt.wantConnectionString)
+			}
+			if gotDbName != tt.wantDbName {
+				t.Errorf("GetMongoConnectionStringFromEnv() got DbName= %v, wantDbName %v", gotDbName, tt.wantDbName)
 			}
 		})
 	}
