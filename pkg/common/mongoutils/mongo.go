@@ -27,7 +27,7 @@ func GetMongoConnectionStringFromEnv() (string, string, error) {
 	mongoDBUser := os.Getenv("MONGODB_USER")
 	mongoDBPassword := os.Getenv("MONGODB_PASSWORD")
 
-	if err := strutils.AllSet(mongoDBHost, mongoDBUser, mongoDBPassword); err != nil {
+	if !strutils.AllSet(mongoDBHost, mongoDBUser, mongoDBPassword) {
 		return "", "", errors.New("could not construct mongodb connection string: env vars 'MONGODB_HOST', 'MONGODB_USER' and 'MONGODB_PASSWORD' have to be set")
 	}
 	return fmt.Sprintf("mongodb://%s:%s@%s/%s", mongoDBUser, mongoDBPassword, mongoDBHost, mongoDBName), mongoDBName, nil
