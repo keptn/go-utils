@@ -7,6 +7,7 @@ func Stringp(str string) *string {
 	return &str
 }
 
+// AllSet checks whether all provided string values are non-empty
 func AllSet(vals ...string) error {
 	for _, val := range vals {
 		if val == "" {
