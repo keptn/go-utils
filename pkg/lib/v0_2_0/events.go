@@ -5,14 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/cloudevents/sdk-go/v2/protocol"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/config"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
-	"strings"
-	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	httpprotocol "github.com/cloudevents/sdk-go/v2/protocol/http"
@@ -65,7 +66,7 @@ func NewHTTPEventSender(endpoint string) (*HTTPEventSender, error) {
 	return httpSender, nil
 }
 
-// SendEvent sends a CloudEvent
+// Deprecated: use HTTPEventSender.Send instead
 func (httpSender HTTPEventSender) SendEvent(event cloudevents.Event) error {
 	ctx := cloudevents.ContextWithTarget(context.Background(), httpSender.EventsEndpoint)
 	ctx = cloudevents.WithEncodingStructured(ctx)
@@ -73,6 +74,16 @@ func (httpSender HTTPEventSender) SendEvent(event cloudevents.Event) error {
 }
 
 func (httpSender HTTPEventSender) Send(ctx context.Context, event cloudevents.Event) error {
+	// if not already added by the caller, add the one from the Sender
+	if cloudevents.TargetFromContext(ctx) == nil {
+		ctx = cloudevents.ContextWithTarget(ctx, httpSender.EventsEndpoint)
+	}
+
+	// TODO: Should we also add cloudevents.WithEncodingStructured(ctx) here to avoid duplication?
+	// There doesn't seem to be a way to check if already present in the ctx, as the key
+	// is not exported: https://github.com/cloudevents/sdk-go/blob/main/v2/binding/write.go#L19
+	// unles we copy the key to our code - which could be problematic if cloudevents change it later.
+
 	var result protocol.Result
 	for i := 0; i <= MAX_SEND_RETRIES; i++ {
 		result = httpSender.Client.Send(ctx, event)

@@ -1,15 +1,17 @@
 package v0_2_0
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"log"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/config"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"gopkg.in/yaml.v3"
-	"log"
 )
 
 type Keptn struct {
@@ -71,12 +73,16 @@ func NewKeptn(incomingEvent *cloudevents.Event, opts keptn.KeptnOpts) (*Keptn, e
 	}
 	k.Logger = keptn.NewLogger(k.KeptnContext, incomingEvent.Context.GetID(), loggingServiceName)
 
+	if opts.Context == nil {
+		k.Context = context.Background()
+	}
+
 	return k, nil
 }
 
 // GetShipyard returns the shipyard definition of a project
 func (k *Keptn) GetShipyard() (*Shipyard, error) {
-	shipyardResource, err := k.ResourceHandler.GetProjectResource(k.Event.GetProject(), "shipyard.yaml")
+	shipyardResource, err := k.ResourceHandler.GetProjectResourceWithContext(k.Context, k.Event.GetProject(), "shipyard.yaml")
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +103,8 @@ func (k *Keptn) SendCloudEvent(event cloudevents.Event) error {
 		return nil
 	}
 
-	return k.EventSender.SendEvent(event)
+	ctx := cloudevents.WithEncodingStructured(k.Context)
+	return k.EventSender.Send(ctx, event)
 }
 
 // SendTaskStartedEvent sends a .started event for the incoming .triggered event the KeptnHandler was initialized with.
@@ -111,7 +118,7 @@ func (k *Keptn) SendTaskStartedEvent(data keptn.EventProperties, source string) 
 		return "", fmt.Errorf("could not determine .started event type for base event: %s", err.Error())
 	}
 
-	return k.sendEventWithBaseEventContext(data, source, err, outEventType)
+	return k.sendEventWithBaseEventContext(data, source, outEventType)
 }
 
 // SendTaskStartedEvent sends a .status.changed event for the incoming .triggered event the KeptnHandler was initialized with.
@@ -125,7 +132,7 @@ func (k *Keptn) SendTaskStatusChangedEvent(data keptn.EventProperties, source st
 		return "", fmt.Errorf("could not determine .status.changed event type for base event: %s", err.Error())
 	}
 
-	return k.sendEventWithBaseEventContext(data, source, err, outEventType)
+	return k.sendEventWithBaseEventContext(data, source, outEventType)
 }
 
 // SendTaskStartedEvent sends a .finished event for the incoming .triggered event the KeptnHandler was initialized with.
@@ -139,10 +146,10 @@ func (k *Keptn) SendTaskFinishedEvent(data keptn.EventProperties, source string)
 		return "", fmt.Errorf("could not determine .finished event type for base event: %s", err.Error())
 	}
 
-	return k.sendEventWithBaseEventContext(data, source, err, outEventType)
+	return k.sendEventWithBaseEventContext(data, source, outEventType)
 }
 
-func (k *Keptn) sendEventWithBaseEventContext(data keptn.EventProperties, source string, err error, outEventType string) (string, error) {
+func (k *Keptn) sendEventWithBaseEventContext(data keptn.EventProperties, source string, outEventType string) (string, error) {
 	if source == "" {
 		return "", errors.New("must provide non-empty source")
 	}
@@ -156,7 +163,8 @@ func (k *Keptn) sendEventWithBaseEventContext(data keptn.EventProperties, source
 		return "", fmt.Errorf("could not initialize CloudEvent: %s", err.Error())
 	}
 
-	if err := k.EventSender.SendEvent(*ce); err != nil {
+	ctx := cloudevents.WithEncodingStructured(k.Context)
+	if err := k.EventSender.Send(ctx, *ce); err != nil {
 		return "", fmt.Errorf("could not send CloudEvent: %s", err.Error())
 	}
 	return ce.ID(), nil

@@ -3,7 +3,6 @@ package keptn
 import (
 	"context"
 	"fmt"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"log"
 	"math/rand"
 	"net/url"
@@ -11,6 +10,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
@@ -25,6 +26,7 @@ type KeptnOpts struct {
 	IncomingEvent           *cloudevents.Event
 	LoggingOptions          *LoggingOpts
 	EventSender             EventSender
+	Context                 context.Context
 }
 
 type LoggingOpts struct {
@@ -47,6 +49,10 @@ type KeptnBase struct {
 	UseLocalFileSystem bool
 	ResourceHandler    *api.ResourceHandler
 	EventHandler       *api.EventHandler
+
+	// Context is used during the lifetime of the Keptn instance
+	// in order to propagate cross-cutting concerns, such as tracecontext and cancellation
+	Context context.Context
 }
 
 type EventProperties interface {
