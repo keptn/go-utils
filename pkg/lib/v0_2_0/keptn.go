@@ -82,6 +82,7 @@ func NewKeptn(incomingEvent *cloudevents.Event, opts keptn.KeptnOpts) (*Keptn, e
 
 // GetShipyard returns the shipyard definition of a project
 func (k *Keptn) GetShipyard() (*Shipyard, error) {
+	k.ensureContextIsSet()
 	shipyardResource, err := k.ResourceHandler.GetProjectResourceWithContext(k.Context, k.Event.GetProject(), "shipyard.yaml")
 	if err != nil {
 		return nil, err
@@ -97,6 +98,7 @@ func (k *Keptn) GetShipyard() (*Shipyard, error) {
 
 // SendCloudEvent sends a cloudevent to the event broker
 func (k *Keptn) SendCloudEvent(event cloudevents.Event) error {
+	k.ensureContextIsSet()
 	event.SetExtension(keptnSpecVersionCEExtension, config.GetKeptnGoUtilsConfig().ShKeptnSpecVersion)
 	if k.UseLocalFileSystem {
 		log.Println(fmt.Printf("%v", string(event.Data())))
@@ -150,6 +152,7 @@ func (k *Keptn) SendTaskFinishedEvent(data keptn.EventProperties, source string)
 }
 
 func (k *Keptn) sendEventWithBaseEventContext(data keptn.EventProperties, source string, outEventType string) (string, error) {
+	k.ensureContextIsSet()
 	if source == "" {
 		return "", errors.New("must provide non-empty source")
 	}
@@ -217,4 +220,13 @@ func ensureContextAttributesAreSet(srcEvent, newEvent keptn.EventProperties) kep
 	}
 	newEvent.SetLabels(labels)
 	return newEvent
+}
+
+// Ensures the Context inside the keptn struct is set
+// Because the type is exported, users could create it without using the New function
+// thus ending up with nil context and causing errors when using in the methods here.
+func (k *Keptn) ensureContextIsSet() {
+	if k.Context == nil {
+		k.Context = context.Background()
+	}
 }
