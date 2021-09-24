@@ -1,12 +1,14 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
-	"github.com/keptn/go-utils/pkg/api/models"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/keptn/go-utils/pkg/api/models"
 )
 
 const secretServiceBaseURL = "secrets"
@@ -88,12 +90,19 @@ func (s *SecretHandler) getHTTPClient() *http.Client {
 }
 
 // CreateSecret creates a new secret
+//
+// Deprecated: Use CreateSecretWithContext instead
 func (s *SecretHandler) CreateSecret(secret models.Secret) error {
+	return s.CreateSecretWithContext(context.Background(), secret)
+}
+
+// CreateSecretWithContext creates a new secret
+func (s *SecretHandler) CreateSecretWithContext(ctx context.Context, secret models.Secret) error {
 	body, err := json.Marshal(secret)
 	if err != nil {
 		return err
 	}
-	_, errObj := post(s.Scheme+"://"+s.BaseURL+v1SecretPath, body, s)
+	_, errObj := post(ctx, s.Scheme+"://"+s.BaseURL+v1SecretPath, body, s)
 	if errObj != nil {
 		return errors.New(errObj.GetMessage())
 	}
@@ -101,12 +110,19 @@ func (s *SecretHandler) CreateSecret(secret models.Secret) error {
 }
 
 // UpdateSecret creates a new secret
+//
+// Deprecated: Use UpdateSecretWithContext instead
 func (s *SecretHandler) UpdateSecret(secret models.Secret) error {
+	return s.UpdateSecretWithContext(context.Background(), secret)
+}
+
+// UpdateSecretWithContext creates a new secret
+func (s *SecretHandler) UpdateSecretWithContext(ctx context.Context, secret models.Secret) error {
 	body, err := json.Marshal(secret)
 	if err != nil {
 		return err
 	}
-	_, errObj := put(s.Scheme+"://"+s.BaseURL+v1SecretPath, body, s)
+	_, errObj := put(ctx, s.Scheme+"://"+s.BaseURL+v1SecretPath, body, s)
 	if errObj != nil {
 		return errors.New(errObj.GetMessage())
 	}
@@ -114,8 +130,15 @@ func (s *SecretHandler) UpdateSecret(secret models.Secret) error {
 }
 
 // DeleteSecret deletes a secret
+//
+// Deprecated: Use DeleteSecretWithContext instead
 func (s *SecretHandler) DeleteSecret(secretName, secretScope string) error {
-	_, err := delete(s.Scheme+"://"+s.BaseURL+v1SecretPath+"?name="+secretName+"&scope="+secretScope, s)
+	return s.DeleteSecretWithContext(context.Background(), secretName, secretScope)
+}
+
+// DeleteSecretWithContext deletes a secret
+func (s *SecretHandler) DeleteSecretWithContext(ctx context.Context, secretName, secretScope string) error {
+	_, err := delete(ctx, s.Scheme+"://"+s.BaseURL+v1SecretPath+"?name="+secretName+"&scope="+secretScope, s)
 	if err != nil {
 		return errors.New(err.GetMessage())
 	}
@@ -123,8 +146,15 @@ func (s *SecretHandler) DeleteSecret(secretName, secretScope string) error {
 }
 
 // GetSecrets returns a list of created secrets
+//
+// Deprecated: Use GetSecretsWithContext instead
 func (s *SecretHandler) GetSecrets() (*models.GetSecretsResponse, error) {
-	req, err := http.NewRequest("GET", s.Scheme+"://"+s.BaseURL+v1SecretPath, nil)
+	return s.GetSecretsWithContext(context.Background())
+}
+
+// GetSecretsWithContext returns a list of created secrets
+func (s *SecretHandler) GetSecretsWithContext(ctx context.Context) (*models.GetSecretsResponse, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", s.Scheme+"://"+s.BaseURL+v1SecretPath, nil)
 	if err != nil {
 		return nil, err
 	}

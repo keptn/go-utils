@@ -1,14 +1,16 @@
 package api
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	"github.com/keptn/go-utils/pkg/common/httputils"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/keptn/go-utils/pkg/common/httputils"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 )
@@ -78,26 +80,54 @@ func (p *ProjectHandler) getHTTPClient() *http.Client {
 }
 
 // CreateProject creates a new project
+//
+// Deprecated: Use CreateProjectWithContext instead
 func (p *ProjectHandler) CreateProject(project models.Project) (*models.EventContext, *models.Error) {
+	return p.CreateProjectWithContext(context.Background(), project)
+}
+
+// CreateProjectWithContext creates a new project
+func (p *ProjectHandler) CreateProjectWithContext(ctx context.Context, project models.Project) (*models.EventContext, *models.Error) {
 	bodyStr, err := json.Marshal(project)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(p.Scheme+"://"+p.getBaseURL()+v1ProjectPath, bodyStr, p)
+	return postWithEventContext(ctx, p.Scheme+"://"+p.getBaseURL()+v1ProjectPath, bodyStr, p)
 }
 
 // DeleteProject deletes a project
+//
+// Deprecated: Use DeleteProjectWithContext instead
 func (p *ProjectHandler) DeleteProject(project models.Project) (*models.EventContext, *models.Error) {
-	return deleteWithEventContext(p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, p)
+	return p.DeleteProjectWithContext(context.Background(), project)
+}
+
+// DeleteProjectWithContext deletes a project
+func (p *ProjectHandler) DeleteProjectWithContext(ctx context.Context, project models.Project) (*models.EventContext, *models.Error) {
+	return deleteWithEventContext(ctx, p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, p)
 }
 
 // GetProject returns a project
+//
+// Deprecated: Use GetProjectWithContext instead
 func (p *ProjectHandler) GetProject(project models.Project) (*models.Project, *models.Error) {
-	return getProject(p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, p)
+	return p.GetProjectWithContext(context.Background(), project)
 }
 
-// GetProjects returns a project
+// GetProjectWithContext returns a project
+func (p *ProjectHandler) GetProjectWithContext(ctx context.Context, project models.Project) (*models.Project, *models.Error) {
+	return getProject(ctx, p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, p)
+}
+
+// GetProjects returns all projects
+//
+// Deprecated: Use GetAllProjectsWithContext instead
 func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
+	return p.GetAllProjectsWithContext(context.Background())
+}
+
+// GetAllProjectsWithContext returns all projects
+func (p *ProjectHandler) GetAllProjectsWithContext(ctx context.Context) ([]*models.Project, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	projects := []*models.Project{}
 
@@ -113,7 +143,7 @@ func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
 			q.Set("nextPageKey", nextPageKey)
 			url.RawQuery = q.Encode()
 		}
-		req, err := http.NewRequest("GET", url.String(), nil)
+		req, err := http.NewRequestWithContext(ctx, "GET", url.String(), nil)
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, p)
 
@@ -154,9 +184,8 @@ func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
 	return projects, nil
 }
 
-func getProject(uri string, api APIService) (*models.Project, *models.Error) {
-
-	req, err := http.NewRequest("GET", uri, nil)
+func getProject(ctx context.Context, uri string, api APIService) (*models.Project, *models.Error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, api)
 
@@ -195,10 +224,18 @@ func getProject(uri string, api APIService) (*models.Project, *models.Error) {
 	return nil, &respErr
 }
 
+// UpdateConfigurationServiceProject updates the project configuration
+//
+// Deprecated: Use UpdateConfigurationServiceProjectWithContext instead
 func (p *ProjectHandler) UpdateConfigurationServiceProject(project models.Project) (*models.EventContext, *models.Error) {
+	return p.UpdateConfigurationServiceProjectWithContext(context.Background(), project)
+}
+
+// UpdateConfigurationServiceProjectWithContext updates the project configuration
+func (p *ProjectHandler) UpdateConfigurationServiceProjectWithContext(ctx context.Context, project models.Project) (*models.EventContext, *models.Error) {
 	bodyStr, err := json.Marshal(project)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return putWithEventContext(p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, bodyStr, p)
+	return putWithEventContext(ctx, p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, bodyStr, p)
 }

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -56,44 +57,79 @@ func (a *APIHandler) getHTTPClient() *http.Client {
 }
 
 // SendEvent sends an event to Keptn
+//
+// Deprecated: Use SendEventWithContext instead
 func (a *APIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.EventContext, *models.Error) {
+	return a.SendEventWithContext(context.Background(), event)
+}
+
+// SendEventWithContext sends an event to Keptn
+func (a *APIHandler) SendEventWithContext(ctx context.Context, event models.KeptnContextExtendedCE) (*models.EventContext, *models.Error) {
 	bodyStr, err := json.Marshal(event)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(a.Scheme+"://"+a.getBaseURL()+v1EventPath, bodyStr, a)
+	return postWithEventContext(ctx, a.Scheme+"://"+a.getBaseURL()+v1EventPath, bodyStr, a)
 }
 
 // TriggerEvaluation triggers a new evaluation
+//
+// Deprecated: Use TriggerEvaluationWithContext instead
 func (a *APIHandler) TriggerEvaluation(project, stage, service string, evaluation models.Evaluation) (*models.EventContext, *models.Error) {
+	return a.TriggerEvaluationWithContext(context.Background(), project, stage, service, evaluation)
+}
+
+// TriggerEvaluationWithContext triggers a new evaluation
+func (a *APIHandler) TriggerEvaluationWithContext(ctx context.Context, project, stage, service string, evaluation models.Evaluation) (*models.EventContext, *models.Error) {
 	bodyStr, err := json.Marshal(evaluation)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath+"/"+project+"/stage/"+stage+"/service/"+service+"/evaluation", bodyStr, a)
+	return postWithEventContext(ctx, a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath+"/"+project+"/stage/"+stage+"/service/"+service+"/evaluation", bodyStr, a)
 }
 
 // CreateProject creates a new project
+//
+// Deprecated: Use CreateProjectWithContext instead
 func (a *APIHandler) CreateProject(project models.CreateProject) (string, *models.Error) {
+	return a.CreateProjectWithContext(context.Background(), project)
+}
+
+// CreateProjectWithContext creates a new project
+func (a *APIHandler) CreateProjectWithContext(ctx context.Context, project models.CreateProject) (string, *models.Error) {
 	bodyStr, err := json.Marshal(project)
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
-	return post(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath, bodyStr, a)
+	return post(ctx, a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath, bodyStr, a)
 }
 
 // UpdateProject updates project
+//
+// Deprecated: Use UpdateProjectWithContext instead
 func (a *APIHandler) UpdateProject(project models.CreateProject) (string, *models.Error) {
+	return a.UpdateProjectWithContext(context.Background(), project)
+}
+
+// UpdateProjectWithContext updates project
+func (a *APIHandler) UpdateProjectWithContext(ctx context.Context, project models.CreateProject) (string, *models.Error) {
 	bodyStr, err := json.Marshal(project)
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
-	return put(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath, bodyStr, a)
+	return put(ctx, a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath, bodyStr, a)
 }
 
 // DeleteProject deletes a project
+//
+// Deprecated: Use DeleteProjectWithContext instead
 func (a *APIHandler) DeleteProject(project models.Project) (*models.DeleteProjectResponse, *models.Error) {
-	resp, err := delete(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath+"/"+project.ProjectName, a)
+	return a.DeleteProjectWithContext(context.Background(), project)
+}
+
+// DeleteProjectWithContext deletes a project
+func (a *APIHandler) DeleteProjectWithContext(ctx context.Context, project models.Project) (*models.DeleteProjectResponse, *models.Error) {
+	resp, err := delete(ctx, a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath+"/"+project.ProjectName, a)
 	if err != nil {
 		return nil, err
 	}
@@ -108,17 +144,31 @@ func (a *APIHandler) DeleteProject(project models.Project) (*models.DeleteProjec
 }
 
 // CreateService creates a new service
+//
+// Deprecated: Use CreateServiceWithContext instead
 func (a *APIHandler) CreateService(project string, service models.CreateService) (string, *models.Error) {
+	return a.CreateServiceWithContext(context.Background(), project, service)
+}
+
+// CreateServiceWithContext creates a new service
+func (a *APIHandler) CreateServiceWithContext(ctx context.Context, project string, service models.CreateService) (string, *models.Error) {
 	bodyStr, err := json.Marshal(service)
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
-	return post(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath+"/"+project+"/service", bodyStr, a)
+	return post(ctx, a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath+"/"+project+"/service", bodyStr, a)
 }
 
-// DeleteProject deletes a project
+// DeleteService deletes a service
+//
+// Deprecated: Use DeleteServiceWithContext instead
 func (a *APIHandler) DeleteService(project, service string) (*models.DeleteServiceResponse, *models.Error) {
-	resp, err := delete(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath+"/"+project+"/service/"+service, a)
+	return a.DeleteServiceWithContext(context.Background(), project, service)
+}
+
+// DeleteServiceWithContext deletes a service
+func (a *APIHandler) DeleteServiceWithContext(ctx context.Context, project, service string) (*models.DeleteServiceResponse, *models.Error) {
+	resp, err := delete(ctx, a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath+"/"+project+"/service/"+service, a)
 	if err != nil {
 		return nil, err
 	}
@@ -133,8 +183,15 @@ func (a *APIHandler) DeleteService(project, service string) (*models.DeleteServi
 }
 
 // GetMetadata retrieve keptn MetaData information
+//
+// Deprecated: Use GetMetadataWithContext instead
 func (a *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
-	req, err := http.NewRequest("GET", a.Scheme+"://"+a.getBaseURL()+v1MetadataPath, nil)
+	return a.GetMetadataWithContext(context.Background())
+}
+
+// GetMetadataWithContext retrieve keptn MetaData information
+func (a *APIHandler) GetMetadataWithContext(ctx context.Context) (*models.Metadata, *models.Error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", a.Scheme+"://"+a.getBaseURL()+v1MetadataPath, nil)
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, a)
 
@@ -171,5 +228,4 @@ func (a *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
 	}
 
 	return nil, &respErr
-
 }

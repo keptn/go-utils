@@ -1,15 +1,17 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/go-utils/pkg/common/httputils"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 const uniformRegistrationBaseURL = "uniform/registration"
@@ -72,7 +74,7 @@ func (u *UniformHandler) getHTTPClient() *http.Client {
 }
 
 func (u *UniformHandler) Ping(integrationID string) (*models.Integration, error) {
-	resp, err := put(u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/ping", nil, u)
+	resp, err := put(context.Background(), u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/ping", nil, u)
 	if err != nil {
 		return nil, errors.New(err.GetMessage())
 	}
@@ -91,7 +93,7 @@ func (u *UniformHandler) RegisterIntegration(integration models.Integration) (st
 		return "", err
 	}
 
-	resp, errResponse := post(u.Scheme+"://"+u.getBaseURL()+v1UniformPath, bodyStr, u)
+	resp, errResponse := post(context.Background(), u.Scheme+"://"+u.getBaseURL()+v1UniformPath, bodyStr, u)
 	if errResponse != nil {
 		return "", fmt.Errorf(errResponse.GetMessage())
 	}
@@ -109,7 +111,7 @@ func (u *UniformHandler) CreateSubscription(integrationID string, subscription m
 	if err != nil {
 		return "", err
 	}
-	resp, errResponse := post(u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/subscription", bodyStr, u)
+	resp, errResponse := post(context.Background(), u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/subscription", bodyStr, u)
 	if errResponse != nil {
 		return "", fmt.Errorf(errResponse.GetMessage())
 	}
@@ -124,7 +126,7 @@ func (u *UniformHandler) CreateSubscription(integrationID string, subscription m
 }
 
 func (u *UniformHandler) UnregisterIntegration(integrationID string) error {
-	_, err := delete(u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID, u)
+	_, err := delete(context.Background(), u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID, u)
 	if err != nil {
 		return fmt.Errorf(err.GetMessage())
 	}

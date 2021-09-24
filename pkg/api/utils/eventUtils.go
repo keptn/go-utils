@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -94,7 +95,14 @@ func (e *EventHandler) getHTTPClient() *http.Client {
 }
 
 // GetEvents returns all events matching the properties in the passed filter object
+//
+// Deprecated: Use GetEventsWithContext instead
 func (e *EventHandler) GetEvents(filter *EventFilter) ([]*models.KeptnContextExtendedCE, *models.Error) {
+	return e.GetEventsWithContext(context.Background(), filter)
+}
+
+// GetEventsWithContext returns all events matching the properties in the passed filter object
+func (e *EventHandler) GetEventsWithContext(ctx context.Context, filter *EventFilter) ([]*models.KeptnContextExtendedCE, *models.Error) {
 
 	u, err := url.Parse(e.Scheme + "://" + e.getBaseURL() + "/event?")
 	if err != nil {
@@ -130,11 +138,18 @@ func (e *EventHandler) GetEvents(filter *EventFilter) ([]*models.KeptnContextExt
 
 	u.RawQuery = query.Encode()
 
-	return e.getEvents(u.String(), filter.NumberOfPages)
+	return e.getEvents(ctx, u.String(), filter.NumberOfPages)
 }
 
 // GetEventsWithRetry tries to retrieve events matching the passed filter
+//
+// Deprecated: Use GetEventsWithContextRetry instead
 func (e *EventHandler) GetEventsWithRetry(filter *EventFilter, maxRetries int, retrySleepTime time.Duration) ([]*models.KeptnContextExtendedCE, error) {
+	return e.GetEventsWithContextRetry(context.Background(), filter, maxRetries, retrySleepTime)
+}
+
+// GetEventsWithContextRetry tries to retrieve events matching the passed filter
+func (e *EventHandler) GetEventsWithContextRetry(ctx context.Context, filter *EventFilter, maxRetries int, retrySleepTime time.Duration) ([]*models.KeptnContextExtendedCE, error) {
 	for i := 0; i < maxRetries; i = i + 1 {
 		events, errObj := e.GetEvents(filter)
 		if errObj == nil && len(events) > 0 {
@@ -145,7 +160,7 @@ func (e *EventHandler) GetEventsWithRetry(filter *EventFilter, maxRetries int, r
 	return nil, fmt.Errorf("could not find matching event after %d x %s", maxRetries, retrySleepTime.String())
 }
 
-func (e *EventHandler) getEvents(uri string, numberOfPages int) ([]*models.KeptnContextExtendedCE, *models.Error) {
+func (e *EventHandler) getEvents(ctx context.Context, uri string, numberOfPages int) ([]*models.KeptnContextExtendedCE, *models.Error) {
 	events := []*models.KeptnContextExtendedCE{}
 	nextPageKey := ""
 
@@ -159,7 +174,7 @@ func (e *EventHandler) getEvents(uri string, numberOfPages int) ([]*models.Keptn
 			q.Set("nextPageKey", nextPageKey)
 			url.RawQuery = q.Encode()
 		}
-		req, err := http.NewRequest("GET", url.String(), nil)
+		req, err := http.NewRequestWithContext(ctx, "GET", url.String(), nil)
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, e)
 

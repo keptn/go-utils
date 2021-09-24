@@ -1,11 +1,13 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/keptn/go-utils/pkg/common/httputils"
 	"net/http"
 	"strings"
+
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 const v1SequenceControlPath = "/v1/sequence/%s/%s/control"
@@ -106,7 +108,12 @@ func (s *SequenceControlHandler) getHTTPClient() *http.Client {
 	return s.HTTPClient
 }
 
+// Deprecated: Use ControlSequenceWithContext instead
 func (s *SequenceControlHandler) ControlSequence(params SequenceControlParams) error {
+	return s.ControlSequenceWithContext(context.Background(), params)
+}
+
+func (s *SequenceControlHandler) ControlSequenceWithContext(ctx context.Context, params SequenceControlParams) error {
 	err := params.Validate()
 	if err != nil {
 		return err
@@ -125,7 +132,7 @@ func (s *SequenceControlHandler) ControlSequence(params SequenceControlParams) e
 		return err
 	}
 
-	_, errResponse := post(baseurl+path, payload, s)
+	_, errResponse := post(ctx, baseurl+path, payload, s)
 	if errResponse != nil {
 		return fmt.Errorf(errResponse.GetMessage())
 	}

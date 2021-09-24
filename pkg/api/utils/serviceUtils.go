@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -80,29 +81,50 @@ func (s *ServiceHandler) getHTTPClient() *http.Client {
 }
 
 // CreateService creates a new service
+//
+// Deprecated: Use CreateServiceInStageWithContext instead
 func (s *ServiceHandler) CreateServiceInStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error) {
+	return s.CreateServiceInStageWithContext(context.Background(), project, stage, serviceName)
+}
 
+// CreateServiceInStageWithContext creates a new service
+func (s *ServiceHandler) CreateServiceInStageWithContext(ctx context.Context, project string, stage string, serviceName string) (*models.EventContext, *models.Error) {
 	service := models.Service{ServiceName: serviceName}
 	body, err := json.Marshal(service)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+"/stage/"+stage+"/service", body, s)
+	return postWithEventContext(ctx, s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+"/stage/"+stage+"/service", body, s)
 }
 
-// DeleteServiceFromStage godoc
+// DeleteServiceFromStage deletes a service from a stage
+//
+// Deprecated: Use DeleteServiceFromStageWithContext instead
 func (s *ServiceHandler) DeleteServiceFromStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error) {
-	return deleteWithEventContext(s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+"/stage/"+stage+"/service/"+serviceName, s)
+	return s.DeleteServiceFromStageWithContext(context.TODO(), project, stage, serviceName)
 }
 
+// DeleteServiceFromStageWithContext deletes a service from a stage
+func (s *ServiceHandler) DeleteServiceFromStageWithContext(ctx context.Context, project string, stage string, serviceName string) (*models.EventContext, *models.Error) {
+	return deleteWithEventContext(ctx, s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+"/stage/"+stage+"/service/"+serviceName, s)
+}
+
+// GetService returns a service
+//
+// Deprecated: Use GetServiceWithContext instead
 func (s *ServiceHandler) GetService(project, stage, service string) (*models.Service, error) {
+	return s.GetServiceWithContext(context.Background(), project, stage, service)
+}
+
+// GetServiceWithContext returns a service
+func (s *ServiceHandler) GetServiceWithContext(ctx context.Context, project, stage, service string) (*models.Service, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
 	url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + v1ProjectPath + "/" + project + "/stage/" + stage + "/service/" + service)
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest("GET", url.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url.String(), nil)
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, s)
 
@@ -135,8 +157,14 @@ func (s *ServiceHandler) GetService(project, stage, service string) (*models.Ser
 }
 
 // GetAllServices returns a list of all services.
+//
+// Deprecated: Use GetAllServicesWithContext instead
 func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models.Service, error) {
+	return s.GetAllServicesWithContext(context.Background(), project, stage)
+}
 
+// GetAllServicesWithContext returns a list of all services.
+func (s *ServiceHandler) GetAllServicesWithContext(ctx context.Context, project string, stage string) ([]*models.Service, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	services := []*models.Service{}
 
@@ -152,7 +180,7 @@ func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models
 			q.Set("nextPageKey", nextPageKey)
 			url.RawQuery = q.Encode()
 		}
-		req, err := http.NewRequest("GET", url.String(), nil)
+		req, err := http.NewRequestWithContext(ctx, "GET", url.String(), nil)
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, s)
 

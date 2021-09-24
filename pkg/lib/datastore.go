@@ -1,12 +1,14 @@
 package keptn
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/json"
-	"github.com/keptn/go-utils/pkg/api/models"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/keptn/go-utils/pkg/api/models"
 )
 
 // Datastore represents the interface for accessing Keptn's datastore
@@ -67,14 +69,21 @@ func (e *EventHandler) getHTTPClient() *http.Client {
 }
 
 // GetEvent returns the latest event of a specific event type and from a specific Keptn context
+//
+// Deprecated: Use GetEventWithContext instead
 func (e *EventHandler) GetEvent(keptnContext string, eventType string) (*models.KeptnContextExtendedCE, *models.Error) {
-	return getLatestEvent(keptnContext, eventType, e.Scheme+"://"+e.getBaseURL()+"/event?keptnContext="+keptnContext+"&type="+eventType+"&pageSize=10", e)
+	return e.GetEventWithContext(context.Background(), keptnContext, eventType)
 }
 
-func getLatestEvent(keptnContext string, eventType string, uri string, datastore Datastore) (*models.KeptnContextExtendedCE, *models.Error) {
+// GetEventWithContext returns the latest event of a specific event type and from a specific Keptn context
+func (e *EventHandler) GetEventWithContext(ctx context.Context, keptnContext string, eventType string) (*models.KeptnContextExtendedCE, *models.Error) {
+	return getLatestEvent(ctx, keptnContext, eventType, e.Scheme+"://"+e.getBaseURL()+"/event?keptnContext="+keptnContext+"&type="+eventType+"&pageSize=10", e)
+}
+
+func getLatestEvent(ctx context.Context, keptnContext string, eventType string, uri string, datastore Datastore) (*models.KeptnContextExtendedCE, *models.Error) {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	req, err := http.NewRequest("GET", uri, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", uri, nil)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := datastore.getHTTPClient().Do(req)

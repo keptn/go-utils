@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -81,7 +82,14 @@ func (s *ShipyardControllerHandler) getHTTPClient() *http.Client {
 }
 
 // GetOpenTriggeredEvents returns all open triggered events
+//
+// Deprecated: Use GetOpenTriggeredEventsWithContext instead
 func (s *ShipyardControllerHandler) GetOpenTriggeredEvents(filter EventFilter) ([]*models.KeptnContextExtendedCE, error) {
+	return s.GetOpenTriggeredEventsWithContext(context.Background(), filter)
+}
+
+// GetOpenTriggeredEventsWithContext returns all open triggered events
+func (s *ShipyardControllerHandler) GetOpenTriggeredEventsWithContext(ctx context.Context, filter EventFilter) ([]*models.KeptnContextExtendedCE, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
 	events := []*models.KeptnContextExtendedCE{}
@@ -110,7 +118,7 @@ func (s *ShipyardControllerHandler) GetOpenTriggeredEvents(filter EventFilter) (
 		if err != nil {
 			return nil, err
 		}
-		req, err := http.NewRequest("GET", url.String(), nil)
+		req, err := http.NewRequestWithContext(ctx, "GET", url.String(), nil)
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, s)
 

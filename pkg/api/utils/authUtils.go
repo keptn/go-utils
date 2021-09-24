@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
@@ -67,6 +68,13 @@ func (a *AuthHandler) getHTTPClient() *http.Client {
 }
 
 // Authenticate authenticates the client request against the server
+//
+// Deprecated: Use AuthenticateWithContext instead
 func (a *AuthHandler) Authenticate() (*models.EventContext, *models.Error) {
-	return postWithEventContext(a.Scheme+"://"+a.getBaseURL()+"/v1/auth", nil, a)
+	return a.AuthenticateWithContext(context.Background())
+}
+
+// Authenticate authenticates the client request against the server
+func (a *AuthHandler) AuthenticateWithContext(ctx context.Context) (*models.EventContext, *models.Error) {
+	return postWithEventContext(ctx, a.Scheme+"://"+a.getBaseURL()+"/v1/auth", nil, a)
 }

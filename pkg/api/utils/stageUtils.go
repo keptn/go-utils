@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -77,18 +78,31 @@ func (s *StageHandler) getHTTPClient() *http.Client {
 }
 
 // CreateStage creates a new stage with the provided name
+//
+// Deprecated: Use CreateStageWithContext instead
 func (s *StageHandler) CreateStage(project string, stageName string) (*models.EventContext, *models.Error) {
+	return s.CreateStageWithContext(context.Background(), project, stageName)
+}
 
+// CreateStageWithContext creates a new stage with the provided name
+func (s *StageHandler) CreateStageWithContext(ctx context.Context, project string, stageName string) (*models.EventContext, *models.Error) {
 	stage := models.Stage{StageName: stageName}
 	body, err := json.Marshal(stage)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(s.Scheme+"://"+s.BaseURL+"/v1/project/"+project+"/stage", body, s)
+	return postWithEventContext(ctx, s.Scheme+"://"+s.BaseURL+"/v1/project/"+project+"/stage", body, s)
 }
 
 // GetAllStages returns a list of all stages.
+//
+// Deprecated: Use GetAllStagesWithContext instead
 func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
+	return s.GetAllStagesWithContext(context.Background(), project)
+}
+
+// GetAllStagesWithContext returns a list of all stages.
+func (s *StageHandler) GetAllStagesWithContext(ctx context.Context, project string) ([]*models.Stage, error) {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	stages := []*models.Stage{}
@@ -104,7 +118,7 @@ func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 			q.Set("nextPageKey", nextPageKey)
 			url.RawQuery = q.Encode()
 		}
-		req, err := http.NewRequest("GET", url.String(), nil)
+		req, err := http.NewRequestWithContext(ctx, "GET", url.String(), nil)
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, s)
 

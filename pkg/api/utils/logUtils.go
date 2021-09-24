@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/benbjohnson/clock"
-	"github.com/keptn/go-utils/pkg/api/models"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -14,6 +12,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/benbjohnson/clock"
+	"github.com/keptn/go-utils/pkg/api/models"
 )
 
 const v1LogPath = "/v1/log"
@@ -106,7 +107,15 @@ func (lh *LogHandler) Log(logs []models.LogEntry) {
 	lh.LogCache = append(lh.LogCache, logs...)
 }
 
+// GetLogs returns the logs
+//
+// Deprecated: Use GetLogsWithContext instead
 func (lh *LogHandler) GetLogs(params models.GetLogsParams) (*models.GetLogsResponse, error) {
+	return lh.GetLogsWithContext(context.Background(), params)
+}
+
+// GetLogsWithContext returns the logs
+func (lh *LogHandler) GetLogsWithContext(ctx context.Context, params models.GetLogsParams) (*models.GetLogsResponse, error) {
 	u, err := url.Parse(lh.Scheme + "://" + lh.getBaseURL() + v1LogPath)
 	if err != nil {
 		log.Fatal("error parsing url")
@@ -129,7 +138,7 @@ func (lh *LogHandler) GetLogs(params models.GetLogsParams) (*models.GetLogsRespo
 
 	u.RawQuery = query.Encode()
 
-	req, err := http.NewRequest("GET", u.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +172,15 @@ func (lh *LogHandler) GetLogs(params models.GetLogsParams) (*models.GetLogsRespo
 
 }
 
+// DeleteLogs deletes the logs
+//
+// Deprecated: Use DeleteLogsWithContext instead
 func (lh *LogHandler) DeleteLogs(params models.LogFilter) error {
+	return lh.DeleteLogsWithContext(context.Background(), params)
+}
+
+// DeleteLogsWithContext deletes the logs
+func (lh *LogHandler) DeleteLogsWithContext(ctx context.Context, params models.LogFilter) error {
 	u, err := url.Parse(lh.Scheme + "://" + lh.getBaseURL() + v1LogPath)
 	if err != nil {
 		log.Fatal("error parsing url")
@@ -180,7 +197,7 @@ func (lh *LogHandler) DeleteLogs(params models.LogFilter) error {
 	if params.BeforeTime != "" {
 		query.Set("beforeTime", params.BeforeTime)
 	}
-	if _, err := delete(u.String(), lh); err != nil {
+	if _, err := delete(ctx, u.String(), lh); err != nil {
 		return errors.New(err.GetMessage())
 	}
 	return nil
@@ -214,7 +231,7 @@ func (lh *LogHandler) Flush() error {
 	if err != nil {
 		return err
 	}
-	if _, err := post(lh.Scheme+"://"+lh.getBaseURL()+v1LogPath, bodyStr, lh); err != nil {
+	if _, err := post(context.Background(), lh.Scheme+"://"+lh.getBaseURL()+v1LogPath, bodyStr, lh); err != nil {
 		return errors.New(err.GetMessage())
 	}
 	lh.LogCache = []models.LogEntry{}
