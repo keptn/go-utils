@@ -1,6 +1,11 @@
-package models
+package models_test
 
 import (
+	"fmt"
+	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )
@@ -75,7 +80,7 @@ func TestKeptnContextExtendedCE_Validate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ce := &KeptnContextExtendedCE{
+			ce := &models.KeptnContextExtendedCE{
 				Contenttype:        tt.fields.Contenttype,
 				Data:               tt.fields.Data,
 				Extensions:         tt.fields.Extensions,
@@ -93,4 +98,117 @@ func TestKeptnContextExtendedCE_Validate(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestAddTemporaryData(t *testing.T) {
+	type TestData struct {
+		v0_2_0.EventData
+		Content string `json:"content"`
+	}
+
+	testData := TestData{
+		EventData: v0_2_0.EventData{
+			Project: "my-project",
+			Stage:   "my-stage",
+			Service: "my-service",
+		},
+	}
+	event, err := v0_2_0.KeptnEvent("sh.keptn.event.dev.delivery.triggered", "source", testData).Build()
+	require.Nil(t, err)
+
+	type AdditionalData struct {
+		SomeString string `json:"someString"`
+		SomeInt    int    `json:"someInt"`
+	}
+	temporaryDataToAdd := models.TemporaryData(AdditionalData{
+		SomeString: "Bernd",
+		SomeInt:    34,
+	})
+	err = event.AddTemporaryData("distributor", temporaryDataToAdd, models.AddTemporaryDataOptions{})
+	event.AddTemporaryData("distributor", temporaryDataToAdd, models.AddTemporaryDataOptions{})
+	require.Nil(t, err)
+
+	addi := AdditionalData{}
+	err = event.GetTemporaryData("distributor", &addi)
+	fmt.Println(addi.SomeInt)
+
+	require.Nil(t, err)
+}
+
+func TestKeptnContextExtendedCE_TemporaryData(t *testing.T) {
+	type TestData struct {
+		v0_2_0.EventData
+		Content string `json:"content"`
+	}
+
+	type AdditionalData struct {
+		SomeString string `json:"someString"`
+		SomeInt    int    `json:"someInt"`
+	}
+
+	testData := TestData{
+		EventData: v0_2_0.EventData{
+			Project: "my-project",
+			Stage:   "my-stage",
+			Service: "my-service",
+		},
+	}
+	t.Run("add temporary data without a key", func(t *testing.T) {
+		ce, err := v0_2_0.KeptnEvent("sh.keptn.event.dev.delivery.triggered", "source", testData).Build()
+		require.Nil(t, err)
+
+		dataToAdd := AdditionalData{
+			SomeString: "somestring",
+			SomeInt:    2,
+		}
+		err = ce.AddTemporaryData("", dataToAdd, models.AddTemporaryDataOptions{})
+		assert.Nil(t, err)
+	})
+	t.Run("add temporary data twice returns error", func(t *testing.T) {
+		ce, err := v0_2_0.KeptnEvent("sh.keptn.event.dev.delivery.triggered", "source", testData).Build()
+		require.Nil(t, err)
+
+		dataToAdd := AdditionalData{
+			SomeString: "somestring",
+			SomeInt:    2,
+		}
+		err = ce.AddTemporaryData("the-key", dataToAdd, models.AddTemporaryDataOptions{})
+		assert.Nil(t, err)
+
+		dataRetrieved := AdditionalData{}
+		err = ce.GetTemporaryData("the-key", &dataRetrieved)
+
+		require.Nil(t, err)
+		assert.Equal(t, dataToAdd, dataRetrieved)
+
+		err = ce.AddTemporaryData("the-key", dataToAdd, models.AddTemporaryDataOptions{})
+		assert.NotNil(t, err)
+	})
+	t.Run("add temporary data twice overwrites existing", func(t *testing.T) {
+		ce, err := v0_2_0.KeptnEvent("sh.keptn.event.dev.delivery.triggered", "source", testData).Build()
+		require.Nil(t, err)
+
+		dataToAdd := AdditionalData{
+			SomeString: "somestring",
+			SomeInt:    2,
+		}
+		err = ce.AddTemporaryData("the-key", dataToAdd, models.AddTemporaryDataOptions{})
+		assert.Nil(t, err)
+
+		dataRetrieved := AdditionalData{}
+		err = ce.GetTemporaryData("the-key", &dataRetrieved)
+
+		require.Nil(t, err)
+		assert.Equal(t, dataToAdd, dataRetrieved)
+
+		dataToAdd.SomeInt = 1
+
+		err = ce.AddTemporaryData("the-key", dataToAdd, models.AddTemporaryDataOptions{OverwriteIfExisting: true})
+		assert.Nil(t, err)
+		dataRetrieved = AdditionalData{}
+		err = ce.GetTemporaryData("the-key", &dataRetrieved)
+		require.Nil(t, err)
+		assert.Equal(t, dataToAdd, dataRetrieved)
+	})
+
 }
