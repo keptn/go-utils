@@ -210,5 +210,12 @@ func TestKeptnContextExtendedCE_TemporaryData(t *testing.T) {
 		require.Nil(t, err)
 		assert.Equal(t, dataToAdd, dataRetrieved)
 	})
+	t.Run("get non existing temporary data", func(t *testing.T) {
+		ce, err := v0_2_0.KeptnEvent("sh.keptn.event.dev.delivery.triggered", "source", testData).Build()
+		require.Nil(t, err)
 
+		dataRetrieved := AdditionalData{}
+		err = ce.GetTemporaryData("the-key", &dataRetrieved)
+		assert.NotNil(t, err)
+	})
 }
