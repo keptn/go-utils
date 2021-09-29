@@ -73,8 +73,9 @@ func NewKeptn(incomingEvent *cloudevents.Event, opts keptn.KeptnOpts) (*Keptn, e
 	}
 	k.Logger = keptn.NewLogger(k.KeptnContext, incomingEvent.Context.GetID(), loggingServiceName)
 
-	if opts.Context == nil {
-		k.Context = context.Background()
+	k.Context = context.Background()
+	if opts.Context != nil {
+		k.Context = opts.Context
 	}
 
 	return k, nil

@@ -108,11 +108,14 @@ func (s *SequenceControlHandler) getHTTPClient() *http.Client {
 	return s.HTTPClient
 }
 
+// ControlSequence allows controlling a task sequence
+//
 // Deprecated: Use ControlSequenceWithContext instead
 func (s *SequenceControlHandler) ControlSequence(params SequenceControlParams) error {
 	return s.ControlSequenceWithContext(context.Background(), params)
 }
 
+// ControlSequenceWithContext allows controlling a task sequence
 func (s *SequenceControlHandler) ControlSequenceWithContext(ctx context.Context, params SequenceControlParams) error {
 	err := params.Validate()
 	if err != nil {

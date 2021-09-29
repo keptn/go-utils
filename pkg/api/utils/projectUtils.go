@@ -119,7 +119,7 @@ func (p *ProjectHandler) GetProjectWithContext(ctx context.Context, project mode
 	return getProject(ctx, p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, p)
 }
 
-// GetProjects returns all projects
+// GetAllProjects returns all projects
 //
 // Deprecated: Use GetAllProjectsWithContext instead
 func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {

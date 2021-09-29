@@ -1,12 +1,14 @@
 package v0_2_0
 
 import (
+	"context"
 	"errors"
+	"testing"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func Test_ensureContextAttributesAreSet(t *testing.T) {
@@ -367,6 +369,41 @@ func TestKeptn_SendEventConvenienceFunctions(t *testing.T) {
 				assert.Nil(t, err)
 				assert.EqualValues(t, data, tt.wantEvents[index].eventData)
 			}
+		})
+	}
+}
+
+func TestKeptn_EnsureGoContextIsSet(t *testing.T) {
+	event := cloudevents.NewEvent()
+	event.SetType("test-type")
+	event.SetSource("test-source")
+
+	testCases := []struct {
+		name    string
+		ctx     context.Context
+		wantCtx context.Context
+	}{
+		{
+			name:    "no provided context",
+			ctx:     nil,
+			wantCtx: context.Background(),
+		},
+		{
+			name:    "with provided enriched context",
+			ctx:     cloudevents.WithEncodingStructured(context.Background()),
+			wantCtx: cloudevents.WithEncodingStructured(context.Background()),
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			k, err := NewKeptn(&event, keptn.KeptnOpts{
+				Context: tc.ctx,
+			})
+
+			if err != nil {
+				t.Error(err.Error())
+			}
+			assert.Equal(t, tc.wantCtx, k.Context)
 		})
 	}
 }

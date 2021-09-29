@@ -66,6 +66,8 @@ func NewHTTPEventSender(endpoint string) (*HTTPEventSender, error) {
 	return httpSender, nil
 }
 
+// SendEvent sends the event with structured encoding to the target configured in the HTTPEventSender
+//
 // Deprecated: use HTTPEventSender.Send instead
 func (httpSender HTTPEventSender) SendEvent(event cloudevents.Event) error {
 	ctx := cloudevents.ContextWithTarget(context.Background(), httpSender.EventsEndpoint)
@@ -73,6 +75,9 @@ func (httpSender HTTPEventSender) SendEvent(event cloudevents.Event) error {
 	return httpSender.Send(ctx, event)
 }
 
+// Send sends the event
+//
+// If no target is set in the context, the event will be sent to the target configured in the HTTPEventSender.
 func (httpSender HTTPEventSender) Send(ctx context.Context, event cloudevents.Event) error {
 	// if not already added by the caller, add the one from the Sender
 	if cloudevents.TargetFromContext(ctx) == nil {
