@@ -1,6 +1,12 @@
 package v0_2_0
 
 import (
+	"context"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+	"time"
+
 	"github.com/keptn/go-utils/config"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
@@ -8,10 +14,6 @@ import (
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"net/http"
-	"net/http/httptest"
-	"testing"
-	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
@@ -89,6 +91,43 @@ func TestKeptn_SendCloudEventWithRetry(t *testing.T) {
 				t.Errorf("SendCloudEvent() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
+	}
+}
+
+func TestKeptn_SendCloudEventWithAlternativeTarget(t *testing.T) {
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(200)
+			w.Write([]byte(`{}`))
+		}),
+	)
+	defer ts.Close()
+
+	fields := getKeptnFields(ts)
+	event := getTestEvent()
+
+	// create a sender with a wrong server URL
+	httpSender, _ := NewHTTPEventSender("http://some-wrong-endpoint")
+
+	// and the context with the correct server URL
+	ctx := cloudevents.ContextWithTarget(context.Background(), ts.URL)
+
+	k := &Keptn{
+		KeptnBase: keptn.KeptnBase{
+			KeptnContext:       fields.KeptnContext,
+			Event:              fields.KeptnBase,
+			EventSender:        httpSender,
+			UseLocalFileSystem: fields.useLocalFileSystem,
+			ResourceHandler:    fields.resourceHandler,
+			EventHandler:       fields.eventHandler,
+			Context:            ctx,
+		},
+	}
+	// Because we passed a ctx with a target, the event should have been sent to the correct place
+	err := k.SendCloudEvent(event)
+	if err != nil {
+		t.Error(err.Error())
 	}
 }
 
