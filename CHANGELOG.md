@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.10.0](https://github.com/keptn/go-utils/compare/v0.9.0...v0.10.0) (2021-10-04)
+
+
+### Features
+
+* Added helper function to get mongodb connection string based on env vars ([#5369](https://github.com/keptn/keptn/issues/5369)) ([#337](https://github.com/keptn/keptn/issues/337)) ([3d849b7](https://github.com/keptn/go-utils/commit/3d849b796f7a38ee4da1e1ade852b56cc4dcc236))
+* Added helper functions for adding and reading temporary data in Keptn cloud events ([#339](https://github.com/keptn/keptn/issues/339)) ([05046c5](https://github.com/keptn/go-utils/commit/05046c5e8b8d1d4582add6b6642419720092c6d0))
+* Added kubernetes health-check handler ([#5303](https://github.com/keptn/keptn/issues/5303)) ([#340](https://github.com/keptn/keptn/issues/340)) ([5a650b8](https://github.com/keptn/go-utils/commit/5a650b8bc226c1b579c7840744f455ce75e0bb2b))
+* Added structs and helper methods for Webhook configuration ([#4736](https://github.com/keptn/keptn/issues/4736)) ([#331](https://github.com/keptn/keptn/issues/331)) ([8b1f710](https://github.com/keptn/go-utils/commit/8b1f710ed4c0167515c99aa18487e6db0d315aa1))
+* Extended secret API model with list of available keys in the secret ([#4749](https://github.com/keptn/keptn/issues/4749)) ([#332](https://github.com/keptn/keptn/issues/332)) ([694ba6d](https://github.com/keptn/go-utils/commit/694ba6db4f249b7536f7d193c3f94b95a385b84c))
+
+
+### Bug Fixes
+
+* HTTP clients should support standard proxy settings ([#330](https://github.com/keptn/keptn/issues/330)) ([d19aad3](https://github.com/keptn/go-utils/commit/d19aad393b761e4504d064ffd831dfc446dcb675))
+
 ## [0.9.0](https://github.com/keptn/go-utils/compare/v0.9.0-next.0...v0.9.0) (2021-08-26)
 
 ### [0.8.5](https://github.com/keptn/go-utils/compare/v0.8.4...v0.8.5)
