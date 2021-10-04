@@ -33,7 +33,7 @@ func RunHealthEndpoint(port string) {
 	}
 }
 
-func healthEndpointHandler(w http.ResponseWriter, r *http.Request) {
+func HealthEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/health" {
 		w.WriteHeader(http.StatusOK)
 	}
