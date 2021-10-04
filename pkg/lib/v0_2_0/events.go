@@ -75,7 +75,7 @@ func (httpSender HTTPEventSender) SendEvent(event cloudevents.Event) error {
 	return httpSender.Send(ctx, event)
 }
 
-// Send sends the event
+// Send sends the event using structed encoding
 //
 // If no target is set in the context, the event will be sent to the target configured in the HTTPEventSender.
 func (httpSender HTTPEventSender) Send(ctx context.Context, event cloudevents.Event) error {
@@ -83,11 +83,7 @@ func (httpSender HTTPEventSender) Send(ctx context.Context, event cloudevents.Ev
 	if cloudevents.TargetFromContext(ctx) == nil {
 		ctx = cloudevents.ContextWithTarget(ctx, httpSender.EventsEndpoint)
 	}
-
-	// TODO: Should we also add cloudevents.WithEncodingStructured(ctx) here to avoid duplication?
-	// There doesn't seem to be a way to check if already present in the ctx, as the key
-	// is not exported: https://github.com/cloudevents/sdk-go/blob/main/v2/binding/write.go#L19
-	// unles we copy the key to our code - which could be problematic if cloudevents change it later.
+	ctx = cloudevents.WithEncodingStructured(ctx)
 
 	var result protocol.Result
 	for i := 0; i <= MAX_SEND_RETRIES; i++ {

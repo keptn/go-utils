@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	cehttp "github.com/cloudevents/sdk-go/v2/protocol/http"
 )
 
 type fields struct {
@@ -126,6 +127,58 @@ func TestKeptn_SendCloudEventWithAlternativeTarget(t *testing.T) {
 	}
 	// Because we passed a ctx with a target, the event should have been sent to the correct place
 	err := k.SendCloudEvent(event)
+	if err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func TestHttpSender_SendEventAlwaysWithStructuredEncoding(t *testing.T) {
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+			// we should always receive Structured Encoding from the httpSender.Send method
+			m := cehttp.NewMessageFromHttpRequest(r)
+			enc := m.ReadEncoding()
+
+			if enc == cloudevents.EncodingStructured {
+				w.Header().Add("Content-Type", "application/json")
+				w.WriteHeader(200)
+			} else {
+				w.WriteHeader(500)
+			}
+			w.Write([]byte(`{}`))
+		}),
+	)
+	defer ts.Close()
+
+	event := getTestEvent()
+
+	httpSender, _ := NewHTTPEventSender(ts.URL)
+	err := httpSender.Send(context.Background(), event)
+	if err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func TestHttpSender_SendEventWithAlternativeTarget(t *testing.T) {
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(200)
+			w.Write([]byte(`{}`))
+		}),
+	)
+	defer ts.Close()
+
+	event := getTestEvent()
+
+	// create a sender with a wrong server URL
+	httpSender, _ := NewHTTPEventSender("http://some-wrong-endpoint")
+
+	// and the context with the correct server URL
+	ctx := cloudevents.ContextWithTarget(context.Background(), ts.URL)
+
+	err := httpSender.Send(ctx, event)
 	if err != nil {
 		t.Error(err.Error())
 	}
