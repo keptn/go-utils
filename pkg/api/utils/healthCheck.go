@@ -25,9 +25,14 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func RunHealthEndpoint(port string) {
+
 	http.HandleFunc("/health", healthHandler)
 	err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
 	if err != nil {
 		log.Println(err)
 	}
+}
+
+func getHealthHandler() func(w http.ResponseWriter, r *http.Request) {
+	return healthHandler
 }
