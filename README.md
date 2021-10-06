@@ -39,8 +39,10 @@ This module provides you with a convenient `Keptn` helper struct that allows you
 Keptn event. The helper struct can be initialized by passing a CloudEvent to the `NewKeptn` function. Example:
 
 ```go
-func HandleEvent(event cloudevents.Event) error {
-	keptnHandler, err := keptn.NewKeptn(&event, keptn.KeptnOpts{})
+func HandleEvent(ctx context.Context, event cloudevents.Event) error {
+    keptnHandler, err := keptn.NewKeptn(&event, keptn.KeptnOpts{
+		Context: ctx,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +157,7 @@ eventHandler := apiutils.NewAuthenticatedEventHandler("1.2.3.4/api", token, "x-t
 filter := &apiutils.EventFilter{KeptnContext:  "03b2b951-9835-4e87-b0b0-0ad0bc288214"}
 
 // Query for event(s)
-events, err := eventHandler.GetEvents(filter)
+events, err := eventHandler.GetEventsWithContext(context.Background(), filter)
 ```
 
 ### Watching for events in event store
