@@ -47,7 +47,7 @@ func NewEventHandler(baseURL string) *EventHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: getClientTransport()},
+		HTTPClient: &http.Client{Transport: getInstrumentedClientTransport()},
 		Scheme:     "http",
 	}
 }
@@ -59,7 +59,7 @@ func NewAuthenticatedEventHandler(baseURL string, authToken string, authHeader s
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getClientTransport()
+	httpClient.Transport = getInstrumentedClientTransport()
 
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")

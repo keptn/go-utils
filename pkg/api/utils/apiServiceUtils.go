@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 // APIService represents the interface for accessing the configuration service
@@ -25,6 +26,12 @@ func getClientTransport() *http.Transport {
 		Proxy:           http.ProxyFromEnvironment,
 	}
 	return tr
+}
+
+// Wraps the provided http.RoundTripper with one that
+// starts a span and injects the span context into the outbound request headers.
+func getInstrumentedClientTransport() *otelhttp.Transport {
+	return otelhttp.NewTransport(getClientTransport())
 }
 
 func putWithEventContext(uri string, data []byte, api APIService) (*models.EventContext, *models.Error) {

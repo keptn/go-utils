@@ -5,16 +5,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
+	"time"
+
+	"github.com/cloudevents/sdk-go/v2/client"
 	"github.com/cloudevents/sdk-go/v2/protocol"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/config"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
-	"strings"
-	"time"
 
+	ceObs "github.com/cloudevents/sdk-go/observability/opentelemetry/v2/client"
+	ceObsHttp "github.com/cloudevents/sdk-go/observability/opentelemetry/v2/http"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+
 	httpprotocol "github.com/cloudevents/sdk-go/v2/protocol/http"
 )
 
@@ -48,12 +53,20 @@ func NewHTTPEventSender(endpoint string) (*HTTPEventSender, error) {
 	if endpoint == "" {
 		endpoint = DefaultHTTPEventEndpoint
 	}
-	p, err := cloudevents.NewHTTP()
+	// Creates a HTTP protocol wrapped with the OpenTelemetry transport
+	p, err := ceObsHttp.NewObservedHTTP()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create protocol: %s", err.Error())
 	}
 
-	c, err := cloudevents.NewClient(p, cloudevents.WithTimeNow(), cloudevents.WithUUIDs())
+	// An HTTP client with an ObservabilityService
+	// THe ObsService will generate spans on send/receive operations
+	c, err := cloudevents.NewClient(
+		p, cloudevents.WithTimeNow(),
+		cloudevents.WithUUIDs(),
+		client.WithObservabilityService(ceObs.NewOTelObservabilityService()),
+	)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to create client, %s", err.Error())
 	}
