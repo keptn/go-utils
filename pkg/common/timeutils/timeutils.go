@@ -7,6 +7,7 @@ import (
 )
 
 const KeptnTimeFormatISO8601 = "2006-01-02T15:04:05.000Z"
+const fallbackTimeformat = "2006-01-02T15:04:05.000000000Z"
 
 const defaultEvaluationTimeframe = "5m"
 
@@ -14,6 +15,19 @@ const defaultEvaluationTimeframe = "5m"
 // Keptn which is following the ISO 8601 standard
 func GetKeptnTimeStamp(timestamp time.Time) string {
 	return timestamp.Format(KeptnTimeFormatISO8601)
+}
+
+// ParseTimestamp tries to parse the given timestamp using the ISO8601 format (e.g. '2006-01-02T15:04:05.000Z')
+// if this is not possible, the fallback format '2006-01-02T15:04:05.000000000Z' will be used. If this fails as well, an error is returned
+func ParseTimestamp(timestamp string) (*time.Time, error) {
+	parsedTime, err := time.Parse(KeptnTimeFormatISO8601, timestamp)
+	if err != nil {
+		parsedTime, err = time.Parse(fallbackTimeformat, timestamp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &parsedTime, nil
 }
 
 type GetStartEndTimeParams struct {
