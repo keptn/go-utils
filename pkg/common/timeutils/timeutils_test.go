@@ -2,6 +2,7 @@ package timeutils
 
 import (
 	"github.com/stretchr/testify/require"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -143,6 +144,61 @@ func TestGetStartEndTime(t *testing.T) {
 				require.Nil(t, err)
 				require.WithinDuration(t, *gotStart, tt.wantStart, time.Minute)
 				require.WithinDuration(t, *gotEnd, tt.wantEnd, time.Minute)
+			}
+		})
+	}
+}
+
+func TestParseTimestamp(t *testing.T) {
+
+	correctISO8601Timestamp := "2020-01-02T15:04:05.000Z"
+	correctFallbackTimestamp := "2020-01-02T15:04:05.000000000Z"
+
+	timeObj, _ := time.Parse(KeptnTimeFormatISO8601, correctISO8601Timestamp)
+
+	type args struct {
+		timestamp string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *time.Time
+		wantErr bool
+	}{
+		{
+			name: "correct timestamp provided",
+			args: args{
+				timestamp: correctISO8601Timestamp,
+			},
+			want:    &timeObj,
+			wantErr: false,
+		},
+		{
+			name: "correct fallback timestamp provided",
+			args: args{
+				timestamp: correctFallbackTimestamp,
+			},
+			want:    &timeObj,
+			wantErr: false,
+		},
+		{
+			name: "incorrect timestamp provided",
+			args: args{
+				timestamp: "invalid",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseTimestamp(tt.args.timestamp)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ParseTimestamp() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ParseTimestamp() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
