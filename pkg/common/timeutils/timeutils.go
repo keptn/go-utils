@@ -17,7 +17,7 @@ func GetKeptnTimeStamp(timestamp time.Time) string {
 }
 
 // ParseTimestamp tries to parse the given timestamp using the ISO8601 format (e.g. '2006-01-02T15:04:05.000Z')
-// if this is not possible, the fallback format '2006-01-02T15:04:05.000000000Z' will be used, then RFC3339
+// if this is not possible, the fallback format RFC3339  will be used, then '2006-01-02T15:04:05'
 //If this fails as well, an error is returned
 
 func ParseTimestamp(timestamp string) (*time.Time, error) {
@@ -63,13 +63,6 @@ func GetStartEndTime(params GetStartEndTimeParams) (*time.Time, *time.Time, erro
 	//var timeFormat string
 	var err error
 
-	/*if params.TimeFormat == "" {
-		timeFormat = KeptnTimeFormatISO8601
-
-	} else {
-		timeFormat = params.TimeFormat
-	}*/
-
 	// input validation
 	if err := params.Validate(); err != nil {
 		return nil, nil, err
@@ -86,35 +79,38 @@ func GetStartEndTime(params GetStartEndTimeParams) (*time.Time, *time.Time, erro
 		return nil, nil, fmt.Errorf("could not parse provided timeframe: %s", err.Error())
 	}
 
-	// initialize default values for end and start time
-	end := time.Now().UTC()
-	start := time.Now().UTC().Add(-timeframeDuration)
-	var temp *time.Time
+	// calculate possible start and end time
+	now := time.Now().UTC()
+	calcStart := now.Add(-timeframeDuration)
+
+	// initialize default values for end and start time pointer
+	var end, start *time.Time
+	end = &now
+	start = &calcStart
+
 	// Parse start date
 	if params.StartDate != "" {
-		temp, err = ParseTimestamp(params.StartDate)
+		start, err = ParseTimestamp(params.StartDate)
 		if err != nil {
 			return nil, nil, err
 		}
-		start = *temp
 	}
 
 	// Parse end date
 	if params.EndDate != "" {
-		temp, err = ParseTimestamp(params.EndDate)
+		end, err = ParseTimestamp(params.EndDate)
 		if err != nil {
 			return nil, nil, err
 		}
-		end = *temp
 	}
 
 	// last but not least: if a start date and a timeframe is provided, we set the end date to start date + timeframe
 	if params.StartDate != "" && params.EndDate == "" && params.Timeframe != "" {
-		end = start.Add(timeframeDuration)
+		*end = start.Add(timeframeDuration)
 	}
 
 	// ensure end date is greater than start date
-	diff := end.Sub(start).Minutes()
+	diff := end.Sub(*start).Minutes()
 
 	if diff < 1 {
 		errMsg := "end date must be at least 1 minute after start date"
@@ -122,5 +118,5 @@ func GetStartEndTime(params GetStartEndTimeParams) (*time.Time, *time.Time, erro
 		return nil, nil, fmt.Errorf(errMsg)
 	}
 
-	return &start, &end, nil
+	return start, end, nil
 }
