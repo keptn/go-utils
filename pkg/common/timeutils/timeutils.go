@@ -7,7 +7,7 @@ import (
 )
 
 const KeptnTimeFormatISO8601 = "2006-01-02T15:04:05.000Z"
-const fallbackTimeformat = "2006-01-02T15:04:05"
+const fallbackTimeFormat = "2006-01-02T15:04:05"
 const defaultEvaluationTimeframe = "5m"
 
 // GetKeptnTimeStamp formats a given timestamp into the format used by
@@ -16,16 +16,16 @@ func GetKeptnTimeStamp(timestamp time.Time) string {
 	return timestamp.Format(KeptnTimeFormatISO8601)
 }
 
-// ParseTimestamp tries to parse the given timestamp using the ISO8601 format (e.g. '2006-01-02T15:04:05.000Z')
-// if this is not possible, the fallback format RFC3339  will be used, then '2006-01-02T15:04:05'
-//If this fails as well, an error is returned
+// ParseTimestamp tries to parse the given timestamp using the ISO8601 format (e.g. '2006-01-02T15:04:05.000Z').
+// If this is not possible, the fallback format RFC3339  will be used, then '2006-01-02T15:04:05'.
+// If this fails as well, an error is returned
 
 func ParseTimestamp(timestamp string) (*time.Time, error) {
 	parsedTime, err := time.Parse(KeptnTimeFormatISO8601, timestamp)
 	if err != nil {
 		parsedTime, err = time.Parse(time.RFC3339, timestamp)
 		if err != nil {
-			parsedTime, err = time.Parse(fallbackTimeformat, timestamp)
+			parsedTime, err = time.Parse(fallbackTimeFormat, timestamp)
 			if err != nil {
 				return nil, err
 			}
