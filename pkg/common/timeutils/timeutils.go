@@ -60,7 +60,6 @@ func (params *GetStartEndTimeParams) Validate() error {
 
 // GetStartEndTime parses the provided start date, end date and/or timeframe
 func GetStartEndTime(params GetStartEndTimeParams) (*time.Time, *time.Time, error) {
-	//var timeFormat string
 	var err error
 
 	// input validation
