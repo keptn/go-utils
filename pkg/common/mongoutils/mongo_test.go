@@ -84,7 +84,7 @@ func TestGetMongoConnectionStringFromEnv(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			os.Setenv("MONGODB_EXTERNAL_CONNECTION_STRING", tt.externalConnectionStringEnvVar)
 			os.Setenv("MONGODB_HOST", tt.mongoDbHostEnvVar)
-			os.Setenv("MONGO_DB_NAME", tt.mongoDbNameEnvVar)
+			os.Setenv("MONGODB_DATABASE", tt.mongoDbNameEnvVar)
 			os.Setenv("MONGODB_USER", tt.mongoDbUserEnvVar)
 			os.Setenv("MONGODB_PASSWORD", tt.mongoDbPasswordEnvVar)
 			gotConnectionString, gotDbName, err := GetMongoConnectionStringFromEnv()
