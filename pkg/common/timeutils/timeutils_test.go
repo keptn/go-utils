@@ -152,7 +152,7 @@ func TestGetStartEndTime(t *testing.T) {
 func TestParseTimestamp(t *testing.T) {
 
 	correctISO8601Timestamp := "2020-01-02T15:04:05.000Z"
-	correctFallbackTimestamp := "2020-01-02T15:04:05.000000000Z"
+	correctFallbackTimestamp := "2020-01-02T15:04:05"
 
 	timeObj, _ := time.Parse(KeptnTimeFormatISO8601, correctISO8601Timestamp)
 
@@ -202,4 +202,21 @@ func TestParseTimestamp(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestParseVariousTimeFormat(t *testing.T) {
+	times := []string{
+		"2020-01-02T15:00:00",
+		"2020-01-02T15:00:00Z",
+		"2020-01-02T15:00:00+10:00",
+		"2020-01-02T15:00:00.000Z",
+		"2020-01-02T15:00:00.000000000Z",
+	}
+
+	for _, time := range times {
+
+		_, err := ParseTimestamp(time)
+		require.Nil(t, err)
+	}
+
 }

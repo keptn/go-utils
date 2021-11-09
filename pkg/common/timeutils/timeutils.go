@@ -7,8 +7,7 @@ import (
 )
 
 const KeptnTimeFormatISO8601 = "2006-01-02T15:04:05.000Z"
-const fallbackTimeformat = "2006-01-02T15:04:05.000000000Z"
-
+const fallbackTimeFormat = "2006-01-02T15:04:05"
 const defaultEvaluationTimeframe = "5m"
 
 // GetKeptnTimeStamp formats a given timestamp into the format used by
@@ -17,14 +16,20 @@ func GetKeptnTimeStamp(timestamp time.Time) string {
 	return timestamp.Format(KeptnTimeFormatISO8601)
 }
 
-// ParseTimestamp tries to parse the given timestamp using the ISO8601 format (e.g. '2006-01-02T15:04:05.000Z')
-// if this is not possible, the fallback format '2006-01-02T15:04:05.000000000Z' will be used. If this fails as well, an error is returned
+// ParseTimestamp tries to parse the given timestamp using the ISO8601 format (e.g. '2006-01-02T15:04:05.000Z').
+// If this is not possible, the fallback format RFC3339  will be used, then '2006-01-02T15:04:05'.
+// If this fails as well, an error is returned
+
 func ParseTimestamp(timestamp string) (*time.Time, error) {
 	parsedTime, err := time.Parse(KeptnTimeFormatISO8601, timestamp)
 	if err != nil {
-		parsedTime, err = time.Parse(fallbackTimeformat, timestamp)
+		parsedTime, err = time.Parse(time.RFC3339, timestamp)
 		if err != nil {
-			return nil, err
+			parsedTime, err = time.Parse(fallbackTimeFormat, timestamp)
+			if err != nil {
+				return nil, err
+			}
+
 		}
 	}
 	return &parsedTime, nil
@@ -55,13 +60,8 @@ func (params *GetStartEndTimeParams) Validate() error {
 
 // GetStartEndTime parses the provided start date, end date and/or timeframe
 func GetStartEndTime(params GetStartEndTimeParams) (*time.Time, *time.Time, error) {
-	var timeFormat string
-	if params.TimeFormat == "" {
-		timeFormat = KeptnTimeFormatISO8601
-	} else {
-		timeFormat = params.TimeFormat
-	}
 	var err error
+
 	// input validation
 	if err := params.Validate(); err != nil {
 		return nil, nil, err
@@ -78,14 +78,18 @@ func GetStartEndTime(params GetStartEndTimeParams) (*time.Time, *time.Time, erro
 		return nil, nil, fmt.Errorf("could not parse provided timeframe: %s", err.Error())
 	}
 
-	// initialize default values for end and start time
-	end := time.Now().UTC()
-	start := time.Now().UTC().Add(-timeframeDuration)
+	// calculate possible start and end time
+	now := time.Now().UTC()
+	calcStart := now.Add(-timeframeDuration)
+
+	// initialize default values for end and start time pointer
+	var end, start *time.Time
+	end = &now
+	start = &calcStart
 
 	// Parse start date
 	if params.StartDate != "" {
-		start, err = time.Parse(timeFormat, params.StartDate)
-
+		start, err = ParseTimestamp(params.StartDate)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -93,8 +97,7 @@ func GetStartEndTime(params GetStartEndTimeParams) (*time.Time, *time.Time, erro
 
 	// Parse end date
 	if params.EndDate != "" {
-		end, err = time.Parse(timeFormat, params.EndDate)
-
+		end, err = ParseTimestamp(params.EndDate)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -102,11 +105,11 @@ func GetStartEndTime(params GetStartEndTimeParams) (*time.Time, *time.Time, erro
 
 	// last but not least: if a start date and a timeframe is provided, we set the end date to start date + timeframe
 	if params.StartDate != "" && params.EndDate == "" && params.Timeframe != "" {
-		end = start.Add(timeframeDuration)
+		*end = start.Add(timeframeDuration)
 	}
 
 	// ensure end date is greater than start date
-	diff := end.Sub(start).Minutes()
+	diff := end.Sub(*start).Minutes()
 
 	if diff < 1 {
 		errMsg := "end date must be at least 1 minute after start date"
@@ -114,5 +117,5 @@ func GetStartEndTime(params GetStartEndTimeParams) (*time.Time, *time.Time, erro
 		return nil, nil, fmt.Errorf(errMsg)
 	}
 
-	return &start, &end, nil
+	return start, end, nil
 }
