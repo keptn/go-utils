@@ -67,12 +67,12 @@ func NewHTTPEventSender(endpoint string) (*HTTPEventSender, error) {
 
 // SendEvent sends a CloudEvent
 func (httpSender HTTPEventSender) SendEvent(event cloudevents.Event) error {
-	ctx := cloudevents.ContextWithTarget(context.Background(), httpSender.EventsEndpoint)
-	ctx = cloudevents.WithEncodingStructured(ctx)
-	return httpSender.Send(ctx, event)
+	return httpSender.Send(context.Background(), event)
 }
 
 func (httpSender HTTPEventSender) Send(ctx context.Context, event cloudevents.Event) error {
+	ctx = cloudevents.ContextWithTarget(ctx, httpSender.EventsEndpoint)
+	ctx = cloudevents.WithEncodingStructured(ctx)
 	var result protocol.Result
 	for i := 0; i <= MAX_SEND_RETRIES; i++ {
 		result = httpSender.Client.Send(ctx, event)
