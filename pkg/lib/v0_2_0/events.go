@@ -50,12 +50,12 @@ func NewHTTPEventSender(endpoint string) (*HTTPEventSender, error) {
 	}
 	p, err := cloudevents.NewHTTP()
 	if err != nil {
-		return nil, fmt.Errorf("failed to create protocol: %w", err)
+		return nil, fmt.Errorf("failed to create protocol: %s", err.Error())
 	}
 
 	c, err := cloudevents.NewClient(p, cloudevents.WithTimeNow(), cloudevents.WithUUIDs())
 	if err != nil {
-		return nil, fmt.Errorf("failed to create client, %w", err)
+		return nil, fmt.Errorf("failed to create client, %s", err.Error())
 	}
 
 	httpSender := &HTTPEventSender{
@@ -75,7 +75,7 @@ func (httpSender HTTPEventSender) SendEvent(event cloudevents.Event) error {
 func (httpSender HTTPEventSender) Send(ctx context.Context, event cloudevents.Event) error {
 	var result protocol.Result
 	for i := 0; i <= MAX_SEND_RETRIES; i++ {
-		result = httpSender.Client.Send(cloudevents.ContextWithTarget(ctx, httpSender.EventsEndpoint), event)
+		result = httpSender.Client.Send(ctx, event)
 		httpResult, ok := result.(*httpprotocol.Result)
 		switch {
 		case ok:
@@ -92,6 +92,7 @@ func (httpSender HTTPEventSender) Send(ctx context.Context, event cloudevents.Ev
 	return errors.New("Failed to send cloudevent: " + result.Error())
 }
 
+// EventSender fakes the sending of CloudEvents
 type TestSender struct {
 	SentEvents []cloudevents.Event
 	Reactors   map[string]func(event cloudevents.Event) error
