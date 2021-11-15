@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cloudevents/sdk-go/v2/client"
 	"github.com/cloudevents/sdk-go/v2/protocol"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/config"
@@ -15,7 +16,10 @@ import (
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 
+	ceObs "github.com/cloudevents/sdk-go/observability/opentelemetry/v2/client"
+	ceObsHttp "github.com/cloudevents/sdk-go/observability/opentelemetry/v2/http"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+
 	httpprotocol "github.com/cloudevents/sdk-go/v2/protocol/http"
 )
 
@@ -49,12 +53,20 @@ func NewHTTPEventSender(endpoint string) (*HTTPEventSender, error) {
 	if endpoint == "" {
 		endpoint = DefaultHTTPEventEndpoint
 	}
-	p, err := cloudevents.NewHTTP()
+	// Creates a HTTP protocol wrapped with the OpenTelemetry transport
+	p, err := ceObsHttp.NewObservedHTTP()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create protocol: %s", err.Error())
 	}
 
-	c, err := cloudevents.NewClient(p, cloudevents.WithTimeNow(), cloudevents.WithUUIDs())
+	// An HTTP client with an ObservabilityService
+	// THe ObsService will generate spans on send/receive operations
+	c, err := cloudevents.NewClient(
+		p, cloudevents.WithTimeNow(),
+		cloudevents.WithUUIDs(),
+		client.WithObservabilityService(ceObs.NewOTelObservabilityService()),
+	)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to create client, %s", err.Error())
 	}
@@ -70,9 +82,7 @@ func NewHTTPEventSender(endpoint string) (*HTTPEventSender, error) {
 //
 // Deprecated: use HTTPEventSender.Send instead
 func (httpSender HTTPEventSender) SendEvent(event cloudevents.Event) error {
-	ctx := cloudevents.ContextWithTarget(context.Background(), httpSender.EventsEndpoint)
-	ctx = cloudevents.WithEncodingStructured(ctx)
-	return httpSender.Send(ctx, event)
+	return httpSender.Send(context.Background(), event)
 }
 
 // Send sends the event using structed encoding
@@ -84,7 +94,6 @@ func (httpSender HTTPEventSender) Send(ctx context.Context, event cloudevents.Ev
 		ctx = cloudevents.ContextWithTarget(ctx, httpSender.EventsEndpoint)
 	}
 	ctx = cloudevents.WithEncodingStructured(ctx)
-
 	var result protocol.Result
 	for i := 0; i <= MAX_SEND_RETRIES; i++ {
 		result = httpSender.Client.Send(ctx, event)

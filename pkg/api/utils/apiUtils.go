@@ -27,7 +27,7 @@ func NewAuthenticatedAPIHandler(baseURL string, authToken string, authHeader str
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getClientTransport()
+	httpClient.Transport = getInstrumentedClientTransport()
 
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
