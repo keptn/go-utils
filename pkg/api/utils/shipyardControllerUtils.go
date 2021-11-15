@@ -35,7 +35,7 @@ func NewShipyardControllerHandler(baseURL string) *ShipyardControllerHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: getClientTransport()},
+		HTTPClient: &http.Client{Transport: getInstrumentedClientTransport()},
 		Scheme:     "http",
 	}
 }
@@ -46,7 +46,7 @@ func NewAuthenticatedShipyardControllerHandler(baseURL string, authToken string,
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getClientTransport()
+	httpClient.Transport = getInstrumentedClientTransport()
 
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")

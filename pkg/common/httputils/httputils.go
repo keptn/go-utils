@@ -7,6 +7,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 type Downloader struct {
@@ -39,7 +41,8 @@ func (d Downloader) DownloadFromURL(URL string) ([]byte, error) {
 		return nil, fmt.Errorf("%s is not a valid URL", URL)
 	}
 	c := http.Client{
-		Timeout: d.Timeout,
+		Timeout:   d.Timeout,
+		Transport: otelhttp.NewTransport(http.DefaultTransport),
 	}
 	resp, err := c.Get(URL)
 	if err != nil {
