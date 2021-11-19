@@ -127,7 +127,7 @@ indicators:
 	if SLIs != nil {
 		t.Errorf("Unexpected length of SLI map")
 	}
-	if !strings.Contains(err.Error(), "missing required field: indicators") {
+	if err == nil || !strings.Contains(err.Error(), "missing required field: indicators") {
 		t.Errorf("Unexpected error message")
 	}
 }
