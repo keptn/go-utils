@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -110,6 +111,24 @@ indicators:
 
 	if SLIs["error_rate"] != "builtin:service.errors.total.count:merge(0):avg?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:$DEPLOYMENT)" {
 		t.Errorf("Unexpected value of error_rate SLI")
+	}
+}
+
+// TestAddEmptyIndicatorsResourceContentToSLIMap
+func TestAddEmptyIndicatorsResourceContentToSLIMap(t *testing.T) {
+	SLIs := make(map[string]string)
+	resource := &models.Resource{}
+	resourceURI := "provider/sli.yaml"
+	resource.ResourceURI = &resourceURI
+	resource.ResourceContent = `---
+indicators:
+`
+	SLIs, err := addResourceContentToSLIMap(SLIs, resource)
+	if SLIs != nil {
+		t.Errorf("Unexpected length of SLI map")
+	}
+	if err == nil || !strings.Contains(err.Error(), "missing required field: indicators") {
+		t.Errorf("Unexpected error message")
 	}
 }
 
