@@ -2,8 +2,8 @@ package keptn
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"log"
 	"math/rand"
 	"net/url"
@@ -11,6 +11,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
@@ -144,6 +146,10 @@ func addResourceContentToSLIMap(SLIs map[string]string, resource *models.Resourc
 
 		for key, value := range sliConfig.Indicators {
 			SLIs[key] = value
+		}
+
+		if len(SLIs) == 0 {
+			return nil, errors.New("missing required field: indicators")
 		}
 	}
 	return SLIs, nil
