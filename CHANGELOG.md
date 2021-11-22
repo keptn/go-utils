@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.11.0](https://github.com/keptn/go-utils/compare/v0.10.0...v0.11.0) (2021-11-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* The `MONGODB_DATABASE` env variable was updated which means that this version of go-utils is not compatible with keptn `<=0.10`
+
+### Features
+
+* added custom time parsing (keptn/keptn[#4788](https://github.com/keptn/keptn/issues/4788)) ([#348](https://github.com/keptn/keptn/issues/348)) ([90baf28](https://github.com/keptn/go-utils/commit/90baf286404d2e81093e91ec4c2ac517604e7407)), closes [#334](https://github.com/keptn/keptn/issues/334)
+* Added helper functions to parse timestamps ([#342](https://github.com/keptn/keptn/issues/342)) ([c6f17c0](https://github.com/keptn/go-utils/commit/c6f17c04cd7c49374c1a53934a0fc5437bc71c74))
+* Update mongo DB env variables to new names according to new variables in installer chart ([#347](https://github.com/keptn/keptn/issues/347)) ([55a5cc3](https://github.com/keptn/go-utils/commit/55a5cc361a0ac2a9240471ae87e94b611b5c9c00))
+
+
+### Bug Fixes
+
+* **go-utils:** set target also in `EventSender::Send` ([#349](https://github.com/keptn/keptn/issues/349)) ([c61381f](https://github.com/keptn/go-utils/commit/c61381f340919feafa883d216481995ef5734553))
+* Make SLI.indicators required ([#356](https://github.com/keptn/keptn/issues/356)) ([da7d7ab](https://github.com/keptn/go-utils/commit/da7d7abd5e93a5c8dd2693d260cbaf11339fab08))
+* Use elevated token for checkout during (pre)release ([#346](https://github.com/keptn/keptn/issues/346)) ([6ac1aa4](https://github.com/keptn/go-utils/commit/6ac1aa413ca0a8ad19c94f3a7ef8d67206c8c8ab))
+
 ## [0.10.0](https://github.com/keptn/go-utils/compare/v0.9.0...v0.10.0) (2021-10-04)
 
 
