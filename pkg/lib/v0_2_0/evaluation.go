@@ -56,21 +56,21 @@ type EvaluationDetails struct {
 }
 
 type SLIResult struct {
-	Metric  string  `json:"metric"`
-	Value   float64 `json:"value"`
-	Success bool    `json:"success"`
-	Message string  `json:"message,omitempty"`
+	Metric        string  `json:"metric"`
+	Value         float64 `json:"value"`
+	ComparedValue float64 `json:"comparedValue"`
+	Success       bool    `json:"success"`
+	Message       string  `json:"message,omitempty"`
 }
 
 type SLIEvaluationResult struct {
-	Score            float64      `json:"score"`
-	ComparedAvgScore float64      `json:"comparedAvgScore"`
-	Value            *SLIResult   `json:"value"`
-	DisplayName      string       `json:"displayName"`
-	PassTargets      []*SLITarget `json:"passTargets"`
-	WarningTargets   []*SLITarget `json:"warningTargets"`
-	KeySLI           bool         `json:"keySli"`
-	Status           string       `json:"status" jsonschema:"enum=pass,enum=warning,enum=fail"`
+	Score          float64      `json:"score"`
+	Value          *SLIResult   `json:"value"`
+	DisplayName    string       `json:"displayName"`
+	PassTargets    []*SLITarget `json:"passTargets"`
+	WarningTargets []*SLITarget `json:"warningTargets"`
+	KeySLI         bool         `json:"keySli"`
+	Status         string       `json:"status" jsonschema:"enum=pass,enum=warning,enum=fail"`
 }
 
 type SLITarget struct {
