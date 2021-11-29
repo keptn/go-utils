@@ -1,0 +1,56 @@
+package credentialmanager
+
+import (
+	"github.com/keptn/keptn/cli/pkg/config"
+	"net/url"
+
+	"github.com/docker/docker-credential-helpers/osxkeychain"
+)
+
+type CredentialManager struct {
+	cliConfig  config.CLIConfig
+	kubeConfig KubeConfigFileType
+}
+
+// NewCredentialManager creates a new credential manager
+func NewCredentialManager(autoApplyNewContext bool) *CredentialManager {
+	cm := &CredentialManager{}
+	initChecks(autoApplyNewContext, cm)
+	return cm
+}
+
+// SetCreds stores the credentials consisting of an endpoint and an api token in the keychain.
+func (cm *CredentialManager) SetCreds(endPoint url.URL, apiToken string, namespace string) error {
+	return setCreds(osxkeychain.Osxkeychain{}, endPoint, apiToken, namespace)
+}
+
+// GetCreds reads the credentials and returns an endpoint, the api token, or potentially an error.
+func (cm *CredentialManager) GetCreds(namespace string) (url.URL, string, error) {
+	return getCreds(osxkeychain.Osxkeychain{}, namespace)
+}
+
+// SetInstallCreds sets the install credentials
+func (cm *CredentialManager) SetInstallCreds(creds string) error {
+	return setInstallCreds(osxkeychain.Osxkeychain{}, creds)
+}
+
+// GetInstallCreds gets the install credentials
+func (cm *CredentialManager) GetInstallCreds() (string, error) {
+	return getInstallCreds(osxkeychain.Osxkeychain{})
+}
+
+func (cm *CredentialManager) SetCurrentKubeConfig(kubeConfig KubeConfigFileType) {
+	cm.kubeConfig = kubeConfig
+}
+
+func (cm *CredentialManager) GetCurrentKubeConfig() KubeConfigFileType {
+	return cm.kubeConfig
+}
+
+func (cm *CredentialManager) SetCurrentKeptnCLIConfig(cliConfig config.CLIConfig) {
+	cm.cliConfig = cliConfig
+}
+
+func (cm *CredentialManager) GetCurrentKeptnCLIConfig() config.CLIConfig {
+	return cm.cliConfig
+}
