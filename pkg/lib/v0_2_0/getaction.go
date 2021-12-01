@@ -2,10 +2,14 @@ package v0_2_0
 
 const GetActionTaskName = "get-action"
 
+type GetActionData struct {
+	ActionIndex int `json:"actionIndex"`
+}
+
 type GetActionTriggeredEventData struct {
 	EventData
-	Problem     ProblemDetails `json:"problem"`
-	ActionIndex int            `json:"actionIndex"`
+	Problem   ProblemDetails `json:"problem"`
+	GetAction GetActionData  `json:"get-action"`
 }
 
 type GetActionStartedEventData struct {
@@ -14,6 +18,6 @@ type GetActionStartedEventData struct {
 
 type GetActionFinishedEventData struct {
 	EventData
-	Action      ActionInfo `json:"action"`
-	ActionIndex int
+	Action    ActionInfo    `json:"action"`
+	GetAction GetActionData `json:"get-action"`
 }
