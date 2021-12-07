@@ -56,10 +56,11 @@ type EvaluationDetails struct {
 }
 
 type SLIResult struct {
-	Metric  string  `json:"metric"`
-	Value   float64 `json:"value"`
-	Success bool    `json:"success"`
-	Message string  `json:"message,omitempty"`
+	Metric        string  `json:"metric"`
+	Value         float64 `json:"value"`
+	ComparedValue float64 `json:"comparedValue"`
+	Success       bool    `json:"success"`
+	Message       string  `json:"message,omitempty"`
 }
 
 type SLIEvaluationResult struct {
