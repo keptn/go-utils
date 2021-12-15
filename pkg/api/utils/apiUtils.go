@@ -135,6 +135,9 @@ func (a *APIHandler) DeleteService(project, service string) (*models.DeleteServi
 // GetMetadata retrieve keptn MetaData information
 func (a *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
 	req, err := http.NewRequest("GET", a.Scheme+"://"+a.getBaseURL()+v1MetadataPath, nil)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, a)
 

@@ -103,6 +103,9 @@ func (s *ServiceHandler) GetService(project, stage, service string) (*models.Ser
 		return nil, err
 	}
 	req, err := http.NewRequest("GET", url.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, s)
 
@@ -153,6 +156,9 @@ func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models
 			url.RawQuery = q.Encode()
 		}
 		req, err := http.NewRequest("GET", url.String(), nil)
+		if err != nil {
+			return nil, err
+		}
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, s)
 

@@ -106,6 +106,9 @@ func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 			url.RawQuery = q.Encode()
 		}
 		req, err := http.NewRequest("GET", url.String(), nil)
+		if err != nil {
+			return nil, err
+		}
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, s)
 

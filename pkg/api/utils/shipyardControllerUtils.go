@@ -111,6 +111,9 @@ func (s *ShipyardControllerHandler) GetOpenTriggeredEvents(filter EventFilter) (
 			return nil, err
 		}
 		req, err := http.NewRequest("GET", url.String(), nil)
+		if err != nil {
+			return nil, err
+		}
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, s)
 

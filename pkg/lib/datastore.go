@@ -77,6 +77,9 @@ func getLatestEvent(keptnContext string, eventType string, uri string, datastore
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequest("GET", uri, nil)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := datastore.getHTTPClient().Do(req)
