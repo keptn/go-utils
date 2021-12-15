@@ -160,6 +160,9 @@ func (e *EventHandler) getEvents(uri string, numberOfPages int) ([]*models.Keptn
 			url.RawQuery = q.Encode()
 		}
 		req, err := http.NewRequest("GET", url.String(), nil)
+		if err != nil {
+			return nil, buildErrorResponse(err.Error())
+		}
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, e)
 

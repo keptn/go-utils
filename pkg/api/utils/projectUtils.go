@@ -115,6 +115,9 @@ func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
 			url.RawQuery = q.Encode()
 		}
 		req, err := http.NewRequest("GET", url.String(), nil)
+		if err != nil {
+			return nil, err
+		}
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, p)
 
