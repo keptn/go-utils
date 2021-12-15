@@ -36,6 +36,9 @@ func getInstrumentedClientTransport() *otelhttp.Transport {
 
 func putWithEventContext(uri string, data []byte, api APIService) (*models.EventContext, *models.Error) {
 	req, err := http.NewRequest("PUT", uri, bytes.NewBuffer(data))
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, api)
 
@@ -84,6 +87,9 @@ func putWithEventContext(uri string, data []byte, api APIService) (*models.Event
 
 func put(uri string, data []byte, api APIService) (string, *models.Error) {
 	req, err := http.NewRequest("PUT", uri, bytes.NewBuffer(data))
+	if err != nil {
+		return "", buildErrorResponse(err.Error())
+	}
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, api)
 
@@ -122,6 +128,9 @@ func put(uri string, data []byte, api APIService) (string, *models.Error) {
 
 func postWithEventContext(uri string, data []byte, api APIService) (*models.EventContext, *models.Error) {
 	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(data))
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, api)
 
@@ -170,6 +179,9 @@ func postWithEventContext(uri string, data []byte, api APIService) (*models.Even
 
 func post(uri string, data []byte, api APIService) (string, *models.Error) {
 	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(data))
+	if err != nil {
+		return "", buildErrorResponse(err.Error())
+	}
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, api)
 
@@ -208,6 +220,9 @@ func post(uri string, data []byte, api APIService) (string, *models.Error) {
 
 func deleteWithEventContext(uri string, api APIService) (*models.EventContext, *models.Error) {
 	req, err := http.NewRequest("DELETE", uri, nil)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, api)
 
@@ -248,6 +263,9 @@ func deleteWithEventContext(uri string, api APIService) (*models.EventContext, *
 
 func delete(uri string, api APIService) (string, *models.Error) {
 	req, err := http.NewRequest("DELETE", uri, nil)
+	if err != nil {
+		return "", buildErrorResponse(err.Error())
+	}
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, api)
 
