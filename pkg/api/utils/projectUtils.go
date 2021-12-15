@@ -158,6 +158,9 @@ func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
 func getProject(uri string, api APIService) (*models.Project, *models.Error) {
 
 	req, err := http.NewRequest("GET", uri, nil)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, api)
 
