@@ -2,6 +2,7 @@ package keptn
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"math/rand"
@@ -150,6 +151,10 @@ func addResourceContentToSLIMap(SLIs map[string]string, resource *models.Resourc
 
 		for key, value := range sliConfig.Indicators {
 			SLIs[key] = value
+		}
+
+		if len(SLIs) == 0 {
+			return nil, errors.New("missing required field: indicators")
 		}
 	}
 	return SLIs, nil

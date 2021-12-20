@@ -74,6 +74,10 @@ func (u *UniformHandler) getHTTPClient() *http.Client {
 }
 
 func (u *UniformHandler) Ping(integrationID string) (*models.Integration, error) {
+	if integrationID == "" {
+		return nil, errors.New("could not ping an invalid IntegrationID")
+	}
+
 	resp, err := put(context.Background(), u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/ping", nil, u)
 	if err != nil {
 		return nil, errors.New(err.GetMessage())

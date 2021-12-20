@@ -120,6 +120,9 @@ func (s *StageHandler) GetAllStagesWithContext(ctx context.Context, project stri
 			url.RawQuery = q.Encode()
 		}
 		req, err := http.NewRequestWithContext(ctx, "GET", url.String(), nil)
+		if err != nil {
+			return nil, err
+		}
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, s)
 

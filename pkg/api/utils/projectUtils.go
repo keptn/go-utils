@@ -144,6 +144,9 @@ func (p *ProjectHandler) GetAllProjectsWithContext(ctx context.Context) ([]*mode
 			url.RawQuery = q.Encode()
 		}
 		req, err := http.NewRequestWithContext(ctx, "GET", url.String(), nil)
+		if err != nil {
+			return nil, err
+		}
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, p)
 
@@ -186,6 +189,9 @@ func (p *ProjectHandler) GetAllProjectsWithContext(ctx context.Context) ([]*mode
 
 func getProject(ctx context.Context, uri string, api APIService) (*models.Project, *models.Error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", uri, nil)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, api)
 

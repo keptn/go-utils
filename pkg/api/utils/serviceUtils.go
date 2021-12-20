@@ -125,6 +125,9 @@ func (s *ServiceHandler) GetServiceWithContext(ctx context.Context, project, sta
 		return nil, err
 	}
 	req, err := http.NewRequestWithContext(ctx, "GET", url.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, s)
 
@@ -181,6 +184,9 @@ func (s *ServiceHandler) GetAllServicesWithContext(ctx context.Context, project 
 			url.RawQuery = q.Encode()
 		}
 		req, err := http.NewRequestWithContext(ctx, "GET", url.String(), nil)
+		if err != nil {
+			return nil, err
+		}
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, s)
 

@@ -6,4 +6,5 @@ const (
 	StatusSucceeded StatusType = "succeeded"
 	StatusErrored   StatusType = "errored"
 	StatusUnknown   StatusType = "unknown"
+	StatusAborted   StatusType = "aborted"
 )

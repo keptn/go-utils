@@ -324,6 +324,9 @@ func (r *ResourceHandler) writeResources(ctx context.Context, uri string, method
 		return "", err
 	}
 	req, err := http.NewRequestWithContext(ctx, method, uri, bytes.NewBuffer(resourceStr))
+	if err != nil {
+		return "", err
+	}
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, r)
 
@@ -363,6 +366,9 @@ func (r *ResourceHandler) writeResource(ctx context.Context, uri string, method 
 		return "", err
 	}
 	req, err := http.NewRequestWithContext(ctx, method, uri, bytes.NewBuffer(resourceStr))
+	if err != nil {
+		return "", err
+	}
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, r)
 
@@ -393,6 +399,9 @@ func (r *ResourceHandler) writeResource(ctx context.Context, uri string, method 
 func (r *ResourceHandler) getResource(ctx context.Context, uri string) (*models.Resource, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequestWithContext(ctx, "GET", uri, nil)
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, r)
 
@@ -434,6 +443,9 @@ func (r *ResourceHandler) getResource(ctx context.Context, uri string) (*models.
 func (r *ResourceHandler) deleteResource(ctx context.Context, uri string) error {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequestWithContext(ctx, "DELETE", uri, nil)
+	if err != nil {
+		return err
+	}
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, r)
 
@@ -493,6 +505,9 @@ func (r *ResourceHandler) getAllResources(ctx context.Context, u *url.URL) ([]*m
 			u.RawQuery = q.Encode()
 		}
 		req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
+		if err != nil {
+			return nil, err
+		}
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, r)
 

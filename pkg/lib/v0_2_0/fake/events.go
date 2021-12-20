@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"sync"
 )
 
 // EventSender fakes the sending of CloudEvents
 type EventSender struct {
 	SentEvents []cloudevents.Event
 	Reactors   map[string]func(event cloudevents.Event) error
+	lock       sync.Mutex
 }
 
 // SendEvent fakes the sending of CloudEvents
@@ -27,6 +29,8 @@ func (es *EventSender) Send(ctx context.Context, event cloudevents.Event) error 
 			}
 		}
 	}
+	es.lock.Lock()
+	defer es.lock.Unlock()
 	es.SentEvents = append(es.SentEvents, event)
 	return nil
 }

@@ -119,6 +119,9 @@ func (s *ShipyardControllerHandler) GetOpenTriggeredEventsWithContext(ctx contex
 			return nil, err
 		}
 		req, err := http.NewRequestWithContext(ctx, "GET", url.String(), nil)
+		if err != nil {
+			return nil, err
+		}
 		req.Header.Set("Content-Type", "application/json")
 		addAuthHeader(req, s)
 

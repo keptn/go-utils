@@ -192,6 +192,9 @@ func (a *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
 // GetMetadataWithContext retrieve keptn MetaData information
 func (a *APIHandler) GetMetadataWithContext(ctx context.Context) (*models.Metadata, *models.Error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", a.Scheme+"://"+a.getBaseURL()+v1MetadataPath, nil)
+	if err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, a)
 
