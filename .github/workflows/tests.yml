@@ -12,7 +12,7 @@ jobs:
       GOPROXY: "https://proxy.golang.org"
     steps:
       - name: Install Go
-        uses: actions/setup-go@v2.1.4
+        uses: actions/setup-go@v2.1.5
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
