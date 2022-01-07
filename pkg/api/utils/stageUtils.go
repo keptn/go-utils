@@ -42,9 +42,11 @@ func NewStageHandler(baseURL string) *StageHandler {
 // and sends all requests directly to the configuration-service
 func NewAuthenticatedStageHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *StageHandler {
 	if httpClient == nil {
-		httpClient = &http.Client{}
+		httpClient = &http.Client{
+			Transport: getInstrumentedClientTransport(getClientTransport()),
+		}
 	}
-	httpClient.Transport = getInstrumentedClientTransport()
+	httpClient.Transport = getInstrumentedClientTransport(httpClient.Transport)
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
 

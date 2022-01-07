@@ -61,9 +61,10 @@ func NewLogHandler(baseURL string) *LogHandler {
 
 func NewAuthenticatedLogHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *LogHandler {
 	if httpClient == nil {
-		httpClient = &http.Client{}
+		httpClient = &http.Client{
+			Transport: getClientTransport(),
+		}
 	}
-	httpClient.Transport = getClientTransport()
 
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")

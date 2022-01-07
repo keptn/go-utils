@@ -41,7 +41,7 @@ func NewSecretHandler(baseURL string) *SecretHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: getInstrumentedClientTransport()},
+		HTTPClient: &http.Client{Transport: getInstrumentedClientTransport(getClientTransport())},
 		Scheme:     "http",
 	}
 }
@@ -50,9 +50,11 @@ func NewSecretHandler(baseURL string) *SecretHandler {
 // and sends all requests directly to the secret-service
 func NewAuthenticatedSecretHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SecretHandler {
 	if httpClient == nil {
-		httpClient = &http.Client{}
+		httpClient = &http.Client{
+			Transport: getInstrumentedClientTransport(getClientTransport()),
+		}
 	}
-	httpClient.Transport = getInstrumentedClientTransport()
+	httpClient.Transport = getInstrumentedClientTransport(httpClient.Transport)
 
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")

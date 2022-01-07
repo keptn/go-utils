@@ -30,8 +30,8 @@ func getClientTransport() *http.Transport {
 
 // Wraps the provided http.RoundTripper with one that
 // starts a span and injects the span context into the outbound request headers.
-func getInstrumentedClientTransport() *otelhttp.Transport {
-	return otelhttp.NewTransport(getClientTransport())
+func getInstrumentedClientTransport(base http.RoundTripper) *otelhttp.Transport {
+	return otelhttp.NewTransport(base)
 }
 
 func putWithEventContext(uri string, data []byte, api APIService) (*models.EventContext, *models.Error) {

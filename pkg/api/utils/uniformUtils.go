@@ -36,9 +36,11 @@ func NewUniformHandler(baseURL string) *UniformHandler {
 
 func NewAuthenticatedUniformHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *UniformHandler {
 	if httpClient == nil {
-		httpClient = &http.Client{}
+		httpClient = &http.Client{
+			Transport: getInstrumentedClientTransport(getClientTransport()),
+		}
 	}
-	httpClient.Transport = getClientTransport()
+
 	baseURL = httputils.TrimHTTPScheme(baseURL)
 	baseURL = strings.TrimRight(baseURL, "/")
 

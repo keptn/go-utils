@@ -47,7 +47,7 @@ func NewEventHandler(baseURL string) *EventHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: getInstrumentedClientTransport()},
+		HTTPClient: &http.Client{Transport: getInstrumentedClientTransport(getClientTransport())},
 		Scheme:     "http",
 	}
 }
@@ -57,9 +57,11 @@ const mongodbDatastoreServiceBaseUrl = "mongodb-datastore"
 // NewAuthenticatedEventHandler returns a new EventHandler that authenticates at the endpoint via the provided token
 func NewAuthenticatedEventHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *EventHandler {
 	if httpClient == nil {
-		httpClient = &http.Client{}
+		httpClient = &http.Client{
+			Transport: getInstrumentedClientTransport(getClientTransport()),
+		}
 	}
-	httpClient.Transport = getInstrumentedClientTransport()
+	httpClient.Transport = getInstrumentedClientTransport(httpClient.Transport)
 
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
