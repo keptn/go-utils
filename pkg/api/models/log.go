@@ -9,6 +9,7 @@ type LogEntry struct {
 	KeptnContext  string    `json:"shkeptncontext" bson:"shkeptncontext"`
 	Task          string    `json:"task" bson:"task"`
 	TriggeredID   string    `json:"triggeredid" bson:"triggeredid"`
+	GitCommitID   string    `json:"gitcommitid" bson:"gitcommitid"`
 }
 
 type GetLogsParams struct {

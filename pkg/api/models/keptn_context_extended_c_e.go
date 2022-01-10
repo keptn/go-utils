@@ -43,6 +43,9 @@ type KeptnContextExtendedCE struct {
 	// triggeredid
 	Triggeredid string `json:"triggeredid,omitempty"`
 
+	// gitcommitid
+	Gitcommitid string `json:"gitcommitid,omitempty"`
+
 	// type
 	// Required: true
 	Type *string `json:"type"`

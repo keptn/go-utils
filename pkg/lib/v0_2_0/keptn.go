@@ -3,13 +3,14 @@ package v0_2_0
 import (
 	"errors"
 	"fmt"
+	"log"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/config"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"gopkg.in/yaml.v3"
-	"log"
 )
 
 type Keptn struct {
@@ -162,7 +163,7 @@ func (k *Keptn) sendEventWithBaseEventContext(data keptn.EventProperties, source
 	return ce.ID(), nil
 }
 
-// createCloudEventWithContextAndPayload initializes a new CloudEvent and ensures that context attributes such as the triggeredID, keptnContext,
+// createCloudEventWithContextAndPayload initializes a new CloudEvent and ensures that context attributes such as the triggeredID, keptnContext, gitcommitid
 // as well as project, stage, service and labels are included in the resulting event
 func (k *Keptn) createCloudEventWithContextAndPayload(outEventType string, keptnContext interface{}, source string, data keptn.EventProperties) (*cloudevents.Event, error) {
 	ce := cloudevents.NewEvent()
@@ -178,6 +179,11 @@ func (k *Keptn) createCloudEventWithContextAndPayload(outEventType string, keptn
 	// if available, add the keptnspecversion extension to the CloudEvent context
 	if keptnSpecVersion, err := k.CloudEvent.Context.GetExtension(keptnSpecVersionCEExtension); err == nil && keptnSpecVersion != "" {
 		ce.SetExtension(keptnSpecVersionCEExtension, keptnSpecVersion)
+	}
+
+	// if available, add the gitcommitid extension to the CloudEvent context
+	if keptnGitCommitID, err := k.CloudEvent.Context.GetExtension(keptnGitCommitIDCEExtension); err == nil && keptnGitCommitID != "" {
+		ce.SetExtension(keptnGitCommitIDCEExtension, keptnGitCommitID)
 	}
 
 	var eventData keptn.EventProperties
