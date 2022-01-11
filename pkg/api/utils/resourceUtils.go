@@ -149,16 +149,9 @@ func (r *ResourceHandler) CreateStageResources(project string, stage string, res
 }
 
 // GetStageResource retrieves a stage resource from the configuration service
-func (r *ResourceHandler) GetStageResource(project string, stage string, resourceURI string, commitID string) (*models.Resource, error) {
+func (r *ResourceHandler) GetStageResource(project string, stage string, resourceURI string) (*models.Resource, error) {
 	buildURI := r.Scheme + "://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/resource/" + url.QueryEscape(resourceURI)
 	return r.getResource(r.appendOptions(buildURI))
-}
-
-func (r *ResourceHandler) appendOptions(buildURI string) string {
-	if r.Opts != nil && r.Opts.CommitID != "" {
-		buildURI = buildURI + "?commitId=" + r.Opts.CommitID
-	}
-	return buildURI
 }
 
 // UpdateStageResource updates a stage resource
@@ -433,4 +426,11 @@ func (r *ResourceHandler) getAllResources(u *url.URL) ([]*models.Resource, error
 	}
 
 	return resources, nil
+}
+
+func (r *ResourceHandler) appendOptions(buildURI string) string {
+	if r.Opts != nil && r.Opts.CommitID != "" {
+		buildURI = buildURI + "?commitId=" + r.Opts.CommitID
+	}
+	return buildURI
 }
