@@ -28,6 +28,7 @@ type resourceRequest struct {
 	Resources []*models.Resource `json:"resources"`
 }
 
+// GetOptions specifies options to be used in get calls
 type GetOptions struct {
 	CommitID string
 }
