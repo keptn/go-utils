@@ -369,21 +369,21 @@ func (r *ResourceHandler) deleteResource(uri string) error {
 
 // GetAllStageResources returns a list of all resources.
 func (r *ResourceHandler) GetAllStageResources(project string, stage string) ([]*models.Resource, error) {
-	myUrl, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + "/v1/project/" + project + "/stage/" + stage + "/resource")
+	myURL, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + "/v1/project/" + project + "/stage/" + stage + "/resource")
 	if err != nil {
 		return nil, err
 	}
-	return r.getAllResources(myUrl)
+	return r.getAllResources(myURL)
 }
 
 // GetAllServiceResources returns a list of all resources.
 func (r *ResourceHandler) GetAllServiceResources(project string, stage string, service string) ([]*models.Resource, error) {
-	myUrl, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + "/v1/project/" + project + "/stage/" + stage +
+	myURL, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + "/v1/project/" + project + "/stage/" + stage +
 		"/service/" + service + "/resource/")
 	if err != nil {
 		return nil, err
 	}
-	return r.getAllResources(myUrl)
+	return r.getAllResources(myURL)
 }
 
 func (r *ResourceHandler) getAllResources(u *url.URL) ([]*models.Resource, error) {
