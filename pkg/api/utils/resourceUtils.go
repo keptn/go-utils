@@ -443,7 +443,7 @@ func (r *ResourceHandler) getAllResources(u *url.URL) ([]*models.Resource, error
 
 func (r *ResourceHandler) appendOptions(buildURI string) string {
 	if r.Opts != nil && r.Opts.CommitID != "" {
-		buildURI = buildURI + "?commitId=" + r.Opts.CommitID
+		buildURI = buildURI + "?commitID=" + r.Opts.CommitID
 	}
 	return buildURI
 }
