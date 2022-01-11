@@ -14,10 +14,10 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 )
 
-const PathToResource = "/resource"
-const PathToService = "/service"
-const PathToStage = "/stage"
-const PathToProject = v1ProjectPath + "/"
+const pathToResource = "/resource"
+const pathToService = "/service"
+const pathToStage = "/stage"
+const pathToProject = v1ProjectPath + "/"
 
 // ResourceHandler handles resources
 type ResourceHandler struct {
@@ -133,90 +133,90 @@ func (r *ResourceHandler) CreateResources(project string, stage string, service 
 	}
 
 	if project != "" && stage != "" && service != "" {
-		return postWithEventContext(r.Scheme+"://"+r.BaseURL+PathToProject+project+PathToStage+"/"+stage+PathToService+"/"+service+PathToResource, requestStr, r)
+		return postWithEventContext(r.Scheme+"://"+r.BaseURL+pathToProject+project+pathToStage+"/"+stage+pathToService+"/"+service+pathToResource, requestStr, r)
 	} else if project != "" && stage != "" && service == "" {
-		return postWithEventContext(r.Scheme+"://"+r.BaseURL+PathToProject+project+PathToStage+"/"+stage+PathToResource, requestStr, r)
+		return postWithEventContext(r.Scheme+"://"+r.BaseURL+pathToProject+project+pathToStage+"/"+stage+pathToResource, requestStr, r)
 	} else {
-		return postWithEventContext(r.Scheme+"://"+r.BaseURL+PathToProject+project+PathToResource, requestStr, r)
+		return postWithEventContext(r.Scheme+"://"+r.BaseURL+pathToProject+project+pathToResource, requestStr, r)
 	}
 }
 
 // CreateProjectResources creates multiple project resources
 func (r *ResourceHandler) CreateProjectResources(project string, resources []*models.Resource) (string, error) {
-	return r.createResources(r.Scheme+"://"+r.BaseURL+PathToProject+project+PathToResource, resources)
+	return r.createResources(r.Scheme+"://"+r.BaseURL+pathToProject+project+pathToResource, resources)
 }
 
 // GetProjectResource retrieves a project resource from the configuration service
 func (r *ResourceHandler) GetProjectResource(project string, resourceURI string) (*models.Resource, error) {
-	buildURI := r.Scheme + "://" + r.BaseURL + PathToProject + project + PathToResource + "/" + url.QueryEscape(resourceURI)
+	buildURI := r.Scheme + "://" + r.BaseURL + pathToProject + project + pathToResource + "/" + url.QueryEscape(resourceURI)
 	return r.getResource(r.appendOptions(buildURI))
 }
 
 // UpdateProjectResource updates a project resource
 func (r *ResourceHandler) UpdateProjectResource(project string, resource *models.Resource) (string, error) {
-	return r.updateResource(r.Scheme+"://"+r.BaseURL+PathToProject+project+PathToResource+"/"+url.QueryEscape(*resource.ResourceURI), resource)
+	return r.updateResource(r.Scheme+"://"+r.BaseURL+pathToProject+project+pathToResource+"/"+url.QueryEscape(*resource.ResourceURI), resource)
 }
 
 // DeleteProjectResource deletes a project resource
 func (r *ResourceHandler) DeleteProjectResource(project string, resourceURI string) error {
-	return r.deleteResource(r.Scheme + "://" + r.BaseURL + PathToProject + project + PathToResource + "/" + url.QueryEscape(resourceURI))
+	return r.deleteResource(r.Scheme + "://" + r.BaseURL + pathToProject + project + pathToResource + "/" + url.QueryEscape(resourceURI))
 }
 
 // UpdateProjectResources updates multiple project resources
 func (r *ResourceHandler) UpdateProjectResources(project string, resources []*models.Resource) (string, error) {
-	return r.updateResources(r.Scheme+"://"+r.BaseURL+PathToProject+project+PathToResource, resources)
+	return r.updateResources(r.Scheme+"://"+r.BaseURL+pathToProject+project+pathToResource, resources)
 }
 
 // CreateStageResources creates a stage resource
 func (r *ResourceHandler) CreateStageResources(project string, stage string, resources []*models.Resource) (string, error) {
-	return r.createResources(r.Scheme+"://"+r.BaseURL+PathToProject+project+PathToStage+"/"+stage+PathToResource, resources)
+	return r.createResources(r.Scheme+"://"+r.BaseURL+pathToProject+project+pathToStage+"/"+stage+pathToResource, resources)
 }
 
 // GetStageResource retrieves a stage resource from the configuration service
 func (r *ResourceHandler) GetStageResource(project string, stage string, resourceURI string) (*models.Resource, error) {
-	buildURI := r.Scheme + "://" + r.BaseURL + PathToProject + project + PathToStage + "/" + stage + PathToResource + "/" + url.QueryEscape(resourceURI)
+	buildURI := r.Scheme + "://" + r.BaseURL + pathToProject + project + pathToStage + "/" + stage + pathToResource + "/" + url.QueryEscape(resourceURI)
 	return r.getResource(r.appendOptions(buildURI))
 }
 
 // UpdateStageResource updates a stage resource
 func (r *ResourceHandler) UpdateStageResource(project string, stage string, resource *models.Resource) (string, error) {
-	return r.updateResource(r.Scheme+"://"+r.BaseURL+PathToProject+project+PathToStage+"/"+stage+PathToResource+"/"+url.QueryEscape(*resource.ResourceURI), resource)
+	return r.updateResource(r.Scheme+"://"+r.BaseURL+pathToProject+project+pathToStage+"/"+stage+pathToResource+"/"+url.QueryEscape(*resource.ResourceURI), resource)
 }
 
 // UpdateStageResources updates multiple stage resources
 func (r *ResourceHandler) UpdateStageResources(project string, stage string, resources []*models.Resource) (string, error) {
-	return r.updateResources(r.Scheme+"://"+r.BaseURL+PathToProject+project+PathToStage+"/"+stage+PathToResource, resources)
+	return r.updateResources(r.Scheme+"://"+r.BaseURL+pathToProject+project+pathToStage+"/"+stage+pathToResource, resources)
 }
 
 // DeleteStageResource deletes a stage resource
 func (r *ResourceHandler) DeleteStageResource(project string, stage string, resourceURI string) error {
-	return r.deleteResource(r.Scheme + "://" + r.BaseURL + PathToProject + project + PathToStage + "/" + stage + PathToResource + "/" + url.QueryEscape(resourceURI))
+	return r.deleteResource(r.Scheme + "://" + r.BaseURL + pathToProject + project + pathToStage + "/" + stage + pathToResource + "/" + url.QueryEscape(resourceURI))
 }
 
 // CreateServiceResources creates a service resource
 func (r *ResourceHandler) CreateServiceResources(project string, stage string, service string, resources []*models.Resource) (string, error) {
-	return r.createResources(r.Scheme+"://"+r.BaseURL+PathToProject+project+PathToStage+"/"+stage+PathToService+"/"+service+PathToResource, resources)
+	return r.createResources(r.Scheme+"://"+r.BaseURL+pathToProject+project+pathToStage+"/"+stage+pathToService+"/"+service+pathToResource, resources)
 }
 
 // GetServiceResource retrieves a service resource from the configuration service
 func (r *ResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
-	buildURI := r.Scheme + "://" + r.BaseURL + PathToProject + project + PathToStage + "/" + stage + PathToService + "/" + url.QueryEscape(service) + PathToResource + "/" + url.QueryEscape(resourceURI)
+	buildURI := r.Scheme + "://" + r.BaseURL + pathToProject + project + pathToStage + "/" + stage + pathToService + "/" + url.QueryEscape(service) + pathToResource + "/" + url.QueryEscape(resourceURI)
 	return r.getResource(r.appendOptions(buildURI))
 }
 
 // UpdateServiceResource updates a service resource
 func (r *ResourceHandler) UpdateServiceResource(project string, stage string, service string, resource *models.Resource) (string, error) {
-	return r.updateResource(r.Scheme+"://"+r.BaseURL+PathToProject+project+PathToStage+"/"+stage+PathToService+"/"+url.QueryEscape(service)+PathToResource+"/"+url.QueryEscape(*resource.ResourceURI), resource)
+	return r.updateResource(r.Scheme+"://"+r.BaseURL+pathToProject+project+pathToStage+"/"+stage+pathToService+"/"+url.QueryEscape(service)+pathToResource+"/"+url.QueryEscape(*resource.ResourceURI), resource)
 }
 
 // UpdateServiceResources updates multiple service resources
 func (r *ResourceHandler) UpdateServiceResources(project string, stage string, service string, resources []*models.Resource) (string, error) {
-	return r.updateResources(r.Scheme+"://"+r.BaseURL+PathToProject+project+PathToStage+"/"+stage+PathToService+"/"+url.QueryEscape(service)+PathToResource, resources)
+	return r.updateResources(r.Scheme+"://"+r.BaseURL+pathToProject+project+pathToStage+"/"+stage+pathToService+"/"+url.QueryEscape(service)+pathToResource, resources)
 }
 
 // DeleteServiceResource deletes a service resource
 func (r *ResourceHandler) DeleteServiceResource(project string, stage string, service string, resourceURI string) error {
-	return r.deleteResource(r.Scheme + "://" + r.BaseURL + PathToProject + project + PathToStage + "/" + stage + PathToService + "/" + url.QueryEscape(service) + PathToResource + "/" + url.QueryEscape(resourceURI))
+	return r.deleteResource(r.Scheme + "://" + r.BaseURL + pathToProject + project + pathToStage + "/" + stage + pathToService + "/" + url.QueryEscape(service) + pathToResource + "/" + url.QueryEscape(resourceURI))
 }
 
 func (r *ResourceHandler) createResources(uri string, resources []*models.Resource) (string, error) {
@@ -375,7 +375,7 @@ func (r *ResourceHandler) deleteResource(uri string) error {
 
 // GetAllStageResources returns a list of all resources.
 func (r *ResourceHandler) GetAllStageResources(project string, stage string) ([]*models.Resource, error) {
-	myURL, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + PathToProject + project + PathToStage + "/" + stage + PathToResource)
+	myURL, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + pathToProject + project + pathToStage + "/" + stage + pathToResource)
 	if err != nil {
 		return nil, err
 	}
@@ -384,8 +384,8 @@ func (r *ResourceHandler) GetAllStageResources(project string, stage string) ([]
 
 // GetAllServiceResources returns a list of all resources.
 func (r *ResourceHandler) GetAllServiceResources(project string, stage string, service string) ([]*models.Resource, error) {
-	myURL, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + PathToProject + project + PathToStage + "/" + stage +
-		PathToService + "/" + service + PathToResource + "/")
+	myURL, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + pathToProject + project + pathToStage + "/" + stage +
+		pathToService + "/" + service + pathToResource + "/")
 	if err != nil {
 		return nil, err
 	}
