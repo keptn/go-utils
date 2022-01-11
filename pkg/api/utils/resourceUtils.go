@@ -122,6 +122,12 @@ func (r *ResourceHandler) GetProjectResource(project string, resourceURI string)
 	return r.getResource(r.Scheme + "://" + r.BaseURL + "/v1/project/" + project + "/resource/" + url.QueryEscape(resourceURI))
 }
 
+// GetProjectResourceByQuery retrieves a project resource from the configuration service specifying query values aka map of string query param
+func (r *ResourceHandler) GetProjectResourceByQuery(project string, stage string, service string, resourceURI string, query url.Values) (*models.Resource, error) {
+	buildURI := r.Scheme + "://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/service/" + url.QueryEscape(service) + "/resource/" + url.QueryEscape(resourceURI)
+	return r.getResource(addQuery(buildURI, query))
+}
+
 // UpdateProjectResource updates a project resource
 func (r *ResourceHandler) UpdateProjectResource(project string, resource *models.Resource) (string, error) {
 	return r.updateResource(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/resource/"+url.QueryEscape(*resource.ResourceURI), resource)
@@ -147,6 +153,20 @@ func (r *ResourceHandler) GetStageResource(project string, stage string, resourc
 	return r.getResource(r.Scheme + "://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/resource/" + url.QueryEscape(resourceURI))
 }
 
+// GetStageResourceByQuery retrieves a stage resource from the configuration service specifying query values aka map of string query param
+func (r *ResourceHandler) GetStageResourceByQuery(project string, stage string, resourceURI string, query url.Values) (*models.Resource, error) {
+	buildURI := r.Scheme + "://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/resource/" + url.QueryEscape(resourceURI)
+	return r.getResource(addQuery(buildURI, query))
+}
+
+func (r *ResourceHandler) GetStageResourceByCommitID(project string, stage string, resourceURI string, commitID string) (*models.Resource, error) {
+	buildURI := r.Scheme + "://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/resource/" + url.QueryEscape(resourceURI)
+	if commitID != "" {
+		buildURI = buildURI + "?commitId=" + commitID
+	}
+	return r.getResource(buildURI)
+}
+
 // UpdateStageResource updates a stage resource
 func (r *ResourceHandler) UpdateStageResource(project string, stage string, resource *models.Resource) (string, error) {
 	return r.updateResource(r.Scheme+"://"+r.BaseURL+"/v1/project/"+project+"/stage/"+stage+"/resource/"+url.QueryEscape(*resource.ResourceURI), resource)
@@ -170,6 +190,12 @@ func (r *ResourceHandler) CreateServiceResources(project string, stage string, s
 // GetServiceResource retrieves a service resource from the configuration service
 func (r *ResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
 	return r.getResource(r.Scheme + "://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/service/" + url.QueryEscape(service) + "/resource/" + url.QueryEscape(resourceURI))
+}
+
+// GetServiceResourceByQuery retrieves a service resource from the configuration service specifying query values aka map of string query param
+func (r *ResourceHandler) GetServiceResourceByQuery(project string, stage string, service string, resourceURI string, query url.Values) (*models.Resource, error) {
+	buildURI := r.Scheme + "://" + r.BaseURL + "/v1/project/" + project + "/stage/" + stage + "/service/" + url.QueryEscape(service) + "/resource/" + url.QueryEscape(resourceURI)
+	return r.getResource(addQuery(buildURI, query))
 }
 
 // UpdateServiceResource updates a service resource
@@ -418,4 +444,11 @@ func (r *ResourceHandler) getAllResources(u *url.URL) ([]*models.Resource, error
 	}
 
 	return resources, nil
+}
+
+func addQuery(path string, query url.Values) string {
+	if query != nil {
+		path = path + "?" + query.Encode()
+	}
+	return path
 }
