@@ -129,8 +129,8 @@ func (r *ResourceHandler) CreateProjectResources(project string, resources []*mo
 }
 
 // GetProjectResource retrieves a project resource from the configuration service
-func (r *ResourceHandler) GetProjectResource(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
-	buildURI := r.Scheme + "://" + r.BaseURL + PathToProject + project + PathToStage + "/" + stage + PathToService + "/" + url.QueryEscape(service) + PathToResource + "/" + url.QueryEscape(resourceURI)
+func (r *ResourceHandler) GetProjectResource(project string, resourceURI string) (*models.Resource, error) {
+	buildURI := r.Scheme + "://" + r.BaseURL + PathToProject + project + PathToResource + "/" + url.QueryEscape(resourceURI)
 	return r.getResource(r.appendOptions(buildURI))
 }
 
