@@ -85,7 +85,7 @@ func (s *StageHandler) CreateStage(project string, stageName string) (*models.Ev
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(s.Scheme+"://"+s.BaseURL+"/v1/project/"+project+"/stage", body, s)
+	return postWithEventContext(s.Scheme+"://"+s.BaseURL+PathToProject+project+PathToStage, body, s)
 }
 
 // GetAllStages returns a list of all stages.
@@ -96,7 +96,7 @@ func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 
 	nextPageKey := ""
 	for {
-		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + "/v1/project/" + project + "/stage")
+		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + PathToProject + project + PathToStage)
 		if err != nil {
 			return nil, err
 		}
