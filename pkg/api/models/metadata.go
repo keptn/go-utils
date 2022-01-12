@@ -21,6 +21,7 @@ type Metadata struct {
 	Namespace string `json:"namespace,omitempty"`
 }
 
+// ToJSON converts object to JSON string
 func (m *Metadata) ToJSON() ([]byte, error) {
 	if m == nil {
 		return nil, nil
@@ -28,6 +29,7 @@ func (m *Metadata) ToJSON() ([]byte, error) {
 	return json.Marshal(m)
 }
 
+// FromJSON converts JSON string to object
 func (m *Metadata) FromJSON(b []byte) error {
 	var res Metadata
 	if err := json.Unmarshal(b, &res); err != nil {

@@ -38,6 +38,7 @@ type CreateLogsRequest struct {
 	Logs []LogEntry `form:"logs" json:"logs"`
 }
 
+// ToJSON converts object to JSON string
 func (l *LogEntry) ToJSON() ([]byte, error) {
 	if l == nil {
 		return nil, nil
@@ -45,6 +46,7 @@ func (l *LogEntry) ToJSON() ([]byte, error) {
 	return json.Marshal(l)
 }
 
+// FromJSON converts JSON string to object
 func (l *LogEntry) FromJSON(b []byte) error {
 	var res LogEntry
 	if err := json.Unmarshal(b, &res); err != nil {
@@ -54,6 +56,7 @@ func (l *LogEntry) FromJSON(b []byte) error {
 	return nil
 }
 
+// ToJSON converts object to JSON string
 func (l *GetLogsResponse) ToJSON() ([]byte, error) {
 	if l == nil {
 		return nil, nil
@@ -61,6 +64,7 @@ func (l *GetLogsResponse) ToJSON() ([]byte, error) {
 	return json.Marshal(l)
 }
 
+// FromJSON converts JSON string to object
 func (l *GetLogsResponse) FromJSON(b []byte) error {
 	var res GetLogsResponse
 	if err := json.Unmarshal(b, &res); err != nil {
@@ -70,6 +74,7 @@ func (l *GetLogsResponse) FromJSON(b []byte) error {
 	return nil
 }
 
+// ToJSON converts object to JSON string
 func (l *CreateLogsRequest) ToJSON() ([]byte, error) {
 	if l == nil {
 		return nil, nil
@@ -77,6 +82,7 @@ func (l *CreateLogsRequest) ToJSON() ([]byte, error) {
 	return json.Marshal(l)
 }
 
+// FromJSON converts JSON string to object
 func (l *CreateLogsRequest) FromJSON(b []byte) error {
 	var res CreateLogsRequest
 	if err := json.Unmarshal(b, &res); err != nil {

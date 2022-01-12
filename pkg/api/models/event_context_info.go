@@ -15,6 +15,7 @@ type EventContextInfo struct {
 	Time string `json:"time,omitempty"`
 }
 
+// ToJSON converts object to JSON string
 func (ec *EventContextInfo) ToJSON() ([]byte, error) {
 	if ec == nil {
 		return nil, nil
@@ -22,6 +23,7 @@ func (ec *EventContextInfo) ToJSON() ([]byte, error) {
 	return json.Marshal(ec)
 }
 
+// FromJSON converts JSON string to object
 func (ec *EventContextInfo) FromJSON(b []byte) error {
 	var res EventContextInfo
 	if err := json.Unmarshal(b, &res); err != nil {

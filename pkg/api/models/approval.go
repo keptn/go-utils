@@ -21,6 +21,7 @@ type Approval struct {
 	Time string `json:"time,omitempty"`
 }
 
+// ToJSON converts object to JSON string
 func (a *Approval) ToJSON() ([]byte, error) {
 	if a == nil {
 		return nil, nil
@@ -28,6 +29,7 @@ func (a *Approval) ToJSON() ([]byte, error) {
 	return json.Marshal(a)
 }
 
+// FromJSON converts JSON string to object
 func (a *Approval) FromJSON(b []byte) error {
 	var res Approval
 	if err := json.Unmarshal(b, &res); err != nil {

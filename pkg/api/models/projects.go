@@ -18,6 +18,7 @@ type Projects struct {
 	TotalCount float64 `json:"totalCount,omitempty"`
 }
 
+// ToJSON converts object to JSON string
 func (p *Projects) ToJSON() ([]byte, error) {
 	if p == nil {
 		return nil, nil
@@ -25,6 +26,7 @@ func (p *Projects) ToJSON() ([]byte, error) {
 	return json.Marshal(p)
 }
 
+// FromJSON converts JSON string to object
 func (p *Projects) FromJSON(b []byte) error {
 	var res Projects
 	if err := json.Unmarshal(b, &res); err != nil {

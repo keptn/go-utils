@@ -17,6 +17,7 @@ type Evaluation struct {
 	End string `json:"end,omitempty"`
 }
 
+// ToJSON converts object to JSON string
 func (e *Evaluation) ToJSON() ([]byte, error) {
 	if e == nil {
 		return nil, nil
@@ -24,6 +25,7 @@ func (e *Evaluation) ToJSON() ([]byte, error) {
 	return json.Marshal(e)
 }
 
+// FromJSON converts JSON string to object
 func (e *Evaluation) FromJSON(b []byte) error {
 	var res Evaluation
 	if err := json.Unmarshal(b, &res); err != nil {

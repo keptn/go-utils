@@ -21,6 +21,7 @@ type Service struct {
 	ServiceName string `json:"serviceName,omitempty"`
 }
 
+// ToJSON converts object to JSON string
 func (s *Service) ToJSON() ([]byte, error) {
 	if s == nil {
 		return nil, nil
@@ -28,6 +29,7 @@ func (s *Service) ToJSON() ([]byte, error) {
 	return json.Marshal(s)
 }
 
+// FromJSON converts JSON string to object
 func (s *Service) FromJSON(b []byte) error {
 	var res Service
 	if err := json.Unmarshal(b, &res); err != nil {

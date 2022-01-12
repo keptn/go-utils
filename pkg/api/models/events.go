@@ -18,6 +18,7 @@ type Events struct {
 	TotalCount float64 `json:"totalCount,omitempty"`
 }
 
+// ToJSON converts object to JSON string
 func (e *Events) ToJSON() ([]byte, error) {
 	if e == nil {
 		return nil, nil
@@ -25,6 +26,7 @@ func (e *Events) ToJSON() ([]byte, error) {
 	return json.Marshal(e)
 }
 
+// FromJSON converts JSON string to object
 func (e *Events) FromJSON(b []byte) error {
 	var res Events
 	if err := json.Unmarshal(b, &res); err != nil {

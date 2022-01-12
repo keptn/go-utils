@@ -16,6 +16,7 @@ type Resource struct {
 	ResourceURI *string `json:"resourceURI"`
 }
 
+// ToJSON converts object to JSON string
 func (r *Resource) ToJSON() ([]byte, error) {
 	if r == nil {
 		return nil, nil
@@ -23,6 +24,7 @@ func (r *Resource) ToJSON() ([]byte, error) {
 	return json.Marshal(r)
 }
 
+// FromJSON converts JSON string to object
 func (r *Resource) FromJSON(b []byte) error {
 	var res Resource
 	if err := json.Unmarshal(b, &res); err != nil {

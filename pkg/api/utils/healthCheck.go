@@ -11,6 +11,7 @@ type StatusBody struct {
 	Status string `json:"status"`
 }
 
+// ToJSON converts object to JSON string
 func (s *StatusBody) ToJSON() ([]byte, error) {
 	if s == nil {
 		return nil, nil

@@ -23,6 +23,7 @@ type CreateProject struct {
 	Shipyard *string `json:"shipyard"`
 }
 
+// ToJSON converts object to JSON string
 func (c *CreateProject) ToJSON() ([]byte, error) {
 	if c == nil {
 		return nil, nil
@@ -30,6 +31,7 @@ func (c *CreateProject) ToJSON() ([]byte, error) {
 	return json.Marshal(c)
 }
 
+// FromJSON converts JSON string to object
 func (c *CreateProject) FromJSON(b []byte) error {
 	var res CreateProject
 	if err := json.Unmarshal(b, &res); err != nil {

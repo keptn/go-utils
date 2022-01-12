@@ -31,6 +31,7 @@ const configurationServiceBaseUrl = "configuration-service"
 
 var ResourceNotFoundError = errors.New("Resource not found")
 
+// ToJSON converts object to JSON string
 func (r *resourceRequest) ToJSON() ([]byte, error) {
 	if r == nil {
 		return nil, nil

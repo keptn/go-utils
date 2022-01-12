@@ -18,6 +18,7 @@ type Resources struct {
 	TotalCount float64 `json:"totalCount,omitempty"`
 }
 
+// ToJSON converts object to JSON string
 func (r *Resources) ToJSON() ([]byte, error) {
 	if r == nil {
 		return nil, nil
@@ -25,6 +26,7 @@ func (r *Resources) ToJSON() ([]byte, error) {
 	return json.Marshal(r)
 }
 
+// FromJSON converts JSON string to object
 func (r *Resources) FromJSON(b []byte) error {
 	var res Resources
 	if err := json.Unmarshal(b, &res); err != nil {

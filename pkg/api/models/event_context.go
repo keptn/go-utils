@@ -10,6 +10,7 @@ type EventContext struct {
 	KeptnContext *string `json:"keptnContext"`
 }
 
+// ToJSON converts object to JSON string
 func (ec *EventContext) ToJSON() ([]byte, error) {
 	if ec == nil {
 		return nil, nil
@@ -17,6 +18,7 @@ func (ec *EventContext) ToJSON() ([]byte, error) {
 	return json.Marshal(ec)
 }
 
+// FromJSON converts JSON string to object
 func (ec *EventContext) FromJSON(b []byte) error {
 	var res EventContext
 	if err := json.Unmarshal(b, &res); err != nil {

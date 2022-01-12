@@ -18,6 +18,7 @@ type Stages struct {
 	TotalCount float64 `json:"totalCount,omitempty"`
 }
 
+// ToJSON converts object to JSON string
 func (s *Stages) ToJSON() ([]byte, error) {
 	if s == nil {
 		return nil, nil
@@ -25,6 +26,7 @@ func (s *Stages) ToJSON() ([]byte, error) {
 	return json.Marshal(s)
 }
 
+// FromJSON converts JSON string to object
 func (s *Stages) FromJSON(b []byte) error {
 	var res Stages
 	if err := json.Unmarshal(b, &res); err != nil {

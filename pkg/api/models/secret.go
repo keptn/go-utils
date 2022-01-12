@@ -31,6 +31,7 @@ type GetSecretsResponse struct {
 	Secrets []GetSecretResponseItem `json:"secrets" yaml:"secrets"`
 }
 
+// ToJSON converts object to JSON string
 func (s *Secret) ToJSON() ([]byte, error) {
 	if s == nil {
 		return nil, nil
@@ -38,6 +39,7 @@ func (s *Secret) ToJSON() ([]byte, error) {
 	return json.Marshal(s)
 }
 
+// FromJSON converts JSON string to object
 func (s *Secret) FromJSON(b []byte) error {
 	var res Secret
 	if err := json.Unmarshal(b, &res); err != nil {
@@ -47,6 +49,7 @@ func (s *Secret) FromJSON(b []byte) error {
 	return nil
 }
 
+// ToJSON converts object to JSON string
 func (s *GetSecretsResponse) ToJSON() ([]byte, error) {
 	if s == nil {
 		return nil, nil
@@ -54,6 +57,7 @@ func (s *GetSecretsResponse) ToJSON() ([]byte, error) {
 	return json.Marshal(s)
 }
 
+// FromJSON converts JSON string to object
 func (s *GetSecretsResponse) FromJSON(b []byte) error {
 	var res GetSecretsResponse
 	if err := json.Unmarshal(b, &res); err != nil {

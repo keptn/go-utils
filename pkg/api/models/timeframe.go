@@ -15,6 +15,7 @@ type Timeframe struct {
 	To string `json:"to,omitempty"`
 }
 
+// ToJSON converts object to JSON string
 func (t *Timeframe) ToJSON() ([]byte, error) {
 	if t == nil {
 		return nil, nil
@@ -22,6 +23,7 @@ func (t *Timeframe) ToJSON() ([]byte, error) {
 	return json.Marshal(t)
 }
 
+// FromJSON converts JSON string to object
 func (t *Timeframe) FromJSON(b []byte) error {
 	var res Timeframe
 	if err := json.Unmarshal(b, &res); err != nil {

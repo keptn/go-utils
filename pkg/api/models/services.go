@@ -18,6 +18,7 @@ type Services struct {
 	TotalCount float64 `json:"totalCount,omitempty"`
 }
 
+// ToJSON converts object to JSON string
 func (s *Services) ToJSON() ([]byte, error) {
 	if s == nil {
 		return nil, nil
@@ -25,6 +26,7 @@ func (s *Services) ToJSON() ([]byte, error) {
 	return json.Marshal(s)
 }
 
+// FromJSON converts JSON string to object
 func (s *Services) FromJSON(b []byte) error {
 	var res Services
 	if err := json.Unmarshal(b, &res); err != nil {
