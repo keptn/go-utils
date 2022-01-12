@@ -72,7 +72,7 @@ func NewResourceHandler(baseURL string) *ResourceHandler {
 	}
 }
 
-func (r *ResourceHandler) setOpts(options GetOptions) {
+func (r *ResourceHandler) SetOpts(options GetOptions) {
 	r.Opts = &options
 }
 
