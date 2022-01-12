@@ -58,6 +58,10 @@ func NewResourceHandler(baseURL string) *ResourceHandler {
 	}
 }
 
+func (r *ResourceHandler) setOpts(options GetOptions) {
+	r.Opts = &options
+}
+
 // NewAuthenticatedResourceHandler returns a new ResourceHandler that authenticates at the api via the provided token
 // and sends all requests directly to the configuration-service
 func NewAuthenticatedResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ResourceHandler {
