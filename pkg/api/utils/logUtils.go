@@ -2,11 +2,8 @@ package api
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/benbjohnson/clock"
-	"github.com/keptn/go-utils/pkg/api/models"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -14,6 +11,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/benbjohnson/clock"
+	"github.com/keptn/go-utils/pkg/api/models"
 )
 
 const v1LogPath = "/v1/log"
@@ -149,14 +149,13 @@ func (lh *LogHandler) GetLogs(params models.GetLogsParams) (*models.GetLogsRespo
 
 	if resp.StatusCode == http.StatusOK {
 		received := &models.GetLogsResponse{}
-		err := json.Unmarshal(body, received)
-		if err != nil {
+		if err := received.FromJSON(body); err != nil {
 			return nil, err
 		}
 		return received, nil
 	}
 	errResponse := &models.Error{}
-	if err := json.Unmarshal(body, errResponse); err != nil {
+	if err := errResponse.FromJSON(body); err != nil {
 		return nil, err
 	}
 	return nil, errors.New(errResponse.GetMessage())
@@ -210,7 +209,7 @@ func (lh *LogHandler) Flush() error {
 	createLogsPayload := &models.CreateLogsRequest{
 		Logs: lh.LogCache,
 	}
-	bodyStr, err := json.Marshal(createLogsPayload)
+	bodyStr, err := createLogsPayload.ToJSON()
 	if err != nil {
 		return err
 	}

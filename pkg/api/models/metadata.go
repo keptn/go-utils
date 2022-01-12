@@ -1,5 +1,7 @@
 package models
 
+import "encoding/json"
+
 // Metadata metadata
 type Metadata struct {
 
@@ -17,4 +19,20 @@ type Metadata struct {
 
 	// namespace
 	Namespace string `json:"namespace,omitempty"`
+}
+
+func (m *Metadata) ToJSON() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return json.Marshal(m)
+}
+
+func (m *Metadata) FromJSON(b []byte) error {
+	var res Metadata
+	if err := json.Unmarshal(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
 }

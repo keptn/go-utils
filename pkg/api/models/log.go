@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type LogEntry struct {
 	IntegrationID string    `json:"integrationid" bson:"integrationid"`
@@ -33,4 +36,52 @@ type LogFilter struct {
 type CreateLogsRequest struct {
 	// logs
 	Logs []LogEntry `form:"logs" json:"logs"`
+}
+
+func (l *LogEntry) ToJSON() ([]byte, error) {
+	if l == nil {
+		return nil, nil
+	}
+	return json.Marshal(l)
+}
+
+func (l *LogEntry) FromJSON(b []byte) error {
+	var res LogEntry
+	if err := json.Unmarshal(b, &res); err != nil {
+		return err
+	}
+	*l = res
+	return nil
+}
+
+func (l *GetLogsResponse) ToJSON() ([]byte, error) {
+	if l == nil {
+		return nil, nil
+	}
+	return json.Marshal(l)
+}
+
+func (l *GetLogsResponse) FromJSON(b []byte) error {
+	var res GetLogsResponse
+	if err := json.Unmarshal(b, &res); err != nil {
+		return err
+	}
+	*l = res
+	return nil
+}
+
+func (l *CreateLogsRequest) ToJSON() ([]byte, error) {
+	if l == nil {
+		return nil, nil
+	}
+	return json.Marshal(l)
+}
+
+func (l *CreateLogsRequest) FromJSON(b []byte) error {
+	var res CreateLogsRequest
+	if err := json.Unmarshal(b, &res); err != nil {
+		return err
+	}
+	*l = res
+	return nil
 }

@@ -1,5 +1,7 @@
 package models
 
+import "encoding/json"
+
 // Secret secret
 type Secret struct {
 
@@ -27,4 +29,36 @@ type GetSecretResponseItem struct {
 
 type GetSecretsResponse struct {
 	Secrets []GetSecretResponseItem `json:"secrets" yaml:"secrets"`
+}
+
+func (s *Secret) ToJSON() ([]byte, error) {
+	if s == nil {
+		return nil, nil
+	}
+	return json.Marshal(s)
+}
+
+func (s *Secret) FromJSON(b []byte) error {
+	var res Secret
+	if err := json.Unmarshal(b, &res); err != nil {
+		return err
+	}
+	*s = res
+	return nil
+}
+
+func (s *GetSecretsResponse) ToJSON() ([]byte, error) {
+	if s == nil {
+		return nil, nil
+	}
+	return json.Marshal(s)
+}
+
+func (s *GetSecretsResponse) FromJSON(b []byte) error {
+	var res GetSecretsResponse
+	if err := json.Unmarshal(b, &res); err != nil {
+		return err
+	}
+	*s = res
+	return nil
 }

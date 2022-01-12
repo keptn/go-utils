@@ -1,5 +1,7 @@
 package models
 
+import "encoding/json"
+
 // Timeframe timeframe
 type Timeframe struct {
 
@@ -11,4 +13,20 @@ type Timeframe struct {
 
 	// Evaluation end timestamp
 	To string `json:"to,omitempty"`
+}
+
+func (t *Timeframe) ToJSON() ([]byte, error) {
+	if t == nil {
+		return nil, nil
+	}
+	return json.Marshal(t)
+}
+
+func (t *Timeframe) FromJSON(b []byte) error {
+	var res Timeframe
+	if err := json.Unmarshal(b, &res); err != nil {
+		return err
+	}
+	*t = res
+	return nil
 }

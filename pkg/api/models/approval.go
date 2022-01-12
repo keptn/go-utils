@@ -1,5 +1,7 @@
 package models
 
+import "encoding/json"
+
 // Approval approval
 type Approval struct {
 
@@ -17,4 +19,20 @@ type Approval struct {
 
 	// Time of the event
 	Time string `json:"time,omitempty"`
+}
+
+func (a *Approval) ToJSON() ([]byte, error) {
+	if a == nil {
+		return nil, nil
+	}
+	return json.Marshal(a)
+}
+
+func (a *Approval) FromJSON(b []byte) error {
+	var res Approval
+	if err := json.Unmarshal(b, &res); err != nil {
+		return err
+	}
+	*a = res
+	return nil
 }

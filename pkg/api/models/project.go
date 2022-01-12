@@ -1,5 +1,7 @@
 package models
 
+import "encoding/json"
+
 // Project project
 type Project struct {
 
@@ -23,4 +25,20 @@ type Project struct {
 
 	// stages
 	Stages []*Stage `json:"stages"`
+}
+
+func (p *Project) ToJSON() ([]byte, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return json.Marshal(p)
+}
+
+func (p *Project) FromJSON(b []byte) error {
+	var res Project
+	if err := json.Unmarshal(b, &res); err != nil {
+		return err
+	}
+	*p = res
+	return nil
 }

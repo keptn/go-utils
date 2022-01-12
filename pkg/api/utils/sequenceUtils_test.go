@@ -1,12 +1,12 @@
 package api
 
 import (
-	"encoding/json"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAbortSequence(t *testing.T) {
@@ -55,7 +55,7 @@ func TestSequenceControlHandler_ControlSequence(t *testing.T) {
 				request.Body.Close()
 
 				params := &SequenceControlBody{}
-				json.Unmarshal(payload, params)
+				params.FromJSON(payload)
 				assert.Equal(t, "stg1", params.Stage)
 				assert.Equal(t, "stt1", params.State)
 			},

@@ -1,5 +1,7 @@
 package models
 
+import "encoding/json"
+
 // CreateProject create project
 type CreateProject struct {
 
@@ -19,4 +21,20 @@ type CreateProject struct {
 	// shipyard
 	// Required: true
 	Shipyard *string `json:"shipyard"`
+}
+
+func (c *CreateProject) ToJSON() ([]byte, error) {
+	if c == nil {
+		return nil, nil
+	}
+	return json.Marshal(c)
+}
+
+func (c *CreateProject) FromJSON(b []byte) error {
+	var res CreateProject
+	if err := json.Unmarshal(b, &res); err != nil {
+		return err
+	}
+	*c = res
+	return nil
 }

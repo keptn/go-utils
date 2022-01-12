@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -90,7 +89,7 @@ func (s *SecretHandler) getHTTPClient() *http.Client {
 
 // CreateSecret creates a new secret
 func (s *SecretHandler) CreateSecret(secret models.Secret) error {
-	body, err := json.Marshal(secret)
+	body, err := secret.ToJSON()
 	if err != nil {
 		return err
 	}
@@ -103,7 +102,7 @@ func (s *SecretHandler) CreateSecret(secret models.Secret) error {
 
 // UpdateSecret creates a new secret
 func (s *SecretHandler) UpdateSecret(secret models.Secret) error {
-	body, err := json.Marshal(secret)
+	body, err := secret.ToJSON()
 	if err != nil {
 		return err
 	}
@@ -145,13 +144,13 @@ func (s *SecretHandler) GetSecrets() (*models.GetSecretsResponse, error) {
 
 	if resp.StatusCode != http.StatusOK {
 		errObj := &models.Error{}
-		if err := json.Unmarshal(body, errObj); err != nil {
+		if err := errObj.FromJSON(body); err != nil {
 			return nil, err
 		}
 		return nil, errors.New(*errObj.Message)
 	}
 	result := &models.GetSecretsResponse{}
-	if err := json.Unmarshal(body, result); err != nil {
+	if err := result.FromJSON(body); err != nil {
 		return nil, err
 	}
 	return result, nil

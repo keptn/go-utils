@@ -31,6 +31,22 @@ const configurationServiceBaseUrl = "configuration-service"
 
 var ResourceNotFoundError = errors.New("Resource not found")
 
+func (r *resourceRequest) ToJSON() ([]byte, error) {
+	if r == nil {
+		return nil, nil
+	}
+	return json.Marshal(r)
+}
+
+func (r *resourceRequest) FromJSON(b []byte) error {
+	var res resourceRequest
+	if err := json.Unmarshal(b, &res); err != nil {
+		return err
+	}
+	*r = res
+	return nil
+}
+
 // NewResourceHandler returns a new ResourceHandler which sends all requests directly to the configuration-service
 func NewResourceHandler(baseURL string) *ResourceHandler {
 	if strings.Contains(baseURL, "https://") {
@@ -98,7 +114,7 @@ func (r *ResourceHandler) CreateResources(project string, stage string, service 
 	resReq := &resourceRequest{
 		Resources: copiedResources,
 	}
-	requestStr, err := json.Marshal(resReq)
+	requestStr, err := resReq.ToJSON()
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
@@ -205,7 +221,7 @@ func (r *ResourceHandler) writeResources(uri string, method string, resources []
 		Resources: copiedResources,
 	}
 
-	resourceStr, err := json.Marshal(resReq)
+	resourceStr, err := resReq.ToJSON()
 	if err != nil {
 		return "", err
 	}
@@ -222,7 +238,7 @@ func (r *ResourceHandler) writeResources(uri string, method string, resources []
 	}
 	defer resp.Body.Close()
 
-	var version models.Version
+	version := &models.Version{}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
@@ -231,8 +247,7 @@ func (r *ResourceHandler) writeResources(uri string, method string, resources []
 		return "", errors.New(string(body))
 	}
 
-	err = json.Unmarshal(body, &version)
-	if err != nil {
+	if err = version.FromJSON(body); err != nil {
 		return "", err
 	}
 
@@ -247,7 +262,7 @@ func (r *ResourceHandler) writeResource(uri string, method string, resource *mod
 
 	copiedResource := &models.Resource{ResourceURI: resource.ResourceURI, ResourceContent: b64.StdEncoding.EncodeToString([]byte(resource.ResourceContent))}
 
-	resourceStr, err := json.Marshal(copiedResource)
+	resourceStr, err := copiedResource.ToJSON()
 	if err != nil {
 		return "", err
 	}
@@ -273,9 +288,8 @@ func (r *ResourceHandler) writeResource(uri string, method string, resource *mod
 		return "", errors.New(string(body))
 	}
 
-	var version models.Version
-	err = json.Unmarshal(body, &version)
-	if err != nil {
+	version := &models.Version{}
+	if err = version.FromJSON(body); err != nil {
 		return "", err
 	}
 
@@ -310,9 +324,8 @@ func (r *ResourceHandler) getResource(uri string) (*models.Resource, error) {
 		return nil, errors.New(string(body))
 	}
 
-	var resource models.Resource
-	err = json.Unmarshal(body, &resource)
-	if err != nil {
+	resource := &models.Resource{}
+	if err = resource.FromJSON(body); err != nil {
 		return nil, err
 	}
 
@@ -323,7 +336,7 @@ func (r *ResourceHandler) getResource(uri string) (*models.Resource, error) {
 	}
 	resource.ResourceContent = string(decodedStr)
 
-	return &resource, nil
+	return resource, nil
 }
 
 func (r *ResourceHandler) deleteResource(uri string) error {
@@ -395,9 +408,8 @@ func (r *ResourceHandler) getAllResources(u *url.URL) ([]*models.Resource, error
 		}
 
 		if resp.StatusCode == 200 {
-			var received models.Resources
-			err = json.Unmarshal(body, &received)
-			if err != nil {
+			received := &models.Resources{}
+			if err = received.FromJSON(body); err != nil {
 				return nil, err
 			}
 			resources = append(resources, received.Resources...)
@@ -408,9 +420,8 @@ func (r *ResourceHandler) getAllResources(u *url.URL) ([]*models.Resource, error
 			nextPageKey = received.NextPageKey
 
 		} else {
-			var respErr models.Error
-			err = json.Unmarshal(body, &respErr)
-			if err != nil {
+			respErr := &models.Error{}
+			if err = respErr.FromJSON(body); err != nil {
 				return nil, err
 			}
 			return nil, errors.New(*respErr.Message)

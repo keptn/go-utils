@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -57,7 +56,7 @@ func (a *APIHandler) getHTTPClient() *http.Client {
 
 // SendEvent sends an event to Keptn
 func (a *APIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.EventContext, *models.Error) {
-	bodyStr, err := json.Marshal(event)
+	bodyStr, err := event.ToJSON()
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
@@ -66,7 +65,7 @@ func (a *APIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.Eve
 
 // TriggerEvaluation triggers a new evaluation
 func (a *APIHandler) TriggerEvaluation(project, stage, service string, evaluation models.Evaluation) (*models.EventContext, *models.Error) {
-	bodyStr, err := json.Marshal(evaluation)
+	bodyStr, err := evaluation.ToJSON()
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
@@ -75,7 +74,7 @@ func (a *APIHandler) TriggerEvaluation(project, stage, service string, evaluatio
 
 // CreateProject creates a new project
 func (a *APIHandler) CreateProject(project models.CreateProject) (string, *models.Error) {
-	bodyStr, err := json.Marshal(project)
+	bodyStr, err := project.ToJSON()
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
@@ -84,7 +83,7 @@ func (a *APIHandler) CreateProject(project models.CreateProject) (string, *model
 
 // UpdateProject updates project
 func (a *APIHandler) UpdateProject(project models.CreateProject) (string, *models.Error) {
-	bodyStr, err := json.Marshal(project)
+	bodyStr, err := project.ToJSON()
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
@@ -98,7 +97,7 @@ func (a *APIHandler) DeleteProject(project models.Project) (*models.DeleteProjec
 		return nil, err
 	}
 	deletePrjResponse := &models.DeleteProjectResponse{}
-	if err2 := json.Unmarshal([]byte(resp), deletePrjResponse); err2 != nil {
+	if err2 := deletePrjResponse.FromJSON([]byte(resp)); err2 != nil {
 		msg := "Could not decode DeleteProjectResponse: " + err2.Error()
 		return nil, &models.Error{
 			Message: &msg,
@@ -109,7 +108,7 @@ func (a *APIHandler) DeleteProject(project models.Project) (*models.DeleteProjec
 
 // CreateService creates a new service
 func (a *APIHandler) CreateService(project string, service models.CreateService) (string, *models.Error) {
-	bodyStr, err := json.Marshal(service)
+	bodyStr, err := service.ToJSON()
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
@@ -123,7 +122,7 @@ func (a *APIHandler) DeleteService(project, service string) (*models.DeleteServi
 		return nil, err
 	}
 	deleteSvcResponse := &models.DeleteServiceResponse{}
-	if err2 := json.Unmarshal([]byte(resp), deleteSvcResponse); err2 != nil {
+	if err2 := deleteSvcResponse.FromJSON([]byte(resp)); err2 != nil {
 		msg := "Could not decode DeleteServiceResponse: " + err2.Error()
 		return nil, &models.Error{
 			Message: &msg,
@@ -155,23 +154,21 @@ func (a *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 
 		if len(body) > 0 {
-			var respMetadata models.Metadata
-			err = json.Unmarshal(body, &respMetadata)
-			if err != nil {
+			respMetadata := &models.Metadata{}
+			if err = respMetadata.FromJSON(body); err != nil {
 				return nil, buildErrorResponse(err.Error())
 			}
 
-			return &respMetadata, nil
+			return respMetadata, nil
 		}
 
 		return nil, nil
 	}
 
-	var respErr models.Error
-	err = json.Unmarshal(body, &respErr)
-	if err != nil {
+	respErr := &models.Error{}
+	if err = respErr.FromJSON(body); err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
 
-	return nil, &respErr
+	return nil, respErr
 }

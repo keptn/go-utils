@@ -1,5 +1,7 @@
 package models
 
+import "encoding/json"
+
 // Events events
 type Events struct {
 
@@ -14,4 +16,20 @@ type Events struct {
 
 	// Total number of resources
 	TotalCount float64 `json:"totalCount,omitempty"`
+}
+
+func (e *Events) ToJSON() ([]byte, error) {
+	if e == nil {
+		return nil, nil
+	}
+	return json.Marshal(e)
+}
+
+func (e *Events) FromJSON(b []byte) error {
+	var res Events
+	if err := json.Unmarshal(b, &res); err != nil {
+		return err
+	}
+	*e = res
+	return nil
 }

@@ -1,5 +1,7 @@
 package models
 
+import "encoding/json"
+
 // Resources resources
 type Resources struct {
 
@@ -14,4 +16,20 @@ type Resources struct {
 
 	// Total number of resources
 	TotalCount float64 `json:"totalCount,omitempty"`
+}
+
+func (r *Resources) ToJSON() ([]byte, error) {
+	if r == nil {
+		return nil, nil
+	}
+	return json.Marshal(r)
+}
+
+func (r *Resources) FromJSON(b []byte) error {
+	var res Resources
+	if err := json.Unmarshal(b, &res); err != nil {
+		return err
+	}
+	*r = res
+	return nil
 }

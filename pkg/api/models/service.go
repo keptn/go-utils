@@ -1,5 +1,7 @@
 package models
 
+import "encoding/json"
+
 // Service service
 type Service struct {
 
@@ -17,4 +19,20 @@ type Service struct {
 
 	// Service name
 	ServiceName string `json:"serviceName,omitempty"`
+}
+
+func (s *Service) ToJSON() ([]byte, error) {
+	if s == nil {
+		return nil, nil
+	}
+	return json.Marshal(s)
+}
+
+func (s *Service) FromJSON(b []byte) error {
+	var res Service
+	if err := json.Unmarshal(b, &res); err != nil {
+		return err
+	}
+	*s = res
+	return nil
 }
