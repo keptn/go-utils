@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 )
@@ -109,7 +110,13 @@ func (c *ApiSet) Endpoint() *url.URL {
 
 // NewApiSet creates a new ApiSet
 func NewApiSet(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) (*ApiSet, error) {
+	u, err := url.Parse(baseURL)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create apiset: %w", err)
+	}
 	var as ApiSet
+	as.endpointURL = u
+	as.apiToken = authToken
 	as.apiHandler = NewAuthenticatedAPIHandler(baseURL, authToken, authHeader, httpClient, scheme)
 	as.authHandler = NewAuthenticatedAuthHandler(baseURL, authToken, authHeader, httpClient, scheme)
 	as.logHandler = NewAuthenticatedLogHandler(baseURL, authToken, authHeader, httpClient, scheme)
@@ -123,8 +130,5 @@ func NewApiSet(baseURL string, authToken string, authHeader string, httpClient *
 	as.shipyardControlHandler = NewAuthenticatedShipyardControllerHandler(baseURL, authToken, authHeader, httpClient, scheme)
 	as.stageHandler = NewAuthenticatedStageHandler(baseURL, authToken, authHeader, httpClient, scheme)
 	as.uniformHandler = NewAuthenticatedUniformHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.apiToken = authToken
-	url, _ := url.Parse(baseURL)
-	as.endpointURL = url
 	return &as, nil
 }
