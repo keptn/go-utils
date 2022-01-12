@@ -2,7 +2,6 @@ package api
 
 import (
 	"crypto/tls"
-	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -83,7 +82,7 @@ func (s *ServiceHandler) getHTTPClient() *http.Client {
 func (s *ServiceHandler) CreateServiceInStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error) {
 
 	service := models.Service{ServiceName: serviceName}
-	body, err := json.Marshal(service)
+	body, err := service.ToJSON()
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
@@ -121,16 +120,14 @@ func (s *ServiceHandler) GetService(project, stage, service string) (*models.Ser
 	}
 
 	if resp.StatusCode == 200 {
-		var received models.Service
-		err = json.Unmarshal(body, &received)
-		if err != nil {
+		received := &models.Service{}
+		if err = received.FromJSON(body); err != nil {
 			return nil, err
 		}
-		return &received, nil
+		return received, nil
 	} else {
-		var respErr models.Error
-		err = json.Unmarshal(body, &respErr)
-		if err != nil {
+		respErr := &models.Error{}
+		if err = respErr.FromJSON(body); err != nil {
 			return nil, err
 		}
 		return nil, errors.New(*respErr.Message)
@@ -174,9 +171,8 @@ func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models
 		}
 
 		if resp.StatusCode == 200 {
-			var received models.Services
-			err = json.Unmarshal(body, &received)
-			if err != nil {
+			received := &models.Services{}
+			if err = received.FromJSON(body); err != nil {
 				return nil, err
 			}
 			services = append(services, received.Services...)
@@ -186,9 +182,8 @@ func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models
 			}
 			nextPageKey = received.NextPageKey
 		} else {
-			var respErr models.Error
-			err = json.Unmarshal(body, &respErr)
-			if err != nil {
+			respErr := &models.Error{}
+			if err = respErr.FromJSON(body); err != nil {
 				return nil, err
 			}
 			return nil, errors.New(*respErr.Message)

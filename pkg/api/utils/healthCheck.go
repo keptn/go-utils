@@ -11,14 +11,22 @@ type StatusBody struct {
 	Status string `json:"status"`
 }
 
+// ToJSON converts object to JSON string
+func (s *StatusBody) ToJSON() ([]byte, error) {
+	return json.Marshal(s)
+}
+
 func healthHandler(w http.ResponseWriter, r *http.Request) {
 	status := StatusBody{Status: "OK"}
 
-	body, _ := json.Marshal(status)
+	body, err := status.ToJSON()
+	if err != nil {
+		log.Println(err)
+	}
 
 	w.Header().Set("content-type", "application/json")
 
-	_, err := w.Write(body)
+	_, err = w.Write(body)
 	if err != nil {
 		log.Println(err)
 	}

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -179,8 +178,7 @@ func (e *EventHandler) getEvents(uri string, numberOfPages int) ([]*models.Keptn
 
 		if resp.StatusCode == 200 {
 			received := &models.Events{}
-			err = json.Unmarshal(body, received)
-			if err != nil {
+			if err = received.FromJSON(body); err != nil {
 				return nil, buildErrorResponse(err.Error())
 			}
 			events = append(events, received.Events...)
@@ -197,12 +195,11 @@ func (e *EventHandler) getEvents(uri string, numberOfPages int) ([]*models.Keptn
 
 			nextPageKey = received.NextPageKey
 		} else {
-			var respErr models.Error
-			err = json.Unmarshal(body, &respErr)
-			if err != nil {
+			respErr := &models.Error{}
+			if err = respErr.FromJSON(body); err != nil {
 				return nil, buildErrorResponse(err.Error())
 			}
-			return nil, &respErr
+			return nil, respErr
 		}
 	}
 

@@ -126,3 +126,18 @@ func (ce *KeptnContextExtendedCE) GetTemporaryData(key string, tmpdata interface
 	}
 	return fmt.Errorf("temporary data with key %s not found", key)
 }
+
+// ToJSON converts object to JSON string
+func (ce *KeptnContextExtendedCE) ToJSON() ([]byte, error) {
+	return json.Marshal(ce)
+}
+
+// FromJSON converts JSON string to object
+func (ce *KeptnContextExtendedCE) FromJSON(b []byte) error {
+	var res KeptnContextExtendedCE
+	if err := json.Unmarshal(b, &res); err != nil {
+		return err
+	}
+	*ce = res
+	return nil
+}

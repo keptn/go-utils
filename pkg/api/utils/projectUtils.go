@@ -2,7 +2,6 @@ package api
 
 import (
 	"crypto/tls"
-	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -80,7 +79,7 @@ func (p *ProjectHandler) getHTTPClient() *http.Client {
 
 // CreateProject creates a new project
 func (p *ProjectHandler) CreateProject(project models.Project) (*models.EventContext, *models.Error) {
-	bodyStr, err := json.Marshal(project)
+	bodyStr, err := project.ToJSON()
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
@@ -134,9 +133,8 @@ func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
 
 		if resp.StatusCode == 200 {
 
-			var received models.Projects
-			err = json.Unmarshal(body, &received)
-			if err != nil {
+			received := &models.Projects{}
+			if err = received.FromJSON(body); err != nil {
 				return nil, err
 			}
 			projects = append(projects, received.Projects...)
@@ -146,9 +144,8 @@ func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
 			}
 			nextPageKey = received.NextPageKey
 		} else {
-			var respErr models.Error
-			err = json.Unmarshal(body, &respErr)
-			if err != nil {
+			respErr := &models.Error{}
+			if err = respErr.FromJSON(body); err != nil {
 				return nil, err
 			}
 			return nil, errors.New(*respErr.Message)
@@ -181,29 +178,27 @@ func getProject(uri string, api APIService) (*models.Project, *models.Error) {
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 
 		if len(body) > 0 {
-			var respProject models.Project
-			err = json.Unmarshal(body, &respProject)
-			if err != nil {
+			respProject := &models.Project{}
+			if err = respProject.FromJSON(body); err != nil {
 				return nil, buildErrorResponse(err.Error())
 			}
 
-			return &respProject, nil
+			return respProject, nil
 		}
 
 		return nil, nil
 	}
 
-	var respErr models.Error
-	err = json.Unmarshal(body, &respErr)
-	if err != nil {
+	respErr := &models.Error{}
+	if err = respErr.FromJSON(body); err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
 
-	return nil, &respErr
+	return nil, respErr
 }
 
 func (p *ProjectHandler) UpdateConfigurationServiceProject(project models.Project) (*models.EventContext, *models.Error) {
-	bodyStr, err := json.Marshal(project)
+	bodyStr, err := project.ToJSON()
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}

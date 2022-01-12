@@ -93,13 +93,12 @@ func (i IntegrationID) validate() bool {
 	return i.Name != "" && i.Namespace != "" && i.NodeName != ""
 }
 
+// ToJSON converts object to JSON string
 func (i *Integration) ToJSON() ([]byte, error) {
-	if i == nil {
-		return nil, nil
-	}
 	return json.Marshal(i)
 }
 
+// FromJSON converts JSON string to object
 func (i *Integration) FromJSON(b []byte) error {
 	var res Integration
 	if err := json.Unmarshal(b, &res); err != nil {
@@ -109,9 +108,7 @@ func (i *Integration) FromJSON(b []byte) error {
 	return nil
 }
 
+// ToJSON converts object to JSON string
 func (s *EventSubscription) ToJSON() ([]byte, error) {
-	if s == nil {
-		return nil, nil
-	}
 	return json.Marshal(s)
 }

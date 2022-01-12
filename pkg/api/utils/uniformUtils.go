@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/go-utils/pkg/common/httputils"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 const uniformRegistrationBaseURL = "uniform/registration"
@@ -82,7 +83,7 @@ func (u *UniformHandler) Ping(integrationID string) (*models.Integration, error)
 	}
 
 	response := &models.Integration{}
-	if err := json.Unmarshal([]byte(resp), response); err != nil {
+	if err := response.FromJSON([]byte(resp)); err != nil {
 		return nil, err
 	}
 

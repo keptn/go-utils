@@ -50,11 +50,19 @@ type SequenceControlBody struct {
 	State string `json:"state"`
 }
 
+// Converts object to JSON string
 func (s *SequenceControlBody) ToJSON() ([]byte, error) {
-	if s == nil {
-		return nil, nil
-	}
 	return json.Marshal(s)
+}
+
+// FromJSON converts JSON string to object
+func (s *SequenceControlBody) FromJSON(b []byte) error {
+	var res SequenceControlBody
+	if err := json.Unmarshal(b, &res); err != nil {
+		return err
+	}
+	*s = res
+	return nil
 }
 
 func NewSequenceControlHandler(baseURL string) *SequenceControlHandler {

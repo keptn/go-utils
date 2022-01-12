@@ -3,7 +3,6 @@ package api
 import (
 	"bytes"
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -55,9 +54,8 @@ func putWithEventContext(uri string, data []byte, api APIService) (*models.Event
 
 	if resp.StatusCode >= 200 && resp.StatusCode <= 204 {
 		if len(body) > 0 {
-			var eventContext models.EventContext
-			err = json.Unmarshal(body, &eventContext)
-			if err != nil {
+			eventContext := &models.EventContext{}
+			if err = eventContext.FromJSON(body); err != nil {
 				// failed to parse json
 				return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
 			}
@@ -65,21 +63,20 @@ func putWithEventContext(uri string, data []byte, api APIService) (*models.Event
 			if eventContext.KeptnContext != nil {
 				fmt.Println("ID of Keptn context: " + *eventContext.KeptnContext)
 			}
-			return &eventContext, nil
+			return eventContext, nil
 		}
 
 		return nil, nil
 	}
 
 	if len(body) > 0 {
-		var respErr models.Error
-		err = json.Unmarshal(body, &respErr)
-		if err != nil {
+		respErr := &models.Error{}
+		if err = respErr.FromJSON(body); err != nil {
 			// failed to parse json
 			return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
 		}
 
-		return nil, &respErr
+		return nil, respErr
 	}
 
 	return nil, buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
@@ -113,14 +110,13 @@ func put(uri string, data []byte, api APIService) (string, *models.Error) {
 	}
 
 	if len(body) > 0 {
-		var respErr models.Error
-		err = json.Unmarshal(body, &respErr)
-		if err != nil {
+		respErr := &models.Error{}
+		if err = respErr.FromJSON(body); err != nil {
 			// failed to parse json
 			return "", buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
 		}
 
-		return "", &respErr
+		return "", respErr
 	}
 
 	return "", buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
@@ -147,9 +143,8 @@ func postWithEventContext(uri string, data []byte, api APIService) (*models.Even
 
 	if resp.StatusCode >= 200 && resp.StatusCode <= 204 {
 		if len(body) > 0 {
-			var eventContext models.EventContext
-			err = json.Unmarshal(body, &eventContext)
-			if err != nil {
+			eventContext := &models.EventContext{}
+			if err = eventContext.FromJSON(body); err != nil {
 				// failed to parse json
 				return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
 			}
@@ -157,21 +152,20 @@ func postWithEventContext(uri string, data []byte, api APIService) (*models.Even
 			if eventContext.KeptnContext != nil {
 				fmt.Println("ID of Keptn context: " + *eventContext.KeptnContext)
 			}
-			return &eventContext, nil
+			return eventContext, nil
 		}
 
 		return nil, nil
 	}
 
 	if len(body) > 0 {
-		var respErr models.Error
-		err = json.Unmarshal(body, &respErr)
-		if err != nil {
+		respErr := &models.Error{}
+		if err = respErr.FromJSON(body); err != nil {
 			// failed to parse json
 			return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
 		}
 
-		return nil, &respErr
+		return nil, respErr
 	}
 
 	return nil, buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
@@ -205,14 +199,13 @@ func post(uri string, data []byte, api APIService) (string, *models.Error) {
 	}
 
 	if len(body) > 0 {
-		var respErr models.Error
-		err = json.Unmarshal(body, &respErr)
-		if err != nil {
+		respErr := &models.Error{}
+		if err = respErr.FromJSON(body); err != nil {
 			// failed to parse json
 			return "", buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
 		}
 
-		return "", &respErr
+		return "", respErr
 	}
 
 	return "", buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
@@ -239,26 +232,24 @@ func deleteWithEventContext(uri string, api APIService) (*models.EventContext, *
 
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		if len(body) > 0 {
-			var eventContext models.EventContext
-			err = json.Unmarshal(body, &eventContext)
-			if err != nil {
+			eventContext := &models.EventContext{}
+			if err = eventContext.FromJSON(body); err != nil {
 				// failed to parse json
 				return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
 			}
-			return &eventContext, nil
+			return eventContext, nil
 		}
 
 		return nil, nil
 	}
 
-	var respErr models.Error
-	err = json.Unmarshal(body, &respErr)
-	if err != nil {
+	respErr := &models.Error{}
+	if err = respErr.FromJSON(body); err != nil {
 		// failed to parse json
 		return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
 	}
 
-	return nil, &respErr
+	return nil, respErr
 }
 
 func delete(uri string, api APIService) (string, *models.Error) {
@@ -288,14 +279,13 @@ func delete(uri string, api APIService) (string, *models.Error) {
 		return "", nil
 	}
 
-	var respErr models.Error
-	err = json.Unmarshal(body, &respErr)
-	if err != nil {
+	respErr := &models.Error{}
+	if err = respErr.FromJSON(body); err != nil {
 		// failed to parse json
 		return "", buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
 	}
 
-	return "", &respErr
+	return "", respErr
 }
 
 func buildErrorResponse(errorStr string) *models.Error {

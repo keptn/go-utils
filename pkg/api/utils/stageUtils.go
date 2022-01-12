@@ -2,7 +2,6 @@ package api
 
 import (
 	"crypto/tls"
-	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -81,7 +80,7 @@ func (s *StageHandler) getHTTPClient() *http.Client {
 func (s *StageHandler) CreateStage(project string, stageName string) (*models.EventContext, *models.Error) {
 
 	stage := models.Stage{StageName: stageName}
-	body, err := json.Marshal(stage)
+	body, err := stage.ToJSON()
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
@@ -121,9 +120,8 @@ func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 		body, _ := ioutil.ReadAll(resp.Body)
 
 		if resp.StatusCode == 200 {
-			var received models.Stages
-			err = json.Unmarshal(body, &received)
-			if err != nil {
+			received := &models.Stages{}
+			if err = received.FromJSON(body); err != nil {
 				return nil, err
 			}
 			stages = append(stages, received.Stages...)
@@ -133,9 +131,8 @@ func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 			}
 			nextPageKey = received.NextPageKey
 		} else {
-			var respErr models.Error
-			err = json.Unmarshal(body, &respErr)
-			if err != nil {
+			respErr := &models.Error{}
+			if err = respErr.FromJSON(body); err != nil {
 				return nil, err
 			}
 			return nil, errors.New(*respErr.Message)

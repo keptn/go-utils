@@ -1,5 +1,7 @@
 package models
 
+import "encoding/json"
+
 // Error error
 type Error struct {
 
@@ -16,4 +18,19 @@ func (e Error) GetMessage() string {
 		return ""
 	}
 	return *e.Message
+}
+
+// ToJSON converts object to JSON string
+func (e *Error) ToJSON() ([]byte, error) {
+	return json.Marshal(e)
+}
+
+// FromJSON converts JSON string to object
+func (e *Error) FromJSON(b []byte) error {
+	var res Error
+	if err := json.Unmarshal(b, &res); err != nil {
+		return err
+	}
+	*e = res
+	return nil
 }

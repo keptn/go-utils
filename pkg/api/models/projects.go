@@ -1,5 +1,7 @@
 package models
 
+import "encoding/json"
+
 // Projects projects
 type Projects struct {
 
@@ -14,4 +16,19 @@ type Projects struct {
 
 	// Total number of projects
 	TotalCount float64 `json:"totalCount,omitempty"`
+}
+
+// ToJSON converts object to JSON string
+func (p *Projects) ToJSON() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+// FromJSON converts JSON string to object
+func (p *Projects) FromJSON(b []byte) error {
+	var res Projects
+	if err := json.Unmarshal(b, &res); err != nil {
+		return err
+	}
+	*p = res
+	return nil
 }
