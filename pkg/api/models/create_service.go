@@ -12,9 +12,6 @@ type CreateService struct {
 
 // ToJSON converts object to JSON string
 func (c *CreateService) ToJSON() ([]byte, error) {
-	if c == nil {
-		return nil, nil
-	}
 	return json.Marshal(c)
 }
 

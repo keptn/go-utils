@@ -33,9 +33,6 @@ type GetSecretsResponse struct {
 
 // ToJSON converts object to JSON string
 func (s *Secret) ToJSON() ([]byte, error) {
-	if s == nil {
-		return nil, nil
-	}
 	return json.Marshal(s)
 }
 
@@ -51,9 +48,6 @@ func (s *Secret) FromJSON(b []byte) error {
 
 // ToJSON converts object to JSON string
 func (s *GetSecretsResponse) ToJSON() ([]byte, error) {
-	if s == nil {
-		return nil, nil
-	}
 	return json.Marshal(s)
 }
 

@@ -11,9 +11,6 @@ type DeleteServiceResponse struct {
 
 // ToJSON converts object to JSON string
 func (d *DeleteServiceResponse) ToJSON() ([]byte, error) {
-	if d == nil {
-		return nil, nil
-	}
 	return json.Marshal(d)
 }
 

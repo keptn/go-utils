@@ -40,9 +40,6 @@ type CreateLogsRequest struct {
 
 // ToJSON converts object to JSON string
 func (l *LogEntry) ToJSON() ([]byte, error) {
-	if l == nil {
-		return nil, nil
-	}
 	return json.Marshal(l)
 }
 
@@ -58,9 +55,6 @@ func (l *LogEntry) FromJSON(b []byte) error {
 
 // ToJSON converts object to JSON string
 func (l *GetLogsResponse) ToJSON() ([]byte, error) {
-	if l == nil {
-		return nil, nil
-	}
 	return json.Marshal(l)
 }
 
@@ -76,9 +70,6 @@ func (l *GetLogsResponse) FromJSON(b []byte) error {
 
 // ToJSON converts object to JSON string
 func (l *CreateLogsRequest) ToJSON() ([]byte, error) {
-	if l == nil {
-		return nil, nil
-	}
 	return json.Marshal(l)
 }
 

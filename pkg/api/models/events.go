@@ -20,9 +20,6 @@ type Events struct {
 
 // ToJSON converts object to JSON string
 func (e *Events) ToJSON() ([]byte, error) {
-	if e == nil {
-		return nil, nil
-	}
 	return json.Marshal(e)
 }
 

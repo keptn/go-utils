@@ -33,9 +33,6 @@ var ResourceNotFoundError = errors.New("Resource not found")
 
 // ToJSON converts object to JSON string
 func (r *resourceRequest) ToJSON() ([]byte, error) {
-	if r == nil {
-		return nil, nil
-	}
 	return json.Marshal(r)
 }
 

@@ -95,9 +95,6 @@ func (i IntegrationID) validate() bool {
 
 // ToJSON converts object to JSON string
 func (i *Integration) ToJSON() ([]byte, error) {
-	if i == nil {
-		return nil, nil
-	}
 	return json.Marshal(i)
 }
 
@@ -113,8 +110,5 @@ func (i *Integration) FromJSON(b []byte) error {
 
 // ToJSON converts object to JSON string
 func (s *EventSubscription) ToJSON() ([]byte, error) {
-	if s == nil {
-		return nil, nil
-	}
 	return json.Marshal(s)
 }

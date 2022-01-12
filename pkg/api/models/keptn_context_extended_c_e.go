@@ -129,9 +129,6 @@ func (ce *KeptnContextExtendedCE) GetTemporaryData(key string, tmpdata interface
 
 // ToJSON converts object to JSON string
 func (ce *KeptnContextExtendedCE) ToJSON() ([]byte, error) {
-	if ce == nil {
-		return nil, nil
-	}
 	return json.Marshal(ce)
 }
 

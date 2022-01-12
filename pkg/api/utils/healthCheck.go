@@ -13,9 +13,6 @@ type StatusBody struct {
 
 // ToJSON converts object to JSON string
 func (s *StatusBody) ToJSON() ([]byte, error) {
-	if s == nil {
-		return nil, nil
-	}
 	return json.Marshal(s)
 }
 

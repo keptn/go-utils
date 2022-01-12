@@ -8,9 +8,6 @@ type RegisterIntegrationResponse struct {
 
 // ToJSON converts object to JSON string
 func (i *RegisterIntegrationResponse) ToJSON() ([]byte, error) {
-	if i == nil {
-		return nil, nil
-	}
 	return json.Marshal(i)
 }
 
@@ -30,9 +27,6 @@ type CreateSubscriptionResponse struct {
 
 // ToJSON converts object to JSON string
 func (s *CreateSubscriptionResponse) ToJSON() ([]byte, error) {
-	if s == nil {
-		return nil, nil
-	}
 	return json.Marshal(s)
 }
 

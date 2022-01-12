@@ -17,9 +17,6 @@ type Version struct {
 
 // ToJSON converts object to JSON string
 func (v *Version) ToJSON() ([]byte, error) {
-	if v == nil {
-		return nil, nil
-	}
 	return json.Marshal(v)
 }
 

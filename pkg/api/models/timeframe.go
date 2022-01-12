@@ -17,9 +17,6 @@ type Timeframe struct {
 
 // ToJSON converts object to JSON string
 func (t *Timeframe) ToJSON() ([]byte, error) {
-	if t == nil {
-		return nil, nil
-	}
 	return json.Marshal(t)
 }
 

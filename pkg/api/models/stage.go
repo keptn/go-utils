@@ -14,9 +14,6 @@ type Stage struct {
 
 // ToJSON converts object to JSON string
 func (s *Stage) ToJSON() ([]byte, error) {
-	if s == nil {
-		return nil, nil
-	}
 	return json.Marshal(s)
 }
 

@@ -12,9 +12,6 @@ type EventContext struct {
 
 // ToJSON converts object to JSON string
 func (ec *EventContext) ToJSON() ([]byte, error) {
-	if ec == nil {
-		return nil, nil
-	}
 	return json.Marshal(ec)
 }
 

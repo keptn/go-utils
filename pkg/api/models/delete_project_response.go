@@ -11,9 +11,6 @@ type DeleteProjectResponse struct {
 
 // ToJSON converts object to JSON string
 func (d *DeleteProjectResponse) ToJSON() ([]byte, error) {
-	if d == nil {
-		return nil, nil
-	}
 	return json.Marshal(d)
 }
 

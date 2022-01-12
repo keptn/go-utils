@@ -18,9 +18,6 @@ type Resource struct {
 
 // ToJSON converts object to JSON string
 func (r *Resource) ToJSON() ([]byte, error) {
-	if r == nil {
-		return nil, nil
-	}
 	return json.Marshal(r)
 }
 

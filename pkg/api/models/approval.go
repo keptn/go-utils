@@ -23,9 +23,6 @@ type Approval struct {
 
 // ToJSON converts object to JSON string
 func (a *Approval) ToJSON() ([]byte, error) {
-	if a == nil {
-		return nil, nil
-	}
 	return json.Marshal(a)
 }
 

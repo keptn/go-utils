@@ -29,9 +29,6 @@ type Project struct {
 
 // ToJSON converts object to JSON string
 func (p *Project) ToJSON() ([]byte, error) {
-	if p == nil {
-		return nil, nil
-	}
 	return json.Marshal(p)
 }
 

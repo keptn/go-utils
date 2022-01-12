@@ -23,9 +23,6 @@ type Metadata struct {
 
 // ToJSON converts object to JSON string
 func (m *Metadata) ToJSON() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
 	return json.Marshal(m)
 }
 

@@ -52,9 +52,6 @@ type SequenceControlBody struct {
 
 // Converts object to JSON string
 func (s *SequenceControlBody) ToJSON() ([]byte, error) {
-	if s == nil {
-		return nil, nil
-	}
 	return json.Marshal(s)
 }
 
