@@ -6,13 +6,13 @@ import (
 )
 
 func TestApiSetWithInvalidURL(t *testing.T) {
-	apiSet, err := NewApiSet("://http.lol", "a-token", "x-token", nil, "http")
+	apiSet, err := NewAPISet("://http.lol", "a-token", "x-token", nil, "http")
 	assert.Nil(t, apiSet)
 	assert.Error(t, err)
 }
 
 func TestApiSetCreatesHandlers(t *testing.T) {
-	apiSet, err := NewApiSet("http://base-url.com", "a-token", "x-token", nil, "http")
+	apiSet, err := NewAPISet("http://base-url.com", "a-token", "x-token", nil, "http")
 	assert.NoError(t, err)
 	assert.Equal(t, "a-token", apiSet.Token())
 	assert.Equal(t, "http://base-url.com", apiSet.Endpoint().String())

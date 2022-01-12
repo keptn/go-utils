@@ -20,8 +20,8 @@ type KeptnInterface interface {
 	UniformV1() *UniformHandler
 }
 
-// ApiSet contains the API utils for all keptn APIs
-type ApiSet struct {
+// APISet contains the API utils for all keptn APIs
+type APISet struct {
 	endpointURL            *url.URL
 	apiToken               string
 	apiHandler             *APIHandler
@@ -39,82 +39,82 @@ type ApiSet struct {
 }
 
 // APIV1 retrieves the APIHandler
-func (c *ApiSet) APIV1() *APIHandler {
+func (c *APISet) APIV1() *APIHandler {
 	return c.apiHandler
 }
 
 // AuthV1 retrieves the AuthHandler
-func (c *ApiSet) AuthV1() *AuthHandler {
+func (c *APISet) AuthV1() *AuthHandler {
 	return c.authHandler
 }
 
 // EventsV1 retrieves the EventHandler
-func (c *ApiSet) EventsV1() *EventHandler {
+func (c *APISet) EventsV1() *EventHandler {
 	return c.eventHandler
 }
 
 // LogsV1 retrieves the LogHandler
-func (c *ApiSet) LogsV1() *LogHandler {
+func (c *APISet) LogsV1() *LogHandler {
 	return c.logHandler
 }
 
 // ProjectsV1 retrieves the ProjectHandler
-func (c *ApiSet) ProjectsV1() *ProjectHandler {
+func (c *APISet) ProjectsV1() *ProjectHandler {
 	return c.projectHandler
 }
 
 // ResourcesV1 retrieves the ResourceHandler
-func (c *ApiSet) ResourcesV1() *ResourceHandler {
+func (c *APISet) ResourcesV1() *ResourceHandler {
 	return c.resourceHandler
 }
 
 // SecretsV1 retrieves the SecretHandler
-func (c *ApiSet) SecretsV1() *SecretHandler {
+func (c *APISet) SecretsV1() *SecretHandler {
 	return c.secretHandler
 }
 
 // SequencesV1 retrieves the SequenceControlHandler
-func (c *ApiSet) SequencesV1() *SequenceControlHandler {
+func (c *APISet) SequencesV1() *SequenceControlHandler {
 	return c.sequenceControlHandler
 }
 
 // ServicesV1 retrieves the ServiceHandler
-func (c *ApiSet) ServicesV1() *ServiceHandler {
+func (c *APISet) ServicesV1() *ServiceHandler {
 	return c.serviceHandler
 }
 
 // StagesV1 retrieves the StageHandler
-func (c *ApiSet) StagesV1() *StageHandler {
+func (c *APISet) StagesV1() *StageHandler {
 	return c.stageHandler
 }
 
 // UniformV1 retrieves the UniformHandler
-func (c *ApiSet) UniformV1() *UniformHandler {
+func (c *APISet) UniformV1() *UniformHandler {
 	return c.uniformHandler
 }
 
 // ShipyardControlHandlerV1 retrieves the ShipyardControllerHandler
-func (c *ApiSet) ShipyardControlHandlerV1() *ShipyardControllerHandler {
+func (c *APISet) ShipyardControlHandlerV1() *ShipyardControllerHandler {
 	return c.shipyardControlHandler
 }
 
 // Token retrieves the API token
-func (c *ApiSet) Token() string {
+func (c *APISet) Token() string {
 	return c.apiToken
 }
 
 // Endpoint retrieves the base API endpoint URL
-func (c *ApiSet) Endpoint() *url.URL {
+func (c *APISet) Endpoint() *url.URL {
 	return c.endpointURL
 }
 
-// NewApiSet creates a new ApiSet
-func NewApiSet(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) (*ApiSet, error) {
+// NewAPISet creates a new APISet
+func NewAPISet(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) (*APISet, error) {
 	u, err := url.Parse(baseURL)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create apiset: %w", err)
 	}
-	var as ApiSet
+	var as APISet
 	as.endpointURL = u
 	as.apiToken = authToken
 	as.apiHandler = NewAuthenticatedAPIHandler(baseURL, authToken, authHeader, httpClient, scheme)
