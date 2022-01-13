@@ -109,6 +109,15 @@ func (c *APISet) Endpoint() *url.URL {
 	return c.endpointURL
 }
 
+// tweakClientTransport takes reference to a http.Client
+// inspects the internal http transport and tries to set
+// the InsecureSkipVerify flag to true as well as configure
+// the Proxy to be read from environment variables. Further
+// it wraps the given http transport inside a otelhttp.Transport
+// in order to add opentelemetry support
+//
+// If httpClient is nil a new CLient will be created that supports the
+// the fields mentioned above
 func tweakClientTransport(httpClient *http.Client) {
 	if httpClient == nil {
 		httpClient = &http.Client{
@@ -119,8 +128,10 @@ func tweakClientTransport(httpClient *http.Client) {
 		if isDefaultTransport {
 			t.Proxy = http.ProxyFromEnvironment
 			t.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+			httpClient.Transport = getInstrumentedClientTransport(t)
+		} else {
+			getInstrumentedClientTransport(httpClient.Transport)
 		}
-		httpClient.Transport = getInstrumentedClientTransport(t)
 	}
 }
 
