@@ -27,7 +27,7 @@ func NewAuthenticatedAPIHandler(baseURL string, authToken string, authHeader str
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getInstrumentedClientTransport(getClientTransport())
+	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
 	return createAuthenticatedAPIHandler(baseURL, authToken, authHeader, httpClient, scheme)
 }
 

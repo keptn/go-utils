@@ -1,7 +1,6 @@
 package api
 
 import (
-	"crypto/tls"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -109,40 +108,13 @@ func (c *APISet) Endpoint() *url.URL {
 	return c.endpointURL
 }
 
-// tweakClientTransport takes reference to a http.Client
-// inspects the internal http transport and tries to
-// disable the server certificate validation as well as configure
-// the Proxy to be read from environment variables. Further
-// it wraps the given http transport inside a otelhttp.Transport
-// in order to add opentelemetry support
-//
-// If httpClient is nil a new client ptr will be created that supports the
-// the fields mentioned above
-func tweakClientTransport(httpClient *http.Client) *http.Client {
-	if httpClient == nil {
-		httpClient = &http.Client{
-			Transport: getInstrumentedClientTransport(getClientTransport()),
-		}
-	} else {
-		t, hasDefaultTransport := httpClient.Transport.(*http.Transport)
-		if hasDefaultTransport {
-			t.Proxy = http.ProxyFromEnvironment
-			t.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-			httpClient.Transport = getInstrumentedClientTransport(t)
-		} else {
-			getInstrumentedClientTransport(httpClient.Transport)
-		}
-	}
-	return httpClient
-}
-
 // NewAPISet creates a new APISet
 func NewAPISet(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) (*APISet, error) {
 	u, err := url.Parse(baseURL)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create apiset: %w", err)
 	}
-	httpClient = tweakClientTransport(httpClient)
+	httpClient = createInstrumentedClientTransport(httpClient)
 	var as APISet
 	as.endpointURL = u
 	as.apiToken = authToken

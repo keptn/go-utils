@@ -41,7 +41,7 @@ func NewSecretHandler(baseURL string) *SecretHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: getInstrumentedClientTransport(getClientTransport())},
+		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
 		Scheme:     "http",
 	}
 }
@@ -53,7 +53,7 @@ func NewAuthenticatedSecretHandler(baseURL string, authToken string, authHeader 
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getInstrumentedClientTransport(getClientTransport())
+	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
 	return createAuthenticatedSecretHandler(baseURL, authToken, authHeader, httpClient, scheme)
 }
 

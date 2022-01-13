@@ -45,7 +45,7 @@ func NewAuthenticatedStageHandler(baseURL string, authToken string, authHeader s
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getInstrumentedClientTransport(getClientTransport())
+	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
 	return createAuthenticatedStageHandler(baseURL, authToken, authHeader, httpClient, scheme)
 }
 

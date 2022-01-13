@@ -63,7 +63,7 @@ func NewSequenceControlHandler(baseURL string) *SequenceControlHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: getInstrumentedClientTransport(getClientTransport())},
+		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
 		Scheme:     "http",
 	}
 }
@@ -74,7 +74,7 @@ func NewAuthenticatedSequenceControlHandler(baseURL string, authToken string, au
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getInstrumentedClientTransport(getClientTransport())
+	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
 	return createAuthenticatedSequenceControlHandler(baseURL, authToken, authHeader, httpClient, scheme)
 }
 
