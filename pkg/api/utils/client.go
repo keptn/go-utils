@@ -110,22 +110,22 @@ func (c *APISet) Endpoint() *url.URL {
 }
 
 // tweakClientTransport takes reference to a http.Client
-// inspects the internal http transport and tries to set
-// the InsecureSkipVerify flag to true as well as configure
+// inspects the internal http transport and tries to
+// disable the server certificate validation as well as configure
 // the Proxy to be read from environment variables. Further
 // it wraps the given http transport inside a otelhttp.Transport
 // in order to add opentelemetry support
 //
-// If httpClient is nil a new CLient will be created that supports the
+// If httpClient is nil a new client ptr will be created that supports the
 // the fields mentioned above
-func tweakClientTransport(httpClient *http.Client) {
+func tweakClientTransport(httpClient *http.Client) *http.Client {
 	if httpClient == nil {
 		httpClient = &http.Client{
 			Transport: getInstrumentedClientTransport(getClientTransport()),
 		}
 	} else {
-		t, isDefaultTransport := httpClient.Transport.(*http.Transport)
-		if isDefaultTransport {
+		t, hasDefaultTransport := httpClient.Transport.(*http.Transport)
+		if hasDefaultTransport {
 			t.Proxy = http.ProxyFromEnvironment
 			t.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 			httpClient.Transport = getInstrumentedClientTransport(t)
@@ -133,6 +133,7 @@ func tweakClientTransport(httpClient *http.Client) {
 			getInstrumentedClientTransport(httpClient.Transport)
 		}
 	}
+	return httpClient
 }
 
 // NewAPISet creates a new APISet
@@ -141,7 +142,7 @@ func NewAPISet(baseURL string, authToken string, authHeader string, httpClient *
 	if err != nil {
 		return nil, fmt.Errorf("unable to create apiset: %w", err)
 	}
-	tweakClientTransport(httpClient)
+	httpClient = tweakClientTransport(httpClient)
 	var as APISet
 	as.endpointURL = u
 	as.apiToken = authToken
