@@ -48,14 +48,16 @@ func NewSecretHandler(baseURL string) *SecretHandler {
 
 // NewAuthenticatedSecretHandler returns a new SecretHandler that authenticates at the api via the provided token
 // and sends all requests directly to the secret-service
+// Deprecated: use APISet instead
 func NewAuthenticatedSecretHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SecretHandler {
 	if httpClient == nil {
-		httpClient = &http.Client{
-			Transport: getInstrumentedClientTransport(getClientTransport()),
-		}
+		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getInstrumentedClientTransport(httpClient.Transport)
+	httpClient.Transport = getInstrumentedClientTransport(getClientTransport())
+	return createAuthenticatedSecretHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
 
+func createAuthenticatedSecretHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SecretHandler {
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
 

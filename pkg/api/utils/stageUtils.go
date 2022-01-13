@@ -40,17 +40,20 @@ func NewStageHandler(baseURL string) *StageHandler {
 
 // NewAuthenticatedStageHandler returns a new StageHandler that authenticates at the api via the provided token
 // and sends all requests directly to the configuration-service
+// Deprecated: use APISet instead
 func NewAuthenticatedStageHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *StageHandler {
 	if httpClient == nil {
-		httpClient = &http.Client{
-			Transport: getInstrumentedClientTransport(getClientTransport()),
-		}
+		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getInstrumentedClientTransport(httpClient.Transport)
+	httpClient.Transport = getInstrumentedClientTransport(getClientTransport())
+	return createAuthenticatedStageHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
+
+func createAuthenticatedStageHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *StageHandler {
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
-
 	baseURL = strings.TrimRight(baseURL, "/")
+
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}

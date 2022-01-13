@@ -42,14 +42,16 @@ func NewShipyardControllerHandler(baseURL string) *ShipyardControllerHandler {
 
 // NewAuthenticatedShipyardControllerHandler returns a new ShipyardControllerHandler that authenticates at the api via the provided token
 // and sends all requests directly to the configuration-service
+// Deprecated: use APISet instead
 func NewAuthenticatedShipyardControllerHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ShipyardControllerHandler {
 	if httpClient == nil {
-		httpClient = &http.Client{
-			Transport: getInstrumentedClientTransport(getClientTransport()),
-		}
+		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getInstrumentedClientTransport(httpClient.Transport)
+	httpClient.Transport = getInstrumentedClientTransport(getClientTransport())
+	return createAuthenticatedShipyardControllerHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
 
+func createAuthenticatedShipyardControllerHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ShipyardControllerHandler {
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
 

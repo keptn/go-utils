@@ -1,6 +1,7 @@
 package api
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -108,27 +109,42 @@ func (c *APISet) Endpoint() *url.URL {
 	return c.endpointURL
 }
 
+func tweakClientTransport(httpClient *http.Client) {
+	if httpClient == nil {
+		httpClient = &http.Client{
+			Transport: getInstrumentedClientTransport(getClientTransport()),
+		}
+	} else {
+		t, isDefaultTransport := httpClient.Transport.(*http.Transport)
+		if isDefaultTransport {
+			t.Proxy = http.ProxyFromEnvironment
+			t.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		}
+		httpClient.Transport = getInstrumentedClientTransport(t)
+	}
+}
+
 // NewAPISet creates a new APISet
 func NewAPISet(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) (*APISet, error) {
 	u, err := url.Parse(baseURL)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create apiset: %w", err)
 	}
+	tweakClientTransport(httpClient)
 	var as APISet
 	as.endpointURL = u
 	as.apiToken = authToken
-	as.apiHandler = NewAuthenticatedAPIHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.authHandler = NewAuthenticatedAuthHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.logHandler = NewAuthenticatedLogHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.authHandler = NewAuthenticatedAuthHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.eventHandler = NewAuthenticatedEventHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.projectHandler = NewAuthenticatedProjectHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.resourceHandler = NewAuthenticatedResourceHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.secretHandler = NewAuthenticatedSecretHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.sequenceControlHandler = NewAuthenticatedSequenceControlHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.serviceHandler = NewAuthenticatedServiceHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.shipyardControlHandler = NewAuthenticatedShipyardControllerHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.stageHandler = NewAuthenticatedStageHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.uniformHandler = NewAuthenticatedUniformHandler(baseURL, authToken, authHeader, httpClient, scheme)
+	as.apiHandler = createAuthenticatedAPIHandler(baseURL, authToken, authHeader, httpClient, scheme)
+	as.authHandler = createAuthenticatedAuthHandler(baseURL, authToken, authHeader, httpClient, scheme)
+	as.logHandler = createAuthenticatedLogHandler(baseURL, authToken, authHeader, httpClient, scheme)
+	as.eventHandler = createAuthenticatedEventHandler(baseURL, authToken, authHeader, httpClient, scheme)
+	as.projectHandler = createAuthProjectHandler(baseURL, authToken, authHeader, httpClient, scheme)
+	as.resourceHandler = createAuthenticatedResourceHandler(baseURL, authToken, authHeader, httpClient, scheme)
+	as.secretHandler = createAuthenticatedSecretHandler(baseURL, authToken, authHeader, httpClient, scheme)
+	as.sequenceControlHandler = createAuthenticatedSequenceControlHandler(baseURL, authToken, authHeader, httpClient, scheme)
+	as.serviceHandler = createAuthenticatedServiceHandler(baseURL, authToken, authHeader, httpClient, scheme)
+	as.shipyardControlHandler = createAuthenticatedShipyardControllerHandler(baseURL, authToken, authHeader, httpClient, scheme)
+	as.stageHandler = createAuthenticatedStageHandler(baseURL, authToken, authHeader, httpClient, scheme)
+	as.uniformHandler = createAuthenticatedUniformHandler(baseURL, authToken, authHeader, httpClient, scheme)
 	return &as, nil
 }

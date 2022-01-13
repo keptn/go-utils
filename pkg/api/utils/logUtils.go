@@ -59,13 +59,17 @@ func NewLogHandler(baseURL string) *LogHandler {
 	}
 }
 
+// NewAuthenticatedLogHandler returns a new EventHandler that authenticates at the endpoint via the provided token
+// Deprecated: use APISet instead
 func NewAuthenticatedLogHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *LogHandler {
 	if httpClient == nil {
-		httpClient = &http.Client{
-			Transport: getClientTransport(),
-		}
+		httpClient = &http.Client{}
 	}
+	httpClient.Transport = getClientTransport()
+	return createAuthenticatedLogHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
 
+func createAuthenticatedLogHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *LogHandler {
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
 	baseURL = strings.TrimRight(baseURL, "/")

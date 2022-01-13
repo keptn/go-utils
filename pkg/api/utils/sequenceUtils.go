@@ -68,14 +68,17 @@ func NewSequenceControlHandler(baseURL string) *SequenceControlHandler {
 	}
 }
 
+// NewAuthenticatedSequenceControlHandler returns a new SequenceControlHandler that authenticates at the api via the provided token
+// Deprecated: use APISet instead
 func NewAuthenticatedSequenceControlHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SequenceControlHandler {
 	if httpClient == nil {
-		httpClient = &http.Client{
-			Transport: getInstrumentedClientTransport(getClientTransport()),
-		}
+		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getInstrumentedClientTransport(httpClient.Transport)
+	httpClient.Transport = getInstrumentedClientTransport(getClientTransport())
+	return createAuthenticatedSequenceControlHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
 
+func createAuthenticatedSequenceControlHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SequenceControlHandler {
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
 	baseURL = strings.TrimRight(baseURL, "/")
