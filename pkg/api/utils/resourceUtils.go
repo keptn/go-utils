@@ -32,9 +32,10 @@ type resourceRequest struct {
 	Resources []*models.Resource `json:"resources"`
 }
 
-type option func(url string) string
+type GetOption func(url string) string
 
-func appendQuery(queryParams url.Values) option {
+//AppendQuery returns an option function that can modify an URI by appending a map of url query values
+func AppendQuery(queryParams url.Values) GetOption {
 	return func(buildURI string) string {
 		if queryParams != nil {
 			buildURI = buildURI + "?" + queryParams.Encode()
@@ -43,7 +44,7 @@ func appendQuery(queryParams url.Values) option {
 	}
 }
 
-func (r *ResourceHandler) applyOptions(buildURI string, options []option) string {
+func (r *ResourceHandler) applyOptions(buildURI string, options []GetOption) string {
 	for _, option := range options {
 		buildURI = option(buildURI)
 	}
@@ -141,7 +142,7 @@ func (r *ResourceHandler) CreateProjectResources(project string, resources []*mo
 }
 
 // GetProjectResource retrieves a project resource from the configuration service
-func (r *ResourceHandler) GetProjectResource(project string, resourceURI string, options ...option) (*models.Resource, error) {
+func (r *ResourceHandler) GetProjectResource(project string, resourceURI string, options ...GetOption) (*models.Resource, error) {
 	buildURI := r.Scheme + "://" + r.BaseURL + pathToProject + project + pathToResource + "/" + url.QueryEscape(resourceURI)
 	return r.getResource(r.applyOptions(buildURI, options))
 }
@@ -167,7 +168,7 @@ func (r *ResourceHandler) CreateStageResources(project string, stage string, res
 }
 
 // GetStageResource retrieves a stage resource from the configuration service
-func (r *ResourceHandler) GetStageResource(project string, stage string, resourceURI string, options ...option) (*models.Resource, error) {
+func (r *ResourceHandler) GetStageResource(project string, stage string, resourceURI string, options ...GetOption) (*models.Resource, error) {
 	buildURI := r.Scheme + "://" + r.BaseURL + pathToProject + project + pathToStage + "/" + stage + pathToResource + "/" + url.QueryEscape(resourceURI)
 	return r.getResource(r.applyOptions(buildURI, options))
 }
@@ -193,7 +194,7 @@ func (r *ResourceHandler) CreateServiceResources(project string, stage string, s
 }
 
 // GetServiceResource retrieves a service resource from the configuration service
-func (r *ResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string, options ...option) (*models.Resource, error) {
+func (r *ResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string, options ...GetOption) (*models.Resource, error) {
 	buildURI := r.Scheme + "://" + r.BaseURL + pathToProject + project + pathToStage + "/" + stage + pathToService + "/" + url.QueryEscape(service) + pathToResource + "/" + url.QueryEscape(resourceURI)
 	return r.getResource(r.applyOptions(buildURI, options))
 }
