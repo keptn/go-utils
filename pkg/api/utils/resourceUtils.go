@@ -26,16 +26,28 @@ type ResourceHandler struct {
 	AuthHeader string
 	HTTPClient *http.Client
 	Scheme     string
-	Opts       *GetOptions
 }
 
 type resourceRequest struct {
 	Resources []*models.Resource `json:"resources"`
 }
 
-// GetOptions specifies options to be used in get calls
-type GetOptions struct {
-	CommitID string
+type option func(url string) string
+
+func appendQuery(queryParams url.Values) option {
+	return func(buildURI string) string {
+		if queryParams != nil {
+			buildURI = buildURI + "?" + queryParams.Encode()
+		}
+		return buildURI
+	}
+}
+
+func (r *ResourceHandler) applyOptions(buildURI string, options []option) string {
+	for _, option := range options {
+		buildURI = option(buildURI)
+	}
+	return buildURI
 }
 
 const configurationServiceBaseUrl = "configuration-service"
@@ -70,10 +82,6 @@ func NewResourceHandler(baseURL string) *ResourceHandler {
 		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
 		Scheme:     "http",
 	}
-}
-
-func (r *ResourceHandler) SetOpts(options GetOptions) {
-	r.Opts = &options
 }
 
 // NewAuthenticatedResourceHandler returns a new ResourceHandler that authenticates at the api via the provided token
@@ -151,9 +159,9 @@ func (r *ResourceHandler) CreateProjectResources(project string, resources []*mo
 }
 
 // GetProjectResource retrieves a project resource from the configuration service
-func (r *ResourceHandler) GetProjectResource(project string, resourceURI string) (*models.Resource, error) {
+func (r *ResourceHandler) GetProjectResource(project string, resourceURI string, options ...option) (*models.Resource, error) {
 	buildURI := r.Scheme + "://" + r.BaseURL + pathToProject + project + pathToResource + "/" + url.QueryEscape(resourceURI)
-	return r.getResource(r.appendOptions(buildURI))
+	return r.getResource(r.applyOptions(buildURI, options))
 }
 
 // UpdateProjectResource updates a project resource
@@ -177,9 +185,9 @@ func (r *ResourceHandler) CreateStageResources(project string, stage string, res
 }
 
 // GetStageResource retrieves a stage resource from the configuration service
-func (r *ResourceHandler) GetStageResource(project string, stage string, resourceURI string) (*models.Resource, error) {
+func (r *ResourceHandler) GetStageResource(project string, stage string, resourceURI string, options ...option) (*models.Resource, error) {
 	buildURI := r.Scheme + "://" + r.BaseURL + pathToProject + project + pathToStage + "/" + stage + pathToResource + "/" + url.QueryEscape(resourceURI)
-	return r.getResource(r.appendOptions(buildURI))
+	return r.getResource(r.applyOptions(buildURI, options))
 }
 
 // UpdateStageResource updates a stage resource
@@ -203,9 +211,9 @@ func (r *ResourceHandler) CreateServiceResources(project string, stage string, s
 }
 
 // GetServiceResource retrieves a service resource from the configuration service
-func (r *ResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
+func (r *ResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string, options ...option) (*models.Resource, error) {
 	buildURI := r.Scheme + "://" + r.BaseURL + pathToProject + project + pathToStage + "/" + stage + pathToService + "/" + url.QueryEscape(service) + pathToResource + "/" + url.QueryEscape(resourceURI)
-	return r.getResource(r.appendOptions(buildURI))
+	return r.getResource(r.applyOptions(buildURI, options))
 }
 
 // UpdateServiceResource updates a service resource
@@ -449,11 +457,4 @@ func (r *ResourceHandler) getAllResources(u *url.URL) ([]*models.Resource, error
 	}
 
 	return resources, nil
-}
-
-func (r *ResourceHandler) appendOptions(buildURI string) string {
-	if r.Opts != nil && r.Opts.CommitID != "" {
-		buildURI = buildURI + "?commitID=" + r.Opts.CommitID
-	}
-	return buildURI
 }
