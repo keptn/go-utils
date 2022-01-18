@@ -21,12 +21,16 @@ type APIHandler struct {
 }
 
 // NewAuthenticatedAPIHandler returns a new APIHandler that authenticates at the api-service endpoint via the provided token
+// Deprecated: use APISet instead
 func NewAuthenticatedAPIHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *APIHandler {
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getInstrumentedClientTransport()
+	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
+	return createAuthenticatedAPIHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
 
+func createAuthenticatedAPIHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *APIHandler {
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
 	return &APIHandler{

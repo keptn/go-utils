@@ -30,16 +30,22 @@ func NewUniformHandler(baseURL string) *UniformHandler {
 		BaseURL:    baseURL,
 		AuthToken:  "",
 		AuthHeader: "",
-		HTTPClient: &http.Client{Transport: getClientTransport()},
+		HTTPClient: &http.Client{Transport: getClientTransport(nil)},
 		Scheme:     "http",
 	}
 }
 
+// NewAuthenticatedUniformHandler returns a new UniformHandler that authenticates at the api via the provided token
+// Deprecated: use APISet instead
 func NewAuthenticatedUniformHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *UniformHandler {
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getClientTransport()
+	httpClient.Transport = getClientTransport(httpClient.Transport)
+	return createAuthenticatedUniformHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
+
+func createAuthenticatedUniformHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *UniformHandler {
 	baseURL = httputils.TrimHTTPScheme(baseURL)
 	baseURL = strings.TrimRight(baseURL, "/")
 

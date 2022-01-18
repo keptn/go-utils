@@ -31,19 +31,23 @@ func NewServiceHandler(baseURL string) *ServiceHandler {
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: getInstrumentedClientTransport()},
+		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
 		Scheme:     "http",
 	}
 }
 
 // NewAuthenticatedServiceHandler returns a new ServiceHandler that authenticates at the api via the provided token
 // and sends all requests directly to the configuration-service
+// Deprecated: use APISet instead
 func NewAuthenticatedServiceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ServiceHandler {
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	httpClient.Transport = getInstrumentedClientTransport()
+	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
+	return createAuthenticatedServiceHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
 
+func createAuthenticatedServiceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ServiceHandler {
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
 

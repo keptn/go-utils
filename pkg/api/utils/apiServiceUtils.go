@@ -19,18 +19,49 @@ type APIService interface {
 	getHTTPClient() *http.Client
 }
 
-func getClientTransport() *http.Transport {
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		Proxy:           http.ProxyFromEnvironment,
+// createInstrumentedClientTransport tries to add support for opentelemetry
+// to the given http.Client. If httpClient is nil, a fresh http.Client
+// with opentelemetry support is created
+func createInstrumentedClientTransport(httpClient *http.Client) *http.Client {
+	if httpClient == nil {
+		return &http.Client{
+			Transport: wrapOtelTransport(getClientTransport(nil)),
+		}
 	}
-	return tr
+	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
+	return httpClient
 }
 
 // Wraps the provided http.RoundTripper with one that
 // starts a span and injects the span context into the outbound request headers.
-func getInstrumentedClientTransport() *otelhttp.Transport {
-	return otelhttp.NewTransport(getClientTransport())
+func wrapOtelTransport(base http.RoundTripper) *otelhttp.Transport {
+	return otelhttp.NewTransport(base)
+}
+
+// getClientTransport returns a client transport which
+// skips verifying server certificates and is able to
+// read proxy configuration from environment variables
+//
+// If the givven http.RoundTripper is nil then a new http.Transport
+// is created, otherwise the given http.RoundTripper is analysed whether it
+// is of type *http.Transport. If so, the respective settings for
+// disabling server certificate verification as well as proxy server support are set
+// If not, the given http.RoundTripper is passed through untouched
+func getClientTransport(rt http.RoundTripper) http.RoundTripper {
+	if rt == nil {
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			Proxy:           http.ProxyFromEnvironment,
+		}
+		return tr
+	}
+	if tr, isDefaultTransport := rt.(*http.Transport); isDefaultTransport {
+		tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		tr.Proxy = http.ProxyFromEnvironment
+		return tr
+	}
+	return rt
+
 }
 
 func putWithEventContext(uri string, data []byte, api APIService) (*models.EventContext, *models.Error) {
