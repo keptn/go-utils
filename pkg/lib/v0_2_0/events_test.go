@@ -1,6 +1,11 @@
 package v0_2_0
 
 import (
+	"net/http"
+	"net/http/httptest"
+	"testing"
+	"time"
+
 	"github.com/keptn/go-utils/config"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
@@ -8,10 +13,6 @@ import (
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"net/http"
-	"net/http/httptest"
-	"testing"
-	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
@@ -280,6 +281,7 @@ func TestCreateSimpleKeptnEvent(t *testing.T) {
 	require.NotEmpty(t, event.Shkeptnspecversion)
 	require.Equal(t, defaultSpecVersion, event.Specversion)
 	require.Equal(t, "", event.Triggeredid)
+	require.Equal(t, "", event.Gitcommitid)
 	require.Equal(t, strutils.Stringp("sh.keptn.event.dev.delivery.triggered"), event.Type)
 }
 
@@ -289,6 +291,7 @@ func TestCreateKeptnEvent(t *testing.T) {
 		WithID("my-id").
 		WithKeptnContext("my-keptn-context").
 		WithTriggeredID("my-triggered-id").
+		WithGitCommitID("my-commit-id").
 		WithKeptnSpecVersion("2.0").
 		Build()
 
@@ -301,6 +304,7 @@ func TestCreateKeptnEvent(t *testing.T) {
 	require.Equal(t, strutils.Stringp("source"), event.Source)
 	require.Equal(t, "my-keptn-context", event.Shkeptncontext)
 	require.Equal(t, "my-triggered-id", event.Triggeredid)
+	require.Equal(t, "my-commit-id", event.Gitcommitid)
 	require.Equal(t, strutils.Stringp("sh.keptn.event.dev.delivery.triggered"), event.Type)
 }
 
@@ -319,6 +323,7 @@ func TestToCloudEvent(t *testing.T) {
 	expected.SetSpecVersion(defaultSpecVersion)
 	expected.SetExtension(keptnContextCEExtension, "my-keptn-context")
 	expected.SetExtension(triggeredIDCEExtension, "my-triggered-id")
+	expected.SetExtension(keptnGitCommitIDCEExtension, "git-commit-id")
 	expected.SetExtension(keptnSpecVersionCEExtension, config.GetKeptnGoUtilsConfig().ShKeptnSpecVersion)
 
 	keptnEvent := models.KeptnContextExtendedCE{
@@ -330,6 +335,7 @@ func TestToCloudEvent(t *testing.T) {
 		Shkeptnspecversion: config.GetKeptnGoUtilsConfig().ShKeptnSpecVersion,
 		Specversion:        defaultSpecVersion,
 		Triggeredid:        "my-triggered-id",
+		Gitcommitid:        "git-commit-id",
 		Type:               strutils.Stringp("sh.keptn.event.dev.delivery.triggered"),
 	}
 	cloudevent := ToCloudEvent(keptnEvent)
@@ -348,12 +354,13 @@ func TestToKeptnEvent(t *testing.T) {
 		Data:               map[string]interface{}{"content": "testdata"},
 		ID:                 "my-id",
 		Shkeptncontext:     "my-keptn-context",
-		Source:             strutils.Stringp("my-source"),
 		Shkeptnspecversion: config.GetKeptnGoUtilsConfig().ShKeptnSpecVersion,
+		Source:             strutils.Stringp("my-source"),
 		Specversion:        defaultSpecVersion,
-		Triggeredid:        "my-triggered-id",
-		Type:               strutils.Stringp("sh.keptn.event.dev.delivery.triggered"),
 		Time:               time.Time{},
+		Triggeredid:        "my-triggered-id",
+		Gitcommitid:        "my-commit-id",
+		Type:               strutils.Stringp("sh.keptn.event.dev.delivery.triggered"),
 	}
 
 	ce := cloudevents.NewEvent()
@@ -365,6 +372,7 @@ func TestToKeptnEvent(t *testing.T) {
 	ce.SetData(cloudevents.ApplicationJSON, TestData{Content: "testdata"})
 	ce.SetExtension(keptnContextCEExtension, "my-keptn-context")
 	ce.SetExtension(triggeredIDCEExtension, "my-triggered-id")
+	ce.SetExtension(keptnGitCommitIDCEExtension, "my-commit-id")
 	ce.SetExtension(keptnSpecVersionCEExtension, config.GetKeptnGoUtilsConfig().ShKeptnSpecVersion)
 
 	keptnEvent, err := ToKeptnEvent(ce)

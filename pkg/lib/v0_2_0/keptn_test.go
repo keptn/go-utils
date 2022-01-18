@@ -2,11 +2,12 @@ package v0_2_0
 
 import (
 	"errors"
+	"testing"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func Test_ensureContextAttributesAreSet(t *testing.T) {
@@ -118,6 +119,7 @@ func TestKeptn_SendEventConvenienceFunctions(t *testing.T) {
 	inputEvent.SetType(GetTriggeredEventType(EvaluationTaskName))
 	inputEvent.SetExtension(keptnContextCEExtension, "my-context")
 	inputEvent.SetExtension(keptnSpecVersionCEExtension, "0.2.0")
+	inputEvent.SetExtension(keptnGitCommitIDCEExtension, "my-commit-id")
 	inputEvent.SetID("my-triggered-id")
 	inputEvent.SetDataContentType(cloudevents.ApplicationJSON)
 	inputEvent.SetData(cloudevents.ApplicationJSON, &EventData{
@@ -140,6 +142,7 @@ func TestKeptn_SendEventConvenienceFunctions(t *testing.T) {
 		eventType        string
 		keptnContext     string
 		triggeredID      string
+		gitCommitID      string
 		keptnSpecVersion string
 		eventData        keptn.EventProperties
 	}
@@ -168,6 +171,7 @@ func TestKeptn_SendEventConvenienceFunctions(t *testing.T) {
 					eventType:        GetStartedEventType(EvaluationTaskName),
 					keptnContext:     "my-context",
 					triggeredID:      "my-triggered-id",
+					gitCommitID:      "my-commit-id",
 					keptnSpecVersion: "0.2.0",
 					eventData: &EventData{
 						Project: "my-project",
@@ -197,6 +201,7 @@ func TestKeptn_SendEventConvenienceFunctions(t *testing.T) {
 					eventType:        GetStatusChangedEventType(EvaluationTaskName),
 					keptnContext:     "my-context",
 					triggeredID:      "my-triggered-id",
+					gitCommitID:      "my-commit-id",
 					keptnSpecVersion: "0.2.0",
 					eventData: &EventData{
 						Project: "my-project",
@@ -226,6 +231,7 @@ func TestKeptn_SendEventConvenienceFunctions(t *testing.T) {
 					eventType:        GetFinishedEventType(EvaluationTaskName),
 					keptnContext:     "my-context",
 					triggeredID:      "my-triggered-id",
+					gitCommitID:      "my-commit-id",
 					keptnSpecVersion: "0.2.0",
 					eventData: &EventData{
 						Project: "my-project",
@@ -258,6 +264,7 @@ func TestKeptn_SendEventConvenienceFunctions(t *testing.T) {
 					eventType:        GetFinishedEventType(EvaluationTaskName),
 					keptnContext:     "my-context",
 					triggeredID:      "my-triggered-id",
+					gitCommitID:      "my-commit-id",
 					keptnSpecVersion: "0.2.0",
 					eventData: &EventData{
 						Project: "my-project",
@@ -356,6 +363,9 @@ func TestKeptn_SendEventConvenienceFunctions(t *testing.T) {
 				triggeredID, err := event.Context.GetExtension(triggeredIDCEExtension)
 				assert.Nil(t, err)
 				assert.Equal(t, triggeredID.(string), tt.wantEvents[index].triggeredID)
+				gitCommitID, err := event.Context.GetExtension(keptnGitCommitIDCEExtension)
+				assert.Nil(t, err)
+				assert.Equal(t, gitCommitID.(string), tt.wantEvents[index].gitCommitID)
 				keptnContext, err := event.Context.GetExtension(keptnContextCEExtension)
 				assert.Nil(t, err)
 				assert.Equal(t, keptnContext.(string), tt.wantEvents[index].keptnContext)

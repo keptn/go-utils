@@ -2,12 +2,13 @@ package models_test
 
 import (
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 func TestKeptnContextExtendedCE_Validate(t *testing.T) {
@@ -24,6 +25,7 @@ func TestKeptnContextExtendedCE_Validate(t *testing.T) {
 		Specversion        string
 		Time               time.Time
 		Triggeredid        string
+		Gitcommitid        string
 		Type               *string
 	}
 	tests := []struct {
@@ -91,6 +93,7 @@ func TestKeptnContextExtendedCE_Validate(t *testing.T) {
 				Specversion:        tt.fields.Specversion,
 				Time:               tt.fields.Time,
 				Triggeredid:        tt.fields.Triggeredid,
+				Gitcommitid:        tt.fields.Gitcommitid,
 				Type:               tt.fields.Type,
 			}
 			if err := ce.Validate(); (err != nil) != tt.wantErr {
