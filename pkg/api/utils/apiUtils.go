@@ -73,7 +73,7 @@ func (a *APIHandler) TriggerEvaluation(project, stage, service string, evaluatio
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath+"/"+project+"/stage/"+stage+"/service/"+service+"/evaluation", bodyStr, a)
+	return postWithEventContext(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+service+"/evaluation", bodyStr, a)
 }
 
 // CreateProject creates a new project
@@ -116,12 +116,12 @@ func (a *APIHandler) CreateService(project string, service models.CreateService)
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
-	return post(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath+"/"+project+"/service", bodyStr, a)
+	return post(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath+"/"+project+pathToService, bodyStr, a)
 }
 
 // DeleteProject deletes a project
 func (a *APIHandler) DeleteService(project, service string) (*models.DeleteServiceResponse, *models.Error) {
-	resp, err := delete(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath+"/"+project+"/service/"+service, a)
+	resp, err := delete(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath+"/"+project+pathToService+"/"+service, a)
 	if err != nil {
 		return nil, err
 	}
