@@ -24,6 +24,9 @@ type KeptnInterface interface {
 type APISet struct {
 	endpointURL            *url.URL
 	apiToken               string
+	authHeader             string
+	scheme                 string
+	httpClient             *http.Client
 	apiHandler             *APIHandler
 	authHandler            *AuthHandler
 	eventHandler           *EventHandler
@@ -108,27 +111,53 @@ func (c *APISet) Endpoint() *url.URL {
 	return c.endpointURL
 }
 
-// NewAPISet creates a new APISet
-func NewAPISet(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) (*APISet, error) {
+// WithAuthToken sets the given auth token.
+// Optionally a custom auth header can be set (default x-token)
+func WithAuthToken(authToken string, authHeader ...string) func(*APISet) {
+	aHeader := "x-token"
+	if len(authHeader) > 0 {
+		aHeader = authHeader[0]
+	}
+	return func(a *APISet) {
+		a.apiToken = authToken
+		a.authHeader = aHeader
+	}
+}
+
+// WithHTTPClient configures a custom http client to use
+func WithHTTPClient(client *http.Client) func(*APISet) {
+	return func(a *APISet) {
+		a.httpClient = client
+	}
+}
+
+// New creates a new APISet instance
+func New(baseURL string, options ...func(*APISet)) (*APISet, error) {
 	u, err := url.Parse(baseURL)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create apiset: %w", err)
 	}
-	httpClient = createInstrumentedClientTransport(httpClient)
-	var as APISet
+	as := &APISet{}
+	for _, o := range options {
+		o(as)
+	}
 	as.endpointURL = u
-	as.apiToken = authToken
-	as.apiHandler = createAuthenticatedAPIHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.authHandler = createAuthenticatedAuthHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.logHandler = createAuthenticatedLogHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.eventHandler = createAuthenticatedEventHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.projectHandler = createAuthProjectHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.resourceHandler = createAuthenticatedResourceHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.secretHandler = createAuthenticatedSecretHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.sequenceControlHandler = createAuthenticatedSequenceControlHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.serviceHandler = createAuthenticatedServiceHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.shipyardControlHandler = createAuthenticatedShipyardControllerHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.stageHandler = createAuthenticatedStageHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	as.uniformHandler = createAuthenticatedUniformHandler(baseURL, authToken, authHeader, httpClient, scheme)
-	return &as, nil
+	if as.scheme == "" {
+		as.scheme = u.Scheme
+	}
+	as.httpClient = createInstrumentedClientTransport(as.httpClient)
+
+	as.apiHandler = createAuthenticatedAPIHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.authHandler = createAuthenticatedAuthHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.logHandler = createAuthenticatedLogHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.eventHandler = createAuthenticatedEventHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.projectHandler = createAuthProjectHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.resourceHandler = createAuthenticatedResourceHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.secretHandler = createAuthenticatedSecretHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.sequenceControlHandler = createAuthenticatedSequenceControlHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.serviceHandler = createAuthenticatedServiceHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.shipyardControlHandler = createAuthenticatedShipyardControllerHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.stageHandler = createAuthenticatedStageHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.uniformHandler = createAuthenticatedUniformHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	return as, nil
 }

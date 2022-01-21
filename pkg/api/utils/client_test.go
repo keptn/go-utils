@@ -2,20 +2,21 @@ package api
 
 import (
 	"github.com/stretchr/testify/assert"
+	"net/http"
 	"testing"
 )
 
 func TestApiSetWithInvalidURL(t *testing.T) {
-	apiSet, err := NewAPISet("://http.lol", "a-token", "x-token", nil, "http")
+	apiSet, err := New("://http.lol")
 	assert.Nil(t, apiSet)
 	assert.Error(t, err)
 }
 
 func TestApiSetCreatesHandlers(t *testing.T) {
-	apiSet, err := NewAPISet("http://base-url.com", "a-token", "x-token", nil, "http")
+	apiSet, err := New("http://base-url.com")
 	assert.NoError(t, err)
-	assert.Equal(t, "a-token", apiSet.Token())
 	assert.Equal(t, "http://base-url.com", apiSet.Endpoint().String())
+	assert.Equal(t, "http", apiSet.scheme)
 	assert.NotNil(t, apiSet.UniformV1())
 	assert.NotNil(t, apiSet.Endpoint())
 	assert.NotNil(t, apiSet.ShipyardControlHandlerV1())
@@ -29,4 +30,13 @@ func TestApiSetCreatesHandlers(t *testing.T) {
 	assert.NotNil(t, apiSet.AuthV1())
 	assert.NotNil(t, apiSet.ResourcesV1())
 	assert.NotNil(t, apiSet.LogsV1())
+}
+
+func TestAPISetWithOptions(t *testing.T) {
+	apiSet, err := New("https://base-url.com", WithAuthToken("a-token"), WithHTTPClient(&http.Client{}))
+	assert.NoError(t, err)
+	assert.Equal(t, "a-token", apiSet.Token())
+	assert.Equal(t, "x-token", apiSet.authHeader)
+	assert.Equal(t, "https", apiSet.scheme)
+	assert.NotNil(t, apiSet.httpClient)
 }
