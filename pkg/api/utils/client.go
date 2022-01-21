@@ -131,6 +131,14 @@ func WithHTTPClient(client *http.Client) func(*APISet) {
 	}
 }
 
+// WithScheme sets the scheme
+// If this option is not used, then default scheme "http" is used by the APISet
+func WithScheme(scheme string) func(*APISet) {
+	return func(a *APISet) {
+		a.scheme = scheme
+	}
+}
+
 // New creates a new APISet instance
 func New(baseURL string, options ...func(*APISet)) (*APISet, error) {
 	u, err := url.Parse(baseURL)
@@ -142,10 +150,15 @@ func New(baseURL string, options ...func(*APISet)) (*APISet, error) {
 		o(as)
 	}
 	as.endpointURL = u
-	if as.scheme == "" {
-		as.scheme = u.Scheme
-	}
 	as.httpClient = createInstrumentedClientTransport(as.httpClient)
+
+	if as.scheme == "" {
+		if as.endpointURL.Scheme != "" {
+			as.scheme = u.Scheme
+		} else {
+			as.scheme = "http"
+		}
+	}
 
 	as.apiHandler = createAuthenticatedAPIHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
 	as.authHandler = createAuthenticatedAuthHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
