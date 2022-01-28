@@ -12,6 +12,7 @@ const v1EventPath = "/v1/event"
 const v1MetadataPath = "/v1/metadata"
 
 type APIV1Interface interface {
+	SendEvent(event models.KeptnContextExtendedCE) (*models.EventContext, *models.Error)
 	TriggerEvaluation(project string, stage string, service string, evaluation models.Evaluation) (*models.EventContext, *models.Error)
 	CreateProject(project models.CreateProject) (string, *models.Error)
 	UpdateProject(project models.CreateProject) (string, *models.Error)
