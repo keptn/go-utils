@@ -6,18 +6,20 @@ import (
 	"net/url"
 )
 
+var _ KeptnInterface = (*APISet)(nil)
+
 type KeptnInterface interface {
-	APIV1() *APIHandler
-	AuthV1() *AuthHandler
-	EventsV1() *EventHandler
-	LogsV1() *LogHandler
-	ProjectsV1() *ProjectHandler
-	ResourcesV1() *ResourceHandler
-	SecretsV1() *SecretHandler
-	SequencesV1() *SequenceControlHandler
-	ServicesV1() *ServiceHandler
-	StagesV1() *StageHandler
-	UniformV1() *UniformHandler
+	APIV1() APIV1Interface
+	AuthV1() AuthV1Interface
+	EventsV1() EventsV1Interface
+	LogsV1() LogsV1Interface
+	ProjectsV1() ProjectsV1Interface
+	ResourcesV1() ResourcesV1Interface
+	SecretsV1() SecretsV1Interface
+	SequencesV1() SequencesV1Interface
+	ServicesV1() ServicesV1Interface
+	StagesV1() StagesV1Interface
+	UniformV1() UniformV1Interface
 }
 
 // APISet contains the API utils for all keptn APIs
@@ -42,57 +44,57 @@ type APISet struct {
 }
 
 // APIV1 retrieves the APIHandler
-func (c *APISet) APIV1() *APIHandler {
+func (c *APISet) APIV1() APIV1Interface {
 	return c.apiHandler
 }
 
 // AuthV1 retrieves the AuthHandler
-func (c *APISet) AuthV1() *AuthHandler {
+func (c *APISet) AuthV1() AuthV1Interface {
 	return c.authHandler
 }
 
 // EventsV1 retrieves the EventHandler
-func (c *APISet) EventsV1() *EventHandler {
+func (c *APISet) EventsV1() EventsV1Interface {
 	return c.eventHandler
 }
 
 // LogsV1 retrieves the LogHandler
-func (c *APISet) LogsV1() *LogHandler {
+func (c *APISet) LogsV1() LogsV1Interface {
 	return c.logHandler
 }
 
 // ProjectsV1 retrieves the ProjectHandler
-func (c *APISet) ProjectsV1() *ProjectHandler {
+func (c *APISet) ProjectsV1() ProjectsV1Interface {
 	return c.projectHandler
 }
 
 // ResourcesV1 retrieves the ResourceHandler
-func (c *APISet) ResourcesV1() *ResourceHandler {
+func (c *APISet) ResourcesV1() ResourcesV1Interface {
 	return c.resourceHandler
 }
 
 // SecretsV1 retrieves the SecretHandler
-func (c *APISet) SecretsV1() *SecretHandler {
+func (c *APISet) SecretsV1() SecretsV1Interface {
 	return c.secretHandler
 }
 
 // SequencesV1 retrieves the SequenceControlHandler
-func (c *APISet) SequencesV1() *SequenceControlHandler {
+func (c *APISet) SequencesV1() SequencesV1Interface {
 	return c.sequenceControlHandler
 }
 
 // ServicesV1 retrieves the ServiceHandler
-func (c *APISet) ServicesV1() *ServiceHandler {
+func (c *APISet) ServicesV1() ServicesV1Interface {
 	return c.serviceHandler
 }
 
 // StagesV1 retrieves the StageHandler
-func (c *APISet) StagesV1() *StageHandler {
+func (c *APISet) StagesV1() StagesV1Interface {
 	return c.stageHandler
 }
 
 // UniformV1 retrieves the UniformHandler
-func (c *APISet) UniformV1() *UniformHandler {
+func (c *APISet) UniformV1() UniformV1Interface {
 	return c.uniformHandler
 }
 

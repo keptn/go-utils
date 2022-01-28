@@ -11,6 +11,13 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 )
 
+type ServicesV1Interface interface {
+	CreateServiceInStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error)
+	DeleteServiceFromStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error)
+	GetService(project, stage, service string) (*models.Service, error)
+	GetAllServices(project string, stage string) ([]*models.Service, error)
+}
+
 // ServiceHandler handles services
 type ServiceHandler struct {
 	BaseURL    string

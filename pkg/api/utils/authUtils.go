@@ -7,6 +7,10 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 )
 
+type AuthV1Interface interface {
+	Authenticate() (*models.EventContext, *models.Error)
+}
+
 // AuthHandler handles projects
 type AuthHandler struct {
 	BaseURL    string

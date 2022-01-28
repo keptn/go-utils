@@ -11,6 +11,10 @@ import (
 
 const v1SequenceControlPath = "/v1/sequence/%s/%s/control"
 
+type SequencesV1Interface interface {
+	ControlSequence(params SequenceControlParams) error
+}
+
 type SequenceControlHandler struct {
 	BaseURL    string
 	AuthToken  string

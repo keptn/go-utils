@@ -14,6 +14,10 @@ import (
 
 const shipyardControllerBaseURL = "controlPlane"
 
+type ShipyardControlV1Interface interface {
+	GetOpenTriggeredEvents(filter EventFilter) ([]*models.KeptnContextExtendedCE, error)
+}
+
 // ShipyardControllerHandler handles services
 type ShipyardControllerHandler struct {
 	BaseURL    string

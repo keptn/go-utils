@@ -15,6 +15,14 @@ import (
 
 const v1ProjectPath = "/v1/project"
 
+type ProjectsV1Interface interface {
+	CreateProject(project models.Project) (*models.EventContext, *models.Error)
+	DeleteProject(project models.Project) (*models.EventContext, *models.Error)
+	GetProject(project models.Project) (*models.Project, *models.Error)
+	GetAllProjects() ([]*models.Project, error)
+	UpdateConfigurationServiceProject(project models.Project) (*models.EventContext, *models.Error)
+}
+
 // ProjectHandler handles projects
 type ProjectHandler struct {
 	BaseURL    string

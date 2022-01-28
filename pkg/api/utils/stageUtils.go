@@ -12,6 +12,11 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
+type StagesV1Interface interface {
+	CreateStage(project string, stageName string) (*models.EventContext, *models.Error)
+	GetAllStages(project string) ([]*models.Stage, error)
+}
+
 // StageHandler handles stages
 type StageHandler struct {
 	BaseURL    string

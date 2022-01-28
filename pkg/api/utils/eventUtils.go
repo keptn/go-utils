@@ -13,6 +13,11 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 )
 
+type EventsV1Interface interface {
+	GetEvents(filter *EventFilter) ([]*models.KeptnContextExtendedCE, *models.Error)
+	GetEventsWithRetry(filter *EventFilter, maxRetries int, retrySleepTime time.Duration) ([]*models.KeptnContextExtendedCE, error)
+}
+
 // EventHandler handles services
 type EventHandler struct {
 	BaseURL    string
