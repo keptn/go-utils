@@ -19,6 +19,27 @@ const pathToService = "/service"
 const pathToStage = "/stage"
 const pathToProject = v1ProjectPath + "/"
 
+type ResourcesV1Interface interface {
+	CreateResources(project string, stage string, service string, resources []*models.Resource) (*models.EventContext, *models.Error)
+	CreateProjectResources(project string, resources []*models.Resource) (string, error)
+	GetProjectResource(project string, resourceURI string, options ...GetOption) (*models.Resource, error)
+	UpdateProjectResource(project string, resource *models.Resource) (string, error)
+	DeleteProjectResource(project string, resourceURI string) error
+	UpdateProjectResources(project string, resources []*models.Resource) (string, error)
+	CreateStageResources(project string, stage string, resources []*models.Resource) (string, error)
+	GetStageResource(project string, stage string, resourceURI string, options ...GetOption) (*models.Resource, error)
+	UpdateStageResource(project string, stage string, resource *models.Resource) (string, error)
+	UpdateStageResources(project string, stage string, resources []*models.Resource) (string, error)
+	DeleteStageResource(project string, stage string, resourceURI string) error
+	CreateServiceResources(project string, stage string, service string, resources []*models.Resource) (string, error)
+	GetServiceResource(project string, stage string, service string, resourceURI string, options ...GetOption) (*models.Resource, error)
+	UpdateServiceResource(project string, stage string, service string, resource *models.Resource) (string, error)
+	UpdateServiceResources(project string, stage string, service string, resources []*models.Resource) (string, error)
+	DeleteServiceResource(project string, stage string, service string, resourceURI string) error
+	GetAllStageResources(project string, stage string) ([]*models.Resource, error)
+	GetAllServiceResources(project string, stage string, service string) ([]*models.Resource, error)
+}
+
 // ResourceHandler handles resources
 type ResourceHandler struct {
 	BaseURL    string

@@ -16,6 +16,14 @@ import (
 const uniformRegistrationBaseURL = "uniform/registration"
 const v1UniformPath = "/v1/uniform/registration"
 
+type UniformV1Interface interface {
+	Ping(integrationID string) (*models.Integration, error)
+	RegisterIntegration(integration models.Integration) (string, error)
+	CreateSubscription(integrationID string, subscription models.EventSubscription) (string, error)
+	UnregisterIntegration(integrationID string) error
+	GetRegistrations() ([]*models.Integration, error)
+}
+
 type UniformHandler struct {
 	BaseURL    string
 	AuthToken  string
