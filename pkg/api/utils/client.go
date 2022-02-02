@@ -20,6 +20,8 @@ type KeptnInterface interface {
 	ServicesV1() ServicesV1Interface
 	StagesV1() StagesV1Interface
 	UniformV1() UniformV1Interface
+	ProxyV1() ProxyV1Interface
+	ShipyardControlV1() ShipyardControlV1Interface
 }
 
 // APISet contains the API utils for all keptn APIs
@@ -41,6 +43,7 @@ type APISet struct {
 	stageHandler           *StageHandler
 	uniformHandler         *UniformHandler
 	shipyardControlHandler *ShipyardControllerHandler
+	proxyHandler           *ProxyHandler
 }
 
 // APIV1 retrieves the APIHandler
@@ -99,8 +102,13 @@ func (c *APISet) UniformV1() UniformV1Interface {
 }
 
 // ShipyardControlHandlerV1 retrieves the ShipyardControllerHandler
-func (c *APISet) ShipyardControlHandlerV1() *ShipyardControllerHandler {
+func (c *APISet) ShipyardControlV1() ShipyardControlV1Interface {
 	return c.shipyardControlHandler
+}
+
+// ProxyV1 retrieves the ProxyHandler
+func (c *APISet) ProxyV1() ProxyV1Interface {
+	return c.proxyHandler
 }
 
 // Token retrieves the API token
@@ -174,5 +182,6 @@ func New(baseURL string, options ...func(*APISet)) (*APISet, error) {
 	as.shipyardControlHandler = createAuthenticatedShipyardControllerHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
 	as.stageHandler = createAuthenticatedStageHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
 	as.uniformHandler = createAuthenticatedUniformHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.proxyHandler = createAuthProxyHandler(ProxyHost{Host: u.Host, Scheme: as.scheme}, as.httpClient)
 	return as, nil
 }
