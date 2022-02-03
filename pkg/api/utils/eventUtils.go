@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -54,12 +55,20 @@ func NewAuthenticatedEventHandler(baseURL string, authToken string, authHeader s
 		httpClient = &http.Client{}
 	}
 	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
-	return createAuthenticatedEventHandler(baseURL, authToken, authHeader, httpClient, scheme)
+	return createAuthenticatedEventHandler(baseURL, authToken, authHeader, httpClient, scheme, false)
 }
 
-func createAuthenticatedEventHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *EventHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
+func createAuthenticatedEventHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string, internal bool) *EventHandler {
+	baseURL = httputils.TrimHTTPScheme(baseURL)
+	if internal {
+		return &EventHandler{
+			BaseURL:    baseURL,
+			AuthHeader: "",
+			AuthToken:  "",
+			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
+			Scheme:     "http",
+		}
+	}
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, mongodbDatastoreServiceBaseUrl) {
 		baseURL += "/" + mongodbDatastoreServiceBaseUrl

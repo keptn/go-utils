@@ -43,11 +43,20 @@ func NewAuthenticatedUniformHandler(baseURL string, authToken string, authHeader
 		httpClient = &http.Client{}
 	}
 	httpClient.Transport = getClientTransport(httpClient.Transport)
-	return createAuthenticatedUniformHandler(baseURL, authToken, authHeader, httpClient, scheme)
+	return createAuthenticatedUniformHandler(baseURL, authToken, authHeader, httpClient, scheme, false)
 }
 
-func createAuthenticatedUniformHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *UniformHandler {
+func createAuthenticatedUniformHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string, internal bool) *UniformHandler {
 	baseURL = httputils.TrimHTTPScheme(baseURL)
+	if internal {
+		return &UniformHandler{
+			BaseURL:    baseURL,
+			AuthToken:  "",
+			AuthHeader: "",
+			HTTPClient: &http.Client{Transport: getClientTransport(nil)},
+			Scheme:     "http",
+		}
+	}
 	baseURL = strings.TrimRight(baseURL, "/")
 
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {

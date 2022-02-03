@@ -45,18 +45,24 @@ func NewAuthenticatedProjectHandler(baseURL string, authToken string, authHeader
 		httpClient = &http.Client{}
 	}
 	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
-	return createAuthProjectHandler(baseURL, authToken, authHeader, httpClient, scheme)
+	return createAuthProjectHandler(baseURL, authToken, authHeader, httpClient, scheme, false)
 }
 
-func createAuthProjectHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ProjectHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
+func createAuthProjectHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string, internal bool) *ProjectHandler {
+	baseURL = httputils.TrimHTTPScheme(baseURL)
+	if internal {
+		return &ProjectHandler{
+			BaseURL:    baseURL,
+			AuthHeader: "",
+			AuthToken:  "",
+			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
+			Scheme:     "http",
+		}
+	}
 	baseURL = strings.TrimRight(baseURL, "/")
-
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
-
 	return &ProjectHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,

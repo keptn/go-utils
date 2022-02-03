@@ -3,6 +3,7 @@ package api
 import (
 	"crypto/tls"
 	"errors"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -40,13 +41,20 @@ func NewAuthenticatedShipyardControllerHandler(baseURL string, authToken string,
 		httpClient = &http.Client{}
 	}
 	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
-	return createAuthenticatedShipyardControllerHandler(baseURL, authToken, authHeader, httpClient, scheme)
+	return createAuthenticatedShipyardControllerHandler(baseURL, authToken, authHeader, httpClient, scheme, false)
 }
 
-func createAuthenticatedShipyardControllerHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ShipyardControllerHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
-
+func createAuthenticatedShipyardControllerHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string, internal bool) *ShipyardControllerHandler {
+	baseURL = httputils.TrimHTTPScheme(baseURL)
+	if internal {
+		return &ShipyardControllerHandler{
+			BaseURL:    baseURL,
+			AuthHeader: "",
+			AuthToken:  "",
+			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
+			Scheme:     "http",
+		}
+	}
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL

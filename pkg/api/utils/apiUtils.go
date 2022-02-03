@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/keptn/go-utils/pkg/common/httputils"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -38,12 +39,20 @@ func NewAuthenticatedAPIHandler(baseURL string, authToken string, authHeader str
 		httpClient = &http.Client{}
 	}
 	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
-	return createAuthenticatedAPIHandler(baseURL, authToken, authHeader, httpClient, scheme)
+	return createAuthenticatedAPIHandler(baseURL, authToken, authHeader, httpClient, scheme, false)
 }
 
-func createAuthenticatedAPIHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *APIHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
+func createAuthenticatedAPIHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string, internal bool) *APIHandler {
+	baseURL = httputils.TrimHTTPScheme(baseURL)
+	if internal {
+		return &APIHandler{
+			BaseURL:    baseURL,
+			AuthHeader: "",
+			AuthToken:  "",
+			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
+			Scheme:     "http",
+		}
+	}
 	return &APIHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,

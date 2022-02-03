@@ -6,6 +6,7 @@ import (
 	b64 "encoding/base64"
 	"encoding/json"
 	"errors"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -103,12 +104,20 @@ func NewAuthenticatedResourceHandler(baseURL string, authToken string, authHeade
 		httpClient = &http.Client{}
 	}
 	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
-	return createAuthenticatedResourceHandler(baseURL, authToken, authHeader, httpClient, scheme)
+	return createAuthenticatedResourceHandler(baseURL, authToken, authHeader, httpClient, scheme, false)
 }
 
-func createAuthenticatedResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ResourceHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
+func createAuthenticatedResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string, internal bool) *ResourceHandler {
+	baseURL = httputils.TrimHTTPScheme(baseURL)
+	if internal {
+		return &ResourceHandler{
+			BaseURL:    baseURL,
+			AuthHeader: "",
+			AuthToken:  "",
+			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
+			Scheme:     "http",
+		}
+	}
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, configurationServiceBaseUrl) {
 		baseURL += "/" + configurationServiceBaseUrl

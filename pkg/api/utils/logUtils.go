@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -56,12 +57,24 @@ func NewAuthenticatedLogHandler(baseURL string, authToken string, authHeader str
 		httpClient = &http.Client{}
 	}
 	httpClient.Transport = getClientTransport(httpClient.Transport)
-	return createAuthenticatedLogHandler(baseURL, authToken, authHeader, httpClient, scheme)
+	return createAuthenticatedLogHandler(baseURL, authToken, authHeader, httpClient, scheme, false)
 }
 
-func createAuthenticatedLogHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *LogHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
+func createAuthenticatedLogHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string, internal bool) *LogHandler {
+	baseURL = httputils.TrimHTTPScheme(baseURL)
+	if internal {
+		return &LogHandler{
+			BaseURL:      baseURL,
+			AuthHeader:   "",
+			AuthToken:    "",
+			HTTPClient:   &http.Client{Transport: getClientTransport(nil)},
+			Scheme:       "http",
+			LogCache:     []models.LogEntry{},
+			TheClock:     clock.New(),
+			SyncInterval: defaultSyncInterval,
+		}
+	}
+
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
