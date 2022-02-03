@@ -29,18 +29,7 @@ type ShipyardControllerHandler struct {
 
 // NewShipyardControllerHandler returns a new ShipyardControllerHandler which sends all requests directly to the configuration-service
 func NewShipyardControllerHandler(baseURL string) *ShipyardControllerHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
-	return &ShipyardControllerHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
-		Scheme:     "http",
-	}
+	return createShipyardControlHandler(baseURL)
 }
 
 // NewAuthenticatedShipyardControllerHandler returns a new ShipyardControllerHandler that authenticates at the api via the provided token
@@ -68,6 +57,21 @@ func createAuthenticatedShipyardControllerHandler(baseURL string, authToken stri
 		AuthToken:  authToken,
 		HTTPClient: httpClient,
 		Scheme:     scheme,
+	}
+}
+
+func createShipyardControlHandler(baseURL string) *ShipyardControllerHandler {
+	if strings.Contains(baseURL, "https://") {
+		baseURL = strings.TrimPrefix(baseURL, "https://")
+	} else if strings.Contains(baseURL, "http://") {
+		baseURL = strings.TrimPrefix(baseURL, "http://")
+	}
+	return &ShipyardControllerHandler{
+		BaseURL:    baseURL,
+		AuthHeader: "",
+		AuthToken:  "",
+		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
+		Scheme:     "http",
 	}
 }
 

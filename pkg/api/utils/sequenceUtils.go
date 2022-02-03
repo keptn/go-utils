@@ -70,14 +70,7 @@ func (s *SequenceControlBody) FromJSON(b []byte) error {
 }
 
 func NewSequenceControlHandler(baseURL string) *SequenceControlHandler {
-	baseURL = httputils.TrimHTTPScheme(baseURL)
-	return &SequenceControlHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
-		Scheme:     "http",
-	}
+	return createSequenceControlHandler(baseURL)
 }
 
 // NewAuthenticatedSequenceControlHandler returns a new SequenceControlHandler that authenticates at the api via the provided token
@@ -105,6 +98,17 @@ func createAuthenticatedSequenceControlHandler(baseURL string, authToken string,
 		AuthToken:  authToken,
 		HTTPClient: httpClient,
 		Scheme:     scheme,
+	}
+}
+
+func createSequenceControlHandler(baseURL string) *SequenceControlHandler {
+	baseURL = httputils.TrimHTTPScheme(baseURL)
+	return &SequenceControlHandler{
+		BaseURL:    baseURL,
+		AuthHeader: "",
+		AuthToken:  "",
+		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
+		Scheme:     "http",
 	}
 }
 

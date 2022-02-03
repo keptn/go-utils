@@ -46,21 +46,7 @@ type LogHandler struct {
 }
 
 func NewLogHandler(baseURL string) *LogHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
-	return &LogHandler{
-		BaseURL:      baseURL,
-		AuthHeader:   "",
-		AuthToken:    "",
-		HTTPClient:   &http.Client{Transport: getClientTransport(nil)},
-		Scheme:       "http",
-		LogCache:     []models.LogEntry{},
-		TheClock:     clock.New(),
-		SyncInterval: defaultSyncInterval,
-	}
+	return createLogHandler(baseURL)
 }
 
 // NewAuthenticatedLogHandler returns a new EventHandler that authenticates at the endpoint via the provided token
@@ -87,6 +73,24 @@ func createAuthenticatedLogHandler(baseURL string, authToken string, authHeader 
 		AuthToken:    authToken,
 		HTTPClient:   httpClient,
 		Scheme:       scheme,
+		LogCache:     []models.LogEntry{},
+		TheClock:     clock.New(),
+		SyncInterval: defaultSyncInterval,
+	}
+}
+
+func createLogHandler(baseURL string) *LogHandler {
+	if strings.Contains(baseURL, "https://") {
+		baseURL = strings.TrimPrefix(baseURL, "https://")
+	} else if strings.Contains(baseURL, "http://") {
+		baseURL = strings.TrimPrefix(baseURL, "http://")
+	}
+	return &LogHandler{
+		BaseURL:      baseURL,
+		AuthHeader:   "",
+		AuthToken:    "",
+		HTTPClient:   &http.Client{Transport: getClientTransport(nil)},
+		Scheme:       "http",
 		LogCache:     []models.LogEntry{},
 		TheClock:     clock.New(),
 		SyncInterval: defaultSyncInterval,

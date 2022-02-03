@@ -92,18 +92,7 @@ func (r *resourceRequest) FromJSON(b []byte) error {
 
 // NewResourceHandler returns a new ResourceHandler which sends all requests directly to the configuration-service
 func NewResourceHandler(baseURL string) *ResourceHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
-	return &ResourceHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
-		Scheme:     "http",
-	}
+	return createResourceHandler(baseURL)
 }
 
 // NewAuthenticatedResourceHandler returns a new ResourceHandler that authenticates at the api via the provided token
@@ -130,6 +119,21 @@ func createAuthenticatedResourceHandler(baseURL string, authToken string, authHe
 		AuthToken:  authToken,
 		HTTPClient: httpClient,
 		Scheme:     scheme,
+	}
+}
+
+func createResourceHandler(baseURL string) *ResourceHandler {
+	if strings.Contains(baseURL, "https://") {
+		baseURL = strings.TrimPrefix(baseURL, "https://")
+	} else if strings.Contains(baseURL, "http://") {
+		baseURL = strings.TrimPrefix(baseURL, "http://")
+	}
+	return &ResourceHandler{
+		BaseURL:    baseURL,
+		AuthHeader: "",
+		AuthToken:  "",
+		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
+		Scheme:     "http",
 	}
 }
 

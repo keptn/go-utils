@@ -149,6 +149,42 @@ func WithScheme(scheme string) func(*APISet) {
 	}
 }
 
+func NewInternal(baseURL string, options ...func(set *APISet)) (*APISet, error) {
+	u, err := url.Parse(baseURL)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create apiset: %w", err)
+	}
+	as := &APISet{}
+	for _, o := range options {
+		o(as)
+	}
+	as.endpointURL = u
+	as.httpClient = createInstrumentedClientTransport(as.httpClient)
+
+	if as.scheme == "" {
+		if as.endpointURL.Scheme != "" {
+			as.scheme = u.Scheme
+		} else {
+			as.scheme = "http"
+		}
+	}
+
+	as.apiHandler = createAPIHandler(baseURL)
+	as.authHandler = createAuthHandler(baseURL)
+	as.logHandler = NewLogHandler(baseURL)
+	as.eventHandler = NewEventHandler(baseURL)
+	as.projectHandler = createProjectHandler(baseURL)
+	as.resourceHandler = createResourceHandler(baseURL)
+	as.secretHandler = createSecretHandler(baseURL)
+	as.sequenceControlHandler = createSequenceControlHandler(baseURL)
+	as.serviceHandler = createServiceHandler(baseURL)
+	as.shipyardControlHandler = createShipyardControlHandler(baseURL)
+	as.stageHandler = createStageHandler(baseURL)
+	as.uniformHandler = createUniformHandler(baseURL)
+	as.proxyHandler = createProxyHandler(ProxyHost{Host: u.Host, Scheme: as.scheme}, as.httpClient)
+	return as, nil
+}
+
 // New creates a new APISet instance
 func New(baseURL string, options ...func(*APISet)) (*APISet, error) {
 	u, err := url.Parse(baseURL)
@@ -182,6 +218,6 @@ func New(baseURL string, options ...func(*APISet)) (*APISet, error) {
 	as.shipyardControlHandler = createAuthenticatedShipyardControllerHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
 	as.stageHandler = createAuthenticatedStageHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
 	as.uniformHandler = createAuthenticatedUniformHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
-	as.proxyHandler = createAuthProxyHandler(ProxyHost{Host: u.Host, Scheme: as.scheme}, as.httpClient)
+	as.proxyHandler = createProxyHandler(ProxyHost{Host: u.Host, Scheme: as.scheme}, as.httpClient)
 	return as, nil
 }

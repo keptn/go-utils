@@ -21,7 +21,7 @@ type ProxyHandler struct {
 	HttpClient *http.Client
 }
 
-func createAuthProxyHandler(proxyHost ProxyHost, httpClient *http.Client) *ProxyHandler {
+func createProxyHandler(proxyHost ProxyHost, httpClient *http.Client) *ProxyHandler {
 	return &ProxyHandler{
 		ProxyHost:  proxyHost,
 		HttpClient: httpClient,

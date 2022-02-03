@@ -33,14 +33,7 @@ type UniformHandler struct {
 }
 
 func NewUniformHandler(baseURL string) *UniformHandler {
-	baseURL = httputils.TrimHTTPScheme(baseURL)
-	return &UniformHandler{
-		BaseURL:    baseURL,
-		AuthToken:  "",
-		AuthHeader: "",
-		HTTPClient: &http.Client{Transport: getClientTransport(nil)},
-		Scheme:     "http",
-	}
+	return createUniformHandler(baseURL)
 }
 
 // NewAuthenticatedUniformHandler returns a new UniformHandler that authenticates at the api via the provided token
@@ -67,6 +60,17 @@ func createAuthenticatedUniformHandler(baseURL string, authToken string, authHea
 		AuthToken:  authToken,
 		HTTPClient: httpClient,
 		Scheme:     scheme,
+	}
+}
+
+func createUniformHandler(baseURL string) *UniformHandler {
+	baseURL = httputils.TrimHTTPScheme(baseURL)
+	return &UniformHandler{
+		BaseURL:    baseURL,
+		AuthToken:  "",
+		AuthHeader: "",
+		HTTPClient: &http.Client{Transport: getClientTransport(nil)},
+		Scheme:     "http",
 	}
 }
 

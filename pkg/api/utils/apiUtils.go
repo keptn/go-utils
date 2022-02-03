@@ -53,6 +53,21 @@ func createAuthenticatedAPIHandler(baseURL string, authToken string, authHeader 
 	}
 }
 
+func createAPIHandler(baseURL string) *APIHandler {
+	if strings.Contains(baseURL, "https://") {
+		baseURL = strings.TrimPrefix(baseURL, "https://")
+	} else if strings.Contains(baseURL, "http://") {
+		baseURL = strings.TrimPrefix(baseURL, "http://")
+	}
+	return &APIHandler{
+		BaseURL:    baseURL,
+		AuthHeader: "",
+		AuthToken:  "",
+		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
+		Scheme:     "http",
+	}
+}
+
 func (a *APIHandler) getBaseURL() string {
 	return a.BaseURL
 }
