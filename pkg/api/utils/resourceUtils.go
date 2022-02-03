@@ -63,27 +63,55 @@ type ResourceScope struct {
 	resource string
 }
 
-func NewResourceScope(project, stage, service, resource string) *ResourceScope {
-	return &ResourceScope{
-		project:  project,
-		stage:    stage,
-		service:  service,
-		resource: resource,
-	}
+//NewResourceScope returns an empty ResourceScope to fill in calling Project Stage Service or Resource functions
+func NewResourceScope() *ResourceScope {
+	return &ResourceScope{}
 }
 
+//Project sets the resource scope project value
+func (s *ResourceScope) Project(project string) *ResourceScope {
+	s.project = project
+	return s
+}
+
+//Stage sets the resource scope stage value
+func (s *ResourceScope) Stage(stage string) *ResourceScope {
+	s.stage = stage
+	return s
+}
+
+//Service sets the resource scope service value
+func (s *ResourceScope) Service(service string) *ResourceScope {
+	s.service = service
+	return s
+}
+
+//Resource sets the resource scope resource
+func (s *ResourceScope) Resource(resource string) *ResourceScope {
+	s.resource = resource
+	return s
+}
+
+//GetProjectPath returns a string to construct the url to path eg. /<api-version>/project/<project-name>
+// or an empty string if the project is not set
 func (s *ResourceScope) GetProjectPath() string {
 	return buildPath(v1ProjectPath, s.project)
 }
 
+//GetStagePath returns a string to construct the url to a stage eg. /stage/<stage-name>
+//or an empty string if the stage is unset
 func (s *ResourceScope) GetStagePath() string {
 	return buildPath(pathToStage, s.stage)
 }
 
+//GetServicePath returns a string to construct the url to a service eg. /service/<service-name>
+//or an empty string if the service is unset
 func (s *ResourceScope) GetServicePath() string {
 	return buildPath(pathToService, url.QueryEscape(s.service))
 }
 
+//GetResourcePath returns a string to construct the url to a resource eg. /resource/<escaped-resource-name>
+//or /resource if the resource scope is empty
 func (s *ResourceScope) GetResourcePath() string {
 	path := pathToResource
 	if s.resource != "" {
@@ -97,10 +125,11 @@ func (r *ResourceHandler) buildResourceURI(scope ResourceScope) string {
 	return buildURI
 }
 
-type GetOption func(url string) string
+// GetOp
+type URIOption func(url string) string
 
 //AppendQuery returns an option function that can modify an URI by appending a map of url query values
-func AppendQuery(queryParams url.Values) GetOption {
+func AppendQuery(queryParams url.Values) URIOption {
 	return func(buildURI string) string {
 		if queryParams != nil {
 			buildURI = buildURI + "?" + queryParams.Encode()
@@ -109,7 +138,7 @@ func AppendQuery(queryParams url.Values) GetOption {
 	}
 }
 
-func (r *ResourceHandler) applyOptions(buildURI string, options []GetOption) string {
+func (r *ResourceHandler) applyOptions(buildURI string, options []URIOption) string {
 	for _, option := range options {
 		buildURI = option(buildURI)
 	}
@@ -398,22 +427,26 @@ func (r *ResourceHandler) writeResource(uri string, method string, resource *mod
 	return version.Version, nil
 }
 
-func (r *ResourceHandler) GetResource(scope ResourceScope, options ...GetOption) (*models.Resource, error) {
+//GetResource returns a resource from the defined ResourceScope after applying all URI change configured in the options
+func (r *ResourceHandler) GetResource(scope ResourceScope, options ...URIOption) (*models.Resource, error) {
 	buildURI := r.buildResourceURI(scope)
 	return r.getResource(r.applyOptions(buildURI, options))
 }
 
-func (r *ResourceHandler) DeleteResource(scope ResourceScope, options ...GetOption) error {
+//DeleteResource delete a resource from the URI defined by ResourceScope  and modified by the URIOption
+func (r *ResourceHandler) DeleteResource(scope ResourceScope, options ...URIOption) error {
 	buildURI := r.buildResourceURI(scope)
 	return r.deleteResource(r.applyOptions(buildURI, options))
 }
 
-func (r *ResourceHandler) UpdateResource(resource *models.Resource, scope ResourceScope, options ...GetOption) (string, error) {
+//UpdateResource updates a resource from the URI defined by ResourceScope  and modified by the URIOption
+func (r *ResourceHandler) UpdateResource(resource *models.Resource, scope ResourceScope, options ...URIOption) (string, error) {
 	buildURI := r.buildResourceURI(scope)
 	return r.updateResource(r.applyOptions(buildURI, options), resource)
 }
 
-func (r *ResourceHandler) CreateResource(resource []*models.Resource, scope ResourceScope, options ...GetOption) (string, error) {
+//CreateResource creates one or more resources at the URI defined by ResourceScope and modified by the URIOption
+func (r *ResourceHandler) CreateResource(resource []*models.Resource, scope ResourceScope, options ...URIOption) (string, error) {
 	buildURI := r.buildResourceURI(scope)
 	return r.createResources(r.applyOptions(buildURI, options), resource)
 }
