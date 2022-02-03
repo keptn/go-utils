@@ -72,7 +72,7 @@ func TestResourceHandler_buildResourceURI(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			scope := *NewResourceScope(tt.project, tt.stage, tt.service, tt.resource)
+			scope := *NewResourceScope().Project(tt.project).Service(tt.service).Resource(tt.resource).Stage(tt.stage)
 			assert.Equalf(t, tt.want, r.buildResourceURI(scope), "buildResourceURI(%v)", scope)
 		})
 	}

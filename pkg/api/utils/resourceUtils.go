@@ -125,7 +125,7 @@ func (r *ResourceHandler) buildResourceURI(scope ResourceScope) string {
 	return buildURI
 }
 
-// GetOp
+// URIOption returns a function that modifies a url
 type URIOption func(url string) string
 
 //AppendQuery returns an option function that can modify an URI by appending a map of url query values
