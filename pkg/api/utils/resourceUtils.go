@@ -17,7 +17,7 @@ import (
 const pathToResource = "/resource"
 const pathToService = "/service"
 const pathToStage = "/stage"
-const configurationServiceBaseUrl = "configuration-service"
+const configurationServiceBaseURL = "configuration-service"
 
 var ResourceNotFoundError = errors.New("Resource not found")
 
