@@ -21,7 +21,7 @@ func TestResourceHandler_buildResourceURI(t *testing.T) {
 			stage:    "",
 			service:  "",
 			resource: "",
-			want:     scheme + "://" + configurationServiceBaseUrl + v1ProjectPath + "/myproject/resource",
+			want:     scheme + "://" + configurationServiceBaseURL + v1ProjectPath + "/myproject/resource",
 		},
 		{
 			name:     "project resource",
@@ -29,7 +29,7 @@ func TestResourceHandler_buildResourceURI(t *testing.T) {
 			stage:    "",
 			service:  "",
 			resource: "metadata.yaml",
-			want:     scheme + "://" + configurationServiceBaseUrl + v1ProjectPath + "/myproject/resource/metadata.yaml",
+			want:     scheme + "://" + configurationServiceBaseURL + v1ProjectPath + "/myproject/resource/metadata.yaml",
 		},
 		{
 			name:     "stage resource",
@@ -37,7 +37,7 @@ func TestResourceHandler_buildResourceURI(t *testing.T) {
 			stage:    "dev",
 			service:  "",
 			resource: "metadata.yaml",
-			want:     scheme + "://" + configurationServiceBaseUrl + v1ProjectPath + "/sockshop" + pathToStage + "/dev/resource/metadata.yaml",
+			want:     scheme + "://" + configurationServiceBaseURL + v1ProjectPath + "/sockshop" + pathToStage + "/dev/resource/metadata.yaml",
 		},
 		{
 			name:     "service resource",
@@ -45,7 +45,7 @@ func TestResourceHandler_buildResourceURI(t *testing.T) {
 			stage:    "dev",
 			service:  "helloservice",
 			resource: "hello.go",
-			want:     scheme + "://" + configurationServiceBaseUrl + v1ProjectPath + "/sockshop" + pathToStage + "/dev/service/helloservice/resource/hello.go",
+			want:     scheme + "://" + configurationServiceBaseURL + v1ProjectPath + "/sockshop" + pathToStage + "/dev/service/helloservice/resource/hello.go",
 		},
 		{
 			name:     "service resources",
@@ -53,7 +53,7 @@ func TestResourceHandler_buildResourceURI(t *testing.T) {
 			stage:    "dev",
 			service:  "helloservice",
 			resource: "",
-			want:     scheme + "://" + configurationServiceBaseUrl + v1ProjectPath + "/sockshop" + pathToStage + "/dev/service/helloservice/resource",
+			want:     scheme + "://" + configurationServiceBaseURL + v1ProjectPath + "/sockshop" + pathToStage + "/dev/service/helloservice/resource",
 		},
 		{
 			name:     "service resource escape / ",
@@ -61,12 +61,12 @@ func TestResourceHandler_buildResourceURI(t *testing.T) {
 			stage:    "dev",
 			service:  "helloservice",
 			resource: "helm%2Fhelloservice.tgz",
-			want:     scheme + "://" + configurationServiceBaseUrl + v1ProjectPath + "/sockshop" + pathToStage + "/dev/service/helloservice/resource/helm%252Fhelloservice.tgz",
+			want:     scheme + "://" + configurationServiceBaseURL + v1ProjectPath + "/sockshop" + pathToStage + "/dev/service/helloservice/resource/helm%252Fhelloservice.tgz",
 		},
 	}
 
 	r := &ResourceHandler{
-		BaseURL: configurationServiceBaseUrl,
+		BaseURL: configurationServiceBaseURL,
 		Scheme:  scheme,
 	}
 

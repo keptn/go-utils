@@ -63,54 +63,54 @@ type ResourceScope struct {
 	resource string
 }
 
-//NewResourceScope returns an empty ResourceScope to fill in calling Project Stage Service or Resource functions
+// NewResourceScope returns an empty ResourceScope to fill in calling Project Stage Service or Resource functions
 func NewResourceScope() *ResourceScope {
 	return &ResourceScope{}
 }
 
-//Project sets the resource scope project value
+// Project sets the resource scope project value
 func (s *ResourceScope) Project(project string) *ResourceScope {
 	s.project = project
 	return s
 }
 
-//Stage sets the resource scope stage value
+// Stage sets the resource scope stage value
 func (s *ResourceScope) Stage(stage string) *ResourceScope {
 	s.stage = stage
 	return s
 }
 
-//Service sets the resource scope service value
+// Service sets the resource scope service value
 func (s *ResourceScope) Service(service string) *ResourceScope {
 	s.service = service
 	return s
 }
 
-//Resource sets the resource scope resource
+// Resource sets the resource scope resource
 func (s *ResourceScope) Resource(resource string) *ResourceScope {
 	s.resource = resource
 	return s
 }
 
-//GetProjectPath returns a string to construct the url to path eg. /<api-version>/project/<project-name>
-// or an empty string if the project is not set
+// GetProjectPath returns a string to construct the url to path eg. /<api-version>/project/<project-name>
+//or an empty string if the project is not set
 func (s *ResourceScope) GetProjectPath() string {
 	return buildPath(v1ProjectPath, s.project)
 }
 
-//GetStagePath returns a string to construct the url to a stage eg. /stage/<stage-name>
+// GetStagePath returns a string to construct the url to a stage eg. /stage/<stage-name>
 //or an empty string if the stage is unset
 func (s *ResourceScope) GetStagePath() string {
 	return buildPath(pathToStage, s.stage)
 }
 
-//GetServicePath returns a string to construct the url to a service eg. /service/<service-name>
+// GetServicePath returns a string to construct the url to a service eg. /service/<service-name>
 //or an empty string if the service is unset
 func (s *ResourceScope) GetServicePath() string {
 	return buildPath(pathToService, url.QueryEscape(s.service))
 }
 
-//GetResourcePath returns a string to construct the url to a resource eg. /resource/<escaped-resource-name>
+// GetResourcePath returns a string to construct the url to a resource eg. /resource/<escaped-resource-name>
 //or /resource if the resource scope is empty
 func (s *ResourceScope) GetResourcePath() string {
 	path := pathToResource
@@ -125,10 +125,10 @@ func (r *ResourceHandler) buildResourceURI(scope ResourceScope) string {
 	return buildURI
 }
 
-// URIOption returns a function that modifies a url
+// URIOption returns a function that modifies an url
 type URIOption func(url string) string
 
-//AppendQuery returns an option function that can modify an URI by appending a map of url query values
+// AppendQuery returns an option function that can modify an URI by appending a map of url query values
 func AppendQuery(queryParams url.Values) URIOption {
 	return func(buildURI string) string {
 		if queryParams != nil {
@@ -190,8 +190,8 @@ func createAuthenticatedResourceHandler(baseURL string, authToken string, authHe
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
 	baseURL = strings.TrimRight(baseURL, "/")
-	if !strings.HasSuffix(baseURL, configurationServiceBaseUrl) {
-		baseURL += "/" + configurationServiceBaseUrl
+	if !strings.HasSuffix(baseURL, configurationServiceBaseURL) {
+		baseURL += "/" + configurationServiceBaseURL
 	}
 	return &ResourceHandler{
 		BaseURL:    baseURL,
@@ -274,7 +274,7 @@ func (r *ResourceHandler) UpdateProjectResources(project string, resources []*mo
 }
 
 // CreateStageResources creates a stage resource
-//Deprecated: use CreateResource instead
+// Deprecated: use CreateResource instead
 func (r *ResourceHandler) CreateStageResources(project string, stage string, resources []*models.Resource) (string, error) {
 	return r.createResources(r.Scheme+"://"+r.BaseURL+v1ProjectPath+project+pathToStage+"/"+stage+pathToResource, resources)
 }
