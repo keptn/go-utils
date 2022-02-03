@@ -105,6 +105,9 @@ func (u *UniformHandler) Ping(integrationID string) (*models.Integration, error)
 }
 
 func (u *UniformHandler) RegisterIntegration(integration models.Integration) (string, error) {
+	fmt.Println("REGISTER INTEGRATION")
+	fmt.Println("USING BASE URL: " + u.getBaseURL())
+	fmt.Println(u.Scheme + "://" + u.getBaseURL() + v1UniformPath)
 	bodyStr, err := integration.ToJSON()
 	if err != nil {
 		return "", err
