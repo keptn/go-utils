@@ -236,11 +236,11 @@ func (r *ResourceHandler) CreateResources(project string, stage string, service 
 	}
 
 	if project != "" && stage != "" && service != "" {
-		return postWithEventContext(r.Scheme+"://"+r.BaseURL+v1ProjectPath+project+pathToStage+"/"+stage+pathToService+"/"+service+pathToResource, requestStr, r)
+		return postWithEventContext(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+service+pathToResource, requestStr, r)
 	} else if project != "" && stage != "" && service == "" {
-		return postWithEventContext(r.Scheme+"://"+r.BaseURL+v1ProjectPath+project+pathToStage+"/"+stage+pathToResource, requestStr, r)
+		return postWithEventContext(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToResource, requestStr, r)
 	} else {
-		return postWithEventContext(r.Scheme+"://"+r.BaseURL+v1ProjectPath+project+pathToResource, requestStr, r)
+		return postWithEventContext(r.Scheme+"://"+r.BaseURL+v1ProjectPath+project+"/"+pathToResource, requestStr, r)
 	}
 }
 
@@ -259,7 +259,7 @@ func (r *ResourceHandler) GetProjectResource(project string, resourceURI string)
 // UpdateProjectResource updates a project resource
 // Deprecated: use UpdateResource instead
 func (r *ResourceHandler) UpdateProjectResource(project string, resource *models.Resource) (string, error) {
-	return r.updateResource(r.Scheme+"://"+r.BaseURL+v1ProjectPath+project+pathToResource+"/"+url.QueryEscape(*resource.ResourceURI), resource)
+	return r.updateResource(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToResource+"/"+url.QueryEscape(*resource.ResourceURI), resource)
 }
 
 // DeleteProjectResource deletes a project resource
@@ -270,13 +270,13 @@ func (r *ResourceHandler) DeleteProjectResource(project string, resourceURI stri
 
 // UpdateProjectResources updates multiple project resources
 func (r *ResourceHandler) UpdateProjectResources(project string, resources []*models.Resource) (string, error) {
-	return r.updateResources(r.Scheme+"://"+r.BaseURL+v1ProjectPath+project+pathToResource, resources)
+	return r.updateResources(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToResource, resources)
 }
 
 // CreateStageResources creates a stage resource
 // Deprecated: use CreateResource instead
 func (r *ResourceHandler) CreateStageResources(project string, stage string, resources []*models.Resource) (string, error) {
-	return r.createResources(r.Scheme+"://"+r.BaseURL+v1ProjectPath+project+pathToStage+"/"+stage+pathToResource, resources)
+	return r.createResources(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToResource, resources)
 }
 
 // GetStageResource retrieves a stage resource from the configuration service
@@ -289,13 +289,13 @@ func (r *ResourceHandler) GetStageResource(project string, stage string, resourc
 // UpdateStageResource updates a stage resource
 // Deprecated: use UpdateResource instead
 func (r *ResourceHandler) UpdateStageResource(project string, stage string, resource *models.Resource) (string, error) {
-	return r.updateResource(r.Scheme+"://"+r.BaseURL+v1ProjectPath+project+pathToStage+"/"+stage+pathToResource+"/"+url.QueryEscape(*resource.ResourceURI), resource)
+	return r.updateResource(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToResource+"/"+url.QueryEscape(*resource.ResourceURI), resource)
 }
 
 // UpdateStageResources updates multiple stage resources
 // Deprecated: use UpdateResource instead
 func (r *ResourceHandler) UpdateStageResources(project string, stage string, resources []*models.Resource) (string, error) {
-	return r.updateResources(r.Scheme+"://"+r.BaseURL+v1ProjectPath+project+pathToStage+"/"+stage+pathToResource, resources)
+	return r.updateResources(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToResource, resources)
 }
 
 // DeleteStageResource deletes a stage resource
@@ -307,7 +307,7 @@ func (r *ResourceHandler) DeleteStageResource(project string, stage string, reso
 // CreateServiceResources creates a service resource
 // Deprecated: use CreateResource instead
 func (r *ResourceHandler) CreateServiceResources(project string, stage string, service string, resources []*models.Resource) (string, error) {
-	return r.createResources(r.Scheme+"://"+r.BaseURL+v1ProjectPath+project+pathToStage+"/"+stage+pathToService+"/"+service+pathToResource, resources)
+	return r.createResources(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+service+pathToResource, resources)
 }
 
 // GetServiceResource retrieves a service resource from the configuration service
@@ -320,12 +320,12 @@ func (r *ResourceHandler) GetServiceResource(project string, stage string, servi
 // UpdateServiceResource updates a service resource
 // Deprecated: use UpdateResource instead
 func (r *ResourceHandler) UpdateServiceResource(project string, stage string, service string, resource *models.Resource) (string, error) {
-	return r.updateResource(r.Scheme+"://"+r.BaseURL+v1ProjectPath+project+pathToStage+"/"+stage+pathToService+"/"+url.QueryEscape(service)+pathToResource+"/"+url.QueryEscape(*resource.ResourceURI), resource)
+	return r.updateResource(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+url.QueryEscape(service)+pathToResource+"/"+url.QueryEscape(*resource.ResourceURI), resource)
 }
 
 // UpdateServiceResources updates multiple service resources
 func (r *ResourceHandler) UpdateServiceResources(project string, stage string, service string, resources []*models.Resource) (string, error) {
-	return r.updateResources(r.Scheme+"://"+r.BaseURL+v1ProjectPath+project+pathToStage+"/"+stage+pathToService+"/"+url.QueryEscape(service)+pathToResource, resources)
+	return r.updateResources(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+url.QueryEscape(service)+pathToResource, resources)
 }
 
 // DeleteServiceResource deletes a service resource
