@@ -240,7 +240,7 @@ func (r *ResourceHandler) CreateResources(project string, stage string, service 
 	} else if project != "" && stage != "" && service == "" {
 		return postWithEventContext(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToResource, requestStr, r)
 	} else {
-		return postWithEventContext(r.Scheme+"://"+r.BaseURL+v1ProjectPath+project+"/"+pathToResource, requestStr, r)
+		return postWithEventContext(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+"/"+pathToResource, requestStr, r)
 	}
 }
 
