@@ -20,7 +20,6 @@ type KeptnInterface interface {
 	ServicesV1() ServicesV1Interface
 	StagesV1() StagesV1Interface
 	UniformV1() UniformV1Interface
-	ProxyV1() ProxyV1Interface
 	ShipyardControlV1() ShipyardControlV1Interface
 }
 
@@ -44,7 +43,6 @@ type APISet struct {
 	stageHandler           *StageHandler
 	uniformHandler         *UniformHandler
 	shipyardControlHandler *ShipyardControllerHandler
-	proxyHandler           *ProxyHandler
 }
 
 // APIV1 retrieves the APIHandler
@@ -102,14 +100,9 @@ func (c *APISet) UniformV1() UniformV1Interface {
 	return c.uniformHandler
 }
 
-// ShipyardControlHandlerV1 retrieves the ShipyardControllerHandler
+// ShipyardControlV1 retrieves the ShipyardControllerHandler
 func (c *APISet) ShipyardControlV1() ShipyardControlV1Interface {
 	return c.shipyardControlHandler
-}
-
-// ProxyV1 retrieves the ProxyHandler
-func (c *APISet) ProxyV1() ProxyV1Interface {
-	return c.proxyHandler
 }
 
 // Token retrieves the API token
@@ -191,7 +184,6 @@ func New(baseURL string, options ...func(*APISet)) (*APISet, error) {
 	as.shipyardControlHandler = createAuthenticatedShipyardControllerHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme, as.internal)
 	as.stageHandler = createAuthenticatedStageHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme, as.internal)
 	as.uniformHandler = createAuthenticatedUniformHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme, as.internal)
-	as.proxyHandler = createProxyHandler(ProxyHost{Host: u.Host, Scheme: as.scheme}, as.httpClient)
 	return as, nil
 }
 
@@ -209,7 +201,6 @@ type InternalAPISet struct {
 	stageHandler           *StageHandler
 	uniformHandler         *UniformHandler
 	shipyardControlHandler *ShipyardControllerHandler
-	proxyHandler           ProxyV1Interface
 }
 
 type InternalService int
@@ -224,9 +215,7 @@ const (
 
 type InClusterAPIMappings map[InternalService]string
 
-type PathToHostProxyMappings map[string]string
-
-func NewInternal(apiMappings InClusterAPIMappings, pathToHostProxyMappings PathToHostProxyMappings, client *http.Client) (*InternalAPISet, error) {
+func NewInternal(apiMappings InClusterAPIMappings, client *http.Client) (*InternalAPISet, error) {
 	if client == nil {
 		client = &http.Client{}
 	}
@@ -245,7 +234,6 @@ func NewInternal(apiMappings InClusterAPIMappings, pathToHostProxyMappings PathT
 	as.shipyardControlHandler = createAuthenticatedShipyardControllerHandler(apiMappings[ShipyardController], "", "", as.httpClient, "http", true)
 	as.stageHandler = createAuthenticatedStageHandler(apiMappings[ShipyardController], "", "", as.httpClient, "http", true)
 	as.uniformHandler = createAuthenticatedUniformHandler(apiMappings[ShipyardController], "", "", as.httpClient, "http", true)
-	as.proxyHandler = createInternalProxyHandler(pathToHostProxyMappings, as.httpClient)
 
 	return as, nil
 }
@@ -308,9 +296,4 @@ func (c *InternalAPISet) UniformV1() UniformV1Interface {
 // ShipyardControlV1 retrieves the ShipyardControllerHandler
 func (c *InternalAPISet) ShipyardControlV1() ShipyardControlV1Interface {
 	return c.shipyardControlHandler
-}
-
-// ProxyV1 retrieves the ProxyHandler
-func (c *InternalAPISet) ProxyV1() ProxyV1Interface {
-	return c.proxyHandler
 }
