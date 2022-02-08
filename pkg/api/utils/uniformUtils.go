@@ -53,7 +53,7 @@ func createAuthenticatedUniformHandler(baseURL string, authToken string, authHea
 			BaseURL:    baseURL,
 			AuthToken:  "",
 			AuthHeader: "",
-			HTTPClient: &http.Client{Transport: getClientTransport(nil)},
+			HTTPClient: &http.Client{Transport: getClientTransport(httpClient.Transport)},
 			Scheme:     "http",
 		}
 	}

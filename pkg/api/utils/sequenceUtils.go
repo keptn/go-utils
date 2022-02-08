@@ -90,7 +90,7 @@ func createAuthenticatedSequenceControlHandler(baseURL string, authToken string,
 			BaseURL:    baseURL,
 			AuthHeader: "",
 			AuthToken:  "",
-			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
+			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(httpClient.Transport))},
 			Scheme:     "http",
 		}
 	}

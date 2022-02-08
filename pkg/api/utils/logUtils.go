@@ -67,7 +67,7 @@ func createAuthenticatedLogHandler(baseURL string, authToken string, authHeader 
 			BaseURL:      baseURL,
 			AuthHeader:   "",
 			AuthToken:    "",
-			HTTPClient:   &http.Client{Transport: getClientTransport(nil)},
+			HTTPClient:   &http.Client{Transport: getClientTransport(httpClient.Transport)},
 			Scheme:       "http",
 			LogCache:     []models.LogEntry{},
 			TheClock:     clock.New(),

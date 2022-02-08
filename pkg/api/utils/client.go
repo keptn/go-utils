@@ -143,14 +143,6 @@ func WithScheme(scheme string) func(*APISet) {
 	}
 }
 
-// Internal configures the APISet to be used
-// internally within the control plane
-func Internal() func(*APISet) {
-	return func(a *APISet) {
-		a.internal = true
-	}
-}
-
 // New creates a new APISet instance
 func New(baseURL string, options ...func(*APISet)) (*APISet, error) {
 	u, err := url.Parse(baseURL)
@@ -161,6 +153,7 @@ func New(baseURL string, options ...func(*APISet)) (*APISet, error) {
 	for _, o := range options {
 		o(as)
 	}
+	as.internal = false
 	as.endpointURL = u
 	as.httpClient = createInstrumentedClientTransport(as.httpClient)
 
@@ -188,19 +181,8 @@ func New(baseURL string, options ...func(*APISet)) (*APISet, error) {
 }
 
 type InternalAPISet struct {
-	httpClient             *http.Client
-	apiHandler             *APIHandler
-	authHandler            *AuthHandler
-	eventHandler           *EventHandler
-	logHandler             *LogHandler
-	projectHandler         *ProjectHandler
-	resourceHandler        *ResourceHandler
-	secretHandler          *SecretHandler
-	sequenceControlHandler *SequenceControlHandler
-	serviceHandler         *ServiceHandler
-	stageHandler           *StageHandler
-	uniformHandler         *UniformHandler
-	shipyardControlHandler *ShipyardControllerHandler
+	*APISet
+	httpClient *http.Client
 }
 
 type InternalService int
@@ -210,30 +192,47 @@ const (
 	ShipyardController
 	ApiService
 	SecretService
-	Unknown
+	MongoDBDatastore
 )
 
 type InClusterAPIMappings map[InternalService]string
 
-func NewInternal(apiMappings InClusterAPIMappings, client *http.Client) (*InternalAPISet, error) {
+var DefaultInClusterAPIMappings = InClusterAPIMappings{
+	ConfigurationService: "configuration-service:8080",
+	ShipyardController:   "shipyard-controller:8080",
+	ApiService:           "api-service:8080",
+	SecretService:        "secret-service:8080",
+	MongoDBDatastore:     "mongodb-datastore:8080",
+}
+
+func NewInternal(client *http.Client, apiMappings ...InClusterAPIMappings) (*InternalAPISet, error) {
+	var apiMap InClusterAPIMappings
+	if len(apiMappings) > 0 {
+		apiMap = apiMappings[0]
+	} else {
+		apiMap = DefaultInClusterAPIMappings
+	}
+
 	if client == nil {
 		client = &http.Client{}
 	}
-	as := &InternalAPISet{}
+
+	as := &InternalAPISet{APISet: &APISet{}}
+	as.internal = true
 
 	as.httpClient = client
-	as.apiHandler = createAuthenticatedAPIHandler(apiMappings[Unknown], "", "", as.httpClient, "http", true)
-	as.authHandler = createAuthenticatedAuthHandler(apiMappings[ApiService], "", "", as.httpClient, "http", true)
-	as.logHandler = createAuthenticatedLogHandler(apiMappings[ShipyardController], "", "", as.httpClient, "http", true)
-	as.eventHandler = createAuthenticatedEventHandler(apiMappings[ApiService], "", "", as.httpClient, "http", true)
-	as.projectHandler = createAuthProjectHandler(apiMappings[ShipyardController], "", "", as.httpClient, "http", true)
-	as.resourceHandler = createAuthenticatedResourceHandler(apiMappings[ConfigurationService], "", "", as.httpClient, "http", true)
-	as.secretHandler = createAuthenticatedSecretHandler(apiMappings[SecretService], "", "", as.httpClient, "http", true)
-	as.sequenceControlHandler = createAuthenticatedSequenceControlHandler(apiMappings[ShipyardController], "", "", as.httpClient, "http", true)
-	as.serviceHandler = createAuthenticatedServiceHandler(apiMappings[ShipyardController], "", "", as.httpClient, "http", true)
-	as.shipyardControlHandler = createAuthenticatedShipyardControllerHandler(apiMappings[ShipyardController], "", "", as.httpClient, "http", true)
-	as.stageHandler = createAuthenticatedStageHandler(apiMappings[ShipyardController], "", "", as.httpClient, "http", true)
-	as.uniformHandler = createAuthenticatedUniformHandler(apiMappings[ShipyardController], "", "", as.httpClient, "http", true)
+	as.apiHandler = createAuthenticatedAPIHandler(apiMap[ShipyardController], "", "", as.httpClient, "http", as.internal)
+	as.authHandler = createAuthenticatedAuthHandler(apiMap[ApiService], "", "", as.httpClient, "http", as.internal)
+	as.logHandler = createAuthenticatedLogHandler(apiMap[ShipyardController], "", "", as.httpClient, "http", as.internal)
+	as.eventHandler = createAuthenticatedEventHandler(apiMap[MongoDBDatastore], "", "", as.httpClient, "http", as.internal)
+	as.projectHandler = createAuthProjectHandler(apiMap[ShipyardController], "", "", as.httpClient, "http", as.internal)
+	as.resourceHandler = createAuthenticatedResourceHandler(apiMap[ConfigurationService], "", "", as.httpClient, "http", as.internal)
+	as.secretHandler = createAuthenticatedSecretHandler(apiMap[SecretService], "", "", as.httpClient, "http", as.internal)
+	as.sequenceControlHandler = createAuthenticatedSequenceControlHandler(apiMap[ShipyardController], "", "", as.httpClient, "http", as.internal)
+	as.serviceHandler = createAuthenticatedServiceHandler(apiMap[ShipyardController], "", "", as.httpClient, "http", as.internal)
+	as.shipyardControlHandler = createAuthenticatedShipyardControllerHandler(apiMap[ShipyardController], "", "", as.httpClient, "http", as.internal)
+	as.stageHandler = createAuthenticatedStageHandler(apiMap[ShipyardController], "", "", as.httpClient, "http", as.internal)
+	as.uniformHandler = createAuthenticatedUniformHandler(apiMap[ShipyardController], "", "", as.httpClient, "http", as.internal)
 
 	return as, nil
 }

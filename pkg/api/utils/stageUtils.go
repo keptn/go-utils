@@ -50,7 +50,7 @@ func createAuthenticatedStageHandler(baseURL string, authToken string, authHeade
 			BaseURL:    baseURL,
 			AuthHeader: "",
 			AuthToken:  "",
-			HTTPClient: &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)},
+			HTTPClient: &http.Client{Transport: otelhttp.NewTransport(httpClient.Transport)},
 			Scheme:     "http",
 		}
 	}

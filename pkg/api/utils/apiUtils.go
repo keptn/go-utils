@@ -49,7 +49,7 @@ func createAuthenticatedAPIHandler(baseURL string, authToken string, authHeader 
 			BaseURL:    baseURL,
 			AuthHeader: "",
 			AuthToken:  "",
-			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
+			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(httpClient.Transport))},
 			Scheme:     "http",
 		}
 	}
