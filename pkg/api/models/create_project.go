@@ -17,6 +17,18 @@ type CreateProject struct {
 	// git user
 	GitUser string `json:"gitUser,omitempty"`
 
+	// git proxy
+	GitProxyUrl string `json:"gitProxyUrl,omitempty"`
+
+	// git proxy
+	GitProxyScheme string `json:"gitProxyScheme,omitempty"`
+
+	// git proxy
+	GitProxyUser string `json:"gitProxyUser,omitempty"`
+
+	// git proxy
+	GitProxyPassword string `json:"gitProxyPassword,omitempty"`
+
 	// name
 	// Required: true
 	Name *string `json:"name"`

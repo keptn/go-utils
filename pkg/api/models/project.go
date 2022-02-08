@@ -20,6 +20,18 @@ type Project struct {
 	// Git User
 	GitUser string `json:"gitUser,omitempty"`
 
+	// git proxy
+	GitProxyUrl string `json:"gitProxyUrl,omitempty"`
+
+	// git proxy
+	GitProxyScheme string `json:"gitProxyScheme,omitempty"`
+
+	// git proxy
+	GitProxyUser string `json:"gitProxyUser,omitempty"`
+
+	// git proxy
+	GitProxyPassword string `json:"gitProxyPassword,omitempty"`
+
 	// Project name
 	ProjectName string `json:"projectName,omitempty"`
 
