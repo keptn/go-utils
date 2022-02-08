@@ -23,7 +23,7 @@ type KeptnInterface interface {
 	ShipyardControlV1() ShipyardControlV1Interface
 }
 
-// APISet contains the API utils for all keptn APIs
+// APISet contains the API utils for all Keptn APIs
 type APISet struct {
 	endpointURL            *url.URL
 	apiToken               string
