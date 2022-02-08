@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 type ProxyV1Interface interface {
@@ -42,6 +43,64 @@ func (p *ProxyHandler) Proxy(rw http.ResponseWriter, req *http.Request) {
 
 	fmt.Printf("Forwarding Request:  host=%s, path=%s, URL=%s", fwReq.URL.Host, fwReq.URL.Path, fwReq.URL.String())
 	resp, err := p.HttpClient.Do(fwReq)
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	for name, headers := range resp.Header {
+		for _, h := range headers {
+			rw.Header().Set(name, h)
+		}
+	}
+
+	rw.WriteHeader(resp.StatusCode)
+
+	respBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if _, err := rw.Write(respBytes); err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+type InternalProxyHandler struct {
+	httpClient    *http.Client
+	proxyMappings PathToHostProxyMappings
+}
+
+func createInternalProxyHandler(proxyMappings PathToHostProxyMappings, client *http.Client) *InternalProxyHandler {
+	return &InternalProxyHandler{
+		httpClient:    client,
+		proxyMappings: proxyMappings,
+	}
+}
+
+func (p *InternalProxyHandler) Proxy(rw http.ResponseWriter, req *http.Request) {
+	fwReq := req.Clone(context.TODO())
+	fwReq.RequestURI = ""
+	var b bytes.Buffer
+	b.ReadFrom(req.Body)
+	req.Body = ioutil.NopCloser(&b)
+	fwReq.Body = ioutil.NopCloser(bytes.NewReader(b.Bytes()))
+
+	path := fwReq.URL.Path
+	for k, v := range p.proxyMappings {
+		if strings.HasPrefix(fwReq.URL.Path, k) {
+			split := strings.Split(strings.TrimPrefix(path, "/"), "/")
+			join := strings.Join(split[1:], "/")
+			fwReq.URL.Scheme = "http"
+			fwReq.URL.Host = v
+			fwReq.URL.Path = join
+		}
+	}
+
+	resp, err := p.httpClient.Do(fwReq)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return

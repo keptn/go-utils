@@ -57,7 +57,7 @@ func createAuthenticatedSecretHandler(baseURL string, authToken string, authHead
 			BaseURL:    baseURL,
 			AuthHeader: "",
 			AuthToken:  "",
-			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
+			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(httpClient.Transport))}, //TODO: IMPORTANT: check if we should pass nil????
 			Scheme:     "http",
 		}
 	}

@@ -194,3 +194,123 @@ func New(baseURL string, options ...func(*APISet)) (*APISet, error) {
 	as.proxyHandler = createProxyHandler(ProxyHost{Host: u.Host, Scheme: as.scheme}, as.httpClient)
 	return as, nil
 }
+
+type InternalAPISet struct {
+	httpClient             *http.Client
+	apiHandler             *APIHandler
+	authHandler            *AuthHandler
+	eventHandler           *EventHandler
+	logHandler             *LogHandler
+	projectHandler         *ProjectHandler
+	resourceHandler        *ResourceHandler
+	secretHandler          *SecretHandler
+	sequenceControlHandler *SequenceControlHandler
+	serviceHandler         *ServiceHandler
+	stageHandler           *StageHandler
+	uniformHandler         *UniformHandler
+	shipyardControlHandler *ShipyardControllerHandler
+	proxyHandler           ProxyV1Interface
+}
+
+type InternalService int
+
+const (
+	ConfigurationService InternalService = iota
+	ShipyardController
+	ApiService
+	SecretService
+	Unknown
+)
+
+type InClusterAPIMappings map[InternalService]string
+
+type PathToHostProxyMappings map[string]string
+
+func NewInternal(apiMappings InClusterAPIMappings, pathToHostProxyMappings PathToHostProxyMappings, client *http.Client) (*InternalAPISet, error) {
+	if client == nil {
+		client = &http.Client{}
+	}
+	as := &InternalAPISet{}
+
+	as.httpClient = client
+	as.apiHandler = createAuthenticatedAPIHandler(apiMappings[Unknown], "", "", as.httpClient, "http", true)
+	as.authHandler = createAuthenticatedAuthHandler(apiMappings[ApiService], "", "", as.httpClient, "http", true)
+	as.logHandler = createAuthenticatedLogHandler(apiMappings[ShipyardController], "", "", as.httpClient, "http", true)
+	as.eventHandler = createAuthenticatedEventHandler(apiMappings[ApiService], "", "", as.httpClient, "http", true)
+	as.projectHandler = createAuthProjectHandler(apiMappings[ShipyardController], "", "", as.httpClient, "http", true)
+	as.resourceHandler = createAuthenticatedResourceHandler(apiMappings[ConfigurationService], "", "", as.httpClient, "http", true)
+	as.secretHandler = createAuthenticatedSecretHandler(apiMappings[SecretService], "", "", as.httpClient, "http", true)
+	as.sequenceControlHandler = createAuthenticatedSequenceControlHandler(apiMappings[ShipyardController], "", "", as.httpClient, "http", true)
+	as.serviceHandler = createAuthenticatedServiceHandler(apiMappings[ShipyardController], "", "", as.httpClient, "http", true)
+	as.shipyardControlHandler = createAuthenticatedShipyardControllerHandler(apiMappings[ShipyardController], "", "", as.httpClient, "http", true)
+	as.stageHandler = createAuthenticatedStageHandler(apiMappings[ShipyardController], "", "", as.httpClient, "http", true)
+	as.uniformHandler = createAuthenticatedUniformHandler(apiMappings[ShipyardController], "", "", as.httpClient, "http", true)
+	as.proxyHandler = createInternalProxyHandler(pathToHostProxyMappings, as.httpClient)
+
+	return as, nil
+}
+
+// APIV1 retrieves the APIHandler
+func (c *InternalAPISet) APIV1() APIV1Interface {
+	return c.apiHandler
+}
+
+// AuthV1 retrieves the AuthHandler
+func (c *InternalAPISet) AuthV1() AuthV1Interface {
+	return c.authHandler
+}
+
+// EventsV1 retrieves the EventHandler
+func (c *InternalAPISet) EventsV1() EventsV1Interface {
+	return c.eventHandler
+}
+
+// LogsV1 retrieves the LogHandler
+func (c *InternalAPISet) LogsV1() LogsV1Interface {
+	return c.logHandler
+}
+
+// ProjectsV1 retrieves the ProjectHandler
+func (c *InternalAPISet) ProjectsV1() ProjectsV1Interface {
+	return c.projectHandler
+}
+
+// ResourcesV1 retrieves the ResourceHandler
+func (c *InternalAPISet) ResourcesV1() ResourcesV1Interface {
+	return c.resourceHandler
+}
+
+// SecretsV1 retrieves the SecretHandler
+func (c *InternalAPISet) SecretsV1() SecretsV1Interface {
+	return c.secretHandler
+}
+
+// SequencesV1 retrieves the SequenceControlHandler
+func (c *InternalAPISet) SequencesV1() SequencesV1Interface {
+	return c.sequenceControlHandler
+}
+
+// ServicesV1 retrieves the ServiceHandler
+func (c *InternalAPISet) ServicesV1() ServicesV1Interface {
+	return c.serviceHandler
+}
+
+// StagesV1 retrieves the StageHandler
+func (c *InternalAPISet) StagesV1() StagesV1Interface {
+	return c.stageHandler
+}
+
+// UniformV1 retrieves the UniformHandler
+func (c *InternalAPISet) UniformV1() UniformV1Interface {
+	return c.uniformHandler
+}
+
+// ShipyardControlV1 retrieves the ShipyardControllerHandler
+func (c *InternalAPISet) ShipyardControlV1() ShipyardControlV1Interface {
+	return c.shipyardControlHandler
+}
+
+// ProxyV1 retrieves the ProxyHandler
+func (c *InternalAPISet) ProxyV1() ProxyV1Interface {
+	return c.proxyHandler
+}
