@@ -14,6 +14,9 @@ type CreateProject struct {
 	// git private key
 	GitPrivateKey string `json:"gitPrivateKey,omitempty"`
 
+	// git private key passphrase
+	GitPrivateKeyPass string `json:"gitPrivateKeyPass,omitempty"`
+
 	// git public certificate
 	GitPublicCert string `json:"gitPublicCert,omitempty"`
 
@@ -28,6 +31,9 @@ type CreateProject struct {
 
 	// git proxy user
 	GitProxyUser string `json:"gitProxyUser,omitempty"`
+
+	// git proxy secure
+	GitProxySecure bool `json:"gitProxySecure,omitempty"`
 
 	// git proxy password
 	GitProxyPassword string `json:"gitProxyPassword,omitempty"`
