@@ -14,6 +14,9 @@ type CreateProject struct {
 	// git private key
 	GitPrivateKey string `json:"gitPrivateKey,omitempty"`
 
+	// git private key
+	GitPublicCert string `json:"gitPublicCert,omitempty"`
+
 	// git user
 	GitUser string `json:"gitUser,omitempty"`
 
