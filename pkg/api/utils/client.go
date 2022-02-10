@@ -151,7 +151,9 @@ func New(baseURL string, options ...func(*APISet)) (*APISet, error) {
 	}
 	as := &APISet{}
 	for _, o := range options {
-		o(as)
+		if o != nil {
+			o(as)
+		}
 	}
 	as.internal = false
 	as.endpointURL = u
@@ -178,121 +180,4 @@ func New(baseURL string, options ...func(*APISet)) (*APISet, error) {
 	as.stageHandler = createAuthenticatedStageHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme, as.internal)
 	as.uniformHandler = createAuthenticatedUniformHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme, as.internal)
 	return as, nil
-}
-
-type InternalAPISet struct {
-	*APISet
-	httpClient *http.Client
-}
-
-type InternalService int
-
-const (
-	ConfigurationService InternalService = iota
-	ShipyardController
-	ApiService
-	SecretService
-	MongoDBDatastore
-)
-
-type InClusterAPIMappings map[InternalService]string
-
-var DefaultInClusterAPIMappings = InClusterAPIMappings{
-	ConfigurationService: "configuration-service:8080",
-	ShipyardController:   "shipyard-controller:8080",
-	ApiService:           "api-service:8080",
-	SecretService:        "secret-service:8080",
-	MongoDBDatastore:     "mongodb-datastore:8080",
-}
-
-func NewInternal(client *http.Client, apiMappings ...InClusterAPIMappings) (*InternalAPISet, error) {
-	var apiMap InClusterAPIMappings
-	if len(apiMappings) > 0 {
-		apiMap = apiMappings[0]
-	} else {
-		apiMap = DefaultInClusterAPIMappings
-	}
-
-	if client == nil {
-		client = &http.Client{}
-	}
-
-	as := &InternalAPISet{APISet: &APISet{}}
-	as.internal = true
-
-	as.httpClient = client
-	as.apiHandler = createAuthenticatedAPIHandler(apiMap[ShipyardController], "", "", as.httpClient, "http", as.internal)
-	as.authHandler = createAuthenticatedAuthHandler(apiMap[ApiService], "", "", as.httpClient, "http", as.internal)
-	as.logHandler = createAuthenticatedLogHandler(apiMap[ShipyardController], "", "", as.httpClient, "http", as.internal)
-	as.eventHandler = createAuthenticatedEventHandler(apiMap[MongoDBDatastore], "", "", as.httpClient, "http", as.internal)
-	as.projectHandler = createAuthProjectHandler(apiMap[ShipyardController], "", "", as.httpClient, "http", as.internal)
-	as.resourceHandler = createAuthenticatedResourceHandler(apiMap[ConfigurationService], "", "", as.httpClient, "http", as.internal)
-	as.secretHandler = createAuthenticatedSecretHandler(apiMap[SecretService], "", "", as.httpClient, "http", as.internal)
-	as.sequenceControlHandler = createAuthenticatedSequenceControlHandler(apiMap[ShipyardController], "", "", as.httpClient, "http", as.internal)
-	as.serviceHandler = createAuthenticatedServiceHandler(apiMap[ShipyardController], "", "", as.httpClient, "http", as.internal)
-	as.shipyardControlHandler = createAuthenticatedShipyardControllerHandler(apiMap[ShipyardController], "", "", as.httpClient, "http", as.internal)
-	as.stageHandler = createAuthenticatedStageHandler(apiMap[ShipyardController], "", "", as.httpClient, "http", as.internal)
-	as.uniformHandler = createAuthenticatedUniformHandler(apiMap[ShipyardController], "", "", as.httpClient, "http", as.internal)
-
-	return as, nil
-}
-
-// APIV1 retrieves the APIHandler
-func (c *InternalAPISet) APIV1() APIV1Interface {
-	return c.apiHandler
-}
-
-// AuthV1 retrieves the AuthHandler
-func (c *InternalAPISet) AuthV1() AuthV1Interface {
-	return c.authHandler
-}
-
-// EventsV1 retrieves the EventHandler
-func (c *InternalAPISet) EventsV1() EventsV1Interface {
-	return c.eventHandler
-}
-
-// LogsV1 retrieves the LogHandler
-func (c *InternalAPISet) LogsV1() LogsV1Interface {
-	return c.logHandler
-}
-
-// ProjectsV1 retrieves the ProjectHandler
-func (c *InternalAPISet) ProjectsV1() ProjectsV1Interface {
-	return c.projectHandler
-}
-
-// ResourcesV1 retrieves the ResourceHandler
-func (c *InternalAPISet) ResourcesV1() ResourcesV1Interface {
-	return c.resourceHandler
-}
-
-// SecretsV1 retrieves the SecretHandler
-func (c *InternalAPISet) SecretsV1() SecretsV1Interface {
-	return c.secretHandler
-}
-
-// SequencesV1 retrieves the SequenceControlHandler
-func (c *InternalAPISet) SequencesV1() SequencesV1Interface {
-	return c.sequenceControlHandler
-}
-
-// ServicesV1 retrieves the ServiceHandler
-func (c *InternalAPISet) ServicesV1() ServicesV1Interface {
-	return c.serviceHandler
-}
-
-// StagesV1 retrieves the StageHandler
-func (c *InternalAPISet) StagesV1() StagesV1Interface {
-	return c.stageHandler
-}
-
-// UniformV1 retrieves the UniformHandler
-func (c *InternalAPISet) UniformV1() UniformV1Interface {
-	return c.uniformHandler
-}
-
-// ShipyardControlV1 retrieves the ShipyardControllerHandler
-func (c *InternalAPISet) ShipyardControlV1() ShipyardControlV1Interface {
-	return c.shipyardControlHandler
 }
