@@ -2,11 +2,14 @@ package api
 
 import "net/http"
 
+// InternalAPISet is an implementation of APISet
+// which can be used from within the Keptn control plane
 type InternalAPISet struct {
 	*APISet
 	apimap InClusterAPIMappings
 }
 
+// InternalService is used to enumerate internal Keptn services
 type InternalService int
 
 const (
@@ -17,8 +20,10 @@ const (
 	MongoDBDatastore
 )
 
+// InClusterAPIMappings maps a keptn service name to its reachable domain name
 type InClusterAPIMappings map[InternalService]string
 
+// DefaultInClusterAPIMappings gives you the default InClusterAPIMappings
 var DefaultInClusterAPIMappings = InClusterAPIMappings{
 	ConfigurationService: "configuration-service:8080",
 	ShipyardController:   "shipyard-controller:8080",
