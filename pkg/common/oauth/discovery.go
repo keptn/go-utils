@@ -80,13 +80,13 @@ func (d StaticOauthDiscovery) Discover(ctx context.Context, discoveryURL string)
 // OauthDiscoveryMock is an implementation of OauthLocationGetter usable
 // as a mock implementation in tests
 type OauthDiscoveryMock struct {
-	discoverFn func(context.Context, string) (*OauthDiscoveryResult, error)
+	DiscoverFn func(context.Context, string) (*OauthDiscoveryResult, error)
 }
 
 // Discover calls the mocked function of the OauthDiscoveryMock
 func (o *OauthDiscoveryMock) Discover(ctx context.Context, discoveryURL string) (*OauthDiscoveryResult, error) {
-	if o != nil && o.discoverFn != nil {
-		return o.discoverFn(ctx, discoveryURL)
+	if o != nil && o.DiscoverFn != nil {
+		return o.DiscoverFn(ctx, discoveryURL)
 	}
 	return &OauthDiscoveryResult{}, nil
 }
