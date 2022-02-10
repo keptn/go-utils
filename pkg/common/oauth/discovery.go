@@ -43,6 +43,7 @@ type OauthDiscovery struct {
 	c HTTPClient
 }
 
+// Discover starts the OAuth discovery and eventually returns the results
 func (d OauthDiscovery) Discover(ctx context.Context, discoveryURL string) (*OauthDiscoveryResult, error) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
