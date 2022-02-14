@@ -11,6 +11,12 @@ type CreateProject struct {
 	// git token
 	GitToken string `json:"gitToken,omitempty"`
 
+	// git private key
+	GitPrivateKey string `json:"gitPrivateKey,omitempty"`
+
+	// git private key passphrase
+	GitPrivateKeyPass string `json:"gitPrivateKeyPass,omitempty"`
+
 	// git user
 	GitUser string `json:"gitUser,omitempty"`
 

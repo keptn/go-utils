@@ -14,6 +14,12 @@ type Project struct {
 	// Git token
 	GitToken string `json:"gitToken,omitempty"`
 
+	// git private key
+	GitPrivateKey string `json:"gitPrivateKey,omitempty"`
+
+	// git private key passphrase
+	GitPrivateKeyPass string `json:"gitPrivateKeyPass,omitempty"`
+
 	// Git User
 	GitUser string `json:"gitUser,omitempty"`
 
