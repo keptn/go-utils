@@ -57,23 +57,11 @@ func NewAuthenticatedLogHandler(baseURL string, authToken string, authHeader str
 		httpClient = &http.Client{}
 	}
 	httpClient.Transport = getClientTransport(httpClient.Transport)
-	return createAuthenticatedLogHandler(baseURL, authToken, authHeader, httpClient, scheme, false)
+	return createAuthenticatedLogHandler(baseURL, authToken, authHeader, httpClient, scheme)
 }
 
-func createAuthenticatedLogHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string, internal bool) *LogHandler {
+func createAuthenticatedLogHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *LogHandler {
 	baseURL = httputils.TrimHTTPScheme(baseURL)
-	if internal {
-		return &LogHandler{
-			BaseURL:      baseURL,
-			AuthHeader:   "",
-			AuthToken:    "",
-			HTTPClient:   &http.Client{Transport: getClientTransport(httpClient.Transport)},
-			Scheme:       "http",
-			LogCache:     []models.LogEntry{},
-			TheClock:     clock.New(),
-			SyncInterval: defaultSyncInterval,
-		}
-	}
 
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {

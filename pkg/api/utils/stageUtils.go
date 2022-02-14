@@ -40,20 +40,11 @@ func NewAuthenticatedStageHandler(baseURL string, authToken string, authHeader s
 		httpClient = &http.Client{}
 	}
 	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
-	return createAuthenticatedStageHandler(baseURL, authToken, authHeader, httpClient, scheme, false)
+	return createAuthenticatedStageHandler(baseURL, authToken, authHeader, httpClient, scheme)
 }
 
-func createAuthenticatedStageHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string, internal bool) *StageHandler {
+func createAuthenticatedStageHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *StageHandler {
 	baseURL = httputils.TrimHTTPScheme(baseURL)
-	if internal {
-		return &StageHandler{
-			BaseURL:    baseURL,
-			AuthHeader: "",
-			AuthToken:  "",
-			HTTPClient: &http.Client{Transport: otelhttp.NewTransport(httpClient.Transport)},
-			Scheme:     "http",
-		}
-	}
 	baseURL = strings.TrimRight(baseURL, "/")
 
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {

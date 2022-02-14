@@ -41,20 +41,11 @@ func NewAuthenticatedServiceHandler(baseURL string, authToken string, authHeader
 		httpClient = &http.Client{}
 	}
 	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
-	return createAuthenticatedServiceHandler(baseURL, authToken, authHeader, httpClient, scheme, false)
+	return createAuthenticatedServiceHandler(baseURL, authToken, authHeader, httpClient, scheme)
 }
 
-func createAuthenticatedServiceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string, internal bool) *ServiceHandler {
+func createAuthenticatedServiceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ServiceHandler {
 	baseURL = httputils.TrimHTTPScheme(baseURL)
-	if internal {
-		return &ServiceHandler{
-			BaseURL:    baseURL,
-			AuthHeader: "",
-			AuthToken:  "",
-			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(httpClient.Transport))},
-			Scheme:     "http",
-		}
-	}
 	baseURL = strings.TrimRight(baseURL, "/")
 
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {

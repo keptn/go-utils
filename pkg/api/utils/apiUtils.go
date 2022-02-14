@@ -39,20 +39,11 @@ func NewAuthenticatedAPIHandler(baseURL string, authToken string, authHeader str
 		httpClient = &http.Client{}
 	}
 	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
-	return createAuthenticatedAPIHandler(baseURL, authToken, authHeader, httpClient, scheme, false)
+	return createAuthenticatedAPIHandler(baseURL, authToken, authHeader, httpClient, scheme)
 }
 
-func createAuthenticatedAPIHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string, internal bool) *APIHandler {
+func createAuthenticatedAPIHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *APIHandler {
 	baseURL = httputils.TrimHTTPScheme(baseURL)
-	if internal {
-		return &APIHandler{
-			BaseURL:    baseURL,
-			AuthHeader: "",
-			AuthToken:  "",
-			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(httpClient.Transport))},
-			Scheme:     "http",
-		}
-	}
 	return &APIHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,

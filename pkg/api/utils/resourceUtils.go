@@ -173,20 +173,11 @@ func NewAuthenticatedResourceHandler(baseURL string, authToken string, authHeade
 		httpClient = &http.Client{}
 	}
 	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
-	return createAuthenticatedResourceHandler(baseURL, authToken, authHeader, httpClient, scheme, false)
+	return createAuthenticatedResourceHandler(baseURL, authToken, authHeader, httpClient, scheme)
 }
 
-func createAuthenticatedResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string, internal bool) *ResourceHandler {
+func createAuthenticatedResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ResourceHandler {
 	baseURL = httputils.TrimHTTPScheme(baseURL)
-	if internal {
-		return &ResourceHandler{
-			BaseURL:    baseURL,
-			AuthHeader: "",
-			AuthToken:  "",
-			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(httpClient.Transport))},
-			Scheme:     "http",
-		}
-	}
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, configurationServiceBaseURL) {
 		baseURL += "/" + configurationServiceBaseURL

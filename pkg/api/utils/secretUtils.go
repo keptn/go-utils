@@ -47,20 +47,11 @@ func NewAuthenticatedSecretHandler(baseURL string, authToken string, authHeader 
 		httpClient = &http.Client{}
 	}
 	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
-	return createAuthenticatedSecretHandler(baseURL, authToken, authHeader, httpClient, scheme, false)
+	return createAuthenticatedSecretHandler(baseURL, authToken, authHeader, httpClient, scheme)
 }
 
-func createAuthenticatedSecretHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string, internal bool) *SecretHandler {
+func createAuthenticatedSecretHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SecretHandler {
 	baseURL = httputils.TrimHTTPScheme(baseURL)
-	if internal {
-		return &SecretHandler{
-			BaseURL:    baseURL,
-			AuthHeader: "",
-			AuthToken:  "",
-			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(httpClient.Transport))},
-			Scheme:     "http",
-		}
-	}
 	baseURL = strings.TrimRight(baseURL, "/")
 
 	if !strings.HasSuffix(baseURL, secretServiceBaseURL) {

@@ -80,20 +80,11 @@ func NewAuthenticatedSequenceControlHandler(baseURL string, authToken string, au
 		httpClient = &http.Client{}
 	}
 	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
-	return createAuthenticatedSequenceControlHandler(baseURL, authToken, authHeader, httpClient, scheme, false)
+	return createAuthenticatedSequenceControlHandler(baseURL, authToken, authHeader, httpClient, scheme)
 }
 
-func createAuthenticatedSequenceControlHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string, internal bool) *SequenceControlHandler {
+func createAuthenticatedSequenceControlHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SequenceControlHandler {
 	baseURL = httputils.TrimHTTPScheme(baseURL)
-	if internal {
-		return &SequenceControlHandler{
-			BaseURL:    baseURL,
-			AuthHeader: "",
-			AuthToken:  "",
-			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(httpClient.Transport))},
-			Scheme:     "http",
-		}
-	}
 	baseURL = strings.TrimRight(baseURL, "/")
 
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {

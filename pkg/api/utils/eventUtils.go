@@ -55,20 +55,11 @@ func NewAuthenticatedEventHandler(baseURL string, authToken string, authHeader s
 		httpClient = &http.Client{}
 	}
 	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
-	return createAuthenticatedEventHandler(baseURL, authToken, authHeader, httpClient, scheme, false)
+	return createAuthenticatedEventHandler(baseURL, authToken, authHeader, httpClient, scheme)
 }
 
-func createAuthenticatedEventHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string, internal bool) *EventHandler {
+func createAuthenticatedEventHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *EventHandler {
 	baseURL = httputils.TrimHTTPScheme(baseURL)
-	if internal {
-		return &EventHandler{
-			BaseURL:    baseURL,
-			AuthHeader: "",
-			AuthToken:  "",
-			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(httpClient.Transport))},
-			Scheme:     "http",
-		}
-	}
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, mongodbDatastoreServiceBaseUrl) {
 		baseURL += "/" + mongodbDatastoreServiceBaseUrl
