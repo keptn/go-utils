@@ -19,7 +19,7 @@ func TestApiSetCreatesHandlers(t *testing.T) {
 	assert.Equal(t, "http", apiSet.scheme)
 	assert.NotNil(t, apiSet.UniformV1())
 	assert.NotNil(t, apiSet.Endpoint())
-	assert.NotNil(t, apiSet.ShipyardControlHandlerV1())
+	assert.NotNil(t, apiSet.ShipyardControlV1())
 	assert.NotNil(t, apiSet.StagesV1())
 	assert.NotNil(t, apiSet.ServicesV1())
 	assert.NotNil(t, apiSet.SequencesV1())
