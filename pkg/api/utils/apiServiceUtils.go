@@ -42,7 +42,7 @@ func wrapOtelTransport(base http.RoundTripper) *otelhttp.Transport {
 // skips verifying server certificates and is able to
 // read proxy configuration from environment variables
 //
-// If the givven http.RoundTripper is nil then a new http.Transport
+// If the given http.RoundTripper is nil then a new http.Transport
 // is created, otherwise the given http.RoundTripper is analysed whether it
 // is of type *http.Transport. If so, the respective settings for
 // disabling server certificate verification as well as proxy server support are set
