@@ -20,9 +20,10 @@ type KeptnInterface interface {
 	ServicesV1() ServicesV1Interface
 	StagesV1() StagesV1Interface
 	UniformV1() UniformV1Interface
+	ShipyardControlV1() ShipyardControlV1Interface
 }
 
-// APISet contains the API utils for all keptn APIs
+// APISet contains the API utils for all Keptn APIs
 type APISet struct {
 	endpointURL            *url.URL
 	apiToken               string
@@ -98,8 +99,8 @@ func (c *APISet) UniformV1() UniformV1Interface {
 	return c.uniformHandler
 }
 
-// ShipyardControlHandlerV1 retrieves the ShipyardControllerHandler
-func (c *APISet) ShipyardControlHandlerV1() *ShipyardControllerHandler {
+// ShipyardControlV1 retrieves the ShipyardControllerHandler
+func (c *APISet) ShipyardControlV1() ShipyardControlV1Interface {
 	return c.shipyardControlHandler
 }
 
@@ -149,7 +150,9 @@ func New(baseURL string, options ...func(*APISet)) (*APISet, error) {
 	}
 	as := &APISet{}
 	for _, o := range options {
-		o(as)
+		if o != nil {
+			o(as)
+		}
 	}
 	as.endpointURL = u
 	as.httpClient = createInstrumentedClientTransport(as.httpClient)

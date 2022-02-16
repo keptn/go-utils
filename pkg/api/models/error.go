@@ -1,6 +1,9 @@
 package models
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"github.com/keptn/go-utils/pkg/common/strutils"
+)
 
 // Error error
 type Error struct {
@@ -32,5 +35,8 @@ func (e *Error) FromJSON(b []byte) error {
 		return err
 	}
 	*e = res
+	if e.Message == nil {
+		e.Message = strutils.Stringp("")
+	}
 	return nil
 }
