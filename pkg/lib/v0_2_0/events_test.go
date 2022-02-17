@@ -281,7 +281,7 @@ func TestCreateSimpleKeptnEvent(t *testing.T) {
 	require.NotEmpty(t, event.Shkeptnspecversion)
 	require.Equal(t, defaultSpecVersion, event.Specversion)
 	require.Equal(t, "", event.Triggeredid)
-	require.Equal(t, "", event.Gitcommitid)
+	require.Equal(t, "", event.GitCommitID)
 	require.Equal(t, strutils.Stringp("sh.keptn.event.dev.delivery.triggered"), event.Type)
 }
 
@@ -304,7 +304,7 @@ func TestCreateKeptnEvent(t *testing.T) {
 	require.Equal(t, strutils.Stringp("source"), event.Source)
 	require.Equal(t, "my-keptn-context", event.Shkeptncontext)
 	require.Equal(t, "my-triggered-id", event.Triggeredid)
-	require.Equal(t, "my-commit-id", event.Gitcommitid)
+	require.Equal(t, "my-commit-id", event.GitCommitID)
 	require.Equal(t, strutils.Stringp("sh.keptn.event.dev.delivery.triggered"), event.Type)
 }
 
@@ -335,7 +335,7 @@ func TestToCloudEvent(t *testing.T) {
 		Shkeptnspecversion: config.GetKeptnGoUtilsConfig().ShKeptnSpecVersion,
 		Specversion:        defaultSpecVersion,
 		Triggeredid:        "my-triggered-id",
-		Gitcommitid:        "git-commit-id",
+		GitCommitID:        "git-commit-id",
 		Type:               strutils.Stringp("sh.keptn.event.dev.delivery.triggered"),
 	}
 	cloudevent := ToCloudEvent(keptnEvent)
@@ -359,7 +359,7 @@ func TestToKeptnEvent(t *testing.T) {
 		Specversion:        defaultSpecVersion,
 		Time:               time.Time{},
 		Triggeredid:        "my-triggered-id",
-		Gitcommitid:        "my-commit-id",
+		GitCommitID:        "my-commit-id",
 		Type:               strutils.Stringp("sh.keptn.event.dev.delivery.triggered"),
 	}
 

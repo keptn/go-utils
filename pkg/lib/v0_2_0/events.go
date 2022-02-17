@@ -284,10 +284,11 @@ func IsTriggeredEventType(eventType string) bool {
 
 // EventData contains mandatory fields of all Keptn CloudEvents
 type EventData struct {
-	Project string            `json:"project,omitempty"`
-	Stage   string            `json:"stage,omitempty"`
-	Service string            `json:"service,omitempty"`
-	Labels  map[string]string `json:"labels,omitempty"`
+	Project     string            `json:"project,omitempty"`
+	Stage       string            `json:"stage,omitempty"`
+	Service     string            `json:"service,omitempty"`
+	Labels      map[string]string `json:"labels,omitempty"`
+	GitCommitID string            `json:"gitcommitid,omitempty"`
 
 	Status  StatusType `json:"status,omitempty" jsonschema:"enum=succeeded,enum=errored,enum=unknown"`
 	Result  ResultType `json:"result,omitempty" jsonschema:"enum=pass,enum=warning,enum=fail"`
@@ -398,7 +399,7 @@ func (eb *KeptnEventBuilder) WithTriggeredID(triggeredID string) *KeptnEventBuil
 
 // WithGitCommitID can be used to set the git commit ID
 func (eb *KeptnEventBuilder) WithGitCommitID(gitCommitID string) *KeptnEventBuilder {
-	eb.Gitcommitid = gitCommitID
+	eb.GitCommitID = gitCommitID
 	return eb
 }
 
@@ -419,7 +420,7 @@ func ToCloudEvent(keptnEvent models.KeptnContextExtendedCE) cloudevents.Event {
 	event.SetData(cloudevents.ApplicationJSON, keptnEvent.Data)
 	event.SetExtension(keptnContextCEExtension, keptnEvent.Shkeptncontext)
 	event.SetExtension(triggeredIDCEExtension, keptnEvent.Triggeredid)
-	event.SetExtension(keptnGitCommitIDCEExtension, keptnEvent.Gitcommitid)
+	event.SetExtension(keptnGitCommitIDCEExtension, keptnEvent.GitCommitID)
 	event.SetExtension(keptnSpecVersionCEExtension, keptnEvent.Shkeptnspecversion)
 	return event
 }
@@ -451,7 +452,7 @@ func ToKeptnEvent(event cloudevents.Event) (models.KeptnContextExtendedCE, error
 		Specversion:        event.SpecVersion(),
 		Time:               event.Time(),
 		Triggeredid:        triggeredID,
-		Gitcommitid:        gitCommitID,
+		GitCommitID:        gitCommitID,
 		Type:               strutils.Stringp(event.Type()),
 	}
 
