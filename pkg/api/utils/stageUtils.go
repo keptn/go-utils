@@ -3,6 +3,7 @@ package api
 import (
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -142,10 +143,11 @@ func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 			nextPageKey = received.NextPageKey
 		} else {
 			respErr := &models.Error{}
-			if err = respErr.FromJSON(body); err != nil {
-				return nil, err
+			if err = respErr.FromJSON(body); err == nil && respErr != nil {
+				return nil, errors.New(*respErr.Message)
+			} else {
+				return nil, fmt.Errorf("error with, status code %d", resp.StatusCode)
 			}
-			return nil, errors.New(*respErr.Message)
 		}
 	}
 	return stages, nil

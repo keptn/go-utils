@@ -3,6 +3,7 @@ package api
 import (
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -155,10 +156,11 @@ func (s *ShipyardControllerHandler) GetOpenTriggeredEvents(filter EventFilter) (
 			nextPageKey = received.NextPageKey
 		} else {
 			respErr := &models.Error{}
-			if err = respErr.FromJSON(body); err != nil {
+			if err = respErr.FromJSON(body); err == nil && respErr != nil {
 				return nil, errors.New(*respErr.Message)
+			} else {
+				return nil, fmt.Errorf("error with, status code %d", resp.StatusCode)
 			}
-			return nil, err
 		}
 	}
 	return events, nil
