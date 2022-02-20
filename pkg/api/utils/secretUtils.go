@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -151,11 +152,11 @@ func (s *SecretHandler) GetSecrets() (*models.GetSecretsResponse, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		errObj := &models.Error{}
-		if err := errObj.FromJSON(body); err != nil {
-			return nil, err
+		respErr := &models.Error{}
+		if err = respErr.FromJSON(body); err == nil && respErr != nil {
+			return nil, errors.New(*respErr.Message)
 		}
-		return nil, errors.New(*errObj.Message)
+		return nil, fmt.Errorf("error with status code %d", resp.StatusCode)
 	}
 	result := &models.GetSecretsResponse{}
 	if err := result.FromJSON(body); err != nil {

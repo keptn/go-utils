@@ -6,6 +6,7 @@ import (
 	b64 "encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -576,10 +577,10 @@ func (r *ResourceHandler) getAllResources(u *url.URL) ([]*models.Resource, error
 
 		} else {
 			respErr := &models.Error{}
-			if err = respErr.FromJSON(body); err != nil {
-				return nil, err
+			if err = respErr.FromJSON(body); err == nil && respErr != nil {
+				return nil, errors.New(*respErr.Message)
 			}
-			return nil, errors.New(*respErr.Message)
+			return nil, fmt.Errorf("error with status code %d", resp.StatusCode)
 		}
 	}
 

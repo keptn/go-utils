@@ -145,9 +145,8 @@ func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 			respErr := &models.Error{}
 			if err = respErr.FromJSON(body); err == nil && respErr != nil {
 				return nil, errors.New(*respErr.Message)
-			} else {
-				return nil, fmt.Errorf("error with status code %d", resp.StatusCode)
 			}
+			return nil, fmt.Errorf("error with status code %d", resp.StatusCode)
 		}
 	}
 	return stages, nil

@@ -163,12 +163,11 @@ func (lh *LogHandler) GetLogs(params models.GetLogsParams) (*models.GetLogsRespo
 		}
 		return received, nil
 	}
-	errResponse := &models.Error{}
-	if err := errResponse.FromJSON(body); err != nil {
-		return nil, err
+	respErr := &models.Error{}
+	if err = respErr.FromJSON(body); err == nil && respErr != nil {
+		return nil, errors.New(*respErr.Message)
 	}
-	return nil, errors.New(errResponse.GetMessage())
-
+	return nil, fmt.Errorf("error with status code %d", resp.StatusCode)
 }
 
 func (lh *LogHandler) DeleteLogs(params models.LogFilter) error {
