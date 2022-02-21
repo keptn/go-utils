@@ -575,11 +575,7 @@ func (r *ResourceHandler) getAllResources(u *url.URL) ([]*models.Resource, error
 			nextPageKey = received.NextPageKey
 
 		} else {
-			respErr := &models.Error{}
-			if err = respErr.FromJSON(body); err != nil {
-				return nil, err
-			}
-			return nil, errors.New(*respErr.Message)
+			return nil, handleErrStatusCode(resp.StatusCode, body).ToError()
 		}
 	}
 

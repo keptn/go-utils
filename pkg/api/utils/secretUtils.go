@@ -151,11 +151,7 @@ func (s *SecretHandler) GetSecrets() (*models.GetSecretsResponse, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		errObj := &models.Error{}
-		if err := errObj.FromJSON(body); err != nil {
-			return nil, err
-		}
-		return nil, errors.New(*errObj.Message)
+		return nil, handleErrStatusCode(resp.StatusCode, body).ToError()
 	}
 	result := &models.GetSecretsResponse{}
 	if err := result.FromJSON(body); err != nil {

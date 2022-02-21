@@ -204,11 +204,7 @@ func (e *EventHandler) getEvents(uri string, numberOfPages int) ([]*models.Keptn
 
 			nextPageKey = received.NextPageKey
 		} else {
-			respErr := &models.Error{}
-			if err = respErr.FromJSON(body); err != nil {
-				return nil, buildErrorResponse(err.Error())
-			}
-			return nil, respErr
+			return nil, handleErrStatusCode(resp.StatusCode, body)
 		}
 	}
 

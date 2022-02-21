@@ -163,12 +163,8 @@ func (lh *LogHandler) GetLogs(params models.GetLogsParams) (*models.GetLogsRespo
 		}
 		return received, nil
 	}
-	errResponse := &models.Error{}
-	if err := errResponse.FromJSON(body); err != nil {
-		return nil, err
-	}
-	return nil, errors.New(errResponse.GetMessage())
 
+	return nil, handleErrStatusCode(resp.StatusCode, body).ToError()
 }
 
 func (lh *LogHandler) DeleteLogs(params models.LogFilter) error {
