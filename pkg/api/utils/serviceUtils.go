@@ -142,7 +142,7 @@ func (s *ServiceHandler) GetService(project, stage, service string) (*models.Ser
 		if err = respErr.FromJSON(body); err == nil && respErr != nil {
 			return nil, errors.New(*respErr.Message)
 		}
-		return nil, fmt.Errorf("error with status code %d", resp.StatusCode)
+		return nil, fmt.Errorf(ErrWithStatusCode, resp.StatusCode)
 	}
 }
 
@@ -198,7 +198,7 @@ func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models
 			if err = respErr.FromJSON(body); err == nil && respErr != nil {
 				return nil, errors.New(*respErr.Message)
 			}
-			return nil, fmt.Errorf("error with status code %d", resp.StatusCode)
+			return nil, fmt.Errorf(ErrWithStatusCode, resp.StatusCode)
 		}
 	}
 

@@ -208,7 +208,7 @@ func (e *EventHandler) getEvents(uri string, numberOfPages int) ([]*models.Keptn
 			if err = respErr.FromJSON(body); err == nil && respErr != nil {
 				return nil, respErr
 			}
-			return nil, buildErrorResponse(fmt.Sprintf("error with status code %d", resp.StatusCode))
+			return nil, buildErrorResponse(fmt.Sprintf(ErrWithStatusCode, resp.StatusCode))
 		}
 	}
 

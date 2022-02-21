@@ -161,7 +161,7 @@ func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
 			if err = respErr.FromJSON(body); err == nil && respErr != nil {
 				return nil, errors.New(*respErr.Message)
 			}
-			return nil, fmt.Errorf("error with status code %d", resp.StatusCode)
+			return nil, fmt.Errorf(ErrWithStatusCode, resp.StatusCode)
 		}
 	}
 
@@ -204,7 +204,7 @@ func getProject(uri string, api APIService) (*models.Project, *models.Error) {
 		return nil, respErr
 	}
 
-	return nil, buildErrorResponse(fmt.Sprintf("error with status code %d", resp.StatusCode))
+	return nil, buildErrorResponse(fmt.Sprintf(ErrWithStatusCode, resp.StatusCode))
 }
 
 func (p *ProjectHandler) UpdateConfigurationServiceProject(project models.Project) (*models.EventContext, *models.Error) {

@@ -106,7 +106,7 @@ func putWithEventContext(uri string, data []byte, api APIService) (*models.Event
 			return nil, respErr
 		}
 
-		return nil, buildErrorResponse(fmt.Sprintf("error with status code %d", resp.StatusCode))
+		return nil, buildErrorResponse(fmt.Sprintf(ErrWithStatusCode, resp.StatusCode))
 	}
 
 	return nil, buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
@@ -145,7 +145,7 @@ func put(uri string, data []byte, api APIService) (string, *models.Error) {
 			return "", respErr
 		}
 
-		return "", buildErrorResponse(fmt.Sprintf("error with status code %d", resp.StatusCode))
+		return "", buildErrorResponse(fmt.Sprintf(ErrWithStatusCode, resp.StatusCode))
 	}
 
 	return "", buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
@@ -193,7 +193,7 @@ func postWithEventContext(uri string, data []byte, api APIService) (*models.Even
 			return nil, respErr
 		}
 
-		return nil, buildErrorResponse(fmt.Sprintf("error with status code %d", resp.StatusCode))
+		return nil, buildErrorResponse(fmt.Sprintf(ErrWithStatusCode, resp.StatusCode))
 	}
 
 	return nil, buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
@@ -232,7 +232,7 @@ func post(uri string, data []byte, api APIService) (string, *models.Error) {
 			return "", respErr
 		}
 
-		return "", buildErrorResponse(fmt.Sprintf("error with status code %d", resp.StatusCode))
+		return "", buildErrorResponse(fmt.Sprintf(ErrWithStatusCode, resp.StatusCode))
 	}
 
 	return "", buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
@@ -275,7 +275,7 @@ func deleteWithEventContext(uri string, api APIService) (*models.EventContext, *
 		return nil, respErr
 	}
 
-	return nil, buildErrorResponse(fmt.Sprintf("error with status code %d", resp.StatusCode))
+	return nil, buildErrorResponse(fmt.Sprintf(ErrWithStatusCode, resp.StatusCode))
 }
 
 func delete(uri string, api APIService) (string, *models.Error) {
@@ -310,7 +310,7 @@ func delete(uri string, api APIService) (string, *models.Error) {
 		return "", respErr
 	}
 
-	return "", buildErrorResponse(fmt.Sprintf("error with status code %d", resp.StatusCode))
+	return "", buildErrorResponse(fmt.Sprintf(ErrWithStatusCode, resp.StatusCode))
 }
 
 func buildErrorResponse(errorStr string) *models.Error {

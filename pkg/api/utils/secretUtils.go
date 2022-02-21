@@ -156,7 +156,7 @@ func (s *SecretHandler) GetSecrets() (*models.GetSecretsResponse, error) {
 		if err = respErr.FromJSON(body); err == nil && respErr != nil {
 			return nil, errors.New(*respErr.Message)
 		}
-		return nil, fmt.Errorf("error with status code %d", resp.StatusCode)
+		return nil, fmt.Errorf(ErrWithStatusCode, resp.StatusCode)
 	}
 	result := &models.GetSecretsResponse{}
 	if err := result.FromJSON(body); err != nil {

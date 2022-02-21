@@ -580,7 +580,7 @@ func (r *ResourceHandler) getAllResources(u *url.URL) ([]*models.Resource, error
 			if err = respErr.FromJSON(body); err == nil && respErr != nil {
 				return nil, errors.New(*respErr.Message)
 			}
-			return nil, fmt.Errorf("error with status code %d", resp.StatusCode)
+			return nil, fmt.Errorf(ErrWithStatusCode, resp.StatusCode)
 		}
 	}
 

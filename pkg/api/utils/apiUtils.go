@@ -186,5 +186,5 @@ func (a *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
 		return nil, respErr
 	}
 
-	return nil, buildErrorResponse(fmt.Sprintf("error with status code %d", resp.StatusCode))
+	return nil, buildErrorResponse(fmt.Sprintf(ErrWithStatusCode, resp.StatusCode))
 }
