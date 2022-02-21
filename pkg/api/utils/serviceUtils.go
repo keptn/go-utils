@@ -2,7 +2,6 @@ package api
 
 import (
 	"crypto/tls"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -137,7 +136,7 @@ func (s *ServiceHandler) GetService(project, stage, service string) (*models.Ser
 		}
 		return received, nil
 	} else {
-		return nil, fmt.Errorf(*handleErrStatusCode(resp.StatusCode, body).Message)
+		return nil, handleErrStatusCode(resp.StatusCode, body).ToError()
 	}
 }
 
@@ -189,7 +188,7 @@ func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models
 			}
 			nextPageKey = received.NextPageKey
 		} else {
-			return nil, fmt.Errorf(*handleErrStatusCode(resp.StatusCode, body).Message)
+			return nil, handleErrStatusCode(resp.StatusCode, body).ToError()
 		}
 	}
 

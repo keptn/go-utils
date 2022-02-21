@@ -2,6 +2,8 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
+
 	"github.com/keptn/go-utils/pkg/common/strutils"
 )
 
@@ -39,4 +41,8 @@ func (e *Error) FromJSON(b []byte) error {
 		e.Message = strutils.Stringp("")
 	}
 	return nil
+}
+
+func (e *Error) ToError() error {
+	return fmt.Errorf(*e.Message)
 }

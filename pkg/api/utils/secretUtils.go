@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -152,7 +151,7 @@ func (s *SecretHandler) GetSecrets() (*models.GetSecretsResponse, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(*handleErrStatusCode(resp.StatusCode, body).Message)
+		return nil, handleErrStatusCode(resp.StatusCode, body).ToError()
 	}
 	result := &models.GetSecretsResponse{}
 	if err := result.FromJSON(body); err != nil {
