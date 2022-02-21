@@ -2,6 +2,7 @@ package api
 
 import (
 	"crypto/tls"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -153,7 +154,7 @@ func (s *ShipyardControllerHandler) GetOpenTriggeredEvents(filter EventFilter) (
 
 			nextPageKey = received.NextPageKey
 		} else {
-			return nil, handleErrStatusCode(resp.StatusCode, body)
+			return nil, fmt.Errorf(*handleErrStatusCode(resp.StatusCode, body).Message)
 		}
 	}
 	return events, nil

@@ -164,7 +164,7 @@ func (lh *LogHandler) GetLogs(params models.GetLogsParams) (*models.GetLogsRespo
 		return received, nil
 	}
 
-	return nil, handleErrStatusCode(resp.StatusCode, body)
+	return nil, fmt.Errorf(*handleErrStatusCode(resp.StatusCode, body).Message)
 }
 
 func (lh *LogHandler) DeleteLogs(params models.LogFilter) error {

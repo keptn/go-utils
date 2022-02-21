@@ -6,6 +6,7 @@ import (
 	b64 "encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -575,7 +576,7 @@ func (r *ResourceHandler) getAllResources(u *url.URL) ([]*models.Resource, error
 			nextPageKey = received.NextPageKey
 
 		} else {
-			return nil, handleErrStatusCode(resp.StatusCode, body)
+			return nil, fmt.Errorf(*handleErrStatusCode(resp.StatusCode, body).Message)
 		}
 	}
 

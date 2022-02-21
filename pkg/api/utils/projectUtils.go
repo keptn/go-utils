@@ -2,6 +2,7 @@ package api
 
 import (
 	"crypto/tls"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -155,7 +156,7 @@ func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
 			}
 			nextPageKey = received.NextPageKey
 		} else {
-			return nil, handleErrStatusCode(resp.StatusCode, body)
+			return nil, fmt.Errorf(*handleErrStatusCode(resp.StatusCode, body).Message)
 		}
 	}
 
@@ -194,7 +195,7 @@ func getProject(uri string, api APIService) (*models.Project, *models.Error) {
 		return nil, nil
 	}
 
-	return nil, buildErrorResponse(handleErrStatusCode(resp.StatusCode, body).Error())
+	return nil, handleErrStatusCode(resp.StatusCode, body)
 }
 
 func (p *ProjectHandler) UpdateConfigurationServiceProject(project models.Project) (*models.EventContext, *models.Error) {

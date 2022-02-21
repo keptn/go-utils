@@ -180,5 +180,5 @@ func (a *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
 		return nil, nil
 	}
 
-	return nil, buildErrorResponse(handleErrStatusCode(resp.StatusCode, body).Error())
+	return nil, handleErrStatusCode(resp.StatusCode, body)
 }

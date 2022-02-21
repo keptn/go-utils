@@ -2,6 +2,7 @@ package api
 
 import (
 	"crypto/tls"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -140,7 +141,7 @@ func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 			}
 			nextPageKey = received.NextPageKey
 		} else {
-			return nil, handleErrStatusCode(resp.StatusCode, body)
+			return nil, fmt.Errorf(*handleErrStatusCode(resp.StatusCode, body).Message)
 		}
 	}
 	return stages, nil

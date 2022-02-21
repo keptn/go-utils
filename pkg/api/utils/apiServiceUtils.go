@@ -3,7 +3,6 @@ package api
 import (
 	"bytes"
 	"crypto/tls"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -102,7 +101,7 @@ func putWithEventContext(uri string, data []byte, api APIService) (*models.Event
 	}
 
 	if len(body) > 0 {
-		return nil, buildErrorResponse(handleErrStatusCode(resp.StatusCode, body).Error())
+		return nil, handleErrStatusCode(resp.StatusCode, body)
 	}
 
 	return nil, buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
@@ -136,19 +135,10 @@ func put(uri string, data []byte, api APIService) (string, *models.Error) {
 	}
 
 	if len(body) > 0 {
-		return "", buildErrorResponse(handleErrStatusCode(resp.StatusCode, body).Error())
+		return "", handleErrStatusCode(resp.StatusCode, body)
 	}
 
 	return "", buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
-}
-
-func handleErrStatusCode(statusCode int, body []byte) error {
-	respErr := &models.Error{}
-	if err := respErr.FromJSON(body); err == nil && respErr != nil {
-		return errors.New(*respErr.Message)
-	}
-
-	return fmt.Errorf(ErrWithStatusCode, statusCode)
 }
 
 func postWithEventContext(uri string, data []byte, api APIService) (*models.EventContext, *models.Error) {
@@ -188,7 +178,7 @@ func postWithEventContext(uri string, data []byte, api APIService) (*models.Even
 	}
 
 	if len(body) > 0 {
-		return nil, buildErrorResponse(handleErrStatusCode(resp.StatusCode, body).Error())
+		return nil, handleErrStatusCode(resp.StatusCode, body)
 	}
 
 	return nil, buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
@@ -222,7 +212,7 @@ func post(uri string, data []byte, api APIService) (string, *models.Error) {
 	}
 
 	if len(body) > 0 {
-		return "", buildErrorResponse(handleErrStatusCode(resp.StatusCode, body).Error())
+		return "", handleErrStatusCode(resp.StatusCode, body)
 	}
 
 	return "", buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
@@ -260,7 +250,7 @@ func deleteWithEventContext(uri string, api APIService) (*models.EventContext, *
 		return nil, nil
 	}
 
-	return nil, buildErrorResponse(handleErrStatusCode(resp.StatusCode, body).Error())
+	return nil, handleErrStatusCode(resp.StatusCode, body)
 }
 
 func delete(uri string, api APIService) (string, *models.Error) {
@@ -290,7 +280,7 @@ func delete(uri string, api APIService) (string, *models.Error) {
 		return "", nil
 	}
 
-	return "", buildErrorResponse(handleErrStatusCode(resp.StatusCode, body).Error())
+	return "", handleErrStatusCode(resp.StatusCode, body)
 }
 
 func buildErrorResponse(errorStr string) *models.Error {
