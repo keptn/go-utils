@@ -6,7 +6,6 @@ import (
 	b64 "encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -576,11 +575,7 @@ func (r *ResourceHandler) getAllResources(u *url.URL) ([]*models.Resource, error
 			nextPageKey = received.NextPageKey
 
 		} else {
-			respErr := &models.Error{}
-			if err = respErr.FromJSON(body); err == nil && respErr != nil {
-				return nil, errors.New(*respErr.Message)
-			}
-			return nil, fmt.Errorf(ErrWithStatusCode, resp.StatusCode)
+			return nil, handleErrStatusCode(resp.StatusCode, body)
 		}
 	}
 

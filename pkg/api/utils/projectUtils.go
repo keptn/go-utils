@@ -2,8 +2,6 @@ package api
 
 import (
 	"crypto/tls"
-	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -157,11 +155,7 @@ func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
 			}
 			nextPageKey = received.NextPageKey
 		} else {
-			respErr := &models.Error{}
-			if err = respErr.FromJSON(body); err == nil && respErr != nil {
-				return nil, errors.New(*respErr.Message)
-			}
-			return nil, fmt.Errorf(ErrWithStatusCode, resp.StatusCode)
+			return nil, handleErrStatusCode(resp.StatusCode, body)
 		}
 	}
 
@@ -199,12 +193,8 @@ func getProject(uri string, api APIService) (*models.Project, *models.Error) {
 		}
 		return nil, nil
 	}
-	respErr := &models.Error{}
-	if err = respErr.FromJSON(body); err == nil && respErr != nil {
-		return nil, respErr
-	}
 
-	return nil, buildErrorResponse(fmt.Sprintf(ErrWithStatusCode, resp.StatusCode))
+	return nil, buildErrorResponse(handleErrStatusCode(resp.StatusCode, body).Error())
 }
 
 func (p *ProjectHandler) UpdateConfigurationServiceProject(project models.Project) (*models.EventContext, *models.Error) {
