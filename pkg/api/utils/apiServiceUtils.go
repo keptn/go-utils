@@ -102,12 +102,11 @@ func putWithEventContext(uri string, data []byte, api APIService) (*models.Event
 
 	if len(body) > 0 {
 		respErr := &models.Error{}
-		if err = respErr.FromJSON(body); err != nil {
-			// failed to parse json
-			return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
+		if err = respErr.FromJSON(body); err == nil && respErr != nil {
+			return nil, respErr
 		}
 
-		return nil, respErr
+		return nil, buildErrorResponse(fmt.Sprintf("error with status code %d", resp.StatusCode))
 	}
 
 	return nil, buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
@@ -142,12 +141,11 @@ func put(uri string, data []byte, api APIService) (string, *models.Error) {
 
 	if len(body) > 0 {
 		respErr := &models.Error{}
-		if err = respErr.FromJSON(body); err != nil {
-			// failed to parse json
-			return "", buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
+		if err = respErr.FromJSON(body); err == nil && respErr != nil {
+			return "", respErr
 		}
 
-		return "", respErr
+		return "", buildErrorResponse(fmt.Sprintf("error with status code %d", resp.StatusCode))
 	}
 
 	return "", buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
@@ -191,12 +189,11 @@ func postWithEventContext(uri string, data []byte, api APIService) (*models.Even
 
 	if len(body) > 0 {
 		respErr := &models.Error{}
-		if err = respErr.FromJSON(body); err != nil {
-			// failed to parse json
-			return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
+		if err = respErr.FromJSON(body); err == nil && respErr != nil {
+			return nil, respErr
 		}
 
-		return nil, respErr
+		return nil, buildErrorResponse(fmt.Sprintf("error with status code %d", resp.StatusCode))
 	}
 
 	return nil, buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
@@ -231,12 +228,11 @@ func post(uri string, data []byte, api APIService) (string, *models.Error) {
 
 	if len(body) > 0 {
 		respErr := &models.Error{}
-		if err = respErr.FromJSON(body); err != nil {
-			// failed to parse json
-			return "", buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
+		if err = respErr.FromJSON(body); err == nil && respErr != nil {
+			return "", respErr
 		}
 
-		return "", respErr
+		return "", buildErrorResponse(fmt.Sprintf("error with status code %d", resp.StatusCode))
 	}
 
 	return "", buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
@@ -275,12 +271,11 @@ func deleteWithEventContext(uri string, api APIService) (*models.EventContext, *
 	}
 
 	respErr := &models.Error{}
-	if err = respErr.FromJSON(body); err != nil {
-		// failed to parse json
-		return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
+	if err = respErr.FromJSON(body); err == nil && respErr != nil {
+		return nil, respErr
 	}
 
-	return nil, respErr
+	return nil, buildErrorResponse(fmt.Sprintf("error with status code %d", resp.StatusCode))
 }
 
 func delete(uri string, api APIService) (string, *models.Error) {
@@ -311,12 +306,11 @@ func delete(uri string, api APIService) (string, *models.Error) {
 	}
 
 	respErr := &models.Error{}
-	if err = respErr.FromJSON(body); err != nil {
-		// failed to parse json
-		return "", buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
+	if err = respErr.FromJSON(body); err == nil && respErr != nil {
+		return "", respErr
 	}
 
-	return "", respErr
+	return "", buildErrorResponse(fmt.Sprintf("error with status code %d", resp.StatusCode))
 }
 
 func buildErrorResponse(errorStr string) *models.Error {

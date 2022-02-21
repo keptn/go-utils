@@ -200,11 +200,11 @@ func getProject(uri string, api APIService) (*models.Project, *models.Error) {
 		return nil, nil
 	}
 	respErr := &models.Error{}
-	if err = respErr.FromJSON(body); err != nil {
-		return nil, buildErrorResponse(err.Error())
+	if err = respErr.FromJSON(body); err == nil && respErr != nil {
+		return nil, respErr
 	}
 
-	return nil, respErr
+	return nil, buildErrorResponse(fmt.Sprintf("error with status code %d", resp.StatusCode))
 }
 
 func (p *ProjectHandler) UpdateConfigurationServiceProject(project models.Project) (*models.EventContext, *models.Error) {

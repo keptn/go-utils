@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -181,9 +182,9 @@ func (a *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
 	}
 
 	respErr := &models.Error{}
-	if err = respErr.FromJSON(body); err != nil {
-		return nil, buildErrorResponse(err.Error())
+	if err = respErr.FromJSON(body); err == nil && respErr != nil {
+		return nil, respErr
 	}
 
-	return nil, respErr
+	return nil, buildErrorResponse(fmt.Sprintf("error with status code %d", resp.StatusCode))
 }
