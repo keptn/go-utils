@@ -43,6 +43,7 @@ func (e *Error) FromJSON(b []byte) error {
 	return nil
 }
 
+// ToError converts model to fmt.Error
 func (e *Error) ToError() error {
 	return fmt.Errorf(*e.Message)
 }
