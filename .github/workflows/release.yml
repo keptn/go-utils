@@ -1,8 +1,12 @@
 name: Release
 on:
   workflow_dispatch:
+    inputs:
+      semver-type:
+        description: 'Can be one of [major,minor,patch]. CAUTION: This will enforce a new release with the specified semantic version type bumped.'
+        required: false
 env:
-  NODE_VERSION: 14
+  NODE_VERSION: 16
   KEPTN_BOT_NAME: "Keptn Bot"
   KEPTN_BOT_EMAIL: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
   RELEASE_NOTES_FILE: "RELEASE-BODY.md"
@@ -10,11 +14,68 @@ defaults:
   run:
     shell: bash
 jobs:
+  prepare:
+    name: Prepare release run
+    runs-on: ubuntu-20.04
+    outputs:
+      next-version: ${{ steps.version_number.outputs.next-version }}
+      branch: ${{ steps.current_branch.outputs.branch }}
+    steps:
+      - name: Check SemVer input
+        env:
+          SEMVER_TYPE: ${{ github.event.inputs.semver-type }}
+        run: |
+          if [[ ! -z "$SEMVER_TYPE" ]]; then
+            echo "SemVer Type is defined. Checking for valid SemVer type..."
+            if [[ "$SEMVER_TYPE" == "major" ]] || [[ "$SEMVER_TYPE" == "minor" ]] || [[ "$SEMVER_TYPE" == "patch" ]]; then
+              echo "::notice::SemVer Type is correctly set to $SEMVER_TYPE! Continuing with this version bump..."
+            else
+              echo "::error::ERROR: Enforced SemVer does not match any of [major,minor,patch]!"
+              echo "Exiting..."
+              exit 1
+            fi
+          else
+            echo "::notice::No SemVer type defined, continuing with auto generated version number..."
+          fi
+
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Find next version number
+        id: version_number
+        env:
+          SEMVER_TYPE: ${{ github.event.inputs.semver-type }}
+        run: |
+          if [[ ! -z "$SEMVER_TYPE" ]]; then
+            npx standard-version@^9.3.1 \
+              --skip.commit \
+              --skip.tag \
+              --skip.changelog \
+              --release-as "$SEMVER_TYPE"
+          else
+            npx standard-version@^9.3.1 \
+              --skip.commit \
+              --skip.tag \
+              --skip.changelog
+          fi
+
+          NEXT_VERSION=$(cat VERSION.txt)
+          echo "::set-output name=next-version::${NEXT_VERSION}"
+          git checkout HEAD -- VERSION.txt
+
+      - name: Find current branch
+        id: current_branch
+        run: |
+          branch=${GITHUB_REF#refs/heads/}
+          echo "::set-output name=branch::${branch}"
   test:
+    needs: prepare
     strategy:
       matrix:
-        go-version: [1.16.x]
-        platform: [ubuntu-latest]
+        go-version: [ 1.16.x ]
+        platform: [ ubuntu-latest ]
     runs-on: ${{ matrix.platform }}
     env:
       GO111MODULE: "on"
@@ -31,7 +92,7 @@ jobs:
   release:
     name: "Release"
     runs-on: ubuntu-20.04
-    needs: [test]
+    needs: [ prepare, test ]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -40,7 +101,7 @@ jobs:
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v2.5.1
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -53,28 +114,50 @@ jobs:
           git config user.email "$KEPTN_BOT_EMAIL"
 
       - name: Prepare GitHub Release Notes
+        env:
+          SEMVER_TYPE: ${{ github.event.inputs.semver-type }}
         run: |
           # Delete pre-release tags to be able to generate a changelog from last 'real' release
           # This is a workaround for a known limitation of standard-version
           # Reference: https://github.com/conventional-changelog/standard-version/issues/203#issuecomment-872415140
           git tag -l | grep -vE '^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$' | xargs git tag -d
 
-          npx standard-version@^9.3.1 -i "${{ env.RELEASE_NOTES_FILE }}" --skip.commit --skip.tag --header ""
+          if [[ ! -z "$SEMVER_TYPE" ]]; then
+            npx standard-version@^9.3.1 \
+              -i "${{ env.RELEASE_NOTES_FILE }}" \
+              --skip.commit \
+              --skip.tag \
+              --header "" \
+              --release-as "$SEMVER_TYPE"
+          else
+            npx standard-version@^9.3.1 \
+              -i "${{ env.RELEASE_NOTES_FILE }}" \
+              --skip.commit \
+              --skip.tag \
+              --header ""
+          fi
 
       - name: Temporarily disable "include administrators" branch protection
-        uses: benjefferies/branch-protection-bot@6d0ac2b2d9bfd39794b017f8241adb7da7f0ab98 # pin@1.0.7
+        uses: benjefferies/branch-protection-bot@76b8a9d745a68c6a6e9b4bf745d4b32ad805e9a1
         with:
           access_token: ${{ secrets.KEPTN_BOT_TOKEN }}
-          branch: ${{ github.event.repository.default_branch }}
+          branch: ${{ needs.prepare.outputs.branch }}
           enforce_admins: false
 
       - name: Create release package
         id: create-release-package
         env:
+          SEMVER_TYPE: ${{ github.event.inputs.semver-type }}
           GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
         run: |
           echo "🚀 Creating release package now..."
-          npx standard-version@^9.3.1
+
+          if [[ ! -z "$SEMVER_TYPE" ]]; then
+            npx standard-version@^9.3.1 \
+              --release-as "$SEMVER_TYPE"
+          else
+            npx standard-version@^9.3.1
+          fi
 
           echo "::set-output name=tag-name::$(git describe --tags --abbrev=0)"
 
@@ -84,11 +167,11 @@ jobs:
           git push --follow-tags
 
       - name: Enable "include administrators" branch protection
-        uses: benjefferies/branch-protection-bot@6d0ac2b2d9bfd39794b017f8241adb7da7f0ab98 # pin@1.0.7
+        uses: benjefferies/branch-protection-bot@76b8a9d745a68c6a6e9b4bf745d4b32ad805e9a1
         if: always() # Force to always run this step to ensure "include administrators" is always turned back on
         with:
           access_token: ${{ secrets.KEPTN_BOT_TOKEN }}
-          branch: ${{ github.event.repository.default_branch }}
+          branch: ${{ needs.prepare.outputs.branch }}
           enforce_admins: true
 
       - name: Create GitHub Release
