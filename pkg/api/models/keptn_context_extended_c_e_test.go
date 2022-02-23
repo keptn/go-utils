@@ -25,7 +25,7 @@ func TestKeptnContextExtendedCE_Validate(t *testing.T) {
 		Specversion        string
 		Time               time.Time
 		Triggeredid        string
-		Gitcommitid        string
+		GitCommitID        string
 		Type               *string
 	}
 	tests := []struct {
@@ -93,7 +93,7 @@ func TestKeptnContextExtendedCE_Validate(t *testing.T) {
 				Specversion:        tt.fields.Specversion,
 				Time:               tt.fields.Time,
 				Triggeredid:        tt.fields.Triggeredid,
-				Gitcommitid:        tt.fields.Gitcommitid,
+				GitCommitID:        tt.fields.GitCommitID,
 				Type:               tt.fields.Type,
 			}
 			if err := ce.Validate(); (err != nil) != tt.wantErr {
