@@ -20,6 +20,21 @@ type Project struct {
 	// git private key passphrase
 	GitPrivateKeyPass string `json:"gitPrivateKeyPass,omitempty"`
 
+	// git proxy URL
+	GitProxyURL string `json:"gitProxyUrl,omitempty"`
+
+	// git proxy scheme
+	GitProxyScheme string `json:"gitProxyScheme,omitempty"`
+
+	// git proxy user
+	GitProxyUser string `json:"gitProxyUser,omitempty"`
+
+	// git proxy secure
+	GitProxySecure bool `json:"gitProxySecure,omitempty"`
+
+	// git proxy password
+	GitProxyPassword string `json:"gitProxyPassword,omitempty"`
+
 	// Git User
 	GitUser string `json:"gitUser,omitempty"`
 
