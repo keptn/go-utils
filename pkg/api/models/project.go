@@ -29,7 +29,7 @@ type Project struct {
 	// git proxy user
 	GitProxyUser string `json:"gitProxyUser,omitempty"`
 
-	// git proxy secure
+	// git proxy insecure
 	GitProxyInsecure bool `json:"gitProxyInsecure,omitempty"`
 
 	// git proxy password
