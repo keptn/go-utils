@@ -39,7 +39,7 @@ jobs:
           fi
 
       - name: Checkout repo
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -86,7 +86,7 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
       - name: Test
         run: go test -race -v ./...
   release:
@@ -95,7 +95,7 @@ jobs:
     needs: [ prepare, test ]
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
