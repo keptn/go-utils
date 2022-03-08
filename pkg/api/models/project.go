@@ -35,6 +35,9 @@ type Project struct {
 	// git proxy password
 	GitProxyPassword string `json:"gitProxyPassword,omitempty"`
 
+	//git PEM Certificate
+	GitPemCertificate string `json:"gitPemCertificate,omitempty"`
+
 	// Git User
 	GitUser string `json:"gitUser,omitempty"`
 
