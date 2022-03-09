@@ -88,7 +88,6 @@ github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5Cc
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
-go.opentelemetry.io/contrib v0.23.0 h1:MgRuo0JZZX8J9WLRjyd7OpTSbaLOdQXXJa6SnZvlWLM=
 go.opentelemetry.io/contrib v0.23.0/go.mod h1:EH4yDYeNoaTqn/8yCWQmfNB78VHfGX2Jt2bvnvzBlGM=
 go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.23.0/go.mod h1:wLrbAf2Qb+kFsEjowrxOcuy2SE0dcY0VwFiiYCmUeFQ=
 go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.27.0 h1:0BgiNWjN7rUWO9HdjF4L12r8OW86QkVQcYmCjnayJLo=
