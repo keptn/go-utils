@@ -6,7 +6,7 @@ package models
 type ExpandedStage struct {
 
 	// last event context
-	LastEventContext *EventContext `json:"lastEventContext,omitempty"`
+	LastEventContext *EventContextInfo `json:"lastEventContext,omitempty"`
 
 	// services
 	Services []*ExpandedService `json:"services"`

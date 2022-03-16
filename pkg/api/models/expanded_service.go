@@ -12,7 +12,7 @@ type ExpandedService struct {
 	DeployedImage string `json:"deployedImage,omitempty"`
 
 	// last event types
-	LastEventTypes map[string]EventContext `json:"lastEventTypes,omitempty"`
+	LastEventTypes map[string]EventContextInfo `json:"lastEventTypes,omitempty"`
 
 	// open remediations
 	OpenRemediations []*Remediation `json:"openRemediations"`

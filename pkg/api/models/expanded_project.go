@@ -15,7 +15,7 @@ type ExpandedProject struct {
 	GitUser string `json:"gitUser,omitempty"`
 
 	// last event context
-	LastEventContext *EventContext `json:"lastEventContext,omitempty"`
+	LastEventContext *EventContextInfo `json:"lastEventContext,omitempty"`
 
 	// Project name
 	ProjectName string `json:"projectName,omitempty"`
