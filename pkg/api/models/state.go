@@ -58,18 +58,20 @@ type StateFilter struct {
 	GetSequenceStateParams
 }
 
+//SequenceStateEvaluation returns evaluation details
 type SequenceStateEvaluation struct {
 	Result string  `json:"result" bson:"result"`
 	Score  float64 `json:"score" bson:"score"`
 }
 
+// SequenceStateEvent contains information about the Event type time and ID
 type SequenceStateEvent struct {
 	Type string `json:"type" bson:"type"`
 	ID   string `json:"id" bson:"id"`
-
 	Time string `json:"time" bson:"time"`
 }
 
+// SequenceStateStage represent current state of a stage in a sequence
 type SequenceStateStage struct {
 	Name              string                   `json:"name" bson:"name"`
 	Image             string                   `json:"image,omitempty" bson:"image"`
@@ -79,6 +81,7 @@ type SequenceStateStage struct {
 	LatestFailedEvent *SequenceStateEvent      `json:"latestFailedEvent,omitempty" bson:"latestFailedEvent"`
 }
 
+// SequenceState represent the current state of a sequence
 type SequenceState struct {
 	Name           string               `json:"name" bson:"name"`
 	Service        string               `json:"service" bson:"service"`
@@ -90,6 +93,7 @@ type SequenceState struct {
 	ProblemTitle   string               `json:"problemTitle,omitempty" bson:"problemTitle"`
 }
 
+// SequenceStates collects all states of a sequence
 type SequenceStates struct {
 	States []SequenceState `json:"states"`
 	// Pointer to next page

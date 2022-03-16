@@ -1,6 +1,6 @@
 package models
 
-// ExpandedStage expanded stage
+// ExpandedStage stage with expanded service
 //
 // swagger:model ExpandedStage
 type ExpandedStage struct {

@@ -1,6 +1,6 @@
 package models
 
-// ExpandedService expanded service
+// ExpandedService service expanded with remediaitons
 //
 // swagger:model ExpandedService
 type ExpandedService struct {

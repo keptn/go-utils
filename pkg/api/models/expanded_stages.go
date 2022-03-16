@@ -1,5 +1,6 @@
 package models
 
+// ExpandedStages stores ExpandedStage
 type ExpandedStages struct {
 
 	// Pointer to next page, base64 encoded
