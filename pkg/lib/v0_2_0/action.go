@@ -31,10 +31,4 @@ type ActionStartedEventData struct {
 // ActionFinishedEventData contains information about the execution of an action
 type ActionFinishedEventData struct {
 	EventData
-	Action ActionData `json:"action"`
-}
-
-type ActionData struct { //TODO do we use this to track ref of actions/changes?
-	// GitCommit indicates the action
-	GitCommit string `json:"gitCommit,omitempty"`
 }
