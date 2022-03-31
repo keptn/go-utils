@@ -41,6 +41,4 @@ type DeploymentFinishedData struct {
 	DeploymentURIsPublic []string `json:"deploymentURIsPublic,omitempty"`
 	// DeploymentNames gives the names of the deployments
 	DeploymentNames []string `json:"deploymentNames"`
-	// GitCommit indicates the version which should be deployed
-	GitCommit string `json:"gitCommit"`
 }

@@ -22,5 +22,5 @@ type ReleaseFinishedEventData struct {
 
 type ReleaseData struct {
 	// GitCommit indicates the version which should be deployed
-	GitCommit string `json:"gitCommit"`
+	GitCommit string `json:"gitCommit"` //TODO this one ?
 }
