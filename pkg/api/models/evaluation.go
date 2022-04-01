@@ -15,6 +15,9 @@ type Evaluation struct {
 
 	// Evaluation end timestamp
 	End string `json:"end,omitempty"`
+
+	// Evaluation commit ID context
+	GitCommitID string `json:"gitcommitid,omitempty"`
 }
 
 // ToJSON converts object to JSON string
