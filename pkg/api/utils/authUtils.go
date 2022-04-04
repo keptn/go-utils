@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
@@ -77,5 +78,5 @@ func (a *AuthHandler) getHTTPClient() *http.Client {
 
 // Authenticate authenticates the client request against the server
 func (a *AuthHandler) Authenticate() (*models.EventContext, *models.Error) {
-	return postWithEventContext(a.Scheme+"://"+a.getBaseURL()+"/v1/auth", nil, a)
+	return postWithEventContext(context.TODO(), a.Scheme+"://"+a.getBaseURL()+"/v1/auth", nil, a)
 }

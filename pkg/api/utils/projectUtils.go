@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"crypto/tls"
 	"io/ioutil"
 	"net/http"
@@ -94,12 +95,12 @@ func (p *ProjectHandler) CreateProject(project models.Project) (*models.EventCon
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(p.Scheme+"://"+p.getBaseURL()+v1ProjectPath, bodyStr, p)
+	return postWithEventContext(context.TODO(), p.Scheme+"://"+p.getBaseURL()+v1ProjectPath, bodyStr, p)
 }
 
 // DeleteProject deletes a project
 func (p *ProjectHandler) DeleteProject(project models.Project) (*models.EventContext, *models.Error) {
-	return deleteWithEventContext(p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, p)
+	return deleteWithEventContext(context.TODO(), p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, p)
 }
 
 // GetProject returns a project
@@ -202,5 +203,5 @@ func (p *ProjectHandler) UpdateConfigurationServiceProject(project models.Projec
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return putWithEventContext(p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, bodyStr, p)
+	return putWithEventContext(context.TODO(), p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, bodyStr, p)
 }

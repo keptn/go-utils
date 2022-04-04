@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"crypto/tls"
 	"io/ioutil"
 	"net/http"
@@ -93,7 +94,7 @@ func (s *StageHandler) CreateStage(project string, stageName string) (*models.Ev
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+pathToStage, body, s)
+	return postWithEventContext(context.TODO(), s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+pathToStage, body, s)
 }
 
 // GetAllStages returns a list of all stages.

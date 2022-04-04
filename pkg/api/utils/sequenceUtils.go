@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -143,7 +144,7 @@ func (s *SequenceControlHandler) ControlSequence(params SequenceControlParams) e
 		return err
 	}
 
-	_, errResponse := post(baseurl+path, payload, s)
+	_, errResponse := post(context.TODO(), baseurl+path, payload, s)
 	if errResponse != nil {
 		return fmt.Errorf(errResponse.GetMessage())
 	}

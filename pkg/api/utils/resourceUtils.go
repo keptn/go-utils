@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	b64 "encoding/base64"
 	"encoding/json"
@@ -236,11 +237,11 @@ func (r *ResourceHandler) CreateResources(project string, stage string, service 
 	}
 
 	if project != "" && stage != "" && service != "" {
-		return postWithEventContext(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+service+pathToResource, requestStr, r)
+		return postWithEventContext(context.TODO(), r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+service+pathToResource, requestStr, r)
 	} else if project != "" && stage != "" && service == "" {
-		return postWithEventContext(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToResource, requestStr, r)
+		return postWithEventContext(context.TODO(), r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToResource, requestStr, r)
 	} else {
-		return postWithEventContext(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+"/"+pathToResource, requestStr, r)
+		return postWithEventContext(context.TODO(), r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+"/"+pathToResource, requestStr, r)
 	}
 }
 

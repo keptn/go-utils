@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -85,7 +86,7 @@ func (a *APIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.Eve
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(a.Scheme+"://"+baseURL+v1EventPath, bodyStr, a)
+	return postWithEventContext(context.TODO(), a.Scheme+"://"+baseURL+v1EventPath, bodyStr, a)
 }
 
 // TriggerEvaluation triggers a new evaluation
@@ -94,7 +95,7 @@ func (a *APIHandler) TriggerEvaluation(project, stage, service string, evaluatio
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(a.Scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+service+"/evaluation", bodyStr, a)
+	return postWithEventContext(context.TODO(), a.Scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+service+"/evaluation", bodyStr, a)
 }
 
 // CreateProject creates a new project
@@ -103,7 +104,7 @@ func (a *APIHandler) CreateProject(project models.CreateProject) (string, *model
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
-	return post(a.Scheme+"://"+a.getBaseURL()+v1ProjectPath, bodyStr, a)
+	return post(context.TODO(), a.Scheme+"://"+a.getBaseURL()+v1ProjectPath, bodyStr, a)
 }
 
 // UpdateProject updates project
@@ -112,12 +113,12 @@ func (a *APIHandler) UpdateProject(project models.CreateProject) (string, *model
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
-	return put(a.Scheme+"://"+a.getBaseURL()+v1ProjectPath, bodyStr, a)
+	return put(context.TODO(), a.Scheme+"://"+a.getBaseURL()+v1ProjectPath, bodyStr, a)
 }
 
 // DeleteProject deletes a project
 func (a *APIHandler) DeleteProject(project models.Project) (*models.DeleteProjectResponse, *models.Error) {
-	resp, err := delete(a.Scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, a)
+	resp, err := delete(context.TODO(), a.Scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, a)
 	if err != nil {
 		return nil, err
 	}
@@ -137,12 +138,12 @@ func (a *APIHandler) CreateService(project string, service models.CreateService)
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
-	return post(a.Scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project+pathToService, bodyStr, a)
+	return post(context.TODO(), a.Scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project+pathToService, bodyStr, a)
 }
 
 // DeleteProject deletes a project
 func (a *APIHandler) DeleteService(project, service string) (*models.DeleteServiceResponse, *models.Error) {
-	resp, err := delete(a.Scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project+pathToService+"/"+service, a)
+	resp, err := delete(context.TODO(), a.Scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project+pathToService+"/"+service, a)
 	if err != nil {
 		return nil, err
 	}

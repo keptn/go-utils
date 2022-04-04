@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"crypto/tls"
 	"io/ioutil"
 	"net/http"
@@ -96,12 +97,12 @@ func (s *ServiceHandler) CreateServiceInStage(project string, stage string, serv
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService, body, s)
+	return postWithEventContext(context.TODO(), s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService, body, s)
 }
 
 // DeleteServiceFromStage godoc
 func (s *ServiceHandler) DeleteServiceFromStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error) {
-	return deleteWithEventContext(s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+serviceName, s)
+	return deleteWithEventContext(context.TODO(), s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+serviceName, s)
 }
 
 func (s *ServiceHandler) GetService(project, stage, service string) (*models.Service, error) {

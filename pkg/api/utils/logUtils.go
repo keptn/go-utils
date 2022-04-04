@@ -184,7 +184,7 @@ func (lh *LogHandler) DeleteLogs(params models.LogFilter) error {
 	if params.BeforeTime != "" {
 		query.Set("beforeTime", params.BeforeTime)
 	}
-	if _, err := delete(u.String(), lh); err != nil {
+	if _, err := delete(context.TODO(), u.String(), lh); err != nil {
 		return errors.New(err.GetMessage())
 	}
 	return nil
@@ -218,7 +218,7 @@ func (lh *LogHandler) Flush() error {
 	if err != nil {
 		return err
 	}
-	if _, err := post(lh.Scheme+"://"+lh.getBaseURL()+v1LogPath, bodyStr, lh); err != nil {
+	if _, err := post(context.TODO(), lh.Scheme+"://"+lh.getBaseURL()+v1LogPath, bodyStr, lh); err != nil {
 		return errors.New(err.GetMessage())
 	}
 	lh.LogCache = []models.LogEntry{}

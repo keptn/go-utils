@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -101,7 +102,7 @@ func (s *SecretHandler) CreateSecret(secret models.Secret) error {
 	if err != nil {
 		return err
 	}
-	_, errObj := post(s.Scheme+"://"+s.BaseURL+v1SecretPath, body, s)
+	_, errObj := post(context.TODO(), s.Scheme+"://"+s.BaseURL+v1SecretPath, body, s)
 	if errObj != nil {
 		return errors.New(errObj.GetMessage())
 	}
@@ -114,7 +115,7 @@ func (s *SecretHandler) UpdateSecret(secret models.Secret) error {
 	if err != nil {
 		return err
 	}
-	_, errObj := put(s.Scheme+"://"+s.BaseURL+v1SecretPath, body, s)
+	_, errObj := put(context.TODO(), s.Scheme+"://"+s.BaseURL+v1SecretPath, body, s)
 	if errObj != nil {
 		return errors.New(errObj.GetMessage())
 	}
@@ -123,7 +124,7 @@ func (s *SecretHandler) UpdateSecret(secret models.Secret) error {
 
 // DeleteSecret deletes a secret
 func (s *SecretHandler) DeleteSecret(secretName, secretScope string) error {
-	_, err := delete(s.Scheme+"://"+s.BaseURL+v1SecretPath+"?name="+secretName+"&scope="+secretScope, s)
+	_, err := delete(context.TODO(), s.Scheme+"://"+s.BaseURL+v1SecretPath+"?name="+secretName+"&scope="+secretScope, s)
 	if err != nil {
 		return errors.New(err.GetMessage())
 	}

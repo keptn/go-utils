@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io/ioutil"
@@ -64,8 +65,8 @@ func getClientTransport(rt http.RoundTripper) http.RoundTripper {
 
 }
 
-func putWithEventContext(uri string, data []byte, api APIService) (*models.EventContext, *models.Error) {
-	req, err := http.NewRequest("PUT", uri, bytes.NewBuffer(data))
+func putWithEventContext(ctx context.Context, uri string, data []byte, api APIService) (*models.EventContext, *models.Error) {
+	req, err := http.NewRequestWithContext(ctx, "PUT", uri, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
@@ -107,8 +108,8 @@ func putWithEventContext(uri string, data []byte, api APIService) (*models.Event
 	return nil, buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
 }
 
-func put(uri string, data []byte, api APIService) (string, *models.Error) {
-	req, err := http.NewRequest("PUT", uri, bytes.NewBuffer(data))
+func put(ctx context.Context, uri string, data []byte, api APIService) (string, *models.Error) {
+	req, err := http.NewRequestWithContext(ctx, "PUT", uri, bytes.NewBuffer(data))
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
@@ -141,8 +142,8 @@ func put(uri string, data []byte, api APIService) (string, *models.Error) {
 	return "", buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
 }
 
-func postWithEventContext(uri string, data []byte, api APIService) (*models.EventContext, *models.Error) {
-	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(data))
+func postWithEventContext(ctx context.Context, uri string, data []byte, api APIService) (*models.EventContext, *models.Error) {
+	req, err := http.NewRequestWithContext(ctx, "POST", uri, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
@@ -184,8 +185,8 @@ func postWithEventContext(uri string, data []byte, api APIService) (*models.Even
 	return nil, buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
 }
 
-func post(uri string, data []byte, api APIService) (string, *models.Error) {
-	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(data))
+func post(ctx context.Context, uri string, data []byte, api APIService) (string, *models.Error) {
+	req, err := http.NewRequestWithContext(ctx, "POST", uri, bytes.NewBuffer(data))
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
@@ -218,8 +219,8 @@ func post(uri string, data []byte, api APIService) (string, *models.Error) {
 	return "", buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", resp.StatusCode, resp.Status))
 }
 
-func deleteWithEventContext(uri string, api APIService) (*models.EventContext, *models.Error) {
-	req, err := http.NewRequest("DELETE", uri, nil)
+func deleteWithEventContext(ctx context.Context, uri string, api APIService) (*models.EventContext, *models.Error) {
+	req, err := http.NewRequestWithContext(ctx, "DELETE", uri, nil)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
@@ -253,8 +254,8 @@ func deleteWithEventContext(uri string, api APIService) (*models.EventContext, *
 	return nil, handleErrStatusCode(resp.StatusCode, body)
 }
 
-func delete(uri string, api APIService) (string, *models.Error) {
-	req, err := http.NewRequest("DELETE", uri, nil)
+func delete(ctx context.Context, uri string, api APIService) (string, *models.Error) {
+	req, err := http.NewRequestWithContext(ctx, "DELETE", uri, nil)
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
