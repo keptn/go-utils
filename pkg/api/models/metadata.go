@@ -5,6 +5,9 @@ import "encoding/json"
 // Metadata metadata
 type Metadata struct {
 
+	// automaticprovisioning
+	Automaticprovisioning bool `json:"automaticprovisioning,omitempty"`
+
 	// bridgeversion
 	Bridgeversion string `json:"bridgeversion,omitempty"`
 
@@ -19,6 +22,9 @@ type Metadata struct {
 
 	// namespace
 	Namespace string `json:"namespace,omitempty"`
+
+	// shipyardversion
+	Shipyardversion string `json:"shipyardversion,omitempty"`
 }
 
 // ToJSON converts object to JSON string
