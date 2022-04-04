@@ -6,7 +6,8 @@ import "encoding/json"
 type Metadata struct {
 
 	// automaticprovisioning
-	Automaticprovisioning bool `json:"automaticprovisioning,omitempty"`
+	// Required: true
+	Automaticprovisioning *bool `json:"automaticprovisioning"`
 
 	// bridgeversion
 	Bridgeversion string `json:"bridgeversion,omitempty"`
