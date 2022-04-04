@@ -62,7 +62,62 @@ func getClientTransport(rt http.RoundTripper) http.RoundTripper {
 		return tr
 	}
 	return rt
+}
 
+func getAndExpectOK(ctx context.Context, uri string, api APIService) ([]byte, *models.Error) {
+	body, statusCode, status, err := get(ctx, uri, api)
+	if err != nil {
+		return nil, err
+	}
+
+	if statusCode == 200 {
+		return body, nil
+	}
+
+	if len(body) > 0 {
+		return nil, handleErrStatusCode(statusCode, body)
+	}
+
+	return nil, buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", statusCode, status))
+}
+
+func getAndExpectSuccess(ctx context.Context, uri string, api APIService) ([]byte, *models.Error) {
+	body, statusCode, status, err := get(ctx, uri, api)
+	if err != nil {
+		return nil, err
+	}
+
+	if statusCode >= 200 && statusCode < 300 {
+		return body, nil
+	}
+
+	if len(body) > 0 {
+		return nil, handleErrStatusCode(statusCode, body)
+	}
+
+	return nil, buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", statusCode, status))
+}
+
+func get(ctx context.Context, uri string, api APIService) ([]byte, int, string, *models.Error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", uri, nil)
+	if err != nil {
+		return nil, 0, "", buildErrorResponse(err.Error())
+	}
+	req.Header.Set("Content-Type", "application/json")
+	addAuthHeader(req, api)
+
+	resp, err := api.getHTTPClient().Do(req)
+	if err != nil {
+		return nil, 0, "", buildErrorResponse(err.Error())
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, 0, "", buildErrorResponse(err.Error())
+	}
+
+	return body, resp.StatusCode, resp.Status, nil
 }
 
 func putWithEventContext(ctx context.Context, uri string, data []byte, api APIService) (*models.EventContext, *models.Error) {
@@ -85,20 +140,21 @@ func putWithEventContext(ctx context.Context, uri string, data []byte, api APISe
 	}
 
 	if resp.StatusCode >= 200 && resp.StatusCode <= 204 {
-		if len(body) > 0 {
-			eventContext := &models.EventContext{}
-			if err = eventContext.FromJSON(body); err != nil {
-				// failed to parse json
-				return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
-			}
-
-			if eventContext.KeptnContext != nil {
-				fmt.Println("ID of Keptn context: " + *eventContext.KeptnContext)
-			}
-			return eventContext, nil
+		if len(body) == 0 {
+			return nil, nil
 		}
 
-		return nil, nil
+		eventContext := &models.EventContext{}
+
+		if err = eventContext.FromJSON(body); err != nil {
+			// failed to parse json
+			return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
+		}
+
+		if eventContext.KeptnContext != nil {
+			fmt.Println("ID of Keptn context: " + *eventContext.KeptnContext)
+		}
+		return eventContext, nil
 	}
 
 	if len(body) > 0 {
@@ -128,11 +184,7 @@ func put(ctx context.Context, uri string, data []byte, api APIService) (string, 
 	}
 
 	if resp.StatusCode >= 200 && resp.StatusCode <= 204 {
-		if len(body) > 0 {
-			return string(body), nil
-		}
-
-		return "", nil
+		return string(body), nil
 	}
 
 	if len(body) > 0 {
@@ -162,20 +214,20 @@ func postWithEventContext(ctx context.Context, uri string, data []byte, api APIS
 	}
 
 	if resp.StatusCode >= 200 && resp.StatusCode <= 204 {
-		if len(body) > 0 {
-			eventContext := &models.EventContext{}
-			if err = eventContext.FromJSON(body); err != nil {
-				// failed to parse json
-				return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
-			}
-
-			if eventContext.KeptnContext != nil {
-				fmt.Println("ID of Keptn context: " + *eventContext.KeptnContext)
-			}
-			return eventContext, nil
+		if len(body) == 0 {
+			return nil, nil
 		}
 
-		return nil, nil
+		eventContext := &models.EventContext{}
+		if err = eventContext.FromJSON(body); err != nil {
+			// failed to parse json
+			return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
+		}
+
+		if eventContext.KeptnContext != nil {
+			fmt.Println("ID of Keptn context: " + *eventContext.KeptnContext)
+		}
+		return eventContext, nil
 	}
 
 	if len(body) > 0 {
@@ -205,11 +257,7 @@ func post(ctx context.Context, uri string, data []byte, api APIService) (string,
 	}
 
 	if resp.StatusCode >= 200 && resp.StatusCode <= 204 {
-		if len(body) > 0 {
-			return string(body), nil
-		}
-
-		return "", nil
+		return string(body), nil
 	}
 
 	if len(body) > 0 {
@@ -239,16 +287,16 @@ func deleteWithEventContext(ctx context.Context, uri string, api APIService) (*m
 	}
 
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		if len(body) > 0 {
-			eventContext := &models.EventContext{}
-			if err = eventContext.FromJSON(body); err != nil {
-				// failed to parse json
-				return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
-			}
-			return eventContext, nil
+		if len(body) == 0 {
+			return nil, nil
 		}
 
-		return nil, nil
+		eventContext := &models.EventContext{}
+		if err = eventContext.FromJSON(body); err != nil {
+			// failed to parse json
+			return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
+		}
+		return eventContext, nil
 	}
 
 	return nil, handleErrStatusCode(resp.StatusCode, body)
@@ -274,11 +322,7 @@ func delete(ctx context.Context, uri string, api APIService) (string, *models.Er
 	}
 
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		if len(body) > 0 {
-			return string(body), nil
-		}
-
-		return "", nil
+		return string(body), nil
 	}
 
 	return "", handleErrStatusCode(resp.StatusCode, body)
