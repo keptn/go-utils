@@ -284,15 +284,13 @@ func IsTriggeredEventType(eventType string) bool {
 
 // EventData contains mandatory fields of all Keptn CloudEvents
 type EventData struct {
-	Project     string            `json:"project,omitempty"`
-	Stage       string            `json:"stage,omitempty"`
-	Service     string            `json:"service,omitempty"`
-	Labels      map[string]string `json:"labels,omitempty"`
-	GitCommitID string            `json:"gitcommitid,omitempty"`
-
-	Status  StatusType `json:"status,omitempty" jsonschema:"enum=succeeded,enum=errored,enum=unknown"`
-	Result  ResultType `json:"result,omitempty" jsonschema:"enum=pass,enum=warning,enum=fail"`
-	Message string     `json:"message,omitempty"`
+	Project string            `json:"project,omitempty"`
+	Stage   string            `json:"stage,omitempty"`
+	Service string            `json:"service,omitempty"`
+	Labels  map[string]string `json:"labels,omitempty"`
+	Status  StatusType        `json:"status,omitempty" jsonschema:"enum=succeeded,enum=errored,enum=unknown"`
+	Result  ResultType        `json:"result,omitempty" jsonschema:"enum=pass,enum=warning,enum=fail"`
+	Message string            `json:"message,omitempty"`
 }
 
 func (e *EventData) GetProject() string {
