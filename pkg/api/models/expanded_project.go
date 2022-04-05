@@ -36,7 +36,7 @@ type ExpandedProject struct {
 	GitProxyUser string `json:"gitProxyUser,omitempty"`
 
 	// git proxy insecure
-	GitProxyInsecure bool `json:"gitProxyInsecure,omitempty"`
+	GitProxyInsecure bool `json:"gitProxyInsecure"`
 
 	// stages
 	Stages []*ExpandedStage `json:"stages"`
