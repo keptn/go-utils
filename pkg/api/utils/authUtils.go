@@ -9,7 +9,11 @@ import (
 )
 
 type AuthV1Interface interface {
+	// Authenticate authenticates the client request against the server.
 	Authenticate() (*models.EventContext, *models.Error)
+
+	// AuthenticateWithContext authenticates the client request against the server.
+	AuthenticateWithContext(ctx context.Context) (*models.EventContext, *models.Error)
 }
 
 // AuthHandler handles projects
@@ -76,7 +80,12 @@ func (a *AuthHandler) getHTTPClient() *http.Client {
 	return a.HTTPClient
 }
 
-// Authenticate authenticates the client request against the server
+// Authenticate authenticates the client request against the server.
 func (a *AuthHandler) Authenticate() (*models.EventContext, *models.Error) {
-	return postWithEventContext(context.TODO(), a.Scheme+"://"+a.getBaseURL()+"/v1/auth", nil, a)
+	return a.AuthenticateWithContext(context.TODO())
+}
+
+// AuthenticateWithContext authenticates the client request against the server.
+func (a *AuthHandler) AuthenticateWithContext(ctx context.Context) (*models.EventContext, *models.Error) {
+	return postWithEventContext(ctx, a.Scheme+"://"+a.getBaseURL()+"/v1/auth", nil, a)
 }
