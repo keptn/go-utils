@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -138,33 +137,17 @@ func (lh *LogHandler) GetLogs(params models.GetLogsParams) (*models.GetLogsRespo
 
 	u.RawQuery = query.Encode()
 
-	req, err := http.NewRequest("GET", u.String(), nil)
-	if err != nil {
-		return nil, err
+	body, mErr := getAndExpectOK(context.TODO(), u.String(), lh)
+	if mErr != nil {
+		return nil, mErr.ToError()
 	}
-	req.Header.Set("Content-Type", "application/json")
-	addAuthHeader(req, lh)
 
-	resp, err := lh.HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
+	received := &models.GetLogsResponse{}
+	if err := received.FromJSON(body); err != nil {
 		return nil, err
 	}
 
-	if resp.StatusCode == http.StatusOK {
-		received := &models.GetLogsResponse{}
-		if err := received.FromJSON(body); err != nil {
-			return nil, err
-		}
-		return received, nil
-	}
-
-	return nil, handleErrStatusCode(resp.StatusCode, body).ToError()
+	return received, nil
 }
 
 func (lh *LogHandler) DeleteLogs(params models.LogFilter) error {

@@ -1,8 +1,8 @@
 package api
 
 import (
+	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -167,45 +167,30 @@ func (e *EventHandler) getEvents(uri string, numberOfPages int) ([]*models.Keptn
 			q.Set("nextPageKey", nextPageKey)
 			url.RawQuery = q.Encode()
 		}
-		req, err := http.NewRequest("GET", url.String(), nil)
-		if err != nil {
-			return nil, buildErrorResponse(err.Error())
-		}
-		req.Header.Set("Content-Type", "application/json")
-		addAuthHeader(req, e)
 
-		resp, err := e.HTTPClient.Do(req)
-		if err != nil {
-			return nil, buildErrorResponse(err.Error())
+		body, mErr := getAndExpectOK(context.TODO(), url.String(), e)
+		if mErr != nil {
+			return nil, mErr
 		}
-		defer resp.Body.Close()
 
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
+		received := &models.Events{}
+		if err = received.FromJSON(body); err != nil {
 			return nil, buildErrorResponse(err.Error())
 		}
 
-		if resp.StatusCode == 200 {
-			received := &models.Events{}
-			if err = received.FromJSON(body); err != nil {
-				return nil, buildErrorResponse(err.Error())
-			}
-			events = append(events, received.Events...)
+		events = append(events, received.Events...)
 
-			if received.NextPageKey == "" || received.NextPageKey == "0" {
-				break
-			}
-
-			nextPageKeyInt, _ := strconv.Atoi(received.NextPageKey)
-
-			if numberOfPages > 0 && nextPageKeyInt >= numberOfPages {
-				break
-			}
-
-			nextPageKey = received.NextPageKey
-		} else {
-			return nil, handleErrStatusCode(resp.StatusCode, body)
+		if received.NextPageKey == "" || received.NextPageKey == "0" {
+			break
 		}
+
+		nextPageKeyInt, _ := strconv.Atoi(received.NextPageKey)
+
+		if numberOfPages > 0 && nextPageKeyInt >= numberOfPages {
+			break
+		}
+
+		nextPageKey = received.NextPageKey
 	}
 
 	return events, nil

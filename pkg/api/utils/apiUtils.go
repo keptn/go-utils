@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -165,37 +164,16 @@ func (a *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
 		baseURL += "/api"
 	}
 
-	req, err := http.NewRequest("GET", a.Scheme+"://"+baseURL+v1MetadataPath, nil)
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
-	}
-	req.Header.Set("Content-Type", "application/json")
-	addAuthHeader(req, a)
+	body, mErr := getAndExpectSuccess(context.TODO(), a.Scheme+"://"+baseURL+v1MetadataPath, nil)
+	if mErr != nil {
+		return nil, mErr
 
-	resp, err := a.getHTTPClient().Do(req)
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
 	}
-	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
+	respMetadata := &models.Metadata{}
+	if err := respMetadata.FromJSON(body); err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
 
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-
-		if len(body) > 0 {
-			respMetadata := &models.Metadata{}
-			if err = respMetadata.FromJSON(body); err != nil {
-				return nil, buildErrorResponse(err.Error())
-			}
-
-			return respMetadata, nil
-		}
-
-		return nil, nil
-	}
-
-	return nil, handleErrStatusCode(resp.StatusCode, body)
+	return respMetadata, nil
 }

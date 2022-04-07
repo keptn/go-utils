@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"crypto/tls"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -112,33 +111,17 @@ func (s *ServiceHandler) GetService(project, stage, service string) (*models.Ser
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest("GET", url.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	addAuthHeader(req, s)
 
-	resp, err := s.HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+	body, mErr := getAndExpectOK(context.TODO(), url.String(), s)
+	if mErr != nil {
+		return nil, mErr.ToError()
 	}
 
-	if resp.StatusCode == 200 {
-		received := &models.Service{}
-		if err = received.FromJSON(body); err != nil {
-			return nil, err
-		}
-		return received, nil
-	} else {
-		return nil, handleErrStatusCode(resp.StatusCode, body).ToError()
+	received := &models.Service{}
+	if err = received.FromJSON(body); err != nil {
+		return nil, err
 	}
+	return received, nil
 }
 
 // GetAllServices returns a list of all services.
@@ -159,38 +142,22 @@ func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models
 			q.Set("nextPageKey", nextPageKey)
 			url.RawQuery = q.Encode()
 		}
-		req, err := http.NewRequest("GET", url.String(), nil)
-		if err != nil {
+
+		body, mErr := getAndExpectOK(context.TODO(), url.String(), s)
+		if mErr != nil {
+			return nil, mErr.ToError()
+		}
+
+		received := &models.Services{}
+		if err = received.FromJSON(body); err != nil {
 			return nil, err
 		}
-		req.Header.Set("Content-Type", "application/json")
-		addAuthHeader(req, s)
+		services = append(services, received.Services...)
 
-		resp, err := s.HTTPClient.Do(req)
-		if err != nil {
-			return nil, err
+		if received.NextPageKey == "" || received.NextPageKey == "0" {
+			break
 		}
-		defer resp.Body.Close()
-
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		if resp.StatusCode == 200 {
-			received := &models.Services{}
-			if err = received.FromJSON(body); err != nil {
-				return nil, err
-			}
-			services = append(services, received.Services...)
-
-			if received.NextPageKey == "" || received.NextPageKey == "0" {
-				break
-			}
-			nextPageKey = received.NextPageKey
-		} else {
-			return nil, handleErrStatusCode(resp.StatusCode, body).ToError()
-		}
+		nextPageKey = received.NextPageKey
 	}
 
 	return services, nil

@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"crypto/tls"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -114,35 +113,22 @@ func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 			q.Set("nextPageKey", nextPageKey)
 			url.RawQuery = q.Encode()
 		}
-		req, err := http.NewRequest("GET", url.String(), nil)
-		if err != nil {
+
+		body, mErr := getAndExpectOK(context.TODO(), url.String(), s)
+		if mErr != nil {
+			return nil, mErr.ToError()
+		}
+
+		received := &models.Stages{}
+		if err = received.FromJSON(body); err != nil {
 			return nil, err
 		}
-		req.Header.Set("Content-Type", "application/json")
-		addAuthHeader(req, s)
+		stages = append(stages, received.Stages...)
 
-		resp, err := s.HTTPClient.Do(req)
-		if err != nil {
-			return nil, err
+		if received.NextPageKey == "" || received.NextPageKey == "0" {
+			break
 		}
-		defer resp.Body.Close()
-
-		body, _ := ioutil.ReadAll(resp.Body)
-
-		if resp.StatusCode == 200 {
-			received := &models.Stages{}
-			if err = received.FromJSON(body); err != nil {
-				return nil, err
-			}
-			stages = append(stages, received.Stages...)
-
-			if received.NextPageKey == "" || received.NextPageKey == "0" {
-				break
-			}
-			nextPageKey = received.NextPageKey
-		} else {
-			return nil, handleErrStatusCode(resp.StatusCode, body).ToError()
-		}
+		nextPageKey = received.NextPageKey
 	}
 	return stages, nil
 }

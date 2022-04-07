@@ -1,8 +1,8 @@
 package api
 
 import (
+	"context"
 	"crypto/tls"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -116,45 +116,29 @@ func (s *ShipyardControllerHandler) GetOpenTriggeredEvents(filter EventFilter) (
 		if err != nil {
 			return nil, err
 		}
-		req, err := http.NewRequest("GET", url.String(), nil)
-		if err != nil {
+
+		body, mErr := getAndExpectOK(context.TODO(), url.String(), s)
+		if mErr != nil {
+			return nil, mErr.ToError()
+		}
+
+		received := &models.Events{}
+		if err = received.FromJSON(body); err != nil {
 			return nil, err
 		}
-		req.Header.Set("Content-Type", "application/json")
-		addAuthHeader(req, s)
+		events = append(events, received.Events...)
 
-		resp, err := s.HTTPClient.Do(req)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
+		if received.NextPageKey == "" || received.NextPageKey == "0" {
+			break
 		}
 
-		if resp.StatusCode == 200 {
-			received := &models.Events{}
-			if err = received.FromJSON(body); err != nil {
-				return nil, err
-			}
-			events = append(events, received.Events...)
+		nextPageKeyInt, _ := strconv.Atoi(received.NextPageKey)
 
-			if received.NextPageKey == "" || received.NextPageKey == "0" {
-				break
-			}
-
-			nextPageKeyInt, _ := strconv.Atoi(received.NextPageKey)
-
-			if filter.NumberOfPages > 0 && nextPageKeyInt >= filter.NumberOfPages {
-				break
-			}
-
-			nextPageKey = received.NextPageKey
-		} else {
-			return nil, handleErrStatusCode(resp.StatusCode, body).ToError()
+		if filter.NumberOfPages > 0 && nextPageKeyInt >= filter.NumberOfPages {
+			break
 		}
+
+		nextPageKey = received.NextPageKey
 	}
 	return events, nil
 }

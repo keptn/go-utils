@@ -7,6 +7,7 @@ import (
 	b64 "encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -454,34 +455,25 @@ func (r *ResourceHandler) CreateResource(resource []*models.Resource, scope Reso
 
 func (r *ResourceHandler) getResource(uri string) (*models.Resource, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	req, err := http.NewRequest("GET", uri, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	addAuthHeader(req, r)
-
-	resp, err := r.HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+	body, statusCode, status, mErr := get(context.TODO(), uri, r)
+	if mErr != nil {
+		return nil, mErr.ToError()
 	}
 
-	if resp.StatusCode == 404 {
+	if statusCode == 404 {
 		// need to handle this case differently (e.g. https://github.com/keptn/keptn/issues/1480)
 		return nil, ResourceNotFoundError
 	}
-	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
-		return nil, errors.New(string(body))
+	if !(statusCode >= 200 && statusCode < 300) {
+		if len(body) > 0 {
+			return nil, handleErrStatusCode(statusCode, body).ToError()
+		}
+
+		return nil, buildErrorResponse(fmt.Sprintf("Received unexpected response: %d %s", statusCode, status)).ToError()
 	}
 
 	resource := &models.Resource{}
-	if err = resource.FromJSON(body); err != nil {
+	if err := resource.FromJSON(body); err != nil {
 		return nil, err
 	}
 
@@ -545,39 +537,23 @@ func (r *ResourceHandler) getAllResources(u *url.URL) ([]*models.Resource, error
 			q.Set("nextPageKey", nextPageKey)
 			u.RawQuery = q.Encode()
 		}
-		req, err := http.NewRequest("GET", u.String(), nil)
-		if err != nil {
-			return nil, err
-		}
-		req.Header.Set("Content-Type", "application/json")
-		addAuthHeader(req, r)
 
-		resp, err := r.HTTPClient.Do(req)
-		if err != nil {
-			return nil, err
+		body, mErr := getAndExpectOK(context.TODO(), u.String(), r)
+		if mErr != nil {
+			return nil, mErr.ToError()
 		}
-		defer resp.Body.Close()
 
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
+		received := &models.Resources{}
+		if err := received.FromJSON(body); err != nil {
 			return nil, err
 		}
 
-		if resp.StatusCode == 200 {
-			received := &models.Resources{}
-			if err = received.FromJSON(body); err != nil {
-				return nil, err
-			}
-			resources = append(resources, received.Resources...)
+		resources = append(resources, received.Resources...)
 
-			if received.NextPageKey == "" || received.NextPageKey == "0" {
-				break
-			}
-			nextPageKey = received.NextPageKey
-
-		} else {
-			return nil, handleErrStatusCode(resp.StatusCode, body).ToError()
+		if received.NextPageKey == "" || received.NextPageKey == "0" {
+			break
 		}
+		nextPageKey = received.NextPageKey
 	}
 
 	return resources, nil

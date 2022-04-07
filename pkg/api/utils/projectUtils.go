@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"crypto/tls"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -105,7 +104,17 @@ func (p *ProjectHandler) DeleteProject(project models.Project) (*models.EventCon
 
 // GetProject returns a project
 func (p *ProjectHandler) GetProject(project models.Project) (*models.Project, *models.Error) {
-	return getProject(p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, p)
+	body, mErr := getAndExpectSuccess(context.TODO(), p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, p)
+	if mErr != nil {
+		return nil, mErr
+	}
+
+	respProject := &models.Project{}
+	if err := respProject.FromJSON(body); err != nil {
+		return nil, buildErrorResponse(err.Error())
+	}
+
+	return respProject, nil
 }
 
 // GetProjects returns a project
@@ -125,77 +134,25 @@ func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
 			q.Set("nextPageKey", nextPageKey)
 			url.RawQuery = q.Encode()
 		}
-		req, err := http.NewRequest("GET", url.String(), nil)
-		if err != nil {
+
+		body, mErr := getAndExpectOK(context.TODO(), url.String(), p)
+		if mErr != nil {
+			return nil, mErr.ToError()
+		}
+
+		received := &models.Projects{}
+		if err = received.FromJSON(body); err != nil {
 			return nil, err
 		}
-		req.Header.Set("Content-Type", "application/json")
-		addAuthHeader(req, p)
+		projects = append(projects, received.Projects...)
 
-		resp, err := p.HTTPClient.Do(req)
-		if err != nil {
-			return nil, err
+		if received.NextPageKey == "" || received.NextPageKey == "0" {
+			break
 		}
-		defer resp.Body.Close()
-
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		if resp.StatusCode == 200 {
-
-			received := &models.Projects{}
-			if err = received.FromJSON(body); err != nil {
-				return nil, err
-			}
-			projects = append(projects, received.Projects...)
-
-			if received.NextPageKey == "" || received.NextPageKey == "0" {
-				break
-			}
-			nextPageKey = received.NextPageKey
-		} else {
-			return nil, handleErrStatusCode(resp.StatusCode, body).ToError()
-		}
+		nextPageKey = received.NextPageKey
 	}
 
 	return projects, nil
-}
-
-func getProject(uri string, api APIService) (*models.Project, *models.Error) {
-
-	req, err := http.NewRequest("GET", uri, nil)
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
-	}
-	req.Header.Set("Content-Type", "application/json")
-	addAuthHeader(req, api)
-
-	resp, err := api.getHTTPClient().Do(req)
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
-	}
-
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		if len(body) > 0 {
-			respProject := &models.Project{}
-			if err = respProject.FromJSON(body); err != nil {
-				return nil, buildErrorResponse(err.Error())
-			}
-
-			return respProject, nil
-		}
-		return nil, nil
-	}
-
-	return nil, handleErrStatusCode(resp.StatusCode, body)
 }
 
 func (p *ProjectHandler) UpdateConfigurationServiceProject(project models.Project) (*models.EventContext, *models.Error) {

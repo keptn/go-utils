@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -157,32 +156,15 @@ func (u *UniformHandler) GetRegistrations() ([]*models.Integration, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("GET", url.String(), nil)
+	body, mErr := getAndExpectOK(context.TODO(), url.String(), u)
+	if mErr != nil {
+		return nil, mErr.ToError()
+	}
+
+	var received []*models.Integration
+	err = json.Unmarshal(body, &received)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Content-Type", "application/json")
-	addAuthHeader(req, u)
-
-	resp, err := u.HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode == http.StatusOK {
-		var received []*models.Integration
-		err := json.Unmarshal(body, &received)
-		if err != nil {
-			return nil, err
-		}
-		return received, nil
-	}
-
-	return nil, nil
+	return received, nil
 }

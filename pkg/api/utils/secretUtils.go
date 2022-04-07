@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"errors"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -133,27 +132,11 @@ func (s *SecretHandler) DeleteSecret(secretName, secretScope string) error {
 
 // GetSecrets returns a list of created secrets
 func (s *SecretHandler) GetSecrets() (*models.GetSecretsResponse, error) {
-	req, err := http.NewRequest("GET", s.Scheme+"://"+s.BaseURL+v1SecretPath, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	addAuthHeader(req, s)
-
-	resp, err := s.HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+	body, mErr := getAndExpectOK(context.TODO(), s.Scheme+"://"+s.BaseURL+v1SecretPath, s)
+	if mErr != nil {
+		return nil, mErr.ToError()
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, handleErrStatusCode(resp.StatusCode, body).ToError()
-	}
 	result := &models.GetSecretsResponse{}
 	if err := result.FromJSON(body); err != nil {
 		return nil, err
