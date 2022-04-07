@@ -25,10 +25,28 @@ type LogsV1Interface interface {
 
 //go:generate moq -pkg utils_mock -skip-ensure -out ./fake/log_handler_mock.go . ILogHandler
 type ILogHandler interface {
+
+	// Log appends the specified logs to the log cache.
 	Log(logs []models.LogEntry)
+
+	// Flush flushes the log cache.
 	Flush() error
+
+	// FlushWithContext flushes the log cache.
+	FlushWithContext(ctx context.Context) error
+
+	// GetLogs gets logs with the specified parameters.
 	GetLogs(params models.GetLogsParams) (*models.GetLogsResponse, error)
+
+	// GetLogsWithContext gets logs with the specified parameters.
+	GetLogsWithContext(ctx context.Context, params models.GetLogsParams) (*models.GetLogsResponse, error)
+
+	// DeleteLogs deletes logs matching the specified log filter.
 	DeleteLogs(filter models.LogFilter) error
+
+	// DeleteLogsWithContext deletes logs matching the specified log filter.
+	DeleteLogsWithContext(ctx context.Context, filter models.LogFilter) error
+
 	Start(ctx context.Context)
 }
 
@@ -108,13 +126,20 @@ func (lh *LogHandler) getHTTPClient() *http.Client {
 	return lh.HTTPClient
 }
 
+// Log appends the specified logs to the log cache.
 func (lh *LogHandler) Log(logs []models.LogEntry) {
 	lh.lock.Lock()
 	defer lh.lock.Unlock()
 	lh.LogCache = append(lh.LogCache, logs...)
 }
 
+// GetLogs gets logs with the specified parameters.
 func (lh *LogHandler) GetLogs(params models.GetLogsParams) (*models.GetLogsResponse, error) {
+	return lh.GetLogsWithContext(context.TODO(), params)
+}
+
+// GetLogsWithContext gets logs with the specified parameters.
+func (lh *LogHandler) GetLogsWithContext(ctx context.Context, params models.GetLogsParams) (*models.GetLogsResponse, error) {
 	u, err := url.Parse(lh.Scheme + "://" + lh.getBaseURL() + v1LogPath)
 	if err != nil {
 		log.Fatal("error parsing url")
@@ -137,7 +162,7 @@ func (lh *LogHandler) GetLogs(params models.GetLogsParams) (*models.GetLogsRespo
 
 	u.RawQuery = query.Encode()
 
-	body, mErr := getAndExpectOK(context.TODO(), u.String(), lh)
+	body, mErr := getAndExpectOK(ctx, u.String(), lh)
 	if mErr != nil {
 		return nil, mErr.ToError()
 	}
@@ -150,7 +175,13 @@ func (lh *LogHandler) GetLogs(params models.GetLogsParams) (*models.GetLogsRespo
 	return received, nil
 }
 
+// DeleteLogs deletes logs matching the specified log filter.
 func (lh *LogHandler) DeleteLogs(params models.LogFilter) error {
+	return lh.DeleteLogsWithContext(context.TODO(), params)
+}
+
+// DeleteLogsWithContext deletes logs matching the specified log filter.
+func (lh *LogHandler) DeleteLogsWithContext(ctx context.Context, params models.LogFilter) error {
 	u, err := url.Parse(lh.Scheme + "://" + lh.getBaseURL() + v1LogPath)
 	if err != nil {
 		log.Fatal("error parsing url")
@@ -167,7 +198,7 @@ func (lh *LogHandler) DeleteLogs(params models.LogFilter) error {
 	if params.BeforeTime != "" {
 		query.Set("beforeTime", params.BeforeTime)
 	}
-	if _, err := delete(context.TODO(), u.String(), lh); err != nil {
+	if _, err := delete(ctx, u.String(), lh); err != nil {
 		return errors.New(err.GetMessage())
 	}
 	return nil
@@ -187,7 +218,13 @@ func (lh *LogHandler) Start(ctx context.Context) {
 	}()
 }
 
+// Flush flushes the log cache.
 func (lh *LogHandler) Flush() error {
+	return lh.FlushWithContext(context.TODO())
+}
+
+// FlushWithContext flushes the log cache.
+func (lh *LogHandler) FlushWithContext(ctx context.Context) error {
 	lh.lock.Lock()
 	defer lh.lock.Unlock()
 	if len(lh.LogCache) == 0 {
@@ -201,7 +238,7 @@ func (lh *LogHandler) Flush() error {
 	if err != nil {
 		return err
 	}
-	if _, err := post(context.TODO(), lh.Scheme+"://"+lh.getBaseURL()+v1LogPath, bodyStr, lh); err != nil {
+	if _, err := post(ctx, lh.Scheme+"://"+lh.getBaseURL()+v1LogPath, bodyStr, lh); err != nil {
 		return errors.New(err.GetMessage())
 	}
 	lh.LogCache = []models.LogEntry{}
