@@ -72,6 +72,7 @@ func Test_ensureContextAttributesAreSet(t *testing.T) {
 				},
 			},
 		},
+
 		{
 			name: "merge labels - do not overwrite existing ones",
 			args: args{
@@ -101,6 +102,82 @@ func Test_ensureContextAttributesAreSet(t *testing.T) {
 					"foo": "bar",
 					"bar": "foo",
 				},
+			},
+		},
+
+		{
+			name: "gracefully handle missing src labels",
+			args: args{
+				srcEvent: &EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				},
+				newEvent: &EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+					Labels: map[string]string{
+						"bar": "foo",
+					},
+				},
+			},
+			want: &EventData{
+				Project: "my-project",
+				Stage:   "my-stage",
+				Service: "my-service",
+				Labels: map[string]string{
+					"bar": "foo",
+				},
+			},
+		},
+
+		{
+			name: "gracefully handle missing dest labels",
+			args: args{
+				srcEvent: &EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+					Labels: map[string]string{
+						"bar": "foo",
+					},
+				},
+				newEvent: &EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				},
+			},
+			want: &EventData{
+				Project: "my-project",
+				Stage:   "my-stage",
+				Service: "my-service",
+				Labels: map[string]string{
+					"bar": "foo",
+				},
+			},
+		},
+
+		{
+			name: "gracefully handle missing labels",
+			args: args{
+				srcEvent: &EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				},
+				newEvent: &EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				},
+			},
+			want: &EventData{
+				Project: "my-project",
+				Stage:   "my-stage",
+				Service: "my-service",
+				Labels:  map[string]string{},
 			},
 		},
 	}
