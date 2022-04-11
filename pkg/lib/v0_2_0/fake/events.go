@@ -3,8 +3,9 @@ package fake
 import (
 	"context"
 	"fmt"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"sync"
+
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
 
 // EventSender fakes the sending of CloudEvents
@@ -38,7 +39,7 @@ func (es *EventSender) Send(ctx context.Context, event cloudevents.Event) error 
 // AssertSentEventTypes checks if the given event types have been passed to the SendEvent function
 func (es *EventSender) AssertSentEventTypes(eventTypes []string) error {
 	if len(es.SentEvents) != len(eventTypes) {
-		return fmt.Errorf("expected %d event, got %d", len(es.SentEvents), len(eventTypes))
+		return fmt.Errorf("expected %d event, got %d", len(eventTypes), len(es.SentEvents))
 	}
 	for index, event := range es.SentEvents {
 		if event.Type() != eventTypes[index] {
