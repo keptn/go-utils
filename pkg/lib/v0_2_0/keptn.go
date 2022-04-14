@@ -206,6 +206,9 @@ func ensureContextAttributesAreSet(srcEvent, newEvent keptn.EventProperties) kep
 	newEvent.SetStage(srcEvent.GetStage())
 	newEvent.SetService(srcEvent.GetService())
 	labels := srcEvent.GetLabels()
+	if labels == nil {
+		labels = make(map[string]string)
+	}
 
 	// make sure labels from triggered event are included. Existing labels cannot be changed, but new ones can be added
 	for key, value := range newEvent.GetLabels() {
