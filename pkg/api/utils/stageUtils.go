@@ -12,8 +12,17 @@ import (
 )
 
 type StagesV1Interface interface {
+	// CreateStage creates a new stage with the provided name.
 	CreateStage(project string, stageName string) (*models.EventContext, *models.Error)
+
+	// CreateStageWithContext creates a new stage with the provided name.
+	CreateStageWithContext(ctx context.Context, project string, stageName string) (*models.EventContext, *models.Error)
+
+	// GetAllStages returns a list of all stages.
 	GetAllStages(project string) ([]*models.Stage, error)
+
+	// GetAllStagesWithContext returns a list of all stages.
+	GetAllStagesWithContext(ctx context.Context, project string) ([]*models.Stage, error)
 }
 
 // StageHandler handles stages
@@ -85,20 +94,28 @@ func (s *StageHandler) getHTTPClient() *http.Client {
 	return s.HTTPClient
 }
 
-// CreateStage creates a new stage with the provided name
+// CreateStage creates a new stage with the provided name.
 func (s *StageHandler) CreateStage(project string, stageName string) (*models.EventContext, *models.Error) {
+	return s.CreateStageWithContext(context.TODO(), project, stageName)
+}
 
+// CreateStageWithContext creates a new stage with the provided name.
+func (s *StageHandler) CreateStageWithContext(ctx context.Context, project string, stageName string) (*models.EventContext, *models.Error) {
 	stage := models.Stage{StageName: stageName}
 	body, err := stage.ToJSON()
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(context.TODO(), s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+pathToStage, body, s)
+	return postWithEventContext(ctx, s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+pathToStage, body, s)
 }
 
 // GetAllStages returns a list of all stages.
 func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
+	return s.GetAllStagesWithContext(context.TODO(), project)
+}
 
+// GetAllStagesWithContext returns a list of all stages.
+func (s *StageHandler) GetAllStagesWithContext(ctx context.Context, project string) ([]*models.Stage, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	stages := []*models.Stage{}
 
@@ -114,7 +131,7 @@ func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
 			url.RawQuery = q.Encode()
 		}
 
-		body, mErr := getAndExpectOK(context.TODO(), url.String(), s)
+		body, mErr := getAndExpectOK(ctx, url.String(), s)
 		if mErr != nil {
 			return nil, mErr.ToError()
 		}
