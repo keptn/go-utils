@@ -18,10 +18,15 @@ const v1UniformPath = "/v1/uniform/registration"
 
 type UniformV1Interface interface {
 	Ping(integrationID string) (*models.Integration, error)
+	PingWithContext(ctx context.Context, integrationID string) (*models.Integration, error)
 	RegisterIntegration(integration models.Integration) (string, error)
+	RegisterIntegrationWithContext(ctx context.Context, integration models.Integration) (string, error)
 	CreateSubscription(integrationID string, subscription models.EventSubscription) (string, error)
+	CreateSubscriptionWithContext(ctx context.Context, integrationID string, subscription models.EventSubscription) (string, error)
 	UnregisterIntegration(integrationID string) error
+	UnregisterIntegrationWithContext(ctx context.Context, integrationID string) error
 	GetRegistrations() ([]*models.Integration, error)
+	GetRegistrationsWithContext(ctx context.Context) ([]*models.Integration, error)
 }
 
 type UniformHandler struct {
@@ -87,11 +92,15 @@ func (u *UniformHandler) getHTTPClient() *http.Client {
 }
 
 func (u *UniformHandler) Ping(integrationID string) (*models.Integration, error) {
+	return u.PingWithContext(context.TODO(), integrationID)
+}
+
+func (u *UniformHandler) PingWithContext(ctx context.Context, integrationID string) (*models.Integration, error) {
 	if integrationID == "" {
 		return nil, errors.New("could not ping an invalid IntegrationID")
 	}
 
-	resp, err := put(context.TODO(), u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/ping", nil, u)
+	resp, err := put(ctx, u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/ping", nil, u)
 	if err != nil {
 		return nil, errors.New(err.GetMessage())
 	}
@@ -105,12 +114,16 @@ func (u *UniformHandler) Ping(integrationID string) (*models.Integration, error)
 }
 
 func (u *UniformHandler) RegisterIntegration(integration models.Integration) (string, error) {
+	return u.RegisterIntegrationWithContext(context.TODO(), integration)
+}
+
+func (u *UniformHandler) RegisterIntegrationWithContext(ctx context.Context, integration models.Integration) (string, error) {
 	bodyStr, err := integration.ToJSON()
 	if err != nil {
 		return "", err
 	}
 
-	resp, errResponse := post(context.TODO(), u.Scheme+"://"+u.getBaseURL()+v1UniformPath, bodyStr, u)
+	resp, errResponse := post(ctx, u.Scheme+"://"+u.getBaseURL()+v1UniformPath, bodyStr, u)
 	if errResponse != nil {
 		return "", fmt.Errorf(errResponse.GetMessage())
 	}
@@ -124,11 +137,15 @@ func (u *UniformHandler) RegisterIntegration(integration models.Integration) (st
 }
 
 func (u *UniformHandler) CreateSubscription(integrationID string, subscription models.EventSubscription) (string, error) {
+	return u.CreateSubscriptionWithContext(context.TODO(), integrationID, subscription)
+}
+
+func (u *UniformHandler) CreateSubscriptionWithContext(ctx context.Context, integrationID string, subscription models.EventSubscription) (string, error) {
 	bodyStr, err := subscription.ToJSON()
 	if err != nil {
 		return "", err
 	}
-	resp, errResponse := post(context.TODO(), u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/subscription", bodyStr, u)
+	resp, errResponse := post(ctx, u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/subscription", bodyStr, u)
 	if errResponse != nil {
 		return "", fmt.Errorf(errResponse.GetMessage())
 	}
@@ -143,7 +160,11 @@ func (u *UniformHandler) CreateSubscription(integrationID string, subscription m
 }
 
 func (u *UniformHandler) UnregisterIntegration(integrationID string) error {
-	_, err := delete(context.TODO(), u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID, u)
+	return u.UnregisterIntegrationWithContext(context.TODO(), integrationID)
+}
+
+func (u *UniformHandler) UnregisterIntegrationWithContext(ctx context.Context, integrationID string) error {
+	_, err := delete(ctx, u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID, u)
 	if err != nil {
 		return fmt.Errorf(err.GetMessage())
 	}
@@ -151,12 +172,16 @@ func (u *UniformHandler) UnregisterIntegration(integrationID string) error {
 }
 
 func (u *UniformHandler) GetRegistrations() ([]*models.Integration, error) {
+	return u.GetRegistrationsWithContext(context.TODO())
+}
+
+func (u *UniformHandler) GetRegistrationsWithContext(ctx context.Context) ([]*models.Integration, error) {
 	url, err := url.Parse(u.Scheme + "://" + u.getBaseURL() + v1UniformPath)
 	if err != nil {
 		return nil, err
 	}
 
-	body, mErr := getAndExpectOK(context.TODO(), url.String(), u)
+	body, mErr := getAndExpectOK(ctx, url.String(), u)
 	if mErr != nil {
 		return nil, mErr.ToError()
 	}
