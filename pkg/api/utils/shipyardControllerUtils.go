@@ -14,7 +14,11 @@ import (
 const shipyardControllerBaseURL = "controlPlane"
 
 type ShipyardControlV1Interface interface {
+	// GetOpenTriggeredEvents returns all open triggered events.
 	GetOpenTriggeredEvents(filter EventFilter) ([]*models.KeptnContextExtendedCE, error)
+
+	// GetOpenTriggeredEventsWithContext returns all open triggered events.
+	GetOpenTriggeredEventsWithContext(ctx context.Context, filter EventFilter) ([]*models.KeptnContextExtendedCE, error)
 }
 
 // ShipyardControllerHandler handles services
@@ -86,8 +90,13 @@ func (s *ShipyardControllerHandler) getHTTPClient() *http.Client {
 	return s.HTTPClient
 }
 
-// GetOpenTriggeredEvents returns all open triggered events
+// GetOpenTriggeredEvents returns all open triggered events.
 func (s *ShipyardControllerHandler) GetOpenTriggeredEvents(filter EventFilter) ([]*models.KeptnContextExtendedCE, error) {
+	return s.GetOpenTriggeredEventsWithContext(context.TODO(), filter)
+}
+
+// GetOpenTriggeredEventsWithContext returns all open triggered events.
+func (s *ShipyardControllerHandler) GetOpenTriggeredEventsWithContext(ctx context.Context, filter EventFilter) ([]*models.KeptnContextExtendedCE, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
 	events := []*models.KeptnContextExtendedCE{}
@@ -117,7 +126,7 @@ func (s *ShipyardControllerHandler) GetOpenTriggeredEvents(filter EventFilter) (
 			return nil, err
 		}
 
-		body, mErr := getAndExpectOK(context.TODO(), url.String(), s)
+		body, mErr := getAndExpectOK(ctx, url.String(), s)
 		if mErr != nil {
 			return nil, mErr.ToError()
 		}
