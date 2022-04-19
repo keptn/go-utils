@@ -11,10 +11,29 @@ import (
 )
 
 type ServicesV1Interface interface {
+	// CreateServiceInStage creates a new service.
 	CreateServiceInStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error)
+
+	// CreateServiceInStageWithContext creates a new service.
+	CreateServiceInStageWithContext(ctx context.Context, project string, stage string, serviceName string) (*models.EventContext, *models.Error)
+
+	// DeleteServiceFromStage deletes a service from a stage.
 	DeleteServiceFromStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error)
+
+	// DeleteServiceFromStageWithContext deletes a service from a stage.
+	DeleteServiceFromStageWithContext(ctx context.Context, project string, stage string, serviceName string) (*models.EventContext, *models.Error)
+
+	// GetService gets a service.
 	GetService(project, stage, service string) (*models.Service, error)
+
+	// GetServiceWithContext gets a service.
+	GetServiceWithContext(ctx context.Context, project, stage, service string) (*models.Service, error)
+
+	// GetAllServices returns a list of all services.
 	GetAllServices(project string, stage string) ([]*models.Service, error)
+
+	// GetAllServicesWithContext returns a list of all services.
+	GetAllServicesWithContext(ctx context.Context, project string, stage string) ([]*models.Service, error)
 }
 
 // ServiceHandler handles services
@@ -88,23 +107,38 @@ func (s *ServiceHandler) getHTTPClient() *http.Client {
 	return s.HTTPClient
 }
 
-// CreateService creates a new service
+// CreateServiceInStage creates a new service.
 func (s *ServiceHandler) CreateServiceInStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error) {
+	return s.CreateServiceInStageWithContext(context.TODO(), project, stage, serviceName)
+}
 
+// CreateServiceInStageWithContext creates a new service.
+func (s *ServiceHandler) CreateServiceInStageWithContext(ctx context.Context, project string, stage string, serviceName string) (*models.EventContext, *models.Error) {
 	service := models.Service{ServiceName: serviceName}
 	body, err := service.ToJSON()
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(context.TODO(), s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService, body, s)
+	return postWithEventContext(ctx, s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService, body, s)
 }
 
-// DeleteServiceFromStage godoc
+// DeleteServiceFromStage deletes a service from a stage.
 func (s *ServiceHandler) DeleteServiceFromStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error) {
-	return deleteWithEventContext(context.TODO(), s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+serviceName, s)
+	return s.DeleteServiceFromStageWithContext(context.TODO(), project, stage, serviceName)
 }
 
+// DeleteServiceFromStageWithContext deletes a service from a stage.
+func (s *ServiceHandler) DeleteServiceFromStageWithContext(ctx context.Context, project string, stage string, serviceName string) (*models.EventContext, *models.Error) {
+	return deleteWithEventContext(ctx, s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+serviceName, s)
+}
+
+// GetService gets a service.
 func (s *ServiceHandler) GetService(project, stage, service string) (*models.Service, error) {
+	return s.GetServiceWithContext(context.TODO(), project, stage, service)
+}
+
+// GetServiceWithContext gets a service.
+func (s *ServiceHandler) GetServiceWithContext(ctx context.Context, project, stage, service string) (*models.Service, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
 	url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + v1ProjectPath + "/" + project + pathToStage + "/" + stage + pathToService + "/" + service)
@@ -112,7 +146,7 @@ func (s *ServiceHandler) GetService(project, stage, service string) (*models.Ser
 		return nil, err
 	}
 
-	body, mErr := getAndExpectOK(context.TODO(), url.String(), s)
+	body, mErr := getAndExpectOK(ctx, url.String(), s)
 	if mErr != nil {
 		return nil, mErr.ToError()
 	}
@@ -126,6 +160,11 @@ func (s *ServiceHandler) GetService(project, stage, service string) (*models.Ser
 
 // GetAllServices returns a list of all services.
 func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models.Service, error) {
+	return s.GetAllServicesWithContext(context.TODO(), project, stage)
+}
+
+// GetAllServicesWithContext returns a list of all services.
+func (s *ServiceHandler) GetAllServicesWithContext(ctx context.Context, project string, stage string) ([]*models.Service, error) {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	services := []*models.Service{}
@@ -143,7 +182,7 @@ func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models
 			url.RawQuery = q.Encode()
 		}
 
-		body, mErr := getAndExpectOK(context.TODO(), url.String(), s)
+		body, mErr := getAndExpectOK(ctx, url.String(), s)
 		if mErr != nil {
 			return nil, mErr.ToError()
 		}
