@@ -14,6 +14,7 @@ const v1SequenceControlPath = "/v1/sequence/%s/%s/control"
 
 type SequencesV1Interface interface {
 	ControlSequence(params SequenceControlParams) error
+	ControlSequenceWithContext(ctx context.Context, params SequenceControlParams) error
 }
 
 type SequenceControlHandler struct {
@@ -126,6 +127,10 @@ func (s *SequenceControlHandler) getHTTPClient() *http.Client {
 }
 
 func (s *SequenceControlHandler) ControlSequence(params SequenceControlParams) error {
+	return s.ControlSequenceWithContext(context.TODO(), params)
+}
+
+func (s *SequenceControlHandler) ControlSequenceWithContext(ctx context.Context, params SequenceControlParams) error {
 	err := params.Validate()
 	if err != nil {
 		return err
@@ -144,7 +149,7 @@ func (s *SequenceControlHandler) ControlSequence(params SequenceControlParams) e
 		return err
 	}
 
-	_, errResponse := post(context.TODO(), baseurl+path, payload, s)
+	_, errResponse := post(ctx, baseurl+path, payload, s)
 	if errResponse != nil {
 		return fmt.Errorf(errResponse.GetMessage())
 	}
