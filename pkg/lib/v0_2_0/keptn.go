@@ -152,13 +152,13 @@ func (k *Keptn) SendTaskStatusChangedEventWithContext(ctx context.Context, data 
 	return k.sendEventWithBaseEventContext(ctx, data, source, err, outEventType)
 }
 
-// SendTaskStartedEvent sends a .finished event for the incoming .triggered event the KeptnHandler was initialized with.
+// SendTaskFinishedEvent sends a .finished event for the incoming .triggered event the KeptnHandler was initialized with.
 // It returns the ID of the sent CloudEvent or an error.
 func (k *Keptn) SendTaskFinishedEvent(data keptn.EventProperties, source string) (string, error) {
 	return k.SendTaskFinishedEventWithContext(context.TODO(), data, source)
 }
 
-// SendTaskStartedEventWithContext sends a .finished event for the incoming .triggered event the KeptnHandler was initialized with.
+// SendTaskFinishedEventWithContext sends a .finished event for the incoming .triggered event the KeptnHandler was initialized with.
 // It returns the ID of the sent CloudEvent or an error.
 func (k *Keptn) SendTaskFinishedEventWithContext(ctx context.Context, data keptn.EventProperties, source string) (string, error) {
 	if k.CloudEvent == nil {
