@@ -1,6 +1,7 @@
 package v0_2_0
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -75,9 +76,14 @@ func NewKeptn(incomingEvent *cloudevents.Event, opts keptn.KeptnOpts) (*Keptn, e
 	return k, nil
 }
 
-// GetShipyard returns the shipyard definition of a project
+// GetShipyard returns the shipyard definition of a project.
 func (k *Keptn) GetShipyard() (*Shipyard, error) {
-	shipyardResource, err := k.ResourceHandler.GetProjectResource(k.Event.GetProject(), "shipyard.yaml")
+	return k.GetShipyardWithContext(context.TODO())
+}
+
+// GetShipyardWithContext returns the shipyard definition of a project.
+func (k *Keptn) GetShipyardWithContext(ctx context.Context) (*Shipyard, error) {
+	shipyardResource, err := k.ResourceHandler.GetProjectResourceWithContext(ctx, k.Event.GetProject(), "shipyard.yaml")
 	if err != nil {
 		return nil, err
 	}
@@ -90,20 +96,31 @@ func (k *Keptn) GetShipyard() (*Shipyard, error) {
 	return &shipyard, nil
 }
 
-// SendCloudEvent sends a cloudevent to the event broker
+// SendCloudEvent sends a cloudevent to the event broker.
 func (k *Keptn) SendCloudEvent(event cloudevents.Event) error {
+	return k.SendCloudEventWithContext(context.TODO(), event)
+}
+
+// SendCloudEventWithContext sends a cloudevent to the event broker.
+func (k *Keptn) SendCloudEventWithContext(ctx context.Context, event cloudevents.Event) error {
 	event.SetExtension(keptnSpecVersionCEExtension, config.GetKeptnGoUtilsConfig().ShKeptnSpecVersion)
 	if k.UseLocalFileSystem {
 		log.Println(fmt.Printf("%v", string(event.Data())))
 		return nil
 	}
 
-	return k.EventSender.SendEvent(event)
+	return k.EventSender.Send(ctx, event)
 }
 
 // SendTaskStartedEvent sends a .started event for the incoming .triggered event the KeptnHandler was initialized with.
-// It returns the ID of the sent CloudEvent or an error
+// It returns the ID of the sent CloudEvent or an error.
 func (k *Keptn) SendTaskStartedEvent(data keptn.EventProperties, source string) (string, error) {
+	return k.SendTaskStartedEventWithContext(context.TODO(), data, source)
+}
+
+// SendTaskStartedEventWithContext sends a .started event for the incoming .triggered event the KeptnHandler was initialized with.
+// It returns the ID of the sent CloudEvent or an error.
+func (k *Keptn) SendTaskStartedEventWithContext(ctx context.Context, data keptn.EventProperties, source string) (string, error) {
 	if k.CloudEvent == nil {
 		return "", fmt.Errorf("no incoming .triggered CloudEvent provided to the Keptn Handler")
 	}
@@ -112,12 +129,18 @@ func (k *Keptn) SendTaskStartedEvent(data keptn.EventProperties, source string) 
 		return "", fmt.Errorf("could not determine .started event type for base event: %s", err.Error())
 	}
 
-	return k.sendEventWithBaseEventContext(data, source, err, outEventType)
+	return k.sendEventWithBaseEventContext(ctx, data, source, err, outEventType)
 }
 
 // SendTaskStartedEvent sends a .status.changed event for the incoming .triggered event the KeptnHandler was initialized with.
-// It returns the ID of the sent CloudEvent or an error
+// It returns the ID of the sent CloudEvent or an error.
 func (k *Keptn) SendTaskStatusChangedEvent(data keptn.EventProperties, source string) (string, error) {
+	return k.SendTaskStatusChangedEventWithContext(context.TODO(), data, source)
+}
+
+// SendTaskStatusChangedEventWithContext sends a .status.changed event for the incoming .triggered event the KeptnHandler was initialized with.
+// It returns the ID of the sent CloudEvent or an error.
+func (k *Keptn) SendTaskStatusChangedEventWithContext(ctx context.Context, data keptn.EventProperties, source string) (string, error) {
 	if k.CloudEvent == nil {
 		return "", fmt.Errorf("no incoming .triggered CloudEvent provided to the Keptn Handler")
 	}
@@ -126,12 +149,18 @@ func (k *Keptn) SendTaskStatusChangedEvent(data keptn.EventProperties, source st
 		return "", fmt.Errorf("could not determine .status.changed event type for base event: %s", err.Error())
 	}
 
-	return k.sendEventWithBaseEventContext(data, source, err, outEventType)
+	return k.sendEventWithBaseEventContext(ctx, data, source, err, outEventType)
 }
 
 // SendTaskStartedEvent sends a .finished event for the incoming .triggered event the KeptnHandler was initialized with.
-// It returns the ID of the sent CloudEvent or an error
+// It returns the ID of the sent CloudEvent or an error.
 func (k *Keptn) SendTaskFinishedEvent(data keptn.EventProperties, source string) (string, error) {
+	return k.SendTaskFinishedEventWithContext(context.TODO(), data, source)
+}
+
+// SendTaskStartedEventWithContext sends a .finished event for the incoming .triggered event the KeptnHandler was initialized with.
+// It returns the ID of the sent CloudEvent or an error.
+func (k *Keptn) SendTaskFinishedEventWithContext(ctx context.Context, data keptn.EventProperties, source string) (string, error) {
 	if k.CloudEvent == nil {
 		return "", fmt.Errorf("no incoming .triggered CloudEvent provided to the Keptn Handler")
 	}
@@ -140,10 +169,10 @@ func (k *Keptn) SendTaskFinishedEvent(data keptn.EventProperties, source string)
 		return "", fmt.Errorf("could not determine .finished event type for base event: %s", err.Error())
 	}
 
-	return k.sendEventWithBaseEventContext(data, source, err, outEventType)
+	return k.sendEventWithBaseEventContext(ctx, data, source, err, outEventType)
 }
 
-func (k *Keptn) sendEventWithBaseEventContext(data keptn.EventProperties, source string, err error, outEventType string) (string, error) {
+func (k *Keptn) sendEventWithBaseEventContext(ctx context.Context, data keptn.EventProperties, source string, err error, outEventType string) (string, error) {
 	if source == "" {
 		return "", errors.New("must provide non-empty source")
 	}
@@ -157,7 +186,7 @@ func (k *Keptn) sendEventWithBaseEventContext(data keptn.EventProperties, source
 		return "", fmt.Errorf("could not initialize CloudEvent: %s", err.Error())
 	}
 
-	if err := k.EventSender.SendEvent(*ce); err != nil {
+	if err := k.EventSender.Send(ctx, *ce); err != nil {
 		return "", fmt.Errorf("could not send CloudEvent: %s", err.Error())
 	}
 	return ce.ID(), nil

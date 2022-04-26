@@ -84,13 +84,20 @@ const DefaultLoggingServiceName = "keptn"
 // First, the configuration of project-level is retrieved, which is then overridden by configuration on stage level,
 // overridden by configuration on service level.
 func (k *KeptnBase) GetSLIConfiguration(project string, stage string, service string, resourceURI string) (map[string]string, error) {
+	return k.GetSLIConfigurationWithContext(context.TODO(), project, stage, service, resourceURI)
+}
+
+// GetSLIConfigurationWithContext retrieves the SLI configuration for a service considering SLI configuration on stage and project level.
+// First, the configuration of project-level is retrieved, which is then overridden by configuration on stage level,
+// overridden by configuration on service level.
+func (k *KeptnBase) GetSLIConfigurationWithContext(ctx context.Context, project string, stage string, service string, resourceURI string) (map[string]string, error) {
 	var res *models.Resource
 	var err error
 	SLIs := make(map[string]string)
 
 	// get sli config from project
 	if project != "" {
-		res, err = k.ResourceHandler.GetProjectResource(project, resourceURI)
+		res, err = k.ResourceHandler.GetProjectResourceWithContext(ctx, project, resourceURI)
 		if err != nil {
 			// return error except "resource not found" type
 			if !strings.Contains(strings.ToLower(err.Error()), "resource not found") {
@@ -105,7 +112,7 @@ func (k *KeptnBase) GetSLIConfiguration(project string, stage string, service st
 
 	// get sli config from stage
 	if project != "" && stage != "" {
-		res, err = k.ResourceHandler.GetStageResource(project, stage, resourceURI)
+		res, err = k.ResourceHandler.GetStageResourceWithContext(ctx, project, stage, resourceURI)
 		if err != nil {
 			// return error except "resource not found" type
 			if !strings.Contains(strings.ToLower(err.Error()), "resource not found") {
@@ -120,7 +127,7 @@ func (k *KeptnBase) GetSLIConfiguration(project string, stage string, service st
 
 	// get sli config from service
 	if project != "" && stage != "" && service != "" {
-		res, err = k.ResourceHandler.GetServiceResource(project, stage, service, resourceURI)
+		res, err = k.ResourceHandler.GetServiceResourceWithContext(ctx, project, stage, service, resourceURI)
 		if err != nil {
 			// return error except "resource not found" type
 			if !strings.Contains(strings.ToLower(err.Error()), "resource not found") {
@@ -155,8 +162,13 @@ func addResourceContentToSLIMap(SLIs map[string]string, resource *models.Resourc
 	return SLIs, nil
 }
 
-// GetKeptnResource returns a resource from the configuration repo based on the incoming cloud events project, service and stage
+// GetKeptnResource returns a resource from the configuration repo based on the incoming cloud events project, service and stage.
 func (k *KeptnBase) GetKeptnResource(resource string) ([]byte, error) {
+	return k.GetKeptnResourceWithContext(context.TODO(), resource)
+}
+
+// GetKeptnResourceWithContext returns a resource from the configuration repo based on the incoming cloud events project, service and stage.
+func (k *KeptnBase) GetKeptnResourceWithContext(ctx context.Context, resource string) ([]byte, error) {
 
 	// if we run in a runlocal mode we are just getting the file from the local disk
 	if k.UseLocalFileSystem {
@@ -164,7 +176,7 @@ func (k *KeptnBase) GetKeptnResource(resource string) ([]byte, error) {
 	}
 
 	// get it from KeptnBase
-	requestedResource, err := k.ResourceHandler.GetServiceResource(k.Event.GetProject(), k.Event.GetStage(), k.Event.GetService(), resource)
+	requestedResource, err := k.ResourceHandler.GetServiceResourceWithContext(ctx, k.Event.GetProject(), k.Event.GetStage(), k.Event.GetService(), resource)
 
 	// return Nil in case resource couldn't be retrieved
 	if err != nil || requestedResource.ResourceContent == "" {
