@@ -95,9 +95,11 @@ const temporaryDataRootKey = "temporaryData"
 // AddTemporaryData adds further (temporary) properties to the data section of the keptn event
 func (ce *KeptnContextExtendedCE) AddTemporaryData(key string, tmpData TemporaryData, opts AddTemporaryDataOptions) error {
 	eventData := map[string]interface{}{}
-	err := ce.DataAs(&eventData)
-	if err != nil {
-		return err
+	if ce.Data != nil {
+		err := ce.DataAs(&eventData)
+		if err != nil {
+			return err
+		}
 	}
 	if temporaryData, found := eventData[temporaryDataRootKey]; found {
 		if _, kfound := temporaryData.(map[string]interface{})[key]; kfound {
