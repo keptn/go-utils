@@ -138,6 +138,27 @@ func TestAddTemporaryData(t *testing.T) {
 	require.Nil(t, err)
 }
 
+func TestAddTemporaryData_EventDataNil(t *testing.T) {
+	event := models.KeptnContextExtendedCE{}
+
+	type AdditionalData struct {
+		SomeString string `json:"someString"`
+		SomeInt    int    `json:"someInt"`
+	}
+	temporaryDataToAdd := models.TemporaryData(AdditionalData{
+		SomeString: "Bernd",
+		SomeInt:    34,
+	})
+	err := event.AddTemporaryData("distributor", temporaryDataToAdd, models.AddTemporaryDataOptions{})
+	require.Nil(t, err)
+
+	addi := AdditionalData{}
+	err = event.GetTemporaryData("distributor", &addi)
+	fmt.Println(addi.SomeInt)
+
+	require.Nil(t, err)
+}
+
 func TestKeptnContextExtendedCE_TemporaryData(t *testing.T) {
 	type TestData struct {
 		v0_2_0.EventData
