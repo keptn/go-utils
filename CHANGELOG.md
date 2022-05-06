@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.15.0](https://github.com/keptn/go-utils/compare/v0.14.0...v0.15.0) (2022-05-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* Rename the create/update project parameter `GitProxyInsecure` to `InsecureSkipTLS` * removed unused GitCommit from finished events
+
+### Features
+
+* Introduce proxy parameters to ExpandedProject struct ([#433](https://github.com/keptn/keptn/issues/433)) ([6c53542](https://github.com/keptn/go-utils/commit/6c53542a31b0a4036e2dc792bab4d0ca7528d642))
+* Rename GitProxyInsecure to InsecureSkipTLS since that property should not only be tied to the proxy feature ([#445](https://github.com/keptn/keptn/issues/445)) ([003ee3f](https://github.com/keptn/go-utils/commit/003ee3f85292e5ab6a049f8412bbb8fa28d4b6eb))
+
+
+### Bug Fixes
+
+* Avoid nil pointer exception in AddTemporaryData ([#460](https://github.com/keptn/keptn/issues/460)) ([5672c07](https://github.com/keptn/go-utils/commit/5672c074a6de2e3d6c868fc1abd9a87744ff66e3))
+* correct error message in fake/EventSender.AssertSentEventTypes ([2466736](https://github.com/keptn/go-utils/commit/24667368a1594c17cfa725b88a97d19ddfef109e))
+* **go-utils:** Add parameters to metadata model ([#434](https://github.com/keptn/keptn/issues/434)) ([297c1b2](https://github.com/keptn/go-utils/commit/297c1b2ddd7c40e518659dceddc20532ad99d321))
+* **go-utils:** Make AutomaticProvisioning parameter required in metadata model ([#435](https://github.com/keptn/keptn/issues/435)) ([0b73d75](https://github.com/keptn/go-utils/commit/0b73d757bfd6589eb8dde8e802e27cc3cfea997d))
+* **go-utils:** Make GitProxyInsecure parameter required ([#436](https://github.com/keptn/keptn/issues/436)) ([802847e](https://github.com/keptn/go-utils/commit/802847e8175045550ea877694ef1f6e71c33fa15))
+* Gracefully handle missing event labels ([#446](https://github.com/keptn/keptn/issues/446)) ([2e23eb7](https://github.com/keptn/go-utils/commit/2e23eb712e3db97c5f1136e67293bbbbc4111e05))
+* Restore opentelemetry dependency updates ([#456](https://github.com/keptn/keptn/issues/456)) ([a0381c5](https://github.com/keptn/go-utils/commit/a0381c53c6d819e63bcbdb1881a1fb5a03332158))
+
+
+### Other
+
+* Removed unneeded Git Commit from finished events ([#430](https://github.com/keptn/keptn/issues/430)) ([c6d4983](https://github.com/keptn/go-utils/commit/c6d49838bec8f86f6bbab373474d85734e738ad7))
+
 ## [0.13.0](https://github.com/keptn/go-utils/compare/v0.12.0...v0.13.0) (2022-02-17)
 
 
