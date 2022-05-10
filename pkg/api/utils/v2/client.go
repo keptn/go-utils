@@ -14,7 +14,7 @@ type KeptnInterface interface {
 	EventsV1() EventsInterface
 	LogsV1() LogsInterface
 	ProjectsV1() ProjectsInterface
-	ResourcesV1() ResourcesV1Interface
+	ResourcesV1() ResourcesInterface
 	SecretsV1() SecretsV1Interface
 	SequencesV1() SequencesV1Interface
 	ServicesV1() ServicesV1Interface
@@ -70,7 +70,7 @@ func (c *APISet) ProjectsV1() ProjectsInterface {
 }
 
 // ResourcesV1 retrieves the ResourceHandler
-func (c *APISet) ResourcesV1() ResourcesV1Interface {
+func (c *APISet) ResourcesV1() ResourcesInterface {
 	return c.resourceHandler
 }
 
