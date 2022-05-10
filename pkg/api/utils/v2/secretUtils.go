@@ -12,35 +12,31 @@ import (
 const secretServiceBaseURL = "secrets"
 const v1SecretPath = "/v1/secret"
 
-type SecretsV1Interface interface {
-	SecretHandlerInterface
+// SecretsCreateSecretOptions are options for SecretsInterface.CreateSecret().
+type SecretsCreateSecretOptions struct{}
 
-	// CreateSecretWithContext creates a new secret.
-	CreateSecretWithContext(ctx context.Context, secret models.Secret) error
+// SecretsUpdateSecretOptions are options for SecretsInterface.UpdateSecret().
+type SecretsUpdateSecretOptions struct{}
 
-	// UpdateSecretWithContext creates a new secret.
-	UpdateSecretWithContext(ctx context.Context, secret models.Secret) error
+// SecretsDeleteSecretOptions are options for SecretsInterface.DeleteSecret().
+type SecretsDeleteSecretOptions struct{}
 
-	// DeleteSecretWithContext deletes a secret.
-	DeleteSecretWithContext(ctx context.Context, secretName, secretScope string) error
+// SecretsGetSecretsOptions are options for SecretsInterface.GetSecrets().
+type SecretsGetSecretsOptions struct{}
 
-	// GetSecretsWithContext returns a list of created secrets.
-	GetSecretsWithContext(ctx context.Context) (*models.GetSecretsResponse, error)
-}
-
-//go:generate moq -pkg utils_mock -skip-ensure -out ./fake/secret_handler_mock.go . SecretHandlerInterface
-type SecretHandlerInterface interface {
+//go:generate moq -pkg utils_mock -skip-ensure -out ./fake/secret_handler_mock.go . SecretsInterface
+type SecretsInterface interface {
 	// CreateSecret creates a new secret.
-	CreateSecret(secret models.Secret) error
+	CreateSecret(ctx context.Context, secret models.Secret, opts SecretsCreateSecretOptions) error
 
 	// UpdateSecret creates a new secret.
-	UpdateSecret(secret models.Secret) error
+	UpdateSecret(ctx context.Context, secret models.Secret, opts SecretsUpdateSecretOptions) error
 
 	// DeleteSecret deletes a secret.
-	DeleteSecret(secretName, secretScope string) error
+	DeleteSecret(ctx context.Context, secretName, secretScope string, opts SecretsDeleteSecretOptions) error
 
 	// GetSecrets returns a list of created secrets.
-	GetSecrets() (*models.GetSecretsResponse, error)
+	GetSecrets(ctx context.Context, opts SecretsGetSecretsOptions) (*models.GetSecretsResponse, error)
 }
 
 // SecretHandler handles services
@@ -115,12 +111,7 @@ func (s *SecretHandler) getHTTPClient() *http.Client {
 }
 
 // CreateSecret creates a new secret.
-func (s *SecretHandler) CreateSecret(secret models.Secret) error {
-	return s.CreateSecretWithContext(context.TODO(), secret)
-}
-
-// CreateSecretWithContext creates a new secret.
-func (s *SecretHandler) CreateSecretWithContext(ctx context.Context, secret models.Secret) error {
+func (s *SecretHandler) CreateSecret(ctx context.Context, secret models.Secret, opts SecretsCreateSecretOptions) error {
 	body, err := secret.ToJSON()
 	if err != nil {
 		return err
@@ -133,12 +124,7 @@ func (s *SecretHandler) CreateSecretWithContext(ctx context.Context, secret mode
 }
 
 // UpdateSecret creates a new secret.
-func (s *SecretHandler) UpdateSecret(secret models.Secret) error {
-	return s.UpdateSecretWithContext(context.TODO(), secret)
-}
-
-// UpdateSecretWithContext creates a new secret.
-func (s *SecretHandler) UpdateSecretWithContext(ctx context.Context, secret models.Secret) error {
+func (s *SecretHandler) UpdateSecret(ctx context.Context, secret models.Secret, opts SecretsUpdateSecretOptions) error {
 	body, err := secret.ToJSON()
 	if err != nil {
 		return err
@@ -151,12 +137,7 @@ func (s *SecretHandler) UpdateSecretWithContext(ctx context.Context, secret mode
 }
 
 // DeleteSecret deletes a secret.
-func (s *SecretHandler) DeleteSecret(secretName, secretScope string) error {
-	return s.DeleteSecretWithContext(context.TODO(), secretName, secretScope)
-}
-
-// DeleteSecretWithContext deletes a secret.
-func (s *SecretHandler) DeleteSecretWithContext(ctx context.Context, secretName, secretScope string) error {
+func (s *SecretHandler) DeleteSecret(ctx context.Context, secretName, secretScope string, opts SecretsDeleteSecretOptions) error {
 	_, err := delete(ctx, s.Scheme+"://"+s.BaseURL+v1SecretPath+"?name="+secretName+"&scope="+secretScope, s)
 	if err != nil {
 		return errors.New(err.GetMessage())
@@ -165,12 +146,7 @@ func (s *SecretHandler) DeleteSecretWithContext(ctx context.Context, secretName,
 }
 
 // GetSecrets returns a list of created secrets.
-func (s *SecretHandler) GetSecrets() (*models.GetSecretsResponse, error) {
-	return s.GetSecretsWithContext(context.TODO())
-}
-
-// GetSecretsWithContext returns a list of created secrets.
-func (s *SecretHandler) GetSecretsWithContext(ctx context.Context) (*models.GetSecretsResponse, error) {
+func (s *SecretHandler) GetSecrets(ctx context.Context, opts SecretsGetSecretsOptions) (*models.GetSecretsResponse, error) {
 	body, mErr := getAndExpectOK(ctx, s.Scheme+"://"+s.BaseURL+v1SecretPath, s)
 	if mErr != nil {
 		return nil, mErr.ToError()
