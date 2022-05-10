@@ -7,6 +7,8 @@ import (
 	"net/http"
 )
 
+type ReadinessConditionFunc func() bool
+
 type StatusBody struct {
 	Status string `json:"status"`
 }
@@ -16,7 +18,36 @@ func (s *StatusBody) ToJSON() ([]byte, error) {
 	return json.Marshal(s)
 }
 
-func healthHandler(w http.ResponseWriter, r *http.Request) {
+type HealthHandlerOption func(h *healthHandler)
+
+func WithReadinessConditionFunc(rc ReadinessConditionFunc) HealthHandlerOption {
+	return func(h *healthHandler) {
+		h.readinessConditionFunc = rc
+	}
+}
+
+type healthHandler struct {
+	readinessConditionFunc ReadinessConditionFunc
+}
+
+func newHealthHandler(opts ...HealthHandlerOption) *healthHandler {
+	h := &healthHandler{}
+	for _, o := range opts {
+		o(h)
+	}
+	return h
+}
+
+func (h *healthHandler) healthCheck(w http.ResponseWriter, r *http.Request) {
+	ready := true
+	if h.readinessConditionFunc != nil {
+		ready = h.readinessConditionFunc()
+	}
+
+	if !ready {
+		w.WriteHeader(http.StatusPreconditionFailed)
+		return
+	}
 	status := StatusBody{Status: "OK"}
 
 	body, err := status.ToJSON()
@@ -33,8 +64,8 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func RunHealthEndpoint(port string) {
-
-	http.HandleFunc("/health", healthHandler)
+	h := newHealthHandler()
+	http.HandleFunc("/health", h.healthCheck)
 	err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
 	if err != nil {
 		log.Println(err)
