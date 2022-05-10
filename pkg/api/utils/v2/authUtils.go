@@ -8,12 +8,12 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 )
 
-type AuthV1Interface interface {
-	// Authenticate authenticates the client request against the server.
-	Authenticate() (*models.EventContext, *models.Error)
+// AuthAuthenticateOptions are options for AuthInterface.Authenticate().
+type AuthAuthenticateOptions struct{}
 
-	// AuthenticateWithContext authenticates the client request against the server.
-	AuthenticateWithContext(ctx context.Context) (*models.EventContext, *models.Error)
+type AuthInterface interface {
+	// Authenticate authenticates the client request against the server.
+	Authenticate(ctx context.Context, opts AuthAuthenticateOptions) (*models.EventContext, *models.Error)
 }
 
 // AuthHandler handles projects
@@ -81,11 +81,6 @@ func (a *AuthHandler) getHTTPClient() *http.Client {
 }
 
 // Authenticate authenticates the client request against the server.
-func (a *AuthHandler) Authenticate() (*models.EventContext, *models.Error) {
-	return a.AuthenticateWithContext(context.TODO())
-}
-
-// AuthenticateWithContext authenticates the client request against the server.
-func (a *AuthHandler) AuthenticateWithContext(ctx context.Context) (*models.EventContext, *models.Error) {
+func (a *AuthHandler) Authenticate(ctx context.Context, opts AuthAuthenticateOptions) (*models.EventContext, *models.Error) {
 	return postWithEventContext(ctx, a.Scheme+"://"+a.getBaseURL()+"/v1/auth", nil, a)
 }

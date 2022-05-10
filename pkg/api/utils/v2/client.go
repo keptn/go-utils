@@ -10,7 +10,7 @@ var _ KeptnInterface = (*APISet)(nil)
 
 type KeptnInterface interface {
 	APIV1() APIInterface
-	AuthV1() AuthV1Interface
+	AuthV1() AuthInterface
 	EventsV1() EventsV1Interface
 	LogsV1() LogsV1Interface
 	ProjectsV1() ProjectsV1Interface
@@ -50,7 +50,7 @@ func (c *APISet) APIV1() APIInterface {
 }
 
 // AuthV1 retrieves the AuthHandler
-func (c *APISet) AuthV1() AuthV1Interface {
+func (c *APISet) AuthV1() AuthInterface {
 	return c.authHandler
 }
 
