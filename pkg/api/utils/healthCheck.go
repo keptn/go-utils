@@ -63,8 +63,8 @@ func (h *healthHandler) healthCheck(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func RunHealthEndpoint(port string) {
-	h := newHealthHandler()
+func RunHealthEndpoint(port string, opts ...HealthHandlerOption) {
+	h := newHealthHandler(opts...)
 	http.HandleFunc("/health", h.healthCheck)
 	err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
 	if err != nil {
