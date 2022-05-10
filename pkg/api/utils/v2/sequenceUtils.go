@@ -12,9 +12,11 @@ import (
 
 const v1SequenceControlPath = "/v1/sequence/%s/%s/control"
 
-type SequencesV1Interface interface {
-	ControlSequence(params SequenceControlParams) error
-	ControlSequenceWithContext(ctx context.Context, params SequenceControlParams) error
+// SequencesControlSequenceOptions are options for SequencesInterface.ControlSequence().
+type SequencesControlSequenceOptions struct{}
+
+type SequencesInterface interface {
+	ControlSequence(ctx context.Context, params SequenceControlParams, opts SequencesControlSequenceOptions) error
 }
 
 type SequenceControlHandler struct {
@@ -126,11 +128,7 @@ func (s *SequenceControlHandler) getHTTPClient() *http.Client {
 	return s.HTTPClient
 }
 
-func (s *SequenceControlHandler) ControlSequence(params SequenceControlParams) error {
-	return s.ControlSequenceWithContext(context.TODO(), params)
-}
-
-func (s *SequenceControlHandler) ControlSequenceWithContext(ctx context.Context, params SequenceControlParams) error {
+func (s *SequenceControlHandler) ControlSequence(ctx context.Context, params SequenceControlParams, opts SequencesControlSequenceOptions) error {
 	err := params.Validate()
 	if err != nil {
 		return err
