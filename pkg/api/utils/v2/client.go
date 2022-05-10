@@ -9,18 +9,18 @@ import (
 var _ KeptnInterface = (*APISet)(nil)
 
 type KeptnInterface interface {
-	APIV1() APIInterface
-	AuthV1() AuthInterface
-	EventsV1() EventsInterface
-	LogsV1() LogsInterface
-	ProjectsV1() ProjectsInterface
-	ResourcesV1() ResourcesInterface
-	SecretsV1() SecretsInterface
-	SequencesV1() SequencesInterface
-	ServicesV1() ServicesInterface
-	StagesV1() StagesInterface
-	UniformV1() UniformInterface
-	ShipyardControlV1() ShipyardControlInterface
+	API() APIInterface
+	Auth() AuthInterface
+	Events() EventsInterface
+	Logs() LogsInterface
+	Projects() ProjectsInterface
+	Resources() ResourcesInterface
+	Secrets() SecretsInterface
+	Sequences() SequencesInterface
+	Services() ServicesInterface
+	Stages() StagesInterface
+	Uniform() UniformInterface
+	ShipyardControl() ShipyardControlInterface
 }
 
 // APISet contains the API utils for all Keptn APIs
@@ -44,63 +44,63 @@ type APISet struct {
 	shipyardControlHandler *ShipyardControllerHandler
 }
 
-// APIV1 retrieves the APIHandler
-func (c *APISet) APIV1() APIInterface {
+// API retrieves the APIHandler
+func (c *APISet) API() APIInterface {
 	return c.apiHandler
 }
 
-// AuthV1 retrieves the AuthHandler
-func (c *APISet) AuthV1() AuthInterface {
+// Auth retrieves the AuthHandler
+func (c *APISet) Auth() AuthInterface {
 	return c.authHandler
 }
 
-// EventsV1 retrieves the EventHandler
-func (c *APISet) EventsV1() EventsInterface {
+// Events retrieves the EventHandler
+func (c *APISet) Events() EventsInterface {
 	return c.eventHandler
 }
 
-// LogsV1 retrieves the LogHandler
-func (c *APISet) LogsV1() LogsInterface {
+// Logs retrieves the LogHandler
+func (c *APISet) Logs() LogsInterface {
 	return c.logHandler
 }
 
-// ProjectsV1 retrieves the ProjectHandler
-func (c *APISet) ProjectsV1() ProjectsInterface {
+// Projects retrieves the ProjectHandler
+func (c *APISet) Projects() ProjectsInterface {
 	return c.projectHandler
 }
 
-// ResourcesV1 retrieves the ResourceHandler
-func (c *APISet) ResourcesV1() ResourcesInterface {
+// Resources retrieves the ResourceHandler
+func (c *APISet) Resources() ResourcesInterface {
 	return c.resourceHandler
 }
 
-// SecretsV1 retrieves the SecretHandler
-func (c *APISet) SecretsV1() SecretsInterface {
+// Secrets retrieves the SecretHandler
+func (c *APISet) Secrets() SecretsInterface {
 	return c.secretHandler
 }
 
-// SequencesV1 retrieves the SequenceControlHandler
-func (c *APISet) SequencesV1() SequencesInterface {
+// Sequences retrieves the SequenceControlHandler
+func (c *APISet) Sequences() SequencesInterface {
 	return c.sequenceControlHandler
 }
 
-// ServicesV1 retrieves the ServiceHandler
-func (c *APISet) ServicesV1() ServicesInterface {
+// Services retrieves the ServiceHandler
+func (c *APISet) Services() ServicesInterface {
 	return c.serviceHandler
 }
 
-// StagesV1 retrieves the StageHandler
-func (c *APISet) StagesV1() StagesInterface {
+// Stages retrieves the StageHandler
+func (c *APISet) Stages() StagesInterface {
 	return c.stageHandler
 }
 
-// UniformV1 retrieves the UniformHandler
-func (c *APISet) UniformV1() UniformInterface {
+// Uniform retrieves the UniformHandler
+func (c *APISet) Uniform() UniformInterface {
 	return c.uniformHandler
 }
 
-// ShipyardControlV1 retrieves the ShipyardControllerHandler
-func (c *APISet) ShipyardControlV1() ShipyardControlInterface {
+// ShipyardControl retrieves the ShipyardControllerHandler
+func (c *APISet) ShipyardControl() ShipyardControlInterface {
 	return c.shipyardControlHandler
 }
 
