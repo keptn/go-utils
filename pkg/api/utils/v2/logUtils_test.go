@@ -61,7 +61,7 @@ func TestLogHandler_DeleteLogs(t *testing.T) {
 
 			lh := NewLogHandler(ts.URL)
 
-			got := lh.DeleteLogs(tt.args.params)
+			got := lh.DeleteLogs(context.Background(), tt.args.params, LogsDeleteLogsOptions{})
 			require.Equal(t, tt.want, got)
 		})
 	}
@@ -107,7 +107,7 @@ func TestLogHandler_Flush(t *testing.T) {
 					IntegrationID: "id",
 				},
 			}
-			got := lh.Flush()
+			got := lh.Flush(context.Background(), LogsFlushOptions{})
 			if tt.wantErr {
 				require.NotNil(t, got)
 			} else {
@@ -158,7 +158,7 @@ func TestLogHandler_GetLogs(t *testing.T) {
 
 			lh := NewLogHandler(ts.URL)
 
-			got, err := lh.GetLogs(models.GetLogsParams{})
+			got, err := lh.GetLogs(context.Background(), models.GetLogsParams{}, LogsGetLogsOptions{})
 			require.Equal(t, tt.wantErr, err)
 			require.Equal(t, tt.want, got)
 		})
@@ -177,7 +177,7 @@ func TestLogHandler_Log(t *testing.T) {
 					IntegrationID: "my-id",
 					Message:       "message",
 				},
-			})
+			}, LogsLogOptions{})
 			wg.Done()
 		}()
 	}
@@ -204,9 +204,9 @@ func TestLogHandler_Start(t *testing.T) {
 		{
 			IntegrationID: "my-id",
 		},
-	})
+	}, LogsLogOptions{})
 
-	lh.Start(context.Background())
+	lh.Start(context.Background(), LogsStartOptions{})
 
 	mockClock.Add(60 * time.Second)
 

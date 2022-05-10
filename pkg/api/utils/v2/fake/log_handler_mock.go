@@ -6,76 +6,93 @@ package utils_mock
 import (
 	"context"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/api/utils/v2"
 	"sync"
 )
 
-// ILogHandlerMock is a mock implementation of api.ILogHandler.
+// LogsInterfaceMock is a mock implementation of v2.LogsInterface.
 //
-// 	func TestSomethingThatUsesILogHandler(t *testing.T) {
+// 	func TestSomethingThatUsesLogsInterface(t *testing.T) {
 //
-// 		// make and configure a mocked api.ILogHandler
-// 		mockedILogHandler := &ILogHandlerMock{
-// 			DeleteLogsFunc: func(filter models.LogFilter) error {
+// 		// make and configure a mocked v2.LogsInterface
+// 		mockedLogsInterface := &LogsInterfaceMock{
+// 			DeleteLogsFunc: func(ctx context.Context, filter models.LogFilter, opts v2.LogsDeleteLogsOptions) error {
 // 				panic("mock out the DeleteLogs method")
 // 			},
-// 			FlushFunc: func() error {
+// 			FlushFunc: func(ctx context.Context, opts v2.LogsFlushOptions) error {
 // 				panic("mock out the Flush method")
 // 			},
-// 			GetLogsFunc: func(params models.GetLogsParams) (*models.GetLogsResponse, error) {
+// 			GetLogsFunc: func(ctx context.Context, params models.GetLogsParams, opts v2.LogsGetLogsOptions) (*models.GetLogsResponse, error) {
 // 				panic("mock out the GetLogs method")
 // 			},
-// 			LogFunc: func(logs []models.LogEntry)  {
+// 			LogFunc: func(logs []models.LogEntry, opts v2.LogsLogOptions)  {
 // 				panic("mock out the Log method")
 // 			},
-// 			StartFunc: func(ctx context.Context)  {
+// 			StartFunc: func(ctx context.Context, opts v2.LogsStartOptions)  {
 // 				panic("mock out the Start method")
 // 			},
 // 		}
 //
-// 		// use mockedILogHandler in code that requires api.ILogHandler
+// 		// use mockedLogsInterface in code that requires v2.LogsInterface
 // 		// and then make assertions.
 //
 // 	}
-type ILogHandlerMock struct {
+type LogsInterfaceMock struct {
 	// DeleteLogsFunc mocks the DeleteLogs method.
-	DeleteLogsFunc func(filter models.LogFilter) error
+	DeleteLogsFunc func(ctx context.Context, filter models.LogFilter, opts v2.LogsDeleteLogsOptions) error
 
 	// FlushFunc mocks the Flush method.
-	FlushFunc func() error
+	FlushFunc func(ctx context.Context, opts v2.LogsFlushOptions) error
 
 	// GetLogsFunc mocks the GetLogs method.
-	GetLogsFunc func(params models.GetLogsParams) (*models.GetLogsResponse, error)
+	GetLogsFunc func(ctx context.Context, params models.GetLogsParams, opts v2.LogsGetLogsOptions) (*models.GetLogsResponse, error)
 
 	// LogFunc mocks the Log method.
-	LogFunc func(logs []models.LogEntry)
+	LogFunc func(logs []models.LogEntry, opts v2.LogsLogOptions)
 
 	// StartFunc mocks the Start method.
-	StartFunc func(ctx context.Context)
+	StartFunc func(ctx context.Context, opts v2.LogsStartOptions)
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// DeleteLogs holds details about calls to the DeleteLogs method.
 		DeleteLogs []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
 			// Filter is the filter argument value.
 			Filter models.LogFilter
+			// Opts is the opts argument value.
+			Opts v2.LogsDeleteLogsOptions
 		}
 		// Flush holds details about calls to the Flush method.
 		Flush []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// Opts is the opts argument value.
+			Opts v2.LogsFlushOptions
 		}
 		// GetLogs holds details about calls to the GetLogs method.
 		GetLogs []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
 			// Params is the params argument value.
 			Params models.GetLogsParams
+			// Opts is the opts argument value.
+			Opts v2.LogsGetLogsOptions
 		}
 		// Log holds details about calls to the Log method.
 		Log []struct {
 			// Logs is the logs argument value.
 			Logs []models.LogEntry
+			// Opts is the opts argument value.
+			Opts v2.LogsLogOptions
 		}
 		// Start holds details about calls to the Start method.
 		Start []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
+			// Opts is the opts argument value.
+			Opts v2.LogsStartOptions
 		}
 	}
 	lockDeleteLogs sync.RWMutex
@@ -86,29 +103,37 @@ type ILogHandlerMock struct {
 }
 
 // DeleteLogs calls DeleteLogsFunc.
-func (mock *ILogHandlerMock) DeleteLogs(filter models.LogFilter) error {
+func (mock *LogsInterfaceMock) DeleteLogs(ctx context.Context, filter models.LogFilter, opts v2.LogsDeleteLogsOptions) error {
 	if mock.DeleteLogsFunc == nil {
-		panic("ILogHandlerMock.DeleteLogsFunc: method is nil but ILogHandler.DeleteLogs was just called")
+		panic("LogsInterfaceMock.DeleteLogsFunc: method is nil but LogsInterface.DeleteLogs was just called")
 	}
 	callInfo := struct {
+		Ctx    context.Context
 		Filter models.LogFilter
+		Opts   v2.LogsDeleteLogsOptions
 	}{
+		Ctx:    ctx,
 		Filter: filter,
+		Opts:   opts,
 	}
 	mock.lockDeleteLogs.Lock()
 	mock.calls.DeleteLogs = append(mock.calls.DeleteLogs, callInfo)
 	mock.lockDeleteLogs.Unlock()
-	return mock.DeleteLogsFunc(filter)
+	return mock.DeleteLogsFunc(ctx, filter, opts)
 }
 
 // DeleteLogsCalls gets all the calls that were made to DeleteLogs.
 // Check the length with:
-//     len(mockedILogHandler.DeleteLogsCalls())
-func (mock *ILogHandlerMock) DeleteLogsCalls() []struct {
+//     len(mockedLogsInterface.DeleteLogsCalls())
+func (mock *LogsInterfaceMock) DeleteLogsCalls() []struct {
+	Ctx    context.Context
 	Filter models.LogFilter
+	Opts   v2.LogsDeleteLogsOptions
 } {
 	var calls []struct {
+		Ctx    context.Context
 		Filter models.LogFilter
+		Opts   v2.LogsDeleteLogsOptions
 	}
 	mock.lockDeleteLogs.RLock()
 	calls = mock.calls.DeleteLogs
@@ -117,24 +142,33 @@ func (mock *ILogHandlerMock) DeleteLogsCalls() []struct {
 }
 
 // Flush calls FlushFunc.
-func (mock *ILogHandlerMock) Flush() error {
+func (mock *LogsInterfaceMock) Flush(ctx context.Context, opts v2.LogsFlushOptions) error {
 	if mock.FlushFunc == nil {
-		panic("ILogHandlerMock.FlushFunc: method is nil but ILogHandler.Flush was just called")
+		panic("LogsInterfaceMock.FlushFunc: method is nil but LogsInterface.Flush was just called")
 	}
 	callInfo := struct {
-	}{}
+		Ctx  context.Context
+		Opts v2.LogsFlushOptions
+	}{
+		Ctx:  ctx,
+		Opts: opts,
+	}
 	mock.lockFlush.Lock()
 	mock.calls.Flush = append(mock.calls.Flush, callInfo)
 	mock.lockFlush.Unlock()
-	return mock.FlushFunc()
+	return mock.FlushFunc(ctx, opts)
 }
 
 // FlushCalls gets all the calls that were made to Flush.
 // Check the length with:
-//     len(mockedILogHandler.FlushCalls())
-func (mock *ILogHandlerMock) FlushCalls() []struct {
+//     len(mockedLogsInterface.FlushCalls())
+func (mock *LogsInterfaceMock) FlushCalls() []struct {
+	Ctx  context.Context
+	Opts v2.LogsFlushOptions
 } {
 	var calls []struct {
+		Ctx  context.Context
+		Opts v2.LogsFlushOptions
 	}
 	mock.lockFlush.RLock()
 	calls = mock.calls.Flush
@@ -143,29 +177,37 @@ func (mock *ILogHandlerMock) FlushCalls() []struct {
 }
 
 // GetLogs calls GetLogsFunc.
-func (mock *ILogHandlerMock) GetLogs(params models.GetLogsParams) (*models.GetLogsResponse, error) {
+func (mock *LogsInterfaceMock) GetLogs(ctx context.Context, params models.GetLogsParams, opts v2.LogsGetLogsOptions) (*models.GetLogsResponse, error) {
 	if mock.GetLogsFunc == nil {
-		panic("ILogHandlerMock.GetLogsFunc: method is nil but ILogHandler.GetLogs was just called")
+		panic("LogsInterfaceMock.GetLogsFunc: method is nil but LogsInterface.GetLogs was just called")
 	}
 	callInfo := struct {
+		Ctx    context.Context
 		Params models.GetLogsParams
+		Opts   v2.LogsGetLogsOptions
 	}{
+		Ctx:    ctx,
 		Params: params,
+		Opts:   opts,
 	}
 	mock.lockGetLogs.Lock()
 	mock.calls.GetLogs = append(mock.calls.GetLogs, callInfo)
 	mock.lockGetLogs.Unlock()
-	return mock.GetLogsFunc(params)
+	return mock.GetLogsFunc(ctx, params, opts)
 }
 
 // GetLogsCalls gets all the calls that were made to GetLogs.
 // Check the length with:
-//     len(mockedILogHandler.GetLogsCalls())
-func (mock *ILogHandlerMock) GetLogsCalls() []struct {
+//     len(mockedLogsInterface.GetLogsCalls())
+func (mock *LogsInterfaceMock) GetLogsCalls() []struct {
+	Ctx    context.Context
 	Params models.GetLogsParams
+	Opts   v2.LogsGetLogsOptions
 } {
 	var calls []struct {
+		Ctx    context.Context
 		Params models.GetLogsParams
+		Opts   v2.LogsGetLogsOptions
 	}
 	mock.lockGetLogs.RLock()
 	calls = mock.calls.GetLogs
@@ -174,29 +216,33 @@ func (mock *ILogHandlerMock) GetLogsCalls() []struct {
 }
 
 // Log calls LogFunc.
-func (mock *ILogHandlerMock) Log(logs []models.LogEntry) {
+func (mock *LogsInterfaceMock) Log(logs []models.LogEntry, opts v2.LogsLogOptions) {
 	if mock.LogFunc == nil {
-		panic("ILogHandlerMock.LogFunc: method is nil but ILogHandler.Log was just called")
+		panic("LogsInterfaceMock.LogFunc: method is nil but LogsInterface.Log was just called")
 	}
 	callInfo := struct {
 		Logs []models.LogEntry
+		Opts v2.LogsLogOptions
 	}{
 		Logs: logs,
+		Opts: opts,
 	}
 	mock.lockLog.Lock()
 	mock.calls.Log = append(mock.calls.Log, callInfo)
 	mock.lockLog.Unlock()
-	mock.LogFunc(logs)
+	mock.LogFunc(logs, opts)
 }
 
 // LogCalls gets all the calls that were made to Log.
 // Check the length with:
-//     len(mockedILogHandler.LogCalls())
-func (mock *ILogHandlerMock) LogCalls() []struct {
+//     len(mockedLogsInterface.LogCalls())
+func (mock *LogsInterfaceMock) LogCalls() []struct {
 	Logs []models.LogEntry
+	Opts v2.LogsLogOptions
 } {
 	var calls []struct {
 		Logs []models.LogEntry
+		Opts v2.LogsLogOptions
 	}
 	mock.lockLog.RLock()
 	calls = mock.calls.Log
@@ -205,29 +251,33 @@ func (mock *ILogHandlerMock) LogCalls() []struct {
 }
 
 // Start calls StartFunc.
-func (mock *ILogHandlerMock) Start(ctx context.Context) {
+func (mock *LogsInterfaceMock) Start(ctx context.Context, opts v2.LogsStartOptions) {
 	if mock.StartFunc == nil {
-		panic("ILogHandlerMock.StartFunc: method is nil but ILogHandler.Start was just called")
+		panic("LogsInterfaceMock.StartFunc: method is nil but LogsInterface.Start was just called")
 	}
 	callInfo := struct {
-		Ctx context.Context
+		Ctx  context.Context
+		Opts v2.LogsStartOptions
 	}{
-		Ctx: ctx,
+		Ctx:  ctx,
+		Opts: opts,
 	}
 	mock.lockStart.Lock()
 	mock.calls.Start = append(mock.calls.Start, callInfo)
 	mock.lockStart.Unlock()
-	mock.StartFunc(ctx)
+	mock.StartFunc(ctx, opts)
 }
 
 // StartCalls gets all the calls that were made to Start.
 // Check the length with:
-//     len(mockedILogHandler.StartCalls())
-func (mock *ILogHandlerMock) StartCalls() []struct {
-	Ctx context.Context
+//     len(mockedLogsInterface.StartCalls())
+func (mock *LogsInterfaceMock) StartCalls() []struct {
+	Ctx  context.Context
+	Opts v2.LogsStartOptions
 } {
 	var calls []struct {
-		Ctx context.Context
+		Ctx  context.Context
+		Opts v2.LogsStartOptions
 	}
 	mock.lockStart.RLock()
 	calls = mock.calls.Start

@@ -19,35 +19,36 @@ const v1LogPath = "/v1/log"
 
 var defaultSyncInterval = 1 * time.Minute
 
-type LogsV1Interface interface {
-	ILogHandler
-}
+// LogsLogOptions are options for LogsInterface.Log().
+type LogsLogOptions struct{}
 
-//go:generate moq -pkg utils_mock -skip-ensure -out ./fake/log_handler_mock.go . ILogHandler
-type ILogHandler interface {
+// LogsFlushOptions are options for LogsInterface.Flush().
+type LogsFlushOptions struct{}
 
+// LogsGetLogsOptions are options for LogsInterface.GetLogs().
+type LogsGetLogsOptions struct{}
+
+// LogsDeleteLogsOptions are options for LogsInterface.DeleteLogs().
+type LogsDeleteLogsOptions struct{}
+
+// LogsStartOptions are options for LogsInterface.Start().
+type LogsStartOptions struct{}
+
+//go:generate moq -pkg utils_mock -skip-ensure -out ./fake/log_handler_mock.go . LogsInterface
+type LogsInterface interface {
 	// Log appends the specified logs to the log cache.
-	Log(logs []models.LogEntry)
+	Log(logs []models.LogEntry, opts LogsLogOptions)
 
 	// Flush flushes the log cache.
-	Flush() error
-
-	// FlushWithContext flushes the log cache.
-	FlushWithContext(ctx context.Context) error
+	Flush(ctx context.Context, opts LogsFlushOptions) error
 
 	// GetLogs gets logs with the specified parameters.
-	GetLogs(params models.GetLogsParams) (*models.GetLogsResponse, error)
-
-	// GetLogsWithContext gets logs with the specified parameters.
-	GetLogsWithContext(ctx context.Context, params models.GetLogsParams) (*models.GetLogsResponse, error)
+	GetLogs(ctx context.Context, params models.GetLogsParams, opts LogsGetLogsOptions) (*models.GetLogsResponse, error)
 
 	// DeleteLogs deletes logs matching the specified log filter.
-	DeleteLogs(filter models.LogFilter) error
+	DeleteLogs(ctx context.Context, filter models.LogFilter, opts LogsDeleteLogsOptions) error
 
-	// DeleteLogsWithContext deletes logs matching the specified log filter.
-	DeleteLogsWithContext(ctx context.Context, filter models.LogFilter) error
-
-	Start(ctx context.Context)
+	Start(ctx context.Context, opts LogsStartOptions)
 }
 
 type LogHandler struct {
@@ -127,19 +128,14 @@ func (lh *LogHandler) getHTTPClient() *http.Client {
 }
 
 // Log appends the specified logs to the log cache.
-func (lh *LogHandler) Log(logs []models.LogEntry) {
+func (lh *LogHandler) Log(logs []models.LogEntry, opts LogsLogOptions) {
 	lh.lock.Lock()
 	defer lh.lock.Unlock()
 	lh.LogCache = append(lh.LogCache, logs...)
 }
 
 // GetLogs gets logs with the specified parameters.
-func (lh *LogHandler) GetLogs(params models.GetLogsParams) (*models.GetLogsResponse, error) {
-	return lh.GetLogsWithContext(context.TODO(), params)
-}
-
-// GetLogsWithContext gets logs with the specified parameters.
-func (lh *LogHandler) GetLogsWithContext(ctx context.Context, params models.GetLogsParams) (*models.GetLogsResponse, error) {
+func (lh *LogHandler) GetLogs(ctx context.Context, params models.GetLogsParams, opts LogsGetLogsOptions) (*models.GetLogsResponse, error) {
 	u, err := url.Parse(lh.Scheme + "://" + lh.getBaseURL() + v1LogPath)
 	if err != nil {
 		log.Fatal("error parsing url")
@@ -176,12 +172,7 @@ func (lh *LogHandler) GetLogsWithContext(ctx context.Context, params models.GetL
 }
 
 // DeleteLogs deletes logs matching the specified log filter.
-func (lh *LogHandler) DeleteLogs(params models.LogFilter) error {
-	return lh.DeleteLogsWithContext(context.TODO(), params)
-}
-
-// DeleteLogsWithContext deletes logs matching the specified log filter.
-func (lh *LogHandler) DeleteLogsWithContext(ctx context.Context, params models.LogFilter) error {
+func (lh *LogHandler) DeleteLogs(ctx context.Context, params models.LogFilter, opts LogsDeleteLogsOptions) error {
 	u, err := url.Parse(lh.Scheme + "://" + lh.getBaseURL() + v1LogPath)
 	if err != nil {
 		log.Fatal("error parsing url")
@@ -204,7 +195,7 @@ func (lh *LogHandler) DeleteLogsWithContext(ctx context.Context, params models.L
 	return nil
 }
 
-func (lh *LogHandler) Start(ctx context.Context) {
+func (lh *LogHandler) Start(ctx context.Context, opts LogsStartOptions) {
 	ticker := lh.TheClock.Ticker(lh.SyncInterval)
 	go func() {
 		for {
@@ -212,19 +203,14 @@ func (lh *LogHandler) Start(ctx context.Context) {
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				lh.Flush()
+				lh.Flush(ctx, LogsFlushOptions{})
 			}
 		}
 	}()
 }
 
 // Flush flushes the log cache.
-func (lh *LogHandler) Flush() error {
-	return lh.FlushWithContext(context.TODO())
-}
-
-// FlushWithContext flushes the log cache.
-func (lh *LogHandler) FlushWithContext(ctx context.Context) error {
+func (lh *LogHandler) Flush(ctx context.Context, opts LogsFlushOptions) error {
 	lh.lock.Lock()
 	defer lh.lock.Unlock()
 	if len(lh.LogCache) == 0 {

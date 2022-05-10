@@ -12,7 +12,7 @@ type KeptnInterface interface {
 	APIV1() APIInterface
 	AuthV1() AuthInterface
 	EventsV1() EventsInterface
-	LogsV1() LogsV1Interface
+	LogsV1() LogsInterface
 	ProjectsV1() ProjectsV1Interface
 	ResourcesV1() ResourcesV1Interface
 	SecretsV1() SecretsV1Interface
@@ -60,7 +60,7 @@ func (c *APISet) EventsV1() EventsInterface {
 }
 
 // LogsV1 retrieves the LogHandler
-func (c *APISet) LogsV1() LogsV1Interface {
+func (c *APISet) LogsV1() LogsInterface {
 	return c.logHandler
 }
 
