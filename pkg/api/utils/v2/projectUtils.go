@@ -14,36 +14,36 @@ import (
 
 const v1ProjectPath = "/v1/project"
 
-type ProjectsV1Interface interface {
-	// CreateProject creates a new project.
-	CreateProject(project models.Project) (*models.EventContext, *models.Error)
+// ProjectsCreateProjectOptions are options for ProjectsInterface.CreateProject().
+type ProjectsCreateProjectOptions struct{}
 
-	// CreateProjectWithContext creates a new project.
-	CreateProjectWithContext(ctx context.Context, project models.Project) (*models.EventContext, *models.Error)
+// ProjectsDeleteProjectOptions are options for ProjectsInterface.DeleteProject().
+type ProjectsDeleteProjectOptions struct{}
+
+// ProjectsGetProjectOptions are options for ProjectsInterface.GetProject().
+type ProjectsGetProjectOptions struct{}
+
+// ProjectsGetAllProjectsOptions are options for ProjectsInterface.GetAllProjects().
+type ProjectsGetAllProjectsOptions struct{}
+
+// ProjectsUpdateConfigurationServiceProjectOptions are options for ProjectsInterface.UpdateConfigurationServiceProject().
+type ProjectsUpdateConfigurationServiceProjectOptions struct{}
+
+type ProjectsInterface interface {
+	// CreateProject creates a new project.
+	CreateProject(ctx context.Context, project models.Project, opts ProjectsCreateProjectOptions) (*models.EventContext, *models.Error)
 
 	// DeleteProject deletes a project.
-	DeleteProject(project models.Project) (*models.EventContext, *models.Error)
-
-	// DeleteProjectWithContext deletes a project.
-	DeleteProjectWithContext(ctx context.Context, project models.Project) (*models.EventContext, *models.Error)
+	DeleteProject(ctx context.Context, project models.Project, opts ProjectsDeleteProjectOptions) (*models.EventContext, *models.Error)
 
 	// GetProject returns a project.
-	GetProject(project models.Project) (*models.Project, *models.Error)
-
-	// GetProjectWithContext returns a project.
-	GetProjectWithContext(ctx context.Context, project models.Project) (*models.Project, *models.Error)
+	GetProject(ctx context.Context, project models.Project, opts ProjectsGetProjectOptions) (*models.Project, *models.Error)
 
 	// GetAllProjects returns all projects.
-	GetAllProjects() ([]*models.Project, error)
-
-	// GetAllProjectsWithContext returns all projects.
-	GetAllProjectsWithContext(ctx context.Context) ([]*models.Project, error)
+	GetAllProjects(ctx context.Context, opts ProjectsGetAllProjectsOptions) ([]*models.Project, error)
 
 	// UpdateConfigurationServiceProject updates a configuration service project.
-	UpdateConfigurationServiceProject(project models.Project) (*models.EventContext, *models.Error)
-
-	// UpdateConfigurationServiceProjectWithContext updates a configuration service project.
-	UpdateConfigurationServiceProjectWithContext(ctx context.Context, project models.Project) (*models.EventContext, *models.Error)
+	UpdateConfigurationServiceProject(ctx context.Context, project models.Project, opts ProjectsUpdateConfigurationServiceProjectOptions) (*models.EventContext, *models.Error)
 }
 
 // ProjectHandler handles projects
@@ -113,12 +113,7 @@ func (p *ProjectHandler) getHTTPClient() *http.Client {
 }
 
 // CreateProject creates a new project.
-func (p *ProjectHandler) CreateProject(project models.Project) (*models.EventContext, *models.Error) {
-	return p.CreateProjectWithContext(context.TODO(), project)
-}
-
-// CreateProjectWithContext creates a new project.
-func (p *ProjectHandler) CreateProjectWithContext(ctx context.Context, project models.Project) (*models.EventContext, *models.Error) {
+func (p *ProjectHandler) CreateProject(ctx context.Context, project models.Project, opts ProjectsCreateProjectOptions) (*models.EventContext, *models.Error) {
 	bodyStr, err := project.ToJSON()
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
@@ -127,22 +122,12 @@ func (p *ProjectHandler) CreateProjectWithContext(ctx context.Context, project m
 }
 
 // DeleteProject deletes a project.
-func (p *ProjectHandler) DeleteProject(project models.Project) (*models.EventContext, *models.Error) {
-	return p.DeleteProjectWithContext(context.TODO(), project)
-}
-
-// DeleteProjectWithContext deletes a project.
-func (p *ProjectHandler) DeleteProjectWithContext(ctx context.Context, project models.Project) (*models.EventContext, *models.Error) {
+func (p *ProjectHandler) DeleteProject(ctx context.Context, project models.Project, opts ProjectsDeleteProjectOptions) (*models.EventContext, *models.Error) {
 	return deleteWithEventContext(ctx, p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, p)
 }
 
 // GetProject returns a project.
-func (p *ProjectHandler) GetProject(project models.Project) (*models.Project, *models.Error) {
-	return p.GetProjectWithContext(context.TODO(), project)
-}
-
-// GetProjectWithContext returns a project.
-func (p *ProjectHandler) GetProjectWithContext(ctx context.Context, project models.Project) (*models.Project, *models.Error) {
+func (p *ProjectHandler) GetProject(ctx context.Context, project models.Project, opts ProjectsGetProjectOptions) (*models.Project, *models.Error) {
 	body, mErr := getAndExpectSuccess(ctx, p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, p)
 	if mErr != nil {
 		return nil, mErr
@@ -157,12 +142,7 @@ func (p *ProjectHandler) GetProjectWithContext(ctx context.Context, project mode
 }
 
 // GetAllProjects returns all projects.
-func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
-	return p.GetAllProjectsWithContext(context.TODO())
-}
-
-// GetAllProjectsWithContext returns all projects.
-func (p *ProjectHandler) GetAllProjectsWithContext(ctx context.Context) ([]*models.Project, error) {
+func (p *ProjectHandler) GetAllProjects(ctx context.Context, opts ProjectsGetAllProjectsOptions) ([]*models.Project, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	projects := []*models.Project{}
 
@@ -200,12 +180,7 @@ func (p *ProjectHandler) GetAllProjectsWithContext(ctx context.Context) ([]*mode
 }
 
 // UpdateConfigurationServiceProject updates a configuration service project.
-func (p *ProjectHandler) UpdateConfigurationServiceProject(project models.Project) (*models.EventContext, *models.Error) {
-	return p.UpdateConfigurationServiceProjectWithContext(context.TODO(), project)
-}
-
-// UpdateConfigurationServiceProjectWithContext updates a configuration service project.
-func (p *ProjectHandler) UpdateConfigurationServiceProjectWithContext(ctx context.Context, project models.Project) (*models.EventContext, *models.Error) {
+func (p *ProjectHandler) UpdateConfigurationServiceProject(ctx context.Context, project models.Project, opts ProjectsUpdateConfigurationServiceProjectOptions) (*models.EventContext, *models.Error) {
 	bodyStr, err := project.ToJSON()
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
