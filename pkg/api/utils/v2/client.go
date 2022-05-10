@@ -20,7 +20,7 @@ type KeptnInterface interface {
 	ServicesV1() ServicesInterface
 	StagesV1() StagesV1Interface
 	UniformV1() UniformV1Interface
-	ShipyardControlV1() ShipyardControlV1Interface
+	ShipyardControlV1() ShipyardControlInterface
 }
 
 // APISet contains the API utils for all Keptn APIs
@@ -100,7 +100,7 @@ func (c *APISet) UniformV1() UniformV1Interface {
 }
 
 // ShipyardControlV1 retrieves the ShipyardControllerHandler
-func (c *APISet) ShipyardControlV1() ShipyardControlV1Interface {
+func (c *APISet) ShipyardControlV1() ShipyardControlInterface {
 	return c.shipyardControlHandler
 }
 

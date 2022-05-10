@@ -13,12 +13,12 @@ import (
 
 const shipyardControllerBaseURL = "controlPlane"
 
-type ShipyardControlV1Interface interface {
-	// GetOpenTriggeredEvents returns all open triggered events.
-	GetOpenTriggeredEvents(filter EventFilter) ([]*models.KeptnContextExtendedCE, error)
+// ShipyardControlGetOpenTriggeredEventsOptions are options for ShipyardControlInterface.GetOpenTriggeredEvents().
+type ShipyardControlGetOpenTriggeredEventsOptions struct{}
 
-	// GetOpenTriggeredEventsWithContext returns all open triggered events.
-	GetOpenTriggeredEventsWithContext(ctx context.Context, filter EventFilter) ([]*models.KeptnContextExtendedCE, error)
+type ShipyardControlInterface interface {
+	// GetOpenTriggeredEvents returns all open triggered events.
+	GetOpenTriggeredEvents(ctx context.Context, filter EventFilter, opts ShipyardControlGetOpenTriggeredEventsOptions) ([]*models.KeptnContextExtendedCE, error)
 }
 
 // ShipyardControllerHandler handles services
@@ -91,12 +91,7 @@ func (s *ShipyardControllerHandler) getHTTPClient() *http.Client {
 }
 
 // GetOpenTriggeredEvents returns all open triggered events.
-func (s *ShipyardControllerHandler) GetOpenTriggeredEvents(filter EventFilter) ([]*models.KeptnContextExtendedCE, error) {
-	return s.GetOpenTriggeredEventsWithContext(context.TODO(), filter)
-}
-
-// GetOpenTriggeredEventsWithContext returns all open triggered events.
-func (s *ShipyardControllerHandler) GetOpenTriggeredEventsWithContext(ctx context.Context, filter EventFilter) ([]*models.KeptnContextExtendedCE, error) {
+func (s *ShipyardControllerHandler) GetOpenTriggeredEvents(ctx context.Context, filter EventFilter, opts ShipyardControlGetOpenTriggeredEventsOptions) ([]*models.KeptnContextExtendedCE, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
 	events := []*models.KeptnContextExtendedCE{}
