@@ -13,18 +13,18 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 )
 
-type EventsV1Interface interface {
-	// GetEvents returns all events matching the properties in the passed filter object.
-	GetEvents(filter *EventFilter) ([]*models.KeptnContextExtendedCE, *models.Error)
+// EventsGetEventsOptions are options for EventsInterface.GetEvents().
+type EventsGetEventsOptions struct{}
 
-	// GetEventsWithContext returns all events matching the properties in the passed filter object.
-	GetEventsWithContext(ctx context.Context, filter *EventFilter) ([]*models.KeptnContextExtendedCE, *models.Error)
+// EventsGetEventsWithRetryOptions are options for EventsInterface.GetEventsWithRetry().
+type EventsGetEventsWithRetryOptions struct{}
+
+type EventsInterface interface {
+	// GetEvents returns all events matching the properties in the passed filter object.
+	GetEvents(ctx context.Context, filter *EventFilter, opts EventsGetEventsOptions) ([]*models.KeptnContextExtendedCE, *models.Error)
 
 	// GetEventsWithRetry tries to retrieve events matching the passed filter.
-	GetEventsWithRetry(filter *EventFilter, maxRetries int, retrySleepTime time.Duration) ([]*models.KeptnContextExtendedCE, error)
-
-	// GetEventsWithRetryWithContext tries to retrieve events matching the passed filter.
-	GetEventsWithRetryWithContext(ctx context.Context, filter *EventFilter, maxRetries int, retrySleepTime time.Duration) ([]*models.KeptnContextExtendedCE, error)
+	GetEventsWithRetry(ctx context.Context, filter *EventFilter, maxRetries int, retrySleepTime time.Duration, opts EventsGetEventsWithRetryOptions) ([]*models.KeptnContextExtendedCE, error)
 }
 
 // EventHandler handles services
@@ -111,12 +111,7 @@ func (e *EventHandler) getHTTPClient() *http.Client {
 }
 
 // GetEvents returns all events matching the properties in the passed filter object.
-func (e *EventHandler) GetEvents(filter *EventFilter) ([]*models.KeptnContextExtendedCE, *models.Error) {
-	return e.GetEventsWithContext(context.TODO(), filter)
-}
-
-// GetEventsWithContext returns all events matching the properties in the passed filter object.
-func (e *EventHandler) GetEventsWithContext(ctx context.Context, filter *EventFilter) ([]*models.KeptnContextExtendedCE, *models.Error) {
+func (e *EventHandler) GetEvents(ctx context.Context, filter *EventFilter, opts EventsGetEventsOptions) ([]*models.KeptnContextExtendedCE, *models.Error) {
 	u, err := url.Parse(e.Scheme + "://" + e.getBaseURL() + "/event?")
 	if err != nil {
 		log.Fatal("error parsing url")
@@ -151,18 +146,13 @@ func (e *EventHandler) GetEventsWithContext(ctx context.Context, filter *EventFi
 
 	u.RawQuery = query.Encode()
 
-	return e.getEventsWithContext(ctx, u.String(), filter.NumberOfPages)
+	return e.getEvents(ctx, u.String(), filter.NumberOfPages)
 }
 
 // GetEventsWithRetry tries to retrieve events matching the passed filter.
-func (e *EventHandler) GetEventsWithRetry(filter *EventFilter, maxRetries int, retrySleepTime time.Duration) ([]*models.KeptnContextExtendedCE, error) {
-	return e.GetEventsWithRetryWithContext(context.TODO(), filter, maxRetries, retrySleepTime)
-}
-
-// GetEventsWithRetryWithContext tries to retrieve events matching the passed filter.
-func (e *EventHandler) GetEventsWithRetryWithContext(ctx context.Context, filter *EventFilter, maxRetries int, retrySleepTime time.Duration) ([]*models.KeptnContextExtendedCE, error) {
+func (e *EventHandler) GetEventsWithRetry(ctx context.Context, filter *EventFilter, maxRetries int, retrySleepTime time.Duration, opts EventsGetEventsWithRetryOptions) ([]*models.KeptnContextExtendedCE, error) {
 	for i := 0; i < maxRetries; i = i + 1 {
-		events, errObj := e.GetEventsWithContext(ctx, filter)
+		events, errObj := e.GetEvents(ctx, filter, EventsGetEventsOptions{})
 		if errObj == nil && len(events) > 0 {
 			return events, nil
 		}
@@ -171,7 +161,7 @@ func (e *EventHandler) GetEventsWithRetryWithContext(ctx context.Context, filter
 	return nil, fmt.Errorf("could not find matching event after %d x %s", maxRetries, retrySleepTime.String())
 }
 
-func (e *EventHandler) getEventsWithContext(ctx context.Context, uri string, numberOfPages int) ([]*models.KeptnContextExtendedCE, *models.Error) {
+func (e *EventHandler) getEvents(ctx context.Context, uri string, numberOfPages int) ([]*models.KeptnContextExtendedCE, *models.Error) {
 	events := []*models.KeptnContextExtendedCE{}
 	nextPageKey := ""
 
