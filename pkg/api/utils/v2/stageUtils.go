@@ -11,18 +11,19 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
-type StagesV1Interface interface {
-	// CreateStage creates a new stage with the provided name.
-	CreateStage(project string, stageName string) (*models.EventContext, *models.Error)
+// StagesCreateStageOptions are options for StagesInterface.CreateStage().
+type StagesCreateStageOptions struct{}
 
-	// CreateStageWithContext creates a new stage with the provided name.
-	CreateStageWithContext(ctx context.Context, project string, stageName string) (*models.EventContext, *models.Error)
+// StagesGetAllStagesOptions are options for StagesInterface.GetAllStages().
+type StagesGetAllStagesOptions struct{}
+
+type StagesInterface interface {
+
+	// CreateStage creates a new stage with the provided name.
+	CreateStage(ctx context.Context, project string, stageName string, opts StagesCreateStageOptions) (*models.EventContext, *models.Error)
 
 	// GetAllStages returns a list of all stages.
-	GetAllStages(project string) ([]*models.Stage, error)
-
-	// GetAllStagesWithContext returns a list of all stages.
-	GetAllStagesWithContext(ctx context.Context, project string) ([]*models.Stage, error)
+	GetAllStages(ctx context.Context, project string, opts StagesGetAllStagesOptions) ([]*models.Stage, error)
 }
 
 // StageHandler handles stages
@@ -95,12 +96,7 @@ func (s *StageHandler) getHTTPClient() *http.Client {
 }
 
 // CreateStage creates a new stage with the provided name.
-func (s *StageHandler) CreateStage(project string, stageName string) (*models.EventContext, *models.Error) {
-	return s.CreateStageWithContext(context.TODO(), project, stageName)
-}
-
-// CreateStageWithContext creates a new stage with the provided name.
-func (s *StageHandler) CreateStageWithContext(ctx context.Context, project string, stageName string) (*models.EventContext, *models.Error) {
+func (s *StageHandler) CreateStage(ctx context.Context, project string, stageName string, opts StagesCreateStageOptions) (*models.EventContext, *models.Error) {
 	stage := models.Stage{StageName: stageName}
 	body, err := stage.ToJSON()
 	if err != nil {
@@ -110,12 +106,7 @@ func (s *StageHandler) CreateStageWithContext(ctx context.Context, project strin
 }
 
 // GetAllStages returns a list of all stages.
-func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
-	return s.GetAllStagesWithContext(context.TODO(), project)
-}
-
-// GetAllStagesWithContext returns a list of all stages.
-func (s *StageHandler) GetAllStagesWithContext(ctx context.Context, project string) ([]*models.Stage, error) {
+func (s *StageHandler) GetAllStages(ctx context.Context, project string, opts StagesGetAllStagesOptions) ([]*models.Stage, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	stages := []*models.Stage{}
 

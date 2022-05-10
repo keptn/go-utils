@@ -18,7 +18,7 @@ type KeptnInterface interface {
 	SecretsV1() SecretsInterface
 	SequencesV1() SequencesInterface
 	ServicesV1() ServicesInterface
-	StagesV1() StagesV1Interface
+	StagesV1() StagesInterface
 	UniformV1() UniformV1Interface
 	ShipyardControlV1() ShipyardControlInterface
 }
@@ -90,7 +90,7 @@ func (c *APISet) ServicesV1() ServicesInterface {
 }
 
 // StagesV1 retrieves the StageHandler
-func (c *APISet) StagesV1() StagesV1Interface {
+func (c *APISet) StagesV1() StagesInterface {
 	return c.stageHandler
 }
 
