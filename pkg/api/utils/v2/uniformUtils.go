@@ -16,17 +16,27 @@ import (
 const uniformRegistrationBaseURL = "uniform/registration"
 const v1UniformPath = "/v1/uniform/registration"
 
-type UniformV1Interface interface {
-	Ping(integrationID string) (*models.Integration, error)
-	PingWithContext(ctx context.Context, integrationID string) (*models.Integration, error)
-	RegisterIntegration(integration models.Integration) (string, error)
-	RegisterIntegrationWithContext(ctx context.Context, integration models.Integration) (string, error)
-	CreateSubscription(integrationID string, subscription models.EventSubscription) (string, error)
-	CreateSubscriptionWithContext(ctx context.Context, integrationID string, subscription models.EventSubscription) (string, error)
-	UnregisterIntegration(integrationID string) error
-	UnregisterIntegrationWithContext(ctx context.Context, integrationID string) error
-	GetRegistrations() ([]*models.Integration, error)
-	GetRegistrationsWithContext(ctx context.Context) ([]*models.Integration, error)
+// UniformPingOptions are options for UniformInterface.Ping().
+type UniformPingOptions struct{}
+
+// UniformRegisterIntegrationOptions are options for UniformInterface.RegisterIntegration().
+type UniformRegisterIntegrationOptions struct{}
+
+// UniformCreateSubscriptionOptions are options for UniformInterface.CreateSubscription().
+type UniformCreateSubscriptionOptions struct{}
+
+// UniformUnregisterIntegrationOptions are options for UniformInterface.UnregisterIntegration().
+type UniformUnregisterIntegrationOptions struct{}
+
+// UniformGetRegistrationsOptions are options for UniformInterface.GetRegistrations().
+type UniformGetRegistrationsOptions struct{}
+
+type UniformInterface interface {
+	Ping(ctx context.Context, integrationID string, opts UniformPingOptions) (*models.Integration, error)
+	RegisterIntegration(ctx context.Context, integration models.Integration, opts UniformRegisterIntegrationOptions) (string, error)
+	CreateSubscription(ctx context.Context, integrationID string, subscription models.EventSubscription, opts UniformCreateSubscriptionOptions) (string, error)
+	UnregisterIntegration(ctx context.Context, integrationID string, opts UniformUnregisterIntegrationOptions) error
+	GetRegistrations(ctx context.Context, opts UniformGetRegistrationsOptions) ([]*models.Integration, error)
 }
 
 type UniformHandler struct {
@@ -91,11 +101,7 @@ func (u *UniformHandler) getHTTPClient() *http.Client {
 	return u.HTTPClient
 }
 
-func (u *UniformHandler) Ping(integrationID string) (*models.Integration, error) {
-	return u.PingWithContext(context.TODO(), integrationID)
-}
-
-func (u *UniformHandler) PingWithContext(ctx context.Context, integrationID string) (*models.Integration, error) {
+func (u *UniformHandler) Ping(ctx context.Context, integrationID string, opts UniformPingOptions) (*models.Integration, error) {
 	if integrationID == "" {
 		return nil, errors.New("could not ping an invalid IntegrationID")
 	}
@@ -113,11 +119,7 @@ func (u *UniformHandler) PingWithContext(ctx context.Context, integrationID stri
 	return response, nil
 }
 
-func (u *UniformHandler) RegisterIntegration(integration models.Integration) (string, error) {
-	return u.RegisterIntegrationWithContext(context.TODO(), integration)
-}
-
-func (u *UniformHandler) RegisterIntegrationWithContext(ctx context.Context, integration models.Integration) (string, error) {
+func (u *UniformHandler) RegisterIntegration(ctx context.Context, integration models.Integration, opts UniformRegisterIntegrationOptions) (string, error) {
 	bodyStr, err := integration.ToJSON()
 	if err != nil {
 		return "", err
@@ -136,11 +138,7 @@ func (u *UniformHandler) RegisterIntegrationWithContext(ctx context.Context, int
 	return registerIntegrationResponse.ID, nil
 }
 
-func (u *UniformHandler) CreateSubscription(integrationID string, subscription models.EventSubscription) (string, error) {
-	return u.CreateSubscriptionWithContext(context.TODO(), integrationID, subscription)
-}
-
-func (u *UniformHandler) CreateSubscriptionWithContext(ctx context.Context, integrationID string, subscription models.EventSubscription) (string, error) {
+func (u *UniformHandler) CreateSubscription(ctx context.Context, integrationID string, subscription models.EventSubscription, opts UniformCreateSubscriptionOptions) (string, error) {
 	bodyStr, err := subscription.ToJSON()
 	if err != nil {
 		return "", err
@@ -159,11 +157,7 @@ func (u *UniformHandler) CreateSubscriptionWithContext(ctx context.Context, inte
 	return createSubscriptionResponse.ID, nil
 }
 
-func (u *UniformHandler) UnregisterIntegration(integrationID string) error {
-	return u.UnregisterIntegrationWithContext(context.TODO(), integrationID)
-}
-
-func (u *UniformHandler) UnregisterIntegrationWithContext(ctx context.Context, integrationID string) error {
+func (u *UniformHandler) UnregisterIntegration(ctx context.Context, integrationID string, opts UniformUnregisterIntegrationOptions) error {
 	_, err := delete(ctx, u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID, u)
 	if err != nil {
 		return fmt.Errorf(err.GetMessage())
@@ -171,11 +165,7 @@ func (u *UniformHandler) UnregisterIntegrationWithContext(ctx context.Context, i
 	return nil
 }
 
-func (u *UniformHandler) GetRegistrations() ([]*models.Integration, error) {
-	return u.GetRegistrationsWithContext(context.TODO())
-}
-
-func (u *UniformHandler) GetRegistrationsWithContext(ctx context.Context) ([]*models.Integration, error) {
+func (u *UniformHandler) GetRegistrations(ctx context.Context, opts UniformGetRegistrationsOptions) ([]*models.Integration, error) {
 	url, err := url.Parse(u.Scheme + "://" + u.getBaseURL() + v1UniformPath)
 	if err != nil {
 		return nil, err

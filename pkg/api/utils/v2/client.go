@@ -19,7 +19,7 @@ type KeptnInterface interface {
 	SequencesV1() SequencesInterface
 	ServicesV1() ServicesInterface
 	StagesV1() StagesInterface
-	UniformV1() UniformV1Interface
+	UniformV1() UniformInterface
 	ShipyardControlV1() ShipyardControlInterface
 }
 
@@ -95,7 +95,7 @@ func (c *APISet) StagesV1() StagesInterface {
 }
 
 // UniformV1 retrieves the UniformHandler
-func (c *APISet) UniformV1() UniformV1Interface {
+func (c *APISet) UniformV1() UniformInterface {
 	return c.uniformHandler
 }
 
