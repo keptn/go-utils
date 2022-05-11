@@ -24,12 +24,12 @@ func TestRunHealthEndpoint(t *testing.T) {
 
 func TestRunHealthEndpoint_WithReadinessCondition(t *testing.T) {
 	ready := false
-	go RunHealthEndpoint("8080", WithReadinessConditionFunc(func() bool {
+	go RunHealthEndpoint("8080", WithPath("/ready"), WithReadinessConditionFunc(func() bool {
 		return ready
 	}))
 
 	require.Eventually(t, func() bool {
-		get, err := http.Get("http://localhost:8080/health")
+		get, err := http.Get("http://localhost:8080/ready")
 		if err != nil {
 			return false
 		}
@@ -42,7 +42,7 @@ func TestRunHealthEndpoint_WithReadinessCondition(t *testing.T) {
 	ready = true
 
 	require.Eventually(t, func() bool {
-		get, err := http.Get("http://localhost:8080/health")
+		get, err := http.Get("http://localhost:8080/ready")
 		if err != nil {
 			return false
 		}
