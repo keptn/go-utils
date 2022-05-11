@@ -77,6 +77,8 @@ func (h *healthHandler) healthCheck(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// RunHealthEndpoint starts an http server on the specified port and provides a simple HTTP Get endpoint that can be used for health checks
+// per default, the endpoint will be reachable under the path '/health'
 func RunHealthEndpoint(port string, opts ...HealthHandlerOption) {
 	h := newHealthHandler(opts...)
 	http.HandleFunc(h.path, h.healthCheck)
