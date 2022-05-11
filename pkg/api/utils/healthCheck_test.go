@@ -52,3 +52,18 @@ func TestRunHealthEndpoint_WithReadinessCondition(t *testing.T) {
 		return true
 	}, 2*time.Second, 50*time.Millisecond)
 }
+
+func TestRunHealthEndpointCustomPath(t *testing.T) {
+	go RunHealthEndpoint("8080", WithPath("/readiness"))
+
+	require.Eventually(t, func() bool {
+		get, err := http.Get("http://localhost:8080/readiness")
+		if err != nil {
+			return false
+		}
+		if get.StatusCode != http.StatusOK {
+			return false
+		}
+		return true
+	}, 2*time.Second, 50*time.Millisecond)
+}

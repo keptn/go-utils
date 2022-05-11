@@ -7,6 +7,8 @@ import (
 	"net/http"
 )
 
+const defaultHealthEndpointPath = "/health"
+
 type ReadinessConditionFunc func() bool
 
 type StatusBody struct {
@@ -26,12 +28,21 @@ func WithReadinessConditionFunc(rc ReadinessConditionFunc) HealthHandlerOption {
 	}
 }
 
+func WithPath(path string) HealthHandlerOption {
+	return func(h *healthHandler) {
+		h.path = path
+	}
+}
+
 type healthHandler struct {
 	readinessConditionFunc ReadinessConditionFunc
+	path                   string
 }
 
 func newHealthHandler(opts ...HealthHandlerOption) *healthHandler {
-	h := &healthHandler{}
+	h := &healthHandler{
+		path: defaultHealthEndpointPath,
+	}
 	for _, o := range opts {
 		o(h)
 	}
@@ -65,7 +76,7 @@ func (h *healthHandler) healthCheck(w http.ResponseWriter, r *http.Request) {
 
 func RunHealthEndpoint(port string, opts ...HealthHandlerOption) {
 	h := newHealthHandler(opts...)
-	http.HandleFunc("/health", h.healthCheck)
+	http.HandleFunc(h.path, h.healthCheck)
 	err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
 	if err != nil {
 		log.Println(err)
