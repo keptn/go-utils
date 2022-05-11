@@ -22,12 +22,15 @@ func (s *StatusBody) ToJSON() ([]byte, error) {
 
 type HealthHandlerOption func(h *healthHandler)
 
+// WithReadinessConditionFunc allows to specify a function that should determine if the endpoint should return an HTTP 200 (OK), or
+// a 412 (Precondition failed) response
 func WithReadinessConditionFunc(rc ReadinessConditionFunc) HealthHandlerOption {
 	return func(h *healthHandler) {
 		h.readinessConditionFunc = rc
 	}
 }
 
+// WithPath allows to specify the path under which the endpoint should be reachable
 func WithPath(path string) HealthHandlerOption {
 	return func(h *healthHandler) {
 		h.path = path
