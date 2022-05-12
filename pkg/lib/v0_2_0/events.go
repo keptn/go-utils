@@ -128,7 +128,7 @@ func (httpSender HTTPEventSender) Send(ctx context.Context, event cloudevents.Ev
 			return nil
 		}
 	}
-	return fmt.Errorf("could not send cloudevent after %d retries. Received the following result from the receiver: %w", httpSender.nrRetries, result)
+	return fmt.Errorf("could not send cloudevent after %d retries. Received result from the receiver: %w", httpSender.nrRetries, result)
 }
 
 // EventSender fakes the sending of CloudEvents
