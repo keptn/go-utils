@@ -64,35 +64,6 @@ func TestKeptn_SendCloudEventWithRetry(t *testing.T) {
 	require.Nil(t, err)
 }
 
-func TestKeptn_SendCloudEventWithRetryCallback(t *testing.T) {
-	failOnFirstTry := true
-	ts := httptest.NewServer(
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Add("Content-Type", "application/json")
-			if failOnFirstTry {
-				failOnFirstTry = false
-				w.WriteHeader(500)
-				w.Write([]byte(`{}`))
-				return
-			}
-			w.WriteHeader(200)
-			w.Write([]byte(`{}`))
-		}),
-	)
-	defer ts.Close()
-
-	callbackCalled := false
-	httpSender, _ := NewHTTPEventSender(ts.URL, WithRetryCallback(func() {
-		callbackCalled = true
-	}))
-
-	err := httpSender.Send(context.TODO(), getTestEvent())
-
-	require.Nil(t, err)
-
-	require.True(t, callbackCalled)
-}
-
 func TestKeptn_SendCloudEventWithOneRetry(t *testing.T) {
 	nrRequests := 0
 	ts := httptest.NewServer(
