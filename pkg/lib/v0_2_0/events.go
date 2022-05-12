@@ -49,12 +49,6 @@ func WithSendRetries(retries int) HTTPSenderOption {
 	}
 }
 
-func WithRetryCallback(cb func()) HTTPSenderOption {
-	return func(httpSender *HTTPEventSender) {
-		httpSender.retryCallback = cb
-	}
-}
-
 // HTTPEventSender sends CloudEvents via HTTP
 type HTTPEventSender struct {
 	// EventsEndpoint is the http endpoint the events are sent to
@@ -62,8 +56,7 @@ type HTTPEventSender struct {
 	// Client is an implementation of the cloudevents.Client interface
 	Client cloudevents.Client
 	// nrRetries is the number of retries that are attempted if the endpoint an event is forwarded to returns an http code outside the 2xx range
-	nrRetries     int
-	retryCallback func()
+	nrRetries int
 }
 
 // NewHTTPEventSender creates a new HTTPSender
@@ -111,9 +104,6 @@ func (httpSender HTTPEventSender) Send(ctx context.Context, event cloudevents.Ev
 	ctx = cloudevents.WithEncodingStructured(ctx)
 	var result protocol.Result
 	for i := 0; i <= httpSender.nrRetries; i++ {
-		if i > 0 && httpSender.retryCallback != nil {
-			httpSender.retryCallback()
-		}
 		result = httpSender.Client.Send(ctx, event)
 		httpResult, ok := result.(*httpprotocol.Result)
 		switch {
