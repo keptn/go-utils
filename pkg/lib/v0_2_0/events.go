@@ -41,16 +41,26 @@ const keptnSpecVersionCEExtension = "shkeptnspecversion"
 const triggeredIDCEExtension = "triggeredid"
 const keptnGitCommitIDCEExtension = "gitcommitid"
 
+type HTTPSenderOption func(httpSender *HTTPEventSender)
+
+func WithSendRetries(retries int) HTTPSenderOption {
+	return func(httpSender *HTTPEventSender) {
+		httpSender.nrRetries = retries
+	}
+}
+
 // HTTPEventSender sends CloudEvents via HTTP
 type HTTPEventSender struct {
 	// EventsEndpoint is the http endpoint the events are sent to
 	EventsEndpoint string
 	// Client is an implementation of the cloudevents.Client interface
 	Client cloudevents.Client
+	// nrRetries is the number of retries that are attempted if the endpoint an event is forwarded to returns an http code outside the 2xx range
+	nrRetries int
 }
 
 // NewHTTPEventSender creates a new HTTPSender
-func NewHTTPEventSender(endpoint string) (*HTTPEventSender, error) {
+func NewHTTPEventSender(endpoint string, opts ...HTTPSenderOption) (*HTTPEventSender, error) {
 	if endpoint == "" {
 		endpoint = DefaultHTTPEventEndpoint
 	}
@@ -75,6 +85,11 @@ func NewHTTPEventSender(endpoint string) (*HTTPEventSender, error) {
 	httpSender := &HTTPEventSender{
 		EventsEndpoint: endpoint,
 		Client:         c,
+		nrRetries:      MAX_SEND_RETRIES,
+	}
+
+	for _, o := range opts {
+		o(httpSender)
 	}
 	return httpSender, nil
 }
@@ -88,7 +103,7 @@ func (httpSender HTTPEventSender) Send(ctx context.Context, event cloudevents.Ev
 	ctx = cloudevents.ContextWithTarget(ctx, httpSender.EventsEndpoint)
 	ctx = cloudevents.WithEncodingStructured(ctx)
 	var result protocol.Result
-	for i := 0; i <= MAX_SEND_RETRIES; i++ {
+	for i := 0; i <= httpSender.nrRetries; i++ {
 		result = httpSender.Client.Send(ctx, event)
 		httpResult, ok := result.(*httpprotocol.Result)
 		switch {
@@ -103,7 +118,7 @@ func (httpSender HTTPEventSender) Send(ctx context.Context, event cloudevents.Ev
 			return nil
 		}
 	}
-	return errors.New("Failed to send cloudevent: " + result.Error())
+	return fmt.Errorf("could not send cloudevent after %d retries. Received the following result from the receiver: %w", httpSender.nrRetries, result)
 }
 
 // EventSender fakes the sending of CloudEvents
