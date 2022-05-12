@@ -43,6 +43,7 @@ const keptnGitCommitIDCEExtension = "gitcommitid"
 
 type HTTPSenderOption func(httpSender *HTTPEventSender)
 
+// WithSendRetries allows to specify the number of retries that are performed if the receiver of an event returns a HTTP error code
 func WithSendRetries(retries int) HTTPSenderOption {
 	return func(httpSender *HTTPEventSender) {
 		httpSender.nrRetries = retries
