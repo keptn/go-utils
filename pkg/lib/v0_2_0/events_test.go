@@ -1,6 +1,7 @@
 package v0_2_0
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -48,6 +49,7 @@ func TestKeptn_SendCloudEventWithRetry(t *testing.T) {
 				failOnFirstTry = false
 				w.WriteHeader(500)
 				w.Write([]byte(`{}`))
+				return
 			}
 			w.WriteHeader(200)
 			w.Write([]byte(`{}`))
@@ -55,42 +57,45 @@ func TestKeptn_SendCloudEventWithRetry(t *testing.T) {
 	)
 	defer ts.Close()
 
-	type args struct {
-		event cloudevents.Event
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
-	}{
-		{
-			name:   "",
-			fields: getKeptnFields(ts),
-			args: args{
-				event: getTestEvent(),
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			httpSender, _ := NewHTTPEventSender(ts.URL)
-			k := &Keptn{
-				KeptnBase: keptn.KeptnBase{
-					KeptnContext:       tt.fields.KeptnContext,
-					Event:              tt.fields.KeptnBase,
-					EventSender:        httpSender,
-					UseLocalFileSystem: tt.fields.useLocalFileSystem,
-					ResourceHandler:    tt.fields.resourceHandler,
-					EventHandler:       tt.fields.eventHandler,
-				},
+	httpSender, _ := NewHTTPEventSender(ts.URL)
+
+	err := httpSender.Send(context.TODO(), getTestEvent())
+
+	require.Nil(t, err)
+}
+
+func TestKeptn_SendCloudEventWithOneRetry(t *testing.T) {
+	nrRequests := 0
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Content-Type", "application/json")
+			if nrRequests < 2 {
+				nrRequests++
+				w.WriteHeader(500)
+				w.Write([]byte(`{}`))
+				return
 			}
-			if err := k.SendCloudEvent(tt.args.event); (err != nil) != tt.wantErr {
-				t.Errorf("SendCloudEvent() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
+			w.WriteHeader(200)
+			w.Write([]byte(`{}`))
+		}),
+	)
+	defer ts.Close()
+
+	httpSender, _ := NewHTTPEventSender(ts.URL, WithSendRetries(1))
+
+	err := httpSender.Send(context.TODO(), getTestEvent())
+
+	require.NotNil(t, err)
+
+	// reset nrRequests
+	nrRequests = 0
+
+	//initialize a new sender with 2 retries
+	httpSender, _ = NewHTTPEventSender(ts.URL, WithSendRetries(5))
+
+	err = httpSender.Send(context.TODO(), getTestEvent())
+
+	require.Nil(t, err)
 }
 
 func getTestEvent() cloudevents.Event {
