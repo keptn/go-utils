@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.15.1](https://github.com/keptn/go-utils/compare/v0.15.0...v0.15.1) (2022-05-23)
+
+
+### Features
+
+* Added option for configuring number of retries for http event sender, as well as additional logging ([#465](https://github.com/keptn/keptn/issues/465)) ([#467](https://github.com/keptn/keptn/issues/467)) ([293e3a3](https://github.com/keptn/go-utils/commit/293e3a33b84926d73fb9a8e682ca6f6835639c78))
+
 ## [0.15.0](https://github.com/keptn/go-utils/compare/v0.14.0...v0.15.0) (2022-05-06)
 
 
