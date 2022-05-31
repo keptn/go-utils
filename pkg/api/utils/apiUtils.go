@@ -152,7 +152,17 @@ func (a *APIHandler) DeleteService(project, service string) (*models.DeleteServi
 
 // GetMetadata retrieve keptn MetaData information
 func (a *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
-	req, err := http.NewRequest("GET", a.Scheme+"://"+strings.TrimSuffix(a.getBaseURL(), "/"+shipyardControllerBaseURL)+v1MetadataPath, nil)
+	// the endpoint is not hosted by shipyard controller
+	// so we eventually remove the path suffix
+	baseURL := strings.TrimSuffix(a.getBaseURL(), "/"+shipyardControllerBaseURL)
+
+	// the correct path suffix for this endpoint is /api
+	// so we eventually add the it to the baseURL
+	if !strings.HasSuffix(baseURL, "api") {
+		baseURL += "/api"
+	}
+
+	req, err := http.NewRequest("GET", a.Scheme+"://"+strings.TrimSuffix(baseURL, "/"+shipyardControllerBaseURL)+v1MetadataPath, nil)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
