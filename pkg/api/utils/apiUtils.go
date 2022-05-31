@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
 )
 
 const v1EventPath = "/v1/event"
@@ -37,58 +38,9 @@ type APIV1Interface interface {
 	GetMetadata() (*models.Metadata, *models.Error)
 }
 
-// APIV2SendEventOptions are options for APIV2Interface.SendEvent().
-type APIV2SendEventOptions struct{}
-
-// APIV2TriggerEvaluationOptions are options for APIV2Interface.TriggerEvaluation().
-type APIV2TriggerEvaluationOptions struct{}
-
-// APIV2CreateProjectOptions are options for APIV2Interface.CreateProject().
-type APIV2CreateProjectOptions struct{}
-
-// APIV2UpdateProjectOptions are options for APIV2Interface.UpdateProject().
-type APIV2UpdateProjectOptions struct{}
-
-// APIV2DeleteProjectOptions are options for APIV2Interface.DeleteProject().
-type APIV2DeleteProjectOptions struct{}
-
-// APIV2CreateServiceOptions are options for APIV2Interface.CreateService().
-type APIV2CreateServiceOptions struct{}
-
-// APIV2DeleteServiceOptions are options for APIV2Interface.DeleteService().
-type APIV2DeleteServiceOptions struct{}
-
-// APIV2GetMetadataOptions are options for APIV2Interface.GetMetadata().
-type APIV2GetMetadataOptions struct{}
-
-type APIV2Interface interface {
-	// SendEventWithContext sends an event to Keptn.
-	SendEventWithContext(ctx context.Context, event models.KeptnContextExtendedCE, opts APIV2SendEventOptions) (*models.EventContext, *models.Error)
-
-	// TriggerEvaluationWithContext triggers a new evaluation.
-	TriggerEvaluationWithContext(ctx context.Context, project string, stage string, service string, evaluation models.Evaluation, opts APIV2TriggerEvaluationOptions) (*models.EventContext, *models.Error)
-
-	// CreateProjectWithContext creates a new project.
-	CreateProjectWithContext(ctx context.Context, project models.CreateProject, opts APIV2CreateProjectOptions) (string, *models.Error)
-
-	// UpdateProjectWithContext updates a project.
-	UpdateProjectWithContext(ctx context.Context, project models.CreateProject, opts APIV2UpdateProjectOptions) (string, *models.Error)
-
-	// DeleteProjectWithContext deletes a project.
-	DeleteProjectWithContext(ctx context.Context, project models.Project, opts APIV2DeleteProjectOptions) (*models.DeleteProjectResponse, *models.Error)
-
-	// CreateServiceWithContext creates a new service.
-	CreateServiceWithContext(ctx context.Context, project string, service models.CreateService, opts APIV2CreateServiceOptions) (string, *models.Error)
-
-	// DeleteServiceWithContext deletes a service.
-	DeleteServiceWithContext(ctx context.Context, project string, service string, opts APIV2DeleteServiceOptions) (*models.DeleteServiceResponse, *models.Error)
-
-	// GetMetadataWithContext retrieves Keptn metadata information.
-	GetMetadataWithContext(ctx context.Context, opts APIV2GetMetadataOptions) (*models.Metadata, *models.Error)
-}
-
 // APIHandler handles projects
 type APIHandler struct {
+	apiHandler v2.APIHandler
 	BaseURL    string
 	AuthToken  string
 	AuthHeader string
@@ -119,6 +71,14 @@ func createAuthenticatedAPIHandler(baseURL string, authToken string, authHeader 
 		AuthToken:  authToken,
 		HTTPClient: httpClient,
 		Scheme:     scheme,
+
+		apiHandler: v2.APIHandler{
+			BaseURL:    baseURL,
+			AuthHeader: authHeader,
+			AuthToken:  authToken,
+			HTTPClient: httpClient,
+			Scheme:     scheme,
+		},
 	}
 }
 
@@ -140,150 +100,40 @@ func (a *APIHandler) getHTTPClient() *http.Client {
 
 // SendEvent sends an event to Keptn.
 func (a *APIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.EventContext, *models.Error) {
-	return a.SendEventWithContext(context.TODO(), event, APIV2SendEventOptions{})
-}
-
-// SendEventWithContext sends an event to Keptn.
-func (a *APIHandler) SendEventWithContext(ctx context.Context, event models.KeptnContextExtendedCE, opts APIV2SendEventOptions) (*models.EventContext, *models.Error) {
-	bodyStr, err := event.ToJSON()
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
-	}
-
-	baseURL := a.getBaseURL()
-	if strings.HasSuffix(baseURL, "/"+shipyardControllerBaseURL) {
-		baseURL = strings.TrimSuffix(a.getBaseURL(), "/"+shipyardControllerBaseURL)
-		baseURL += "/api"
-	}
-
-	return postWithEventContext(ctx, a.Scheme+"://"+baseURL+v1EventPath, bodyStr, a)
+	return a.apiHandler.SendEvent(context.TODO(), event, v2.APISendEventOptions{})
 }
 
 // TriggerEvaluation triggers a new evaluation.
 func (a *APIHandler) TriggerEvaluation(project, stage, service string, evaluation models.Evaluation) (*models.EventContext, *models.Error) {
-	return a.TriggerEvaluationWithContext(context.TODO(), project, stage, service, evaluation, APIV2TriggerEvaluationOptions{})
-}
-
-// TriggerEvaluationWithContext triggers a new evaluation.
-func (a *APIHandler) TriggerEvaluationWithContext(ctx context.Context, project, stage, service string, evaluation models.Evaluation, opts APIV2TriggerEvaluationOptions) (*models.EventContext, *models.Error) {
-	bodyStr, err := evaluation.ToJSON()
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
-	}
-	return postWithEventContext(ctx, a.Scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+service+"/evaluation", bodyStr, a)
+	return a.apiHandler.TriggerEvaluation(context.TODO(), project, stage, service, evaluation, v2.APITriggerEvaluationOptions{})
 }
 
 // CreateProject creates a new project.
 func (a *APIHandler) CreateProject(project models.CreateProject) (string, *models.Error) {
-	return a.CreateProjectWithContext(context.TODO(), project, APIV2CreateProjectOptions{})
-}
-
-// CreateProjectWithContext creates a new project.
-func (a *APIHandler) CreateProjectWithContext(ctx context.Context, project models.CreateProject, opts APIV2CreateProjectOptions) (string, *models.Error) {
-
-	bodyStr, err := project.ToJSON()
-	if err != nil {
-		return "", buildErrorResponse(err.Error())
-	}
-	return post(ctx, a.Scheme+"://"+a.getBaseURL()+v1ProjectPath, bodyStr, a)
+	return a.apiHandler.CreateProject(context.TODO(), project, v2.APICreateProjectOptions{})
 }
 
 // UpdateProject updates a project.
 func (a *APIHandler) UpdateProject(project models.CreateProject) (string, *models.Error) {
-	return a.UpdateProjectWithContext(context.TODO(), project, APIV2UpdateProjectOptions{})
-}
-
-// UpdateProjectWithContext updates a project.
-func (a *APIHandler) UpdateProjectWithContext(ctx context.Context, project models.CreateProject, opts APIV2UpdateProjectOptions) (string, *models.Error) {
-	bodyStr, err := project.ToJSON()
-	if err != nil {
-		return "", buildErrorResponse(err.Error())
-	}
-	return put(ctx, a.Scheme+"://"+a.getBaseURL()+v1ProjectPath, bodyStr, a)
+	return a.apiHandler.UpdateProject(context.TODO(), project, v2.APIUpdateProjectOptions{})
 }
 
 // DeleteProject deletes a project.
 func (a *APIHandler) DeleteProject(project models.Project) (*models.DeleteProjectResponse, *models.Error) {
-	return a.DeleteProjectWithContext(context.TODO(), project, APIV2DeleteProjectOptions{})
-}
-
-// DeleteProjectWithContext deletes a project.
-func (a *APIHandler) DeleteProjectWithContext(ctx context.Context, project models.Project, opts APIV2DeleteProjectOptions) (*models.DeleteProjectResponse, *models.Error) {
-	resp, err := delete(ctx, a.Scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, a)
-	if err != nil {
-		return nil, err
-	}
-
-	deletePrjResponse := &models.DeleteProjectResponse{}
-	if err2 := deletePrjResponse.FromJSON([]byte(resp)); err2 != nil {
-		msg := "Could not decode DeleteProjectResponse: " + err2.Error()
-		return nil, &models.Error{
-			Message: &msg,
-		}
-	}
-	return deletePrjResponse, nil
+	return a.apiHandler.DeleteProject(context.TODO(), project, v2.APIDeleteProjectOptions{})
 }
 
 // CreateService creates a new service.
 func (a *APIHandler) CreateService(project string, service models.CreateService) (string, *models.Error) {
-	return a.CreateServiceWithContext(context.TODO(), project, service, APIV2CreateServiceOptions{})
-}
-
-// CreateServiceWithContext creates a new service.
-func (a *APIHandler) CreateServiceWithContext(ctx context.Context, project string, service models.CreateService, opts APIV2CreateServiceOptions) (string, *models.Error) {
-	bodyStr, err := service.ToJSON()
-	if err != nil {
-		return "", buildErrorResponse(err.Error())
-	}
-	return post(ctx, a.Scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project+pathToService, bodyStr, a)
+	return a.apiHandler.CreateService(context.TODO(), project, service, v2.APICreateServiceOptions{})
 }
 
 // DeleteService deletes a service.
 func (a *APIHandler) DeleteService(project, service string) (*models.DeleteServiceResponse, *models.Error) {
-	return a.DeleteServiceWithContext(context.TODO(), project, service, APIV2DeleteServiceOptions{})
-}
-
-// DeleteServiceWithContext deletes a service.
-func (a *APIHandler) DeleteServiceWithContext(ctx context.Context, project, service string, opts APIV2DeleteServiceOptions) (*models.DeleteServiceResponse, *models.Error) {
-	resp, err := delete(ctx, a.Scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project+pathToService+"/"+service, a)
-
-	if err != nil {
-		return nil, err
-	}
-
-	deleteSvcResponse := &models.DeleteServiceResponse{}
-	if err2 := deleteSvcResponse.FromJSON([]byte(resp)); err2 != nil {
-		msg := "Could not decode DeleteServiceResponse: " + err2.Error()
-		return nil, &models.Error{
-			Message: &msg,
-		}
-	}
-	return deleteSvcResponse, nil
+	return a.apiHandler.DeleteService(context.TODO(), project, service, v2.APIDeleteServiceOptions{})
 }
 
 // GetMetadata retrieves Keptn metadata information.
 func (a *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
-	return a.GetMetadataWithContext(context.TODO(), APIV2GetMetadataOptions{})
-}
-
-// GetMetadataWithContext retrieves Keptn metadata information.
-func (a *APIHandler) GetMetadataWithContext(ctx context.Context, opts APIV2GetMetadataOptions) (*models.Metadata, *models.Error) {
-	baseURL := a.getBaseURL()
-	if strings.HasSuffix(baseURL, "/"+shipyardControllerBaseURL) {
-		baseURL = strings.TrimSuffix(a.getBaseURL(), "/"+shipyardControllerBaseURL)
-		baseURL += "/api"
-	}
-
-	body, mErr := getAndExpectSuccess(ctx, a.Scheme+"://"+baseURL+v1MetadataPath, nil)
-	if mErr != nil {
-		return nil, mErr
-
-	}
-
-	respMetadata := &models.Metadata{}
-	if err := respMetadata.FromJSON(body); err != nil {
-		return nil, buildErrorResponse(err.Error())
-	}
-
-	return respMetadata, nil
+	return a.apiHandler.GetMetadata(context.TODO(), v2.APIGetMetadataOptions{})
 }
