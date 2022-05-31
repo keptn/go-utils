@@ -2,47 +2,35 @@ package api
 
 import (
 	"context"
-	"crypto/tls"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
 )
 
 type ServicesV1Interface interface {
 	// CreateServiceInStage creates a new service.
 	CreateServiceInStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error)
 
-	// CreateServiceInStageWithContext creates a new service.
-	CreateServiceInStageWithContext(ctx context.Context, project string, stage string, serviceName string) (*models.EventContext, *models.Error)
-
 	// DeleteServiceFromStage deletes a service from a stage.
 	DeleteServiceFromStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error)
-
-	// DeleteServiceFromStageWithContext deletes a service from a stage.
-	DeleteServiceFromStageWithContext(ctx context.Context, project string, stage string, serviceName string) (*models.EventContext, *models.Error)
 
 	// GetService gets a service.
 	GetService(project, stage, service string) (*models.Service, error)
 
-	// GetServiceWithContext gets a service.
-	GetServiceWithContext(ctx context.Context, project, stage, service string) (*models.Service, error)
-
 	// GetAllServices returns a list of all services.
 	GetAllServices(project string, stage string) ([]*models.Service, error)
-
-	// GetAllServicesWithContext returns a list of all services.
-	GetAllServicesWithContext(ctx context.Context, project string, stage string) ([]*models.Service, error)
 }
 
 // ServiceHandler handles services
 type ServiceHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	serviceHandler v2.ServiceHandler
+	BaseURL        string
+	AuthToken      string
+	AuthHeader     string
+	HTTPClient     *http.Client
+	Scheme         string
 }
 
 // NewServiceHandler returns a new ServiceHandler which sends all requests directly to the configuration-service
@@ -52,12 +40,23 @@ func NewServiceHandler(baseURL string) *ServiceHandler {
 	} else if strings.Contains(baseURL, "http://") {
 		baseURL = strings.TrimPrefix(baseURL, "http://")
 	}
+
+	httpClient := &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))}
+
 	return &ServiceHandler{
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
+		HTTPClient: httpClient,
 		Scheme:     "http",
+
+		serviceHandler: v2.ServiceHandler{
+			BaseURL:    baseURL,
+			AuthHeader: "",
+			AuthToken:  "",
+			HTTPClient: httpClient,
+			Scheme:     "http",
+		},
 	}
 }
 
@@ -88,6 +87,14 @@ func createAuthenticatedServiceHandler(baseURL string, authToken string, authHea
 		AuthToken:  authToken,
 		HTTPClient: httpClient,
 		Scheme:     scheme,
+
+		serviceHandler: v2.ServiceHandler{
+			BaseURL:    baseURL,
+			AuthHeader: authHeader,
+			AuthToken:  authToken,
+			HTTPClient: httpClient,
+			Scheme:     scheme,
+		},
 	}
 }
 
@@ -109,95 +116,20 @@ func (s *ServiceHandler) getHTTPClient() *http.Client {
 
 // CreateServiceInStage creates a new service.
 func (s *ServiceHandler) CreateServiceInStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error) {
-	return s.CreateServiceInStageWithContext(context.TODO(), project, stage, serviceName)
-}
-
-// CreateServiceInStageWithContext creates a new service.
-func (s *ServiceHandler) CreateServiceInStageWithContext(ctx context.Context, project string, stage string, serviceName string) (*models.EventContext, *models.Error) {
-	service := models.Service{ServiceName: serviceName}
-	body, err := service.ToJSON()
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
-	}
-	return postWithEventContext(ctx, s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService, body, s)
+	return s.serviceHandler.CreateServiceInStage(context.TODO(), project, stage, serviceName, v2.ServicesCreateServiceInStageOptions{})
 }
 
 // DeleteServiceFromStage deletes a service from a stage.
 func (s *ServiceHandler) DeleteServiceFromStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error) {
-	return s.DeleteServiceFromStageWithContext(context.TODO(), project, stage, serviceName)
-}
-
-// DeleteServiceFromStageWithContext deletes a service from a stage.
-func (s *ServiceHandler) DeleteServiceFromStageWithContext(ctx context.Context, project string, stage string, serviceName string) (*models.EventContext, *models.Error) {
-	return deleteWithEventContext(ctx, s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+serviceName, s)
+	return s.serviceHandler.DeleteServiceFromStage(context.TODO(), project, stage, serviceName, v2.ServicesDeleteServiceFromStageOptions{})
 }
 
 // GetService gets a service.
 func (s *ServiceHandler) GetService(project, stage, service string) (*models.Service, error) {
-	return s.GetServiceWithContext(context.TODO(), project, stage, service)
-}
-
-// GetServiceWithContext gets a service.
-func (s *ServiceHandler) GetServiceWithContext(ctx context.Context, project, stage, service string) (*models.Service, error) {
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-
-	url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + v1ProjectPath + "/" + project + pathToStage + "/" + stage + pathToService + "/" + service)
-	if err != nil {
-		return nil, err
-	}
-
-	body, mErr := getAndExpectOK(ctx, url.String(), s)
-	if mErr != nil {
-		return nil, mErr.ToError()
-	}
-
-	received := &models.Service{}
-	if err = received.FromJSON(body); err != nil {
-		return nil, err
-	}
-	return received, nil
+	return s.serviceHandler.GetService(context.TODO(), project, stage, service, v2.ServicesGetServiceOptions{})
 }
 
 // GetAllServices returns a list of all services.
 func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models.Service, error) {
-	return s.GetAllServicesWithContext(context.TODO(), project, stage)
-}
-
-// GetAllServicesWithContext returns a list of all services.
-func (s *ServiceHandler) GetAllServicesWithContext(ctx context.Context, project string, stage string) ([]*models.Service, error) {
-
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	services := []*models.Service{}
-
-	nextPageKey := ""
-
-	for {
-		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + v1ProjectPath + "/" + project + pathToStage + "/" + stage + pathToService)
-		if err != nil {
-			return nil, err
-		}
-		q := url.Query()
-		if nextPageKey != "" {
-			q.Set("nextPageKey", nextPageKey)
-			url.RawQuery = q.Encode()
-		}
-
-		body, mErr := getAndExpectOK(ctx, url.String(), s)
-		if mErr != nil {
-			return nil, mErr.ToError()
-		}
-
-		received := &models.Services{}
-		if err = received.FromJSON(body); err != nil {
-			return nil, err
-		}
-		services = append(services, received.Services...)
-
-		if received.NextPageKey == "" || received.NextPageKey == "0" {
-			break
-		}
-		nextPageKey = received.NextPageKey
-	}
-
-	return services, nil
+	return s.serviceHandler.GetAllServices(context.TODO(), project, stage, v2.ServicesGetAllServicesOptions{})
 }
