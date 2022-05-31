@@ -2,14 +2,11 @@ package api
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
-	"fmt"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
 	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
@@ -18,33 +15,40 @@ const v1UniformPath = "/v1/uniform/registration"
 
 type UniformV1Interface interface {
 	Ping(integrationID string) (*models.Integration, error)
-	PingWithContext(ctx context.Context, integrationID string) (*models.Integration, error)
 	RegisterIntegration(integration models.Integration) (string, error)
-	RegisterIntegrationWithContext(ctx context.Context, integration models.Integration) (string, error)
 	CreateSubscription(integrationID string, subscription models.EventSubscription) (string, error)
-	CreateSubscriptionWithContext(ctx context.Context, integrationID string, subscription models.EventSubscription) (string, error)
 	UnregisterIntegration(integrationID string) error
-	UnregisterIntegrationWithContext(ctx context.Context, integrationID string) error
 	GetRegistrations() ([]*models.Integration, error)
-	GetRegistrationsWithContext(ctx context.Context) ([]*models.Integration, error)
 }
 
 type UniformHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	uniformHandler v2.UniformHandler
+	BaseURL        string
+	AuthToken      string
+	AuthHeader     string
+	HTTPClient     *http.Client
+	Scheme         string
 }
 
 func NewUniformHandler(baseURL string) *UniformHandler {
 	baseURL = httputils.TrimHTTPScheme(baseURL)
+
+	httpClient := &http.Client{Transport: getClientTransport(nil)}
+
 	return &UniformHandler{
 		BaseURL:    baseURL,
 		AuthToken:  "",
 		AuthHeader: "",
-		HTTPClient: &http.Client{Transport: getClientTransport(nil)},
+		HTTPClient: httpClient,
 		Scheme:     "http",
+
+		uniformHandler: v2.UniformHandler{
+			BaseURL:    baseURL,
+			AuthToken:  "",
+			AuthHeader: "",
+			HTTPClient: httpClient,
+			Scheme:     "http",
+		},
 	}
 }
 
@@ -72,6 +76,14 @@ func createAuthenticatedUniformHandler(baseURL string, authToken string, authHea
 		AuthToken:  authToken,
 		HTTPClient: httpClient,
 		Scheme:     scheme,
+
+		uniformHandler: v2.UniformHandler{
+			BaseURL:    baseURL,
+			AuthHeader: authHeader,
+			AuthToken:  authToken,
+			HTTPClient: httpClient,
+			Scheme:     scheme,
+		},
 	}
 }
 
@@ -92,104 +104,21 @@ func (u *UniformHandler) getHTTPClient() *http.Client {
 }
 
 func (u *UniformHandler) Ping(integrationID string) (*models.Integration, error) {
-	return u.PingWithContext(context.TODO(), integrationID)
-}
-
-func (u *UniformHandler) PingWithContext(ctx context.Context, integrationID string) (*models.Integration, error) {
-	if integrationID == "" {
-		return nil, errors.New("could not ping an invalid IntegrationID")
-	}
-
-	resp, err := put(ctx, u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/ping", nil, u)
-	if err != nil {
-		return nil, errors.New(err.GetMessage())
-	}
-
-	response := &models.Integration{}
-	if err := response.FromJSON([]byte(resp)); err != nil {
-		return nil, err
-	}
-
-	return response, nil
+	return u.uniformHandler.Ping(context.TODO(), integrationID, v2.UniformPingOptions{})
 }
 
 func (u *UniformHandler) RegisterIntegration(integration models.Integration) (string, error) {
-	return u.RegisterIntegrationWithContext(context.TODO(), integration)
-}
-
-func (u *UniformHandler) RegisterIntegrationWithContext(ctx context.Context, integration models.Integration) (string, error) {
-	bodyStr, err := integration.ToJSON()
-	if err != nil {
-		return "", err
-	}
-
-	resp, errResponse := post(ctx, u.Scheme+"://"+u.getBaseURL()+v1UniformPath, bodyStr, u)
-	if errResponse != nil {
-		return "", fmt.Errorf(errResponse.GetMessage())
-	}
-
-	registerIntegrationResponse := &models.RegisterIntegrationResponse{}
-	if err := registerIntegrationResponse.FromJSON([]byte(resp)); err != nil {
-		return "", err
-	}
-
-	return registerIntegrationResponse.ID, nil
+	return u.uniformHandler.RegisterIntegration(context.TODO(), integration, v2.UniformRegisterIntegrationOptions{})
 }
 
 func (u *UniformHandler) CreateSubscription(integrationID string, subscription models.EventSubscription) (string, error) {
-	return u.CreateSubscriptionWithContext(context.TODO(), integrationID, subscription)
-}
-
-func (u *UniformHandler) CreateSubscriptionWithContext(ctx context.Context, integrationID string, subscription models.EventSubscription) (string, error) {
-	bodyStr, err := subscription.ToJSON()
-	if err != nil {
-		return "", err
-	}
-	resp, errResponse := post(ctx, u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/subscription", bodyStr, u)
-	if errResponse != nil {
-		return "", fmt.Errorf(errResponse.GetMessage())
-	}
-	_ = resp
-
-	createSubscriptionResponse := &models.CreateSubscriptionResponse{}
-	if err := createSubscriptionResponse.FromJSON([]byte(resp)); err != nil {
-		return "", err
-	}
-
-	return createSubscriptionResponse.ID, nil
+	return u.uniformHandler.CreateSubscription(context.TODO(), integrationID, subscription, v2.UniformCreateSubscriptionOptions{})
 }
 
 func (u *UniformHandler) UnregisterIntegration(integrationID string) error {
-	return u.UnregisterIntegrationWithContext(context.TODO(), integrationID)
-}
-
-func (u *UniformHandler) UnregisterIntegrationWithContext(ctx context.Context, integrationID string) error {
-	_, err := delete(ctx, u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID, u)
-	if err != nil {
-		return fmt.Errorf(err.GetMessage())
-	}
-	return nil
+	return u.uniformHandler.UnregisterIntegration(context.TODO(), integrationID, v2.UniformUnregisterIntegrationOptions{})
 }
 
 func (u *UniformHandler) GetRegistrations() ([]*models.Integration, error) {
-	return u.GetRegistrationsWithContext(context.TODO())
-}
-
-func (u *UniformHandler) GetRegistrationsWithContext(ctx context.Context) ([]*models.Integration, error) {
-	url, err := url.Parse(u.Scheme + "://" + u.getBaseURL() + v1UniformPath)
-	if err != nil {
-		return nil, err
-	}
-
-	body, mErr := getAndExpectOK(ctx, url.String(), u)
-	if mErr != nil {
-		return nil, mErr.ToError()
-	}
-
-	var received []*models.Integration
-	err = json.Unmarshal(body, &received)
-	if err != nil {
-		return nil, err
-	}
-	return received, nil
+	return u.uniformHandler.GetRegistrations(context.TODO(), v2.UniformGetRegistrationsOptions{})
 }
