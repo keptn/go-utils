@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
 	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
@@ -14,15 +15,15 @@ const v1SequenceControlPath = "/v1/sequence/%s/%s/control"
 
 type SequencesV1Interface interface {
 	ControlSequence(params SequenceControlParams) error
-	ControlSequenceWithContext(ctx context.Context, params SequenceControlParams) error
 }
 
 type SequenceControlHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	sequenceControlHandler v2.SequenceControlHandler
+	BaseURL                string
+	AuthToken              string
+	AuthHeader             string
+	HTTPClient             *http.Client
+	Scheme                 string
 }
 
 type SequenceControlParams struct {
@@ -73,12 +74,23 @@ func (s *SequenceControlBody) FromJSON(b []byte) error {
 
 func NewSequenceControlHandler(baseURL string) *SequenceControlHandler {
 	baseURL = httputils.TrimHTTPScheme(baseURL)
+
+	httpClient := &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))}
+
 	return &SequenceControlHandler{
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
+		HTTPClient: httpClient,
 		Scheme:     "http",
+
+		sequenceControlHandler: v2.SequenceControlHandler{
+			BaseURL:    baseURL,
+			AuthHeader: "",
+			AuthToken:  "",
+			HTTPClient: httpClient,
+			Scheme:     "http",
+		},
 	}
 }
 
@@ -107,6 +119,14 @@ func createAuthenticatedSequenceControlHandler(baseURL string, authToken string,
 		AuthToken:  authToken,
 		HTTPClient: httpClient,
 		Scheme:     scheme,
+
+		sequenceControlHandler: v2.SequenceControlHandler{
+			BaseURL:    baseURL,
+			AuthHeader: authHeader,
+			AuthToken:  authToken,
+			HTTPClient: httpClient,
+			Scheme:     scheme,
+		},
 	}
 }
 
@@ -127,32 +147,13 @@ func (s *SequenceControlHandler) getHTTPClient() *http.Client {
 }
 
 func (s *SequenceControlHandler) ControlSequence(params SequenceControlParams) error {
-	return s.ControlSequenceWithContext(context.TODO(), params)
-}
-
-func (s *SequenceControlHandler) ControlSequenceWithContext(ctx context.Context, params SequenceControlParams) error {
-	err := params.Validate()
-	if err != nil {
-		return err
-	}
-
-	baseurl := fmt.Sprintf("%s://%s", s.Scheme, s.getBaseURL())
-	path := fmt.Sprintf(v1SequenceControlPath, params.Project, params.KeptnContext)
-
-	body := SequenceControlBody{
-		Stage: params.Stage,
-		State: params.State,
-	}
-
-	payload, err := body.ToJSON()
-	if err != nil {
-		return err
-	}
-
-	_, errResponse := post(ctx, baseurl+path, payload, s)
-	if errResponse != nil {
-		return fmt.Errorf(errResponse.GetMessage())
-	}
-
-	return nil
+	return s.sequenceControlHandler.ControlSequence(
+		context.TODO(),
+		v2.SequenceControlParams{
+			Project:      params.Project,
+			KeptnContext: params.KeptnContext,
+			Stage:        params.Stage,
+			State:        params.State,
+		},
+		v2.SequencesControlSequenceOptions{})
 }
