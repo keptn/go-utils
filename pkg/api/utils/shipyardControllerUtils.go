@@ -2,13 +2,11 @@ package api
 
 import (
 	"context"
-	"crypto/tls"
 	"net/http"
-	"net/url"
-	"strconv"
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
 )
 
 const shipyardControllerBaseURL = "controlPlane"
@@ -16,18 +14,16 @@ const shipyardControllerBaseURL = "controlPlane"
 type ShipyardControlV1Interface interface {
 	// GetOpenTriggeredEvents returns all open triggered events.
 	GetOpenTriggeredEvents(filter EventFilter) ([]*models.KeptnContextExtendedCE, error)
-
-	// GetOpenTriggeredEventsWithContext returns all open triggered events.
-	GetOpenTriggeredEventsWithContext(ctx context.Context, filter EventFilter) ([]*models.KeptnContextExtendedCE, error)
 }
 
 // ShipyardControllerHandler handles services
 type ShipyardControllerHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	shipyardControllerHandler v2.ShipyardControllerHandler
+	BaseURL                   string
+	AuthToken                 string
+	AuthHeader                string
+	HTTPClient                *http.Client
+	Scheme                    string
 }
 
 // NewShipyardControllerHandler returns a new ShipyardControllerHandler which sends all requests directly to the configuration-service
@@ -37,12 +33,22 @@ func NewShipyardControllerHandler(baseURL string) *ShipyardControllerHandler {
 	} else if strings.Contains(baseURL, "http://") {
 		baseURL = strings.TrimPrefix(baseURL, "http://")
 	}
+
+	httpClient := &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))}
 	return &ShipyardControllerHandler{
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
+		HTTPClient: httpClient,
 		Scheme:     "http",
+
+		shipyardControllerHandler: v2.ShipyardControllerHandler{
+			BaseURL:    baseURL,
+			AuthHeader: "",
+			AuthToken:  "",
+			HTTPClient: httpClient,
+			Scheme:     "http",
+		},
 	}
 }
 
@@ -71,6 +77,14 @@ func createAuthenticatedShipyardControllerHandler(baseURL string, authToken stri
 		AuthToken:  authToken,
 		HTTPClient: httpClient,
 		Scheme:     scheme,
+
+		shipyardControllerHandler: v2.ShipyardControllerHandler{
+			BaseURL:    baseURL,
+			AuthHeader: authHeader,
+			AuthToken:  authToken,
+			HTTPClient: httpClient,
+			Scheme:     scheme,
+		},
 	}
 }
 
@@ -92,62 +106,5 @@ func (s *ShipyardControllerHandler) getHTTPClient() *http.Client {
 
 // GetOpenTriggeredEvents returns all open triggered events.
 func (s *ShipyardControllerHandler) GetOpenTriggeredEvents(filter EventFilter) ([]*models.KeptnContextExtendedCE, error) {
-	return s.GetOpenTriggeredEventsWithContext(context.TODO(), filter)
-}
-
-// GetOpenTriggeredEventsWithContext returns all open triggered events.
-func (s *ShipyardControllerHandler) GetOpenTriggeredEventsWithContext(ctx context.Context, filter EventFilter) ([]*models.KeptnContextExtendedCE, error) {
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-
-	events := []*models.KeptnContextExtendedCE{}
-	nextPageKey := ""
-
-	for {
-		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + v1EventPath + "/triggered/" + filter.EventType)
-
-		q := url.Query()
-		if nextPageKey != "" {
-			q.Set("nextPageKey", nextPageKey)
-			url.RawQuery = q.Encode()
-		}
-		if filter.Project != "" {
-			q.Set("project", filter.Project)
-		}
-		if filter.Service != "" {
-			q.Set("service", filter.Service)
-		}
-		if filter.Stage != "" {
-			q.Set("stage", filter.Stage)
-		}
-
-		url.RawQuery = q.Encode()
-
-		if err != nil {
-			return nil, err
-		}
-
-		body, mErr := getAndExpectOK(ctx, url.String(), s)
-		if mErr != nil {
-			return nil, mErr.ToError()
-		}
-
-		received := &models.Events{}
-		if err = received.FromJSON(body); err != nil {
-			return nil, err
-		}
-		events = append(events, received.Events...)
-
-		if received.NextPageKey == "" || received.NextPageKey == "0" {
-			break
-		}
-
-		nextPageKeyInt, _ := strconv.Atoi(received.NextPageKey)
-
-		if filter.NumberOfPages > 0 && nextPageKeyInt >= filter.NumberOfPages {
-			break
-		}
-
-		nextPageKey = received.NextPageKey
-	}
-	return events, nil
+	return s.shipyardControllerHandler.GetOpenTriggeredEvents(context.TODO(), *toV2EventFilter(&filter), v2.ShipyardControlGetOpenTriggeredEventsOptions{})
 }
