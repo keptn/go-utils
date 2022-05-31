@@ -6,23 +6,22 @@ import (
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
 )
 
 type AuthV1Interface interface {
 	// Authenticate authenticates the client request against the server.
 	Authenticate() (*models.EventContext, *models.Error)
-
-	// AuthenticateWithContext authenticates the client request against the server.
-	AuthenticateWithContext(ctx context.Context) (*models.EventContext, *models.Error)
 }
 
 // AuthHandler handles projects
 type AuthHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	authHandler v2.AuthHandler
+	BaseURL     string
+	AuthToken   string
+	AuthHeader  string
+	HTTPClient  *http.Client
+	Scheme      string
 }
 
 // NewAuthHandler returns a new AuthHandler
@@ -32,12 +31,23 @@ func NewAuthHandler(baseURL string) *AuthHandler {
 	} else if strings.Contains(baseURL, "http://") {
 		baseURL = strings.TrimPrefix(baseURL, "http://")
 	}
+
+	httpClient := &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))}
+
 	return &AuthHandler{
 		BaseURL:    baseURL,
 		AuthHeader: "",
 		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
+		HTTPClient: httpClient,
 		Scheme:     "http",
+
+		authHandler: v2.AuthHandler{
+			BaseURL:    baseURL,
+			AuthHeader: "",
+			AuthToken:  "",
+			HTTPClient: httpClient,
+			Scheme:     "http",
+		},
 	}
 }
 
@@ -61,6 +71,14 @@ func createAuthenticatedAuthHandler(baseURL string, authToken string, authHeader
 		AuthToken:  authToken,
 		HTTPClient: httpClient,
 		Scheme:     scheme,
+
+		authHandler: v2.AuthHandler{
+			BaseURL:    baseURL,
+			AuthHeader: authHeader,
+			AuthToken:  authToken,
+			HTTPClient: httpClient,
+			Scheme:     scheme,
+		},
 	}
 }
 
@@ -82,10 +100,5 @@ func (a *AuthHandler) getHTTPClient() *http.Client {
 
 // Authenticate authenticates the client request against the server.
 func (a *AuthHandler) Authenticate() (*models.EventContext, *models.Error) {
-	return a.AuthenticateWithContext(context.TODO())
-}
-
-// AuthenticateWithContext authenticates the client request against the server.
-func (a *AuthHandler) AuthenticateWithContext(ctx context.Context) (*models.EventContext, *models.Error) {
-	return postWithEventContext(ctx, a.Scheme+"://"+a.getBaseURL()+"/v1/auth", nil, a)
+	return a.authHandler.Authenticate(context.TODO(), v2.AuthAuthenticateOptions{})
 }
