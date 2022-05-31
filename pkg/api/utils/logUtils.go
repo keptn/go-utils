@@ -2,17 +2,14 @@ package api
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"log"
 	"net/http"
-	"net/url"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/benbjohnson/clock"
 	"github.com/keptn/go-utils/pkg/api/models"
+	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
 )
 
 const v1LogPath = "/v1/log"
@@ -32,25 +29,17 @@ type ILogHandler interface {
 	// Flush flushes the log cache.
 	Flush() error
 
-	// FlushWithContext flushes the log cache.
-	FlushWithContext(ctx context.Context) error
-
 	// GetLogs gets logs with the specified parameters.
 	GetLogs(params models.GetLogsParams) (*models.GetLogsResponse, error)
 
-	// GetLogsWithContext gets logs with the specified parameters.
-	GetLogsWithContext(ctx context.Context, params models.GetLogsParams) (*models.GetLogsResponse, error)
-
 	// DeleteLogs deletes logs matching the specified log filter.
 	DeleteLogs(filter models.LogFilter) error
-
-	// DeleteLogsWithContext deletes logs matching the specified log filter.
-	DeleteLogsWithContext(ctx context.Context, filter models.LogFilter) error
 
 	Start(ctx context.Context)
 }
 
 type LogHandler struct {
+	logHandler   v2.LogHandler
 	BaseURL      string
 	AuthToken    string
 	AuthHeader   string
@@ -68,15 +57,29 @@ func NewLogHandler(baseURL string) *LogHandler {
 	} else if strings.Contains(baseURL, "http://") {
 		baseURL = strings.TrimPrefix(baseURL, "http://")
 	}
+
+	httpClient := &http.Client{Transport: getClientTransport(nil)}
+
 	return &LogHandler{
 		BaseURL:      baseURL,
 		AuthHeader:   "",
 		AuthToken:    "",
-		HTTPClient:   &http.Client{Transport: getClientTransport(nil)},
+		HTTPClient:   httpClient,
 		Scheme:       "http",
 		LogCache:     []models.LogEntry{},
 		TheClock:     clock.New(),
 		SyncInterval: defaultSyncInterval,
+
+		logHandler: v2.LogHandler{
+			BaseURL:      baseURL,
+			AuthHeader:   "",
+			AuthToken:    "",
+			HTTPClient:   httpClient,
+			Scheme:       "http",
+			LogCache:     []models.LogEntry{},
+			TheClock:     clock.New(),
+			SyncInterval: defaultSyncInterval,
+		},
 	}
 }
 
@@ -107,6 +110,17 @@ func createAuthenticatedLogHandler(baseURL string, authToken string, authHeader 
 		LogCache:     []models.LogEntry{},
 		TheClock:     clock.New(),
 		SyncInterval: defaultSyncInterval,
+
+		logHandler: v2.LogHandler{
+			BaseURL:      baseURL,
+			AuthHeader:   authHeader,
+			AuthToken:    authToken,
+			HTTPClient:   httpClient,
+			Scheme:       scheme,
+			LogCache:     []models.LogEntry{},
+			TheClock:     clock.New(),
+			SyncInterval: defaultSyncInterval,
+		},
 	}
 }
 
@@ -128,119 +142,24 @@ func (lh *LogHandler) getHTTPClient() *http.Client {
 
 // Log appends the specified logs to the log cache.
 func (lh *LogHandler) Log(logs []models.LogEntry) {
-	lh.lock.Lock()
-	defer lh.lock.Unlock()
-	lh.LogCache = append(lh.LogCache, logs...)
+	lh.logHandler.Log(logs, v2.LogsLogOptions{})
 }
 
 // GetLogs gets logs with the specified parameters.
 func (lh *LogHandler) GetLogs(params models.GetLogsParams) (*models.GetLogsResponse, error) {
-	return lh.GetLogsWithContext(context.TODO(), params)
-}
-
-// GetLogsWithContext gets logs with the specified parameters.
-func (lh *LogHandler) GetLogsWithContext(ctx context.Context, params models.GetLogsParams) (*models.GetLogsResponse, error) {
-	u, err := url.Parse(lh.Scheme + "://" + lh.getBaseURL() + v1LogPath)
-	if err != nil {
-		log.Fatal("error parsing url")
-	}
-
-	query := u.Query()
-
-	if params.IntegrationID != "" {
-		query.Set("integrationId", params.IntegrationID)
-	}
-	if params.PageSize != 0 {
-		query.Set("pageSize", fmt.Sprintf("%d", params.PageSize))
-	}
-	if params.FromTime != "" {
-		query.Set("fromTime", params.FromTime)
-	}
-	if params.BeforeTime != "" {
-		query.Set("beforeTime", params.BeforeTime)
-	}
-
-	u.RawQuery = query.Encode()
-
-	body, mErr := getAndExpectOK(ctx, u.String(), lh)
-	if mErr != nil {
-		return nil, mErr.ToError()
-	}
-
-	received := &models.GetLogsResponse{}
-	if err := received.FromJSON(body); err != nil {
-		return nil, err
-	}
-
-	return received, nil
+	return lh.logHandler.GetLogs(context.TODO(), params, v2.LogsGetLogsOptions{})
 }
 
 // DeleteLogs deletes logs matching the specified log filter.
 func (lh *LogHandler) DeleteLogs(params models.LogFilter) error {
-	return lh.DeleteLogsWithContext(context.TODO(), params)
-}
-
-// DeleteLogsWithContext deletes logs matching the specified log filter.
-func (lh *LogHandler) DeleteLogsWithContext(ctx context.Context, params models.LogFilter) error {
-	u, err := url.Parse(lh.Scheme + "://" + lh.getBaseURL() + v1LogPath)
-	if err != nil {
-		log.Fatal("error parsing url")
-	}
-
-	query := u.Query()
-
-	if params.IntegrationID != "" {
-		query.Set("integrationId", params.IntegrationID)
-	}
-	if params.FromTime != "" {
-		query.Set("fromTime", params.FromTime)
-	}
-	if params.BeforeTime != "" {
-		query.Set("beforeTime", params.BeforeTime)
-	}
-	if _, err := delete(ctx, u.String(), lh); err != nil {
-		return errors.New(err.GetMessage())
-	}
-	return nil
+	return lh.logHandler.DeleteLogs(context.TODO(), params, v2.LogsDeleteLogsOptions{})
 }
 
 func (lh *LogHandler) Start(ctx context.Context) {
-	ticker := lh.TheClock.Ticker(lh.SyncInterval)
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-ticker.C:
-				lh.Flush()
-			}
-		}
-	}()
+	lh.logHandler.Start(ctx, v2.LogsStartOptions{})
 }
 
 // Flush flushes the log cache.
 func (lh *LogHandler) Flush() error {
-	return lh.FlushWithContext(context.TODO())
-}
-
-// FlushWithContext flushes the log cache.
-func (lh *LogHandler) FlushWithContext(ctx context.Context) error {
-	lh.lock.Lock()
-	defer lh.lock.Unlock()
-	if len(lh.LogCache) == 0 {
-		// only send a request if we actually have some logs to send
-		return nil
-	}
-	createLogsPayload := &models.CreateLogsRequest{
-		Logs: lh.LogCache,
-	}
-	bodyStr, err := createLogsPayload.ToJSON()
-	if err != nil {
-		return err
-	}
-	if _, err := post(ctx, lh.Scheme+"://"+lh.getBaseURL()+v1LogPath, bodyStr, lh); err != nil {
-		return errors.New(err.GetMessage())
-	}
-	lh.LogCache = []models.LogEntry{}
-	return nil
+	return lh.logHandler.Flush(context.TODO(), v2.LogsFlushOptions{})
 }
