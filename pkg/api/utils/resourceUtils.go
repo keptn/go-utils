@@ -27,134 +27,68 @@ type ResourcesV1Interface interface {
 	// CreateResources creates a resource for the specified entity.
 	CreateResources(project string, stage string, service string, resources []*models.Resource) (*models.EventContext, *models.Error)
 
-	// CreateResourcesWithContext creates a resource for the specified entity.
-	CreateResourcesWithContext(ctx context.Context, project string, stage string, service string, resources []*models.Resource) (*models.EventContext, *models.Error)
-
 	// CreateProjectResources creates multiple project resources.
 	CreateProjectResources(project string, resources []*models.Resource) (string, error)
-
-	// CreateProjectResourcesWithContext creates multiple project resources.
-	CreateProjectResourcesWithContext(ctx context.Context, project string, resources []*models.Resource) (string, error)
 
 	// GetProjectResource retrieves a project resource from the configuration service.
 	// Deprecated: use GetResource instead.
 	GetProjectResource(project string, resourceURI string) (*models.Resource, error)
 
-	// GetProjectResourceWithContext retrieves a project resource from the configuration service.
-	// Deprecated: use GetResourceWithContext instead.
-	GetProjectResourceWithContext(ctx context.Context, project string, resourceURI string) (*models.Resource, error)
-
 	// UpdateProjectResource updates a project resource.
 	// Deprecated: use UpdateResource instead.
 	UpdateProjectResource(project string, resource *models.Resource) (string, error)
-
-	// UpdateProjectResourceWithContext updates a project resource.
-	// Deprecated: use UpdateResourceWithContext instead.
-	UpdateProjectResourceWithContext(ctx context.Context, project string, resource *models.Resource) (string, error)
 
 	// DeleteProjectResource deletes a project resource.
 	// Deprecated: use DeleteResource instead.
 	DeleteProjectResource(project string, resourceURI string) error
 
-	// DeleteProjectResourceWithContext deletes a project resource.
-	// Deprecated: use DeleteResourceWithContext instead.
-	DeleteProjectResourceWithContext(ctx context.Context, project string, resourceURI string) error
-
 	// UpdateProjectResources updates multiple project resources.
 	UpdateProjectResources(project string, resources []*models.Resource) (string, error)
-
-	// UpdateProjectResourcesWithContext updates multiple project resources.
-	UpdateProjectResourcesWithContext(ctx context.Context, project string, resources []*models.Resource) (string, error)
 
 	// CreateStageResources creates a stage resource.
 	// Deprecated: use CreateResource instead.
 	CreateStageResources(project string, stage string, resources []*models.Resource) (string, error)
 
-	// CreateStageResourcesWithContext creates a stage resource.
-	// Deprecated: use CreateResourceWithContext instead.
-	CreateStageResourcesWithContext(ctx context.Context, project string, stage string, resources []*models.Resource) (string, error)
-
 	// GetStageResource retrieves a stage resource from the configuration service.
 	// Deprecated: use GetResource instead.
 	GetStageResource(project string, stage string, resourceURI string) (*models.Resource, error)
-
-	// GetStageResourceContext retrieves a stage resource from the configuration service.
-	// Deprecated: use GetResourceWithContext instead.
-	GetStageResourceWithContext(ctx context.Context, project string, stage string, resourceURI string) (*models.Resource, error)
 
 	// UpdateStageResource updates a stage resource.
 	// Deprecated: use UpdateResource instead.
 	UpdateStageResource(project string, stage string, resource *models.Resource) (string, error)
 
-	// UpdateStageResourceWithContext updates a stage resource.
-	// Deprecated: use UpdateResourceWithContext instead.
-	UpdateStageResourceWithContext(ctx context.Context, project string, stage string, resource *models.Resource) (string, error)
-
 	// UpdateStageResources updates multiple stage resources.
 	// Deprecated: use UpdateResource instead.
 	UpdateStageResources(project string, stage string, resources []*models.Resource) (string, error)
-
-	// UpdateStageResourcesWithContext updates multiple stage resources.
-	// Deprecated: use UpdateResourceWithContext instead.
-	UpdateStageResourcesWithContext(ctx context.Context, project string, stage string, resources []*models.Resource) (string, error)
 
 	// DeleteStageResource deletes a stage resource.
 	// Deprecated: use DeleteResource instead.
 	DeleteStageResource(project string, stage string, resourceURI string) error
 
-	// DeleteStageResourceWithContext deletes a stage resource.
-	// Deprecated: use DeleteResourceWithContext instead.
-	DeleteStageResourceWithContext(ctx context.Context, project string, stage string, resourceURI string) error
-
 	// CreateServiceResources creates a service resource.
 	// Deprecated: use CreateResource instead.
 	CreateServiceResources(project string, stage string, service string, resources []*models.Resource) (string, error)
-
-	// CreateServiceResourcesWithContext creates a service resource.
-	// Deprecated: use CreateResourceWithContext instead.
-	CreateServiceResourcesWithContext(ctx context.Context, project string, stage string, service string, resources []*models.Resource) (string, error)
 
 	// GetServiceResource retrieves a service resource from the configuration service.
 	// Deprecated: use GetResource instead.
 	GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error)
 
-	// GetServiceResourceWithContext retrieves a service resource from the configuration service.
-	// Deprecated: use GetResourceWithContext instead.
-	GetServiceResourceWithContext(ctx context.Context, project string, stage string, service string, resourceURI string) (*models.Resource, error)
-
 	// UpdateServiceResource updates a service resource.
 	// Deprecated: use UpdateResource instead.
 	UpdateServiceResource(project string, stage string, service string, resource *models.Resource) (string, error)
 
-	// UpdateServiceResourceWithContext updates a service resource.
-	// Deprecated: use UpdateResourceWithContext instead.
-	UpdateServiceResourceWithContext(ctx context.Context, project string, stage string, service string, resource *models.Resource) (string, error)
-
 	// UpdateServiceResources updates multiple service resources.
 	UpdateServiceResources(project string, stage string, service string, resources []*models.Resource) (string, error)
-
-	// UpdateServiceResourcesWithContext updates multiple service resources.
-	UpdateServiceResourcesWithContext(ctx context.Context, project string, stage string, service string, resources []*models.Resource) (string, error)
 
 	// DeleteServiceResource deletes a service resource.
 	// Deprecated: use DeleteResource instead.
 	DeleteServiceResource(project string, stage string, service string, resourceURI string) error
 
-	// DeleteServiceResourceWithContext deletes a service resource.
-	// Deprecated: use DeleteResourceWithContext instead.
-	DeleteServiceResourceWithContext(ctx context.Context, project string, stage string, service string, resourceURI string) error
-
 	// GetAllStageResources returns a list of all resources.
 	GetAllStageResources(project string, stage string) ([]*models.Resource, error)
 
-	// GetAllStageResourcesWithContext returns a list of all resources.
-	GetAllStageResourcesWithContext(ctx context.Context, project string, stage string) ([]*models.Resource, error)
-
 	// GetAllServiceResources returns a list of all resources.
 	GetAllServiceResources(project string, stage string, service string) ([]*models.Resource, error)
-
-	// GetAllServiceResourcesWithContext returns a list of all resources.
-	GetAllServiceResourcesWithContext(ctx context.Context, project string, stage string, service string) ([]*models.Resource, error)
 }
 
 // ResourceHandler handles resources
