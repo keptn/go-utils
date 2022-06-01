@@ -162,7 +162,7 @@ func (a *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
 		baseURL += "/api"
 	}
 
-	req, err := http.NewRequest("GET", a.Scheme+"://"+strings.TrimSuffix(baseURL, "/"+shipyardControllerBaseURL)+v1MetadataPath, nil)
+	req, err := http.NewRequest("GET", a.Scheme+"://"+baseURL+v1MetadataPath, nil)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
