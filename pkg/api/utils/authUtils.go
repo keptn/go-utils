@@ -26,29 +26,18 @@ type AuthHandler struct {
 
 // NewAuthHandler returns a new AuthHandler
 func NewAuthHandler(baseURL string) *AuthHandler {
+	return NewAuthHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
+}
+
+// NewAuthHandlerWithHTTPClient returns a new AuthHandler that uses the specified http.Client
+func NewAuthHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *AuthHandler {
 	if strings.Contains(baseURL, "https://") {
 		baseURL = strings.TrimPrefix(baseURL, "https://")
 	} else if strings.Contains(baseURL, "http://") {
 		baseURL = strings.TrimPrefix(baseURL, "http://")
 	}
 
-	httpClient := &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))}
-
-	return &AuthHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: httpClient,
-		Scheme:     "http",
-
-		authHandler: v2.AuthHandler{
-			BaseURL:    baseURL,
-			AuthHeader: "",
-			AuthToken:  "",
-			HTTPClient: httpClient,
-			Scheme:     "http",
-		},
-	}
+	return createAuthHandler(baseURL, "", "", httpClient, "http")
 }
 
 // NewAuthenticatedAuthHandler returns a new AuthHandler that authenticates at the endpoint via the provided token
@@ -65,6 +54,10 @@ func NewAuthenticatedAuthHandler(baseURL string, authToken string, authHeader st
 func createAuthenticatedAuthHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *AuthHandler {
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
+	return createAuthHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
+
+func createAuthHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *AuthHandler {
 	return &AuthHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,

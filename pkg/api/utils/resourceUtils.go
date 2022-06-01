@@ -207,29 +207,18 @@ func (r *resourceRequest) FromJSON(b []byte) error {
 
 // NewResourceHandler returns a new ResourceHandler which sends all requests directly to the configuration-service
 func NewResourceHandler(baseURL string) *ResourceHandler {
+	return NewResourceHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
+}
+
+// NewResourceHandlerWithHTTPClient returns a new ResourceHandler which sends all requests directly to the configuration-service using the specified http.Client
+func NewResourceHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *ResourceHandler {
 	if strings.Contains(baseURL, "https://") {
 		baseURL = strings.TrimPrefix(baseURL, "https://")
 	} else if strings.Contains(baseURL, "http://") {
 		baseURL = strings.TrimPrefix(baseURL, "http://")
 	}
 
-	httpClient := &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))}
-
-	return &ResourceHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: httpClient,
-		Scheme:     "http",
-
-		resourceHandler: v2.ResourceHandler{
-			BaseURL:    baseURL,
-			AuthHeader: "",
-			AuthToken:  "",
-			HTTPClient: httpClient,
-			Scheme:     "http",
-		},
-	}
+	return createResourceHandler(baseURL, "", "", httpClient, "http")
 }
 
 // NewAuthenticatedResourceHandler returns a new ResourceHandler that authenticates at the api via the provided token
@@ -250,6 +239,10 @@ func createAuthenticatedResourceHandler(baseURL string, authToken string, authHe
 	if !strings.HasSuffix(baseURL, configurationServiceBaseURL) {
 		baseURL += "/" + configurationServiceBaseURL
 	}
+	return createResourceHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
+
+func createResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ResourceHandler {
 	return &ResourceHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,

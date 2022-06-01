@@ -5,10 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/keptn/go-utils/pkg/common/httputils"
-
 	"github.com/keptn/go-utils/pkg/api/models"
 	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 const v1ProjectPath = "/v1/project"
@@ -42,23 +41,12 @@ type ProjectHandler struct {
 
 // NewProjectHandler returns a new ProjectHandler which sends all requests directly to the configuration-service
 func NewProjectHandler(baseURL string) *ProjectHandler {
-	baseURL = httputils.TrimHTTPScheme(baseURL)
-	httpClient := &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))}
-	return &ProjectHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: httpClient,
-		Scheme:     "http",
+	return NewProjectHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
+}
 
-		projectHandler: v2.ProjectHandler{
-			BaseURL:    baseURL,
-			AuthHeader: "",
-			AuthToken:  "",
-			HTTPClient: httpClient,
-			Scheme:     "http",
-		},
-	}
+// NewProjectHandlerWithHTTPClient returns a new ProjectHandler which sends all requests directly to the configuration-service using the specified http.Client
+func NewProjectHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *ProjectHandler {
+	return createProjectHandler(httputils.TrimHTTPScheme(baseURL), "", "", httpClient, "http")
 }
 
 // NewAuthenticatedProjectHandler returns a new ProjectHandler that authenticates at the api via the provided token
@@ -81,6 +69,10 @@ func createAuthProjectHandler(baseURL string, authToken string, authHeader strin
 		baseURL += "/" + shipyardControllerBaseURL
 	}
 
+	return createProjectHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
+
+func createProjectHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ProjectHandler {
 	return &ProjectHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,

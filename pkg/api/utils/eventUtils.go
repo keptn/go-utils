@@ -43,29 +43,18 @@ type EventFilter struct {
 
 // NewEventHandler returns a new EventHandler
 func NewEventHandler(baseURL string) *EventHandler {
+	return NewEventHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
+}
+
+// NewEventHandlerWithHTTPClient returns a new EventHandler that uses the specified http.Client
+func NewEventHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *EventHandler {
 	if strings.Contains(baseURL, "https://") {
 		baseURL = strings.TrimPrefix(baseURL, "https://")
 	} else if strings.Contains(baseURL, "http://") {
 		baseURL = strings.TrimPrefix(baseURL, "http://")
 	}
 
-	httpClient := &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))}
-
-	return &EventHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: httpClient,
-		Scheme:     "http",
-
-		eventHandler: v2.EventHandler{
-			BaseURL:    baseURL,
-			AuthHeader: "",
-			AuthToken:  "",
-			HTTPClient: httpClient,
-			Scheme:     "http",
-		},
-	}
+	return createEventHandler(baseURL, "", "", httpClient, "http")
 }
 
 const mongodbDatastoreServiceBaseUrl = "mongodb-datastore"
@@ -88,6 +77,10 @@ func createAuthenticatedEventHandler(baseURL string, authToken string, authHeade
 		baseURL += "/" + mongodbDatastoreServiceBaseUrl
 	}
 
+	return createEventHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
+
+func createEventHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *EventHandler {
 	return &EventHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,

@@ -30,29 +30,18 @@ type StageHandler struct {
 
 // NewStageHandler returns a new StageHandler which sends all requests directly to the configuration-service
 func NewStageHandler(baseURL string) *StageHandler {
+	return NewStageHandlerWithHTTPClient(baseURL, &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)})
+}
+
+// NewStageHandlerWithHTTPClient returns a new StageHandler which sends all requests directly to the configuration-service using the specified http.Client
+func NewStageHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *StageHandler {
 	if strings.Contains(baseURL, "https://") {
 		baseURL = strings.TrimPrefix(baseURL, "https://")
 	} else if strings.Contains(baseURL, "http://") {
 		baseURL = strings.TrimPrefix(baseURL, "http://")
 	}
 
-	httpClient := &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)}
-
-	return &StageHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: httpClient,
-		Scheme:     "http",
-
-		stageHandler: v2.StageHandler{
-			BaseURL:    baseURL,
-			AuthHeader: "",
-			AuthToken:  "",
-			HTTPClient: httpClient,
-			Scheme:     "http",
-		},
-	}
+	return createStageHandler(baseURL, "", "", httpClient, "http")
 }
 
 // NewAuthenticatedStageHandler returns a new StageHandler that authenticates at the api via the provided token
@@ -74,6 +63,11 @@ func createAuthenticatedStageHandler(baseURL string, authToken string, authHeade
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
+
+	return createStageHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
+
+func createStageHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *StageHandler {
 	return &StageHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,

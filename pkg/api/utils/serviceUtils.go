@@ -35,29 +35,18 @@ type ServiceHandler struct {
 
 // NewServiceHandler returns a new ServiceHandler which sends all requests directly to the configuration-service
 func NewServiceHandler(baseURL string) *ServiceHandler {
+	return NewServiceHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
+}
+
+// NewServiceHandlerWithHTTPClient returns a new ServiceHandler which sends all requests directly to the configuration-service using the specified http.Client
+func NewServiceHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *ServiceHandler {
 	if strings.Contains(baseURL, "https://") {
 		baseURL = strings.TrimPrefix(baseURL, "https://")
 	} else if strings.Contains(baseURL, "http://") {
 		baseURL = strings.TrimPrefix(baseURL, "http://")
 	}
 
-	httpClient := &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))}
-
-	return &ServiceHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: httpClient,
-		Scheme:     "http",
-
-		serviceHandler: v2.ServiceHandler{
-			BaseURL:    baseURL,
-			AuthHeader: "",
-			AuthToken:  "",
-			HTTPClient: httpClient,
-			Scheme:     "http",
-		},
-	}
+	return createServiceHandler(baseURL, "", "", httpClient, "http")
 }
 
 // NewAuthenticatedServiceHandler returns a new ServiceHandler that authenticates at the api via the provided token
@@ -81,6 +70,10 @@ func createAuthenticatedServiceHandler(baseURL string, authToken string, authHea
 		baseURL += "/" + shipyardControllerBaseURL
 	}
 
+	return createServiceHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
+
+func createServiceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ServiceHandler {
 	return &ServiceHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,

@@ -43,29 +43,18 @@ type SecretHandler struct {
 
 // NewSecretHandler returns a new SecretHandler which sends all requests directly to the secret-service
 func NewSecretHandler(baseURL string) *SecretHandler {
+	return NewSecretHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
+}
+
+// NewSecretHandlerWithHTTPClient returns a new SecretHandler which sends all requests directly to the secret-service using the specified http.Client
+func NewSecretHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *SecretHandler {
 	if strings.Contains(baseURL, "https://") {
 		baseURL = strings.TrimPrefix(baseURL, "https://")
 	} else if strings.Contains(baseURL, "http://") {
 		baseURL = strings.TrimPrefix(baseURL, "http://")
 	}
 
-	httpClient := &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))}
-
-	return &SecretHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: httpClient,
-		Scheme:     "http",
-
-		secretHandler: v2.SecretHandler{
-			BaseURL:    baseURL,
-			AuthHeader: "",
-			AuthToken:  "",
-			HTTPClient: httpClient,
-			Scheme:     "http",
-		},
-	}
+	return createSecretHandler(baseURL, "", "", httpClient, "http")
 }
 
 // NewAuthenticatedSecretHandler returns a new SecretHandler that authenticates at the api via the provided token
@@ -89,6 +78,10 @@ func createAuthenticatedSecretHandler(baseURL string, authToken string, authHead
 		baseURL += "/" + secretServiceBaseURL
 	}
 
+	return createSecretHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
+
+func createSecretHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SecretHandler {
 	return &SecretHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,

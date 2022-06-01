@@ -28,28 +28,18 @@ type ShipyardControllerHandler struct {
 
 // NewShipyardControllerHandler returns a new ShipyardControllerHandler which sends all requests directly to the configuration-service
 func NewShipyardControllerHandler(baseURL string) *ShipyardControllerHandler {
+	return NewShipyardControllerHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
+}
+
+// NewShipyardControllerHandlerWithHTTPClient returns a new ShipyardControllerHandler which sends all requests directly to the configuration-service using the specified http.Client
+func NewShipyardControllerHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *ShipyardControllerHandler {
 	if strings.Contains(baseURL, "https://") {
 		baseURL = strings.TrimPrefix(baseURL, "https://")
 	} else if strings.Contains(baseURL, "http://") {
 		baseURL = strings.TrimPrefix(baseURL, "http://")
 	}
 
-	httpClient := &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))}
-	return &ShipyardControllerHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: httpClient,
-		Scheme:     "http",
-
-		shipyardControllerHandler: v2.ShipyardControllerHandler{
-			BaseURL:    baseURL,
-			AuthHeader: "",
-			AuthToken:  "",
-			HTTPClient: httpClient,
-			Scheme:     "http",
-		},
-	}
+	return createShipyardControllerHandler(baseURL, "", "", httpClient, "http")
 }
 
 // NewAuthenticatedShipyardControllerHandler returns a new ShipyardControllerHandler that authenticates at the api via the provided token
@@ -71,6 +61,11 @@ func createAuthenticatedShipyardControllerHandler(baseURL string, authToken stri
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
+
+	return createShipyardControllerHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
+
+func createShipyardControllerHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ShipyardControllerHandler {
 	return &ShipyardControllerHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,

@@ -51,36 +51,20 @@ type LogHandler struct {
 	lock         sync.Mutex
 }
 
+// NewLogHandler returns a new LogHandler
 func NewLogHandler(baseURL string) *LogHandler {
+	return NewLogHandlerWithHTTPClient(baseURL, &http.Client{Transport: getClientTransport(nil)})
+}
+
+// NewLogHandlerWithHTTPClient returns a new LogHandler that uses the specified http.Client
+func NewLogHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *LogHandler {
 	if strings.Contains(baseURL, "https://") {
 		baseURL = strings.TrimPrefix(baseURL, "https://")
 	} else if strings.Contains(baseURL, "http://") {
 		baseURL = strings.TrimPrefix(baseURL, "http://")
 	}
 
-	httpClient := &http.Client{Transport: getClientTransport(nil)}
-
-	return &LogHandler{
-		BaseURL:      baseURL,
-		AuthHeader:   "",
-		AuthToken:    "",
-		HTTPClient:   httpClient,
-		Scheme:       "http",
-		LogCache:     []models.LogEntry{},
-		TheClock:     clock.New(),
-		SyncInterval: defaultSyncInterval,
-
-		logHandler: v2.LogHandler{
-			BaseURL:      baseURL,
-			AuthHeader:   "",
-			AuthToken:    "",
-			HTTPClient:   httpClient,
-			Scheme:       "http",
-			LogCache:     []models.LogEntry{},
-			TheClock:     clock.New(),
-			SyncInterval: defaultSyncInterval,
-		},
-	}
+	return createLogHandler(baseURL, "", "", httpClient, "http")
 }
 
 // NewAuthenticatedLogHandler returns a new EventHandler that authenticates at the endpoint via the provided token
@@ -101,6 +85,10 @@ func createAuthenticatedLogHandler(baseURL string, authToken string, authHeader 
 		baseURL += "/" + shipyardControllerBaseURL
 	}
 
+	return createLogHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
+
+func createLogHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *LogHandler {
 	return &LogHandler{
 		BaseURL:      baseURL,
 		AuthHeader:   authHeader,
