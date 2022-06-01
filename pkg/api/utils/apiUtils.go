@@ -75,15 +75,10 @@ func (a *APIHandler) getHTTPClient() *http.Client {
 
 // SendEvent sends an event to Keptn
 func (a *APIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.EventContext, *models.Error) {
-	// the endpoint is not hosted by shipyard controller so we strip away the path to the "controlPlane" api
-	baseURL := strings.TrimSuffix(a.getBaseURL(), "/"+shipyardControllerBaseURL)
-	// special handling if the auth token is not set: In this situation we assume the handler to be used
-	// "internally", hence we must ensure that the request URL does not contain the /api path (which is only correct
-	// when using the handler outside the system)
-	if a.AuthToken != "" {
-		if !strings.HasSuffix(baseURL, "api") {
-			baseURL += "/api"
-		}
+	baseURL := a.getBaseURL()
+	if strings.HasSuffix(baseURL, "/"+shipyardControllerBaseURL) {
+		baseURL = strings.TrimSuffix(a.getBaseURL(), "/"+shipyardControllerBaseURL)
+		baseURL += "/api"
 	}
 
 	bodyStr, err := event.ToJSON()
@@ -163,15 +158,10 @@ func (a *APIHandler) DeleteService(project, service string) (*models.DeleteServi
 
 // GetMetadata retrieve keptn MetaData information
 func (a *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
-	// the endpoint is not hosted by shipyard controller so we strip away the path to the "controlPlane" api
-	baseURL := strings.TrimSuffix(a.getBaseURL(), "/"+shipyardControllerBaseURL)
-	// special handling if the auth token is not set: In this situation we assume the handler to be used
-	// "internally", hence we must ensure that the request URL does not contain the /api path (which is only correct
-	// when using the handler outside the system)
-	if a.AuthToken != "" {
-		if !strings.HasSuffix(baseURL, "api") {
-			baseURL += "/api"
-		}
+	baseURL := a.getBaseURL()
+	if strings.HasSuffix(baseURL, "/"+shipyardControllerBaseURL) {
+		baseURL = strings.TrimSuffix(a.getBaseURL(), "/"+shipyardControllerBaseURL)
+		baseURL += "/api"
 	}
 
 	req, err := http.NewRequest("GET", a.Scheme+"://"+baseURL+v1MetadataPath, nil)
