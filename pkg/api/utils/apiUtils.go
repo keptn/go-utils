@@ -44,6 +44,10 @@ func NewAuthenticatedAPIHandler(baseURL string, authToken string, authHeader str
 func createAuthenticatedAPIHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *APIHandler {
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
+	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
+		baseURL += "/" + shipyardControllerBaseURL
+	}
+
 	return &APIHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,
@@ -71,11 +75,17 @@ func (a *APIHandler) getHTTPClient() *http.Client {
 
 // SendEvent sends an event to Keptn
 func (a *APIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.EventContext, *models.Error) {
+	baseURL := a.getBaseURL()
+	if strings.HasSuffix(baseURL, "/"+shipyardControllerBaseURL) {
+		baseURL = strings.TrimSuffix(a.getBaseURL(), "/"+shipyardControllerBaseURL)
+		baseURL += "/api"
+	}
+
 	bodyStr, err := event.ToJSON()
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(a.Scheme+"://"+a.getBaseURL()+v1EventPath, bodyStr, a)
+	return postWithEventContext(a.Scheme+"://"+baseURL+v1EventPath, bodyStr, a)
 }
 
 // TriggerEvaluation triggers a new evaluation
@@ -84,7 +94,7 @@ func (a *APIHandler) TriggerEvaluation(project, stage, service string, evaluatio
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+service+"/evaluation", bodyStr, a)
+	return postWithEventContext(a.Scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+service+"/evaluation", bodyStr, a)
 }
 
 // CreateProject creates a new project
@@ -93,7 +103,7 @@ func (a *APIHandler) CreateProject(project models.CreateProject) (string, *model
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
-	return post(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath, bodyStr, a)
+	return post(a.Scheme+"://"+a.getBaseURL()+v1ProjectPath, bodyStr, a)
 }
 
 // UpdateProject updates project
@@ -102,12 +112,12 @@ func (a *APIHandler) UpdateProject(project models.CreateProject) (string, *model
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
-	return put(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath, bodyStr, a)
+	return put(a.Scheme+"://"+a.getBaseURL()+v1ProjectPath, bodyStr, a)
 }
 
 // DeleteProject deletes a project
 func (a *APIHandler) DeleteProject(project models.Project) (*models.DeleteProjectResponse, *models.Error) {
-	resp, err := delete(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath+"/"+project.ProjectName, a)
+	resp, err := delete(a.Scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, a)
 	if err != nil {
 		return nil, err
 	}
@@ -127,12 +137,12 @@ func (a *APIHandler) CreateService(project string, service models.CreateService)
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
-	return post(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath+"/"+project+pathToService, bodyStr, a)
+	return post(a.Scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project+pathToService, bodyStr, a)
 }
 
 // DeleteProject deletes a project
 func (a *APIHandler) DeleteService(project, service string) (*models.DeleteServiceResponse, *models.Error) {
-	resp, err := delete(a.Scheme+"://"+a.getBaseURL()+"/"+shipyardControllerBaseURL+v1ProjectPath+"/"+project+pathToService+"/"+service, a)
+	resp, err := delete(a.Scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project+pathToService+"/"+service, a)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +158,13 @@ func (a *APIHandler) DeleteService(project, service string) (*models.DeleteServi
 
 // GetMetadata retrieve keptn MetaData information
 func (a *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
-	req, err := http.NewRequest("GET", a.Scheme+"://"+a.getBaseURL()+v1MetadataPath, nil)
+	baseURL := a.getBaseURL()
+	if strings.HasSuffix(baseURL, "/"+shipyardControllerBaseURL) {
+		baseURL = strings.TrimSuffix(a.getBaseURL(), "/"+shipyardControllerBaseURL)
+		baseURL += "/api"
+	}
+
+	req, err := http.NewRequest("GET", a.Scheme+"://"+baseURL+v1MetadataPath, nil)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
