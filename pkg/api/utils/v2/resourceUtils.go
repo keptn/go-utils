@@ -288,24 +288,24 @@ func (r *ResourceHandler) CreateResources(ctx context.Context, project string, s
 
 // CreateProjectResources creates multiple project resources.
 func (r *ResourceHandler) CreateProjectResources(ctx context.Context, project string, resources []*models.Resource, opts ResourcesCreateProjectResourcesOptions) (string, error) {
-	return r.createResources(ctx, r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToResource, resources)
+	return r.CreateResourcesByURI(ctx, r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToResource, resources)
 }
 
 // UpdateProjectResources updates multiple project resources.
 func (r *ResourceHandler) UpdateProjectResources(ctx context.Context, project string, resources []*models.Resource, opts ResourcesUpdateProjectResourcesOptions) (string, error) {
-	return r.updateResources(ctx, r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToResource, resources)
+	return r.UpdateResourcesByURI(ctx, r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToResource, resources)
 }
 
 // UpdateServiceResources updates multiple service resources.
 func (r *ResourceHandler) UpdateServiceResources(ctx context.Context, project string, stage string, service string, resources []*models.Resource, opts ResourcesUpdateServiceResourcesOptions) (string, error) {
-	return r.updateResources(ctx, r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+url.QueryEscape(service)+pathToResource, resources)
+	return r.UpdateResourcesByURI(ctx, r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+url.QueryEscape(service)+pathToResource, resources)
 }
 
-func (r *ResourceHandler) createResources(ctx context.Context, uri string, resources []*models.Resource) (string, error) {
+func (r *ResourceHandler) CreateResourcesByURI(ctx context.Context, uri string, resources []*models.Resource) (string, error) {
 	return r.writeResources(ctx, uri, "POST", resources)
 }
 
-func (r *ResourceHandler) updateResources(ctx context.Context, uri string, resources []*models.Resource) (string, error) {
+func (r *ResourceHandler) UpdateResourcesByURI(ctx context.Context, uri string, resources []*models.Resource) (string, error) {
 	return r.writeResources(ctx, uri, "PUT", resources)
 }
 
@@ -352,7 +352,7 @@ func (r *ResourceHandler) writeResources(ctx context.Context, uri string, method
 	return version.Version, nil
 }
 
-func (r *ResourceHandler) updateResource(ctx context.Context, uri string, resource *models.Resource) (string, error) {
+func (r *ResourceHandler) UpdateResourceByURI(ctx context.Context, uri string, resource *models.Resource) (string, error) {
 	return r.writeResource(ctx, uri, "PUT", resource)
 }
 
@@ -397,28 +397,28 @@ func (r *ResourceHandler) writeResource(ctx context.Context, uri string, method 
 // GetResource returns a resource from the defined ResourceScope after applying all URI change configured in the options.
 func (r *ResourceHandler) GetResource(ctx context.Context, scope ResourceScope, opts ResourcesGetResourceOptions, options ...URIOption) (*models.Resource, error) {
 	buildURI := r.buildResourceURI(scope)
-	return r.getResource(ctx, r.applyOptions(buildURI, options))
+	return r.GetResourceByURI(ctx, r.applyOptions(buildURI, options))
 }
 
 //DeleteResource delete a resource from the URI defined by ResourceScope and modified by the URIOption.
 func (r *ResourceHandler) DeleteResource(ctx context.Context, scope ResourceScope, opts ResourcesDeleteResourceOptions, options ...URIOption) error {
 	buildURI := r.buildResourceURI(scope)
-	return r.deleteResource(ctx, r.applyOptions(buildURI, options))
+	return r.DeleteResourceByURI(ctx, r.applyOptions(buildURI, options))
 }
 
 //UpdateResource updates a resource from the URI defined by ResourceScope and modified by the URIOption.
 func (r *ResourceHandler) UpdateResource(ctx context.Context, resource *models.Resource, scope ResourceScope, opts ResourcesUpdateResourceOptions, options ...URIOption) (string, error) {
 	buildURI := r.buildResourceURI(scope)
-	return r.updateResource(ctx, r.applyOptions(buildURI, options), resource)
+	return r.UpdateResourceByURI(ctx, r.applyOptions(buildURI, options), resource)
 }
 
 //CreateResource creates one or more resources at the URI defined by ResourceScope and modified by the URIOption.
 func (r *ResourceHandler) CreateResource(ctx context.Context, resource []*models.Resource, scope ResourceScope, opts ResourcesCreateResourceOptions, options ...URIOption) (string, error) {
 	buildURI := r.buildResourceURI(scope)
-	return r.createResources(ctx, r.applyOptions(buildURI, options), resource)
+	return r.CreateResourcesByURI(ctx, r.applyOptions(buildURI, options), resource)
 }
 
-func (r *ResourceHandler) getResource(ctx context.Context, uri string) (*models.Resource, error) {
+func (r *ResourceHandler) GetResourceByURI(ctx context.Context, uri string) (*models.Resource, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	body, statusCode, status, mErr := get(ctx, uri, r)
 	if mErr != nil {
@@ -452,7 +452,7 @@ func (r *ResourceHandler) getResource(ctx context.Context, uri string) (*models.
 	return resource, nil
 }
 
-func (r *ResourceHandler) deleteResource(ctx context.Context, uri string) error {
+func (r *ResourceHandler) DeleteResourceByURI(ctx context.Context, uri string) error {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, err := http.NewRequestWithContext(ctx, "DELETE", uri, nil)
 	if err != nil {
