@@ -42,16 +42,28 @@ type ResourcesGetAllStageResourcesOptions struct{}
 type ResourcesGetAllServiceResourcesOptions struct{}
 
 // ResourcesGetResourceOptions are options for ResourcesInterface.GetResource().
-type ResourcesGetResourceOptions struct{}
+type ResourcesGetResourceOptions struct {
+	// URIOptions modify the resource's URI.
+	URIOptions []URIOption
+}
 
 // ResourcesDeleteResourceOptions are options for ResourcesInterface.DeleteResource().
-type ResourcesDeleteResourceOptions struct{}
+type ResourcesDeleteResourceOptions struct {
+	// URIOptions modify the resource's URI.
+	URIOptions []URIOption
+}
 
 // ResourcesUpdateResourceOptions are options for ResourcesInterface.UpdateResource().
-type ResourcesUpdateResourceOptions struct{}
+type ResourcesUpdateResourceOptions struct {
+	// URIOptions modify the resource's URI.
+	URIOptions []URIOption
+}
 
 // ResourcesCreateResourceOptions are options for ResourcesInterface.CreateResource().
-type ResourcesCreateResourceOptions struct{}
+type ResourcesCreateResourceOptions struct {
+	// URIOptions modify the resource's URI.
+	URIOptions []URIOption
+}
 
 type ResourcesInterface interface {
 	// CreateResources creates a resource for the specified entity.
@@ -72,17 +84,17 @@ type ResourcesInterface interface {
 	// GetAllServiceResources returns a list of all resources.
 	GetAllServiceResources(ctx context.Context, project string, stage string, service string, opts ResourcesGetAllServiceResourcesOptions) ([]*models.Resource, error)
 
-	// GetResource returns a resource from the defined ResourceScope after applying all URI change configured in the options.
-	GetResource(ctx context.Context, scope ResourceScope, opts ResourcesGetResourceOptions, options ...URIOption) (*models.Resource, error)
+	// GetResource returns a resource from the defined ResourceScope.
+	GetResource(ctx context.Context, scope ResourceScope, opts ResourcesGetResourceOptions) (*models.Resource, error)
 
-	// DeleteResource delete a resource from the URI defined by ResourceScope and modified by the URIOption.
-	DeleteResource(ctx context.Context, scope ResourceScope, opts ResourcesDeleteResourceOptions, options ...URIOption) error
+	// DeleteResource delete a resource from the URI defined by ResourceScope.
+	DeleteResource(ctx context.Context, scope ResourceScope, opts ResourcesDeleteResourceOptions) error
 
-	// UpdateResource updates a resource from the URI defined by ResourceScope and modified by the URIOption.
-	UpdateResource(ctx context.Context, resource *models.Resource, scope ResourceScope, opts ResourcesUpdateResourceOptions, options ...URIOption) (string, error)
+	// UpdateResource updates a resource from the URI defined by ResourceScope.
+	UpdateResource(ctx context.Context, resource *models.Resource, scope ResourceScope, opts ResourcesUpdateResourceOptions) (string, error)
 
-	// CreateResource creates one or more resources at the URI defined by ResourceScope and modified by the URIOption.
-	CreateResource(ctx context.Context, resource []*models.Resource, scope ResourceScope, opts ResourcesCreateResourceOptions, options ...URIOption) (string, error)
+	// CreateResource creates one or more resources at the URI defined by ResourceScope.
+	CreateResource(ctx context.Context, resource []*models.Resource, scope ResourceScope, opts ResourcesCreateResourceOptions) (string, error)
 }
 
 // ResourceHandler handles resources
@@ -394,28 +406,28 @@ func (r *ResourceHandler) writeResource(ctx context.Context, uri string, method 
 	return version.Version, nil
 }
 
-// GetResource returns a resource from the defined ResourceScope after applying all URI change configured in the options.
-func (r *ResourceHandler) GetResource(ctx context.Context, scope ResourceScope, opts ResourcesGetResourceOptions, options ...URIOption) (*models.Resource, error) {
+// GetResource returns a resource from the defined ResourceScope.
+func (r *ResourceHandler) GetResource(ctx context.Context, scope ResourceScope, opts ResourcesGetResourceOptions) (*models.Resource, error) {
 	buildURI := r.buildResourceURI(scope)
-	return r.GetResourceByURI(ctx, r.applyOptions(buildURI, options))
+	return r.GetResourceByURI(ctx, r.applyOptions(buildURI, opts.URIOptions))
 }
 
-//DeleteResource delete a resource from the URI defined by ResourceScope and modified by the URIOption.
-func (r *ResourceHandler) DeleteResource(ctx context.Context, scope ResourceScope, opts ResourcesDeleteResourceOptions, options ...URIOption) error {
+//DeleteResource delete a resource from the URI defined by ResourceScope.
+func (r *ResourceHandler) DeleteResource(ctx context.Context, scope ResourceScope, opts ResourcesDeleteResourceOptions) error {
 	buildURI := r.buildResourceURI(scope)
-	return r.DeleteResourceByURI(ctx, r.applyOptions(buildURI, options))
+	return r.DeleteResourceByURI(ctx, r.applyOptions(buildURI, opts.URIOptions))
 }
 
-//UpdateResource updates a resource from the URI defined by ResourceScope and modified by the URIOption.
-func (r *ResourceHandler) UpdateResource(ctx context.Context, resource *models.Resource, scope ResourceScope, opts ResourcesUpdateResourceOptions, options ...URIOption) (string, error) {
+//UpdateResource updates a resource from the URI defined by ResourceScope.
+func (r *ResourceHandler) UpdateResource(ctx context.Context, resource *models.Resource, scope ResourceScope, opts ResourcesUpdateResourceOptions) (string, error) {
 	buildURI := r.buildResourceURI(scope)
-	return r.UpdateResourceByURI(ctx, r.applyOptions(buildURI, options), resource)
+	return r.UpdateResourceByURI(ctx, r.applyOptions(buildURI, opts.URIOptions), resource)
 }
 
-//CreateResource creates one or more resources at the URI defined by ResourceScope and modified by the URIOption.
-func (r *ResourceHandler) CreateResource(ctx context.Context, resource []*models.Resource, scope ResourceScope, opts ResourcesCreateResourceOptions, options ...URIOption) (string, error) {
+//CreateResource creates one or more resources at the URI defined by ResourceScope.
+func (r *ResourceHandler) CreateResource(ctx context.Context, resource []*models.Resource, scope ResourceScope, opts ResourcesCreateResourceOptions) (string, error) {
 	buildURI := r.buildResourceURI(scope)
-	return r.CreateResourcesByURI(ctx, r.applyOptions(buildURI, options), resource)
+	return r.CreateResourcesByURI(ctx, r.applyOptions(buildURI, opts.URIOptions), resource)
 }
 
 func (r *ResourceHandler) GetResourceByURI(ctx context.Context, uri string) (*models.Resource, error) {
