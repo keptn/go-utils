@@ -75,11 +75,21 @@ func (a *APIHandler) getHTTPClient() *http.Client {
 
 // SendEvent sends an event to Keptn
 func (a *APIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.EventContext, *models.Error) {
+	// the endpoint is not hosted by shipyard controller
+	// so we eventually remove the path suffix
+	baseURL := strings.TrimSuffix(a.getBaseURL(), "/"+shipyardControllerBaseURL)
+
+	// the correct path suffix for this endpoint is /api
+	// so we eventually add the it to the baseURL
+	if !strings.HasSuffix(baseURL, "api") {
+		baseURL += "/api"
+	}
+
 	bodyStr, err := event.ToJSON()
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(a.Scheme+"://"+a.getBaseURL()+v1EventPath, bodyStr, a)
+	return postWithEventContext(a.Scheme+"://"+baseURL+v1EventPath, bodyStr, a)
 }
 
 // TriggerEvaluation triggers a new evaluation
