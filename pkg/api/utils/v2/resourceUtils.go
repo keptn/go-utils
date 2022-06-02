@@ -230,17 +230,6 @@ func NewResourceHandler(baseURL string) *ResourceHandler {
 	}
 }
 
-// NewAuthenticatedResourceHandler returns a new ResourceHandler that authenticates at the api via the provided token
-// and sends all requests directly to the configuration-service
-// Deprecated: use APISet instead
-func NewAuthenticatedResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ResourceHandler {
-	if httpClient == nil {
-		httpClient = &http.Client{}
-	}
-	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
-	return createAuthenticatedResourceHandler(baseURL, authToken, authHeader, httpClient, scheme)
-}
-
 func createAuthenticatedResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ResourceHandler {
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")

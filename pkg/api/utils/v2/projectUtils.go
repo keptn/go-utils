@@ -67,17 +67,6 @@ func NewProjectHandler(baseURL string) *ProjectHandler {
 	}
 }
 
-// NewAuthenticatedProjectHandler returns a new ProjectHandler that authenticates at the api via the provided token
-// and sends all requests directly to the configuration-service
-// Deprecated: use APISet instead
-func NewAuthenticatedProjectHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ProjectHandler {
-	if httpClient == nil {
-		httpClient = &http.Client{}
-	}
-	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
-	return createAuthProjectHandler(baseURL, authToken, authHeader, httpClient, scheme)
-}
-
 func createAuthProjectHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ProjectHandler {
 	baseURL = strings.TrimPrefix(baseURL, "http://")
 	baseURL = strings.TrimPrefix(baseURL, "https://")
