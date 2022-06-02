@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.16.0](https://github.com/keptn/go-utils/compare/v0.15.0...v0.16.0) (2022-06-02)
+
+
+### Features
+
+* Added option for configuring number of retries for http event sender, as well as additional logging ([#465](https://github.com/keptn/keptn/issues/465)) ([2052e14](https://github.com/keptn/go-utils/commit/2052e1404e4c238aca16b2f2ea510d042373df4e))
+* Provide option to specify readiness condition ([#464](https://github.com/keptn/keptn/issues/464)) ([c5e1b75](https://github.com/keptn/go-utils/commit/c5e1b7519becaa8cd0f3501a4909df74f061843f))
+
+
+### Bug Fixes
+
+* Fixed wrong paths for apiutils ([#469](https://github.com/keptn/keptn/issues/469)) ([623e06c](https://github.com/keptn/go-utils/commit/623e06c0a2f683415c29d1a2ace85169a369fbee))
+
 ## [0.15.0](https://github.com/keptn/go-utils/compare/v0.14.0...v0.15.0) (2022-05-06)
 
 
