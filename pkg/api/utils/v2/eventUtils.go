@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 // EventsGetEventsOptions are options for EventsInterface.GetEvents().
@@ -27,7 +28,6 @@ type EventsInterface interface {
 	GetEventsWithRetry(ctx context.Context, filter *EventFilter, maxRetries int, retrySleepTime time.Duration, opts EventsGetEventsWithRetryOptions) ([]*models.KeptnContextExtendedCE, error)
 }
 
-// EventHandler handles services
 type EventHandler struct {
 	BaseURL    string
 	AuthToken  string
@@ -51,32 +51,28 @@ type EventFilter struct {
 
 // NewEventHandler returns a new EventHandler
 func NewEventHandler(baseURL string) *EventHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
-	return &EventHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
-		Scheme:     "http",
-	}
+	return NewEventHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
+}
+
+// NewEventHandlerWithHTTPClient returns a new EventHandler using the specified http.Client
+func NewEventHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *EventHandler {
+	return createEventHandler(baseURL, "", "", httpClient, "http")
 }
 
 const mongodbDatastoreServiceBaseUrl = "mongodb-datastore"
 
 func createAuthenticatedEventHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *EventHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, mongodbDatastoreServiceBaseUrl) {
 		baseURL += "/" + mongodbDatastoreServiceBaseUrl
 	}
 
+	return createEventHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
+
+func createEventHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *EventHandler {
 	return &EventHandler{
-		BaseURL:    baseURL,
+		BaseURL:    httputils.TrimHTTPScheme(baseURL),
 		AuthHeader: authHeader,
 		AuthToken:  authToken,
 		HTTPClient: httpClient,

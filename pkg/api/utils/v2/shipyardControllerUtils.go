@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 const shipyardControllerBaseURL = "controlPlane"
@@ -21,7 +22,6 @@ type ShipyardControlInterface interface {
 	GetOpenTriggeredEvents(ctx context.Context, filter EventFilter, opts ShipyardControlGetOpenTriggeredEventsOptions) ([]*models.KeptnContextExtendedCE, error)
 }
 
-// ShipyardControllerHandler handles services
 type ShipyardControllerHandler struct {
 	BaseURL    string
 	AuthToken  string
@@ -32,30 +32,26 @@ type ShipyardControllerHandler struct {
 
 // NewShipyardControllerHandler returns a new ShipyardControllerHandler which sends all requests directly to the configuration-service
 func NewShipyardControllerHandler(baseURL string) *ShipyardControllerHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
-	return &ShipyardControllerHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
-		Scheme:     "http",
-	}
+	return NewShipyardControllerHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
+}
+
+// NewShipyardControllerHandlerWithHTTPClient returns a new ShipyardControllerHandler which sends all requests directly to the configuration-service using the specified http.Client
+func NewShipyardControllerHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *ShipyardControllerHandler {
+	return createShipyardControllerHandler(baseURL, "", "", httpClient, "http")
 }
 
 func createAuthenticatedShipyardControllerHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ShipyardControllerHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
-
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
+
+	return createShipyardControllerHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
+
+func createShipyardControllerHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ShipyardControllerHandler {
 	return &ShipyardControllerHandler{
-		BaseURL:    baseURL,
+		BaseURL:    httputils.TrimHTTPScheme(baseURL),
 		AuthHeader: authHeader,
 		AuthToken:  authToken,
 		HTTPClient: httpClient,

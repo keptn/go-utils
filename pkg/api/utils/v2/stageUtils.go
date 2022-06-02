@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
@@ -37,30 +38,26 @@ type StageHandler struct {
 
 // NewStageHandler returns a new StageHandler which sends all requests directly to the configuration-service
 func NewStageHandler(baseURL string) *StageHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
-	return &StageHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)},
-		Scheme:     "http",
-	}
+	return NewStageHandlerWithHTTPClient(baseURL, &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)})
+}
+
+// NewStageHandlerWithHTTPClient returns a new StageHandler which sends all requests directly to the configuration-service using the specified http.Client
+func NewStageHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *StageHandler {
+	return createStageHandler(baseURL, "", "", httpClient, "http")
 }
 
 func createAuthenticatedStageHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *StageHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
 	baseURL = strings.TrimRight(baseURL, "/")
-
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
+
+	return createStageHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
+
+func createStageHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *StageHandler {
 	return &StageHandler{
-		BaseURL:    baseURL,
+		BaseURL:    httputils.TrimHTTPScheme(baseURL),
 		AuthHeader: authHeader,
 		AuthToken:  authToken,
 		HTTPClient: httpClient,

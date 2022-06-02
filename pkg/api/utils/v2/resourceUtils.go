@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 const pathToResource = "/resource"
@@ -216,29 +217,26 @@ func (r *resourceRequest) FromJSON(b []byte) error {
 
 // NewResourceHandler returns a new ResourceHandler which sends all requests directly to the configuration-service
 func NewResourceHandler(baseURL string) *ResourceHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
-	return &ResourceHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
-		Scheme:     "http",
-	}
+	return NewResourceHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
+}
+
+// NewResourceHandlerWithHTTPClient returns a new ResourceHandler which sends all requests directly to the configuration-service using the specified http.Client
+func NewResourceHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *ResourceHandler {
+	return createResourceHandler(baseURL, "", "", httpClient, "http")
 }
 
 func createAuthenticatedResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ResourceHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, configurationServiceBaseURL) {
 		baseURL += "/" + configurationServiceBaseURL
 	}
+
+	return createResourceHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
+
+func createResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ResourceHandler {
 	return &ResourceHandler{
-		BaseURL:    baseURL,
+		BaseURL:    httputils.TrimHTTPScheme(baseURL),
 		AuthHeader: authHeader,
 		AuthToken:  authToken,
 		HTTPClient: httpClient,

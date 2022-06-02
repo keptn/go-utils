@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 // ServicesCreateServiceInStageOptions are options for ServicesInterface.CreateServiceInStage().
@@ -48,32 +49,26 @@ type ServiceHandler struct {
 
 // NewServiceHandler returns a new ServiceHandler which sends all requests directly to the configuration-service
 func NewServiceHandler(baseURL string) *ServiceHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
-	return &ServiceHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
-		Scheme:     "http",
-	}
+	return NewServiceHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
+}
+
+// NewServiceHandlerWithHTTPClient returns a new ServiceHandler which sends all requests directly to the configuration-service using the specified http.Client
+func NewServiceHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *ServiceHandler {
+	return createServiceHandler(baseURL, "", "", httpClient, "http")
 }
 
 func createAuthenticatedServiceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ServiceHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
-
 	baseURL = strings.TrimRight(baseURL, "/")
-
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
 
+	return createServiceHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
+
+func createServiceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ServiceHandler {
 	return &ServiceHandler{
-		BaseURL:    baseURL,
+		BaseURL:    httputils.TrimHTTPScheme(baseURL),
 		AuthHeader: authHeader,
 		AuthToken:  authToken,
 		HTTPClient: httpClient,

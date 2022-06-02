@@ -47,27 +47,28 @@ type UniformHandler struct {
 	Scheme     string
 }
 
+// NewUniformHandler returns a new UniformHandler
 func NewUniformHandler(baseURL string) *UniformHandler {
-	baseURL = httputils.TrimHTTPScheme(baseURL)
-	return &UniformHandler{
-		BaseURL:    baseURL,
-		AuthToken:  "",
-		AuthHeader: "",
-		HTTPClient: &http.Client{Transport: getClientTransport(nil)},
-		Scheme:     "http",
-	}
+	return NewUniformHandlerWithHTTPClient(baseURL, &http.Client{Transport: getClientTransport(nil)})
+}
+
+// NewUniformHandlerWithHTTPClient returns a new UniformHandler using the specified http.Client
+func NewUniformHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *UniformHandler {
+	return createUniformHandler(baseURL, "", "", httpClient, "http")
 }
 
 func createAuthenticatedUniformHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *UniformHandler {
-	baseURL = httputils.TrimHTTPScheme(baseURL)
 	baseURL = strings.TrimRight(baseURL, "/")
-
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
 
+	return createUniformHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
+
+func createUniformHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *UniformHandler {
 	return &UniformHandler{
-		BaseURL:    baseURL,
+		BaseURL:    httputils.TrimHTTPScheme(baseURL),
 		AuthHeader: authHeader,
 		AuthToken:  authToken,
 		HTTPClient: httpClient,

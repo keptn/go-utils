@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 const secretServiceBaseURL = "secrets"
@@ -39,7 +40,7 @@ type SecretsInterface interface {
 	GetSecrets(ctx context.Context, opts SecretsGetSecretsOptions) (*models.GetSecretsResponse, error)
 }
 
-// SecretHandler handles services
+// SecretHandler handles secrets
 type SecretHandler struct {
 	BaseURL    string
 	AuthToken  string
@@ -50,32 +51,26 @@ type SecretHandler struct {
 
 // NewSecretHandler returns a new SecretHandler which sends all requests directly to the secret-service
 func NewSecretHandler(baseURL string) *SecretHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
-	return &SecretHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
-		Scheme:     "http",
-	}
+	return NewSecretHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
+}
+
+// NewSecretHandlerWithHTTPClient returns a new SecretHandler which sends all requests directly to the secret-service using the specified http.Client
+func NewSecretHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *SecretHandler {
+	return createSecretHandler(baseURL, "", "", httpClient, "http")
 }
 
 func createAuthenticatedSecretHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SecretHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
-
 	baseURL = strings.TrimRight(baseURL, "/")
-
 	if !strings.HasSuffix(baseURL, secretServiceBaseURL) {
 		baseURL += "/" + secretServiceBaseURL
 	}
 
+	return createSecretHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
+
+func createSecretHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SecretHandler {
 	return &SecretHandler{
-		BaseURL:    baseURL,
+		BaseURL:    httputils.TrimHTTPScheme(baseURL),
 		AuthHeader: authHeader,
 		AuthToken:  authToken,
 		HTTPClient: httpClient,

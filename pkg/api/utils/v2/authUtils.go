@@ -3,9 +3,9 @@ package v2
 import (
 	"context"
 	"net/http"
-	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 // AuthAuthenticateOptions are options for AuthInterface.Authenticate().
@@ -16,7 +16,6 @@ type AuthInterface interface {
 	Authenticate(ctx context.Context, opts AuthAuthenticateOptions) (*models.EventContext, *models.Error)
 }
 
-// AuthHandler handles projects
 type AuthHandler struct {
 	BaseURL    string
 	AuthToken  string
@@ -27,25 +26,21 @@ type AuthHandler struct {
 
 // NewAuthHandler returns a new AuthHandler
 func NewAuthHandler(baseURL string) *AuthHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
-	return &AuthHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
-		Scheme:     "http",
-	}
+	return NewAuthHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
+}
+
+// NewAuthHandlerWithHTTPClient returns a new AuthHandler using the specified http.Client
+func NewAuthHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *AuthHandler {
+	return createAuthHandler(baseURL, "", "", httpClient, "http")
 }
 
 func createAuthenticatedAuthHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *AuthHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
+	return createAuthHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
+
+func createAuthHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *AuthHandler {
 	return &AuthHandler{
-		BaseURL:    baseURL,
+		BaseURL:    httputils.TrimHTTPScheme(baseURL),
 		AuthHeader: authHeader,
 		AuthToken:  authToken,
 		HTTPClient: httpClient,

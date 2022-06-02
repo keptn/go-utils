@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 const v1EventPath = "/v1/event"
@@ -61,7 +62,6 @@ type APIInterface interface {
 	GetMetadata(ctx context.Context, opts APIGetMetadataOptions) (*models.Metadata, *models.Error)
 }
 
-// APIHandler handles projects
 type APIHandler struct {
 	BaseURL    string
 	AuthToken  string
@@ -71,14 +71,12 @@ type APIHandler struct {
 }
 
 func createAuthenticatedAPIHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *APIHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
 
 	return &APIHandler{
-		BaseURL:    baseURL,
+		BaseURL:    httputils.TrimHTTPScheme(baseURL),
 		AuthHeader: authHeader,
 		AuthToken:  authToken,
 		HTTPClient: httpClient,

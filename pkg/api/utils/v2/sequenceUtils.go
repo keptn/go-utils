@@ -73,28 +73,28 @@ func (s *SequenceControlBody) FromJSON(b []byte) error {
 	return nil
 }
 
+// NewSequenceControlHandlerWithHTTPClient returns a new SequenceControlHandler
 func NewSequenceControlHandler(baseURL string) *SequenceControlHandler {
-	baseURL = httputils.TrimHTTPScheme(baseURL)
-	return &SequenceControlHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
-		Scheme:     "http",
-	}
+	return NewSequenceControlHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
+}
+
+// NewSequenceControlHandlerWithHTTPClient returns a new SequenceControlHandler using the specified http.Client
+func NewSequenceControlHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *SequenceControlHandler {
+	return createSequenceControlHandler(baseURL, "", "", httpClient, "http")
 }
 
 func createAuthenticatedSequenceControlHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SequenceControlHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
 	baseURL = strings.TrimRight(baseURL, "/")
-
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
 
+	return createSequenceControlHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
+
+func createSequenceControlHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SequenceControlHandler {
 	return &SequenceControlHandler{
-		BaseURL:    baseURL,
+		BaseURL:    httputils.TrimHTTPScheme(baseURL),
 		AuthHeader: authHeader,
 		AuthToken:  authToken,
 		HTTPClient: httpClient,
