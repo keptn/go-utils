@@ -3,10 +3,10 @@ package api
 import (
 	"context"
 	"net/http"
-	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 type AuthV1Interface interface {
@@ -31,12 +31,6 @@ func NewAuthHandler(baseURL string) *AuthHandler {
 
 // NewAuthHandlerWithHTTPClient returns a new AuthHandler that uses the specified http.Client
 func NewAuthHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *AuthHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
-
 	return createAuthHandler(baseURL, "", "", httpClient, "http")
 }
 
@@ -52,12 +46,11 @@ func NewAuthenticatedAuthHandler(baseURL string, authToken string, authHeader st
 }
 
 func createAuthenticatedAuthHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *AuthHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
 	return createAuthHandler(baseURL, authToken, authHeader, httpClient, scheme)
 }
 
 func createAuthHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *AuthHandler {
+	baseURL = httputils.TrimHTTPScheme(baseURL)
 	return &AuthHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,

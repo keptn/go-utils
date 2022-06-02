@@ -8,6 +8,7 @@ import (
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 type EventsV1Interface interface {
@@ -48,12 +49,6 @@ func NewEventHandler(baseURL string) *EventHandler {
 
 // NewEventHandlerWithHTTPClient returns a new EventHandler that uses the specified http.Client
 func NewEventHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *EventHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
-
 	return createEventHandler(baseURL, "", "", httpClient, "http")
 }
 
@@ -70,8 +65,6 @@ func NewAuthenticatedEventHandler(baseURL string, authToken string, authHeader s
 }
 
 func createAuthenticatedEventHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *EventHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, mongodbDatastoreServiceBaseUrl) {
 		baseURL += "/" + mongodbDatastoreServiceBaseUrl
@@ -81,6 +74,7 @@ func createAuthenticatedEventHandler(baseURL string, authToken string, authHeade
 }
 
 func createEventHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *EventHandler {
+	baseURL = httputils.TrimHTTPScheme(baseURL)
 	return &EventHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,

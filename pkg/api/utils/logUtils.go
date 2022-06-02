@@ -10,6 +10,7 @@ import (
 	"github.com/benbjohnson/clock"
 	"github.com/keptn/go-utils/pkg/api/models"
 	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 const v1LogPath = "/v1/log"
@@ -58,12 +59,6 @@ func NewLogHandler(baseURL string) *LogHandler {
 
 // NewLogHandlerWithHTTPClient returns a new LogHandler that uses the specified http.Client
 func NewLogHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *LogHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
-
 	return createLogHandler(baseURL, "", "", httpClient, "http")
 }
 
@@ -78,8 +73,6 @@ func NewAuthenticatedLogHandler(baseURL string, authToken string, authHeader str
 }
 
 func createAuthenticatedLogHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *LogHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
@@ -89,6 +82,7 @@ func createAuthenticatedLogHandler(baseURL string, authToken string, authHeader 
 }
 
 func createLogHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *LogHandler {
+	baseURL = httputils.TrimHTTPScheme(baseURL)
 	return &LogHandler{
 		BaseURL:      baseURL,
 		AuthHeader:   authHeader,

@@ -7,6 +7,7 @@ import (
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
@@ -35,12 +36,6 @@ func NewStageHandler(baseURL string) *StageHandler {
 
 // NewStageHandlerWithHTTPClient returns a new StageHandler which sends all requests directly to the configuration-service using the specified http.Client
 func NewStageHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *StageHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
-
 	return createStageHandler(baseURL, "", "", httpClient, "http")
 }
 
@@ -56,10 +51,7 @@ func NewAuthenticatedStageHandler(baseURL string, authToken string, authHeader s
 }
 
 func createAuthenticatedStageHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *StageHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
 	baseURL = strings.TrimRight(baseURL, "/")
-
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
@@ -68,6 +60,7 @@ func createAuthenticatedStageHandler(baseURL string, authToken string, authHeade
 }
 
 func createStageHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *StageHandler {
+	baseURL = httputils.TrimHTTPScheme(baseURL)
 	return &StageHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,

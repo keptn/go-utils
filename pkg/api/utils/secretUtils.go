@@ -7,6 +7,7 @@ import (
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 const secretServiceBaseURL = "secrets"
@@ -48,12 +49,6 @@ func NewSecretHandler(baseURL string) *SecretHandler {
 
 // NewSecretHandlerWithHTTPClient returns a new SecretHandler which sends all requests directly to the secret-service using the specified http.Client
 func NewSecretHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *SecretHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
-
 	return createSecretHandler(baseURL, "", "", httpClient, "http")
 }
 
@@ -69,11 +64,7 @@ func NewAuthenticatedSecretHandler(baseURL string, authToken string, authHeader 
 }
 
 func createAuthenticatedSecretHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SecretHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
-
 	baseURL = strings.TrimRight(baseURL, "/")
-
 	if !strings.HasSuffix(baseURL, secretServiceBaseURL) {
 		baseURL += "/" + secretServiceBaseURL
 	}
@@ -82,6 +73,7 @@ func createAuthenticatedSecretHandler(baseURL string, authToken string, authHead
 }
 
 func createSecretHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SecretHandler {
+	baseURL = httputils.TrimHTTPScheme(baseURL)
 	return &SecretHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,

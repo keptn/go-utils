@@ -37,7 +37,7 @@ func NewUniformHandler(baseURL string) *UniformHandler {
 
 // NewUniformHandlerWithHTTPClient returns a new UniformHandler using the specified http.Client
 func NewUniformHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *UniformHandler {
-	return createUniformHandler(httputils.TrimHTTPScheme(baseURL), "", "", httpClient, "http")
+	return createUniformHandler(baseURL, "", "", httpClient, "http")
 }
 
 // NewAuthenticatedUniformHandler returns a new UniformHandler that authenticates at the api via the provided token
@@ -51,9 +51,7 @@ func NewAuthenticatedUniformHandler(baseURL string, authToken string, authHeader
 }
 
 func createAuthenticatedUniformHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *UniformHandler {
-	baseURL = httputils.TrimHTTPScheme(baseURL)
 	baseURL = strings.TrimRight(baseURL, "/")
-
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
@@ -62,6 +60,7 @@ func createAuthenticatedUniformHandler(baseURL string, authToken string, authHea
 }
 
 func createUniformHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *UniformHandler {
+	baseURL = httputils.TrimHTTPScheme(baseURL)
 	return &UniformHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,

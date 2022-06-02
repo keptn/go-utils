@@ -10,6 +10,7 @@ import (
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 const pathToResource = "/resource"
@@ -212,12 +213,6 @@ func NewResourceHandler(baseURL string) *ResourceHandler {
 
 // NewResourceHandlerWithHTTPClient returns a new ResourceHandler which sends all requests directly to the configuration-service using the specified http.Client
 func NewResourceHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *ResourceHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
-
 	return createResourceHandler(baseURL, "", "", httpClient, "http")
 }
 
@@ -233,16 +228,16 @@ func NewAuthenticatedResourceHandler(baseURL string, authToken string, authHeade
 }
 
 func createAuthenticatedResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ResourceHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, configurationServiceBaseURL) {
 		baseURL += "/" + configurationServiceBaseURL
 	}
+
 	return createResourceHandler(baseURL, authToken, authHeader, httpClient, scheme)
 }
 
 func createResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ResourceHandler {
+	baseURL = httputils.TrimHTTPScheme(baseURL)
 	return &ResourceHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,

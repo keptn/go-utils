@@ -7,6 +7,7 @@ import (
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 type ServicesV1Interface interface {
@@ -40,12 +41,6 @@ func NewServiceHandler(baseURL string) *ServiceHandler {
 
 // NewServiceHandlerWithHTTPClient returns a new ServiceHandler which sends all requests directly to the configuration-service using the specified http.Client
 func NewServiceHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *ServiceHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
-
 	return createServiceHandler(baseURL, "", "", httpClient, "http")
 }
 
@@ -61,11 +56,7 @@ func NewAuthenticatedServiceHandler(baseURL string, authToken string, authHeader
 }
 
 func createAuthenticatedServiceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ServiceHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
-
 	baseURL = strings.TrimRight(baseURL, "/")
-
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
@@ -74,6 +65,7 @@ func createAuthenticatedServiceHandler(baseURL string, authToken string, authHea
 }
 
 func createServiceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ServiceHandler {
+	baseURL = httputils.TrimHTTPScheme(baseURL)
 	return &ServiceHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,

@@ -7,6 +7,7 @@ import (
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 const shipyardControllerBaseURL = "controlPlane"
@@ -33,12 +34,6 @@ func NewShipyardControllerHandler(baseURL string) *ShipyardControllerHandler {
 
 // NewShipyardControllerHandlerWithHTTPClient returns a new ShipyardControllerHandler which sends all requests directly to the configuration-service using the specified http.Client
 func NewShipyardControllerHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *ShipyardControllerHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
-
 	return createShipyardControllerHandler(baseURL, "", "", httpClient, "http")
 }
 
@@ -54,9 +49,6 @@ func NewAuthenticatedShipyardControllerHandler(baseURL string, authToken string,
 }
 
 func createAuthenticatedShipyardControllerHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ShipyardControllerHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
-
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
@@ -66,6 +58,7 @@ func createAuthenticatedShipyardControllerHandler(baseURL string, authToken stri
 }
 
 func createShipyardControllerHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ShipyardControllerHandler {
+	baseURL = httputils.TrimHTTPScheme(baseURL)
 	return &ShipyardControllerHandler{
 		BaseURL:    baseURL,
 		AuthHeader: authHeader,

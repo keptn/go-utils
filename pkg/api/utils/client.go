@@ -169,7 +169,7 @@ func New(baseURL string, options ...func(*APISet)) (*APISet, error) {
 	as.authHandler = createAuthenticatedAuthHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
 	as.logHandler = createAuthenticatedLogHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
 	as.eventHandler = createAuthenticatedEventHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
-	as.projectHandler = createAuthProjectHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.projectHandler = createAuthenticatedProjectHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
 	as.resourceHandler = createAuthenticatedResourceHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
 	as.secretHandler = createAuthenticatedSecretHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
 	as.sequenceControlHandler = createAuthenticatedSequenceControlHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
