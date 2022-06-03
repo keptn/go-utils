@@ -76,10 +76,7 @@ func (a *APIHandler) getHTTPClient() *http.Client {
 
 // SendEvent sends an event to Keptn
 func (a *APIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.EventContext, *models.Error) {
-	baseURL := a.getBaseURL()
-	if strings.HasSuffix(baseURL, "/"+shipyardControllerBaseURL) {
-		baseURL = strings.TrimSuffix(a.getBaseURL(), "/"+shipyardControllerBaseURL)
-	}
+	baseURL := a.getAPIServicePath()
 
 	bodyStr, err := event.ToJSON()
 	if err != nil {
@@ -158,10 +155,7 @@ func (a *APIHandler) DeleteService(project, service string) (*models.DeleteServi
 
 // GetMetadata retrieve keptn MetaData information
 func (a *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
-	baseURL := a.getBaseURL()
-	if strings.HasSuffix(baseURL, "/"+shipyardControllerBaseURL) {
-		baseURL = strings.TrimSuffix(a.getBaseURL(), "/"+shipyardControllerBaseURL)
-	}
+	baseURL := a.getAPIServicePath()
 
 	fmt.Printf("API URL: %s", a.Scheme+"://"+baseURL+v1MetadataPath)
 	req, err := http.NewRequest("GET", a.Scheme+"://"+baseURL+v1MetadataPath, nil)
@@ -197,4 +191,12 @@ func (a *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
 	}
 
 	return nil, handleErrStatusCode(resp.StatusCode, body)
+}
+
+func (a *APIHandler) getAPIServicePath() string {
+	baseURL := a.getBaseURL()
+	if strings.HasSuffix(baseURL, "/"+shipyardControllerBaseURL) {
+		baseURL = strings.TrimSuffix(a.getBaseURL(), "/"+shipyardControllerBaseURL)
+	}
+	return baseURL
 }
