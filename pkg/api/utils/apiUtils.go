@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -78,7 +79,6 @@ func (a *APIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.Eve
 	baseURL := a.getBaseURL()
 	if strings.HasSuffix(baseURL, "/"+shipyardControllerBaseURL) {
 		baseURL = strings.TrimSuffix(a.getBaseURL(), "/"+shipyardControllerBaseURL)
-		baseURL += "/api"
 	}
 
 	bodyStr, err := event.ToJSON()
@@ -161,9 +161,9 @@ func (a *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
 	baseURL := a.getBaseURL()
 	if strings.HasSuffix(baseURL, "/"+shipyardControllerBaseURL) {
 		baseURL = strings.TrimSuffix(a.getBaseURL(), "/"+shipyardControllerBaseURL)
-		baseURL += "/api"
 	}
 
+	fmt.Printf("API URL: %s", a.Scheme+"://"+baseURL+v1MetadataPath)
 	req, err := http.NewRequest("GET", a.Scheme+"://"+baseURL+v1MetadataPath, nil)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
