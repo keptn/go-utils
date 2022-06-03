@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -157,7 +156,6 @@ func (a *APIHandler) DeleteService(project, service string) (*models.DeleteServi
 func (a *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
 	baseURL := a.getAPIServicePath()
 
-	fmt.Printf("API URL: %s", a.Scheme+"://"+baseURL+v1MetadataPath)
 	req, err := http.NewRequest("GET", a.Scheme+"://"+baseURL+v1MetadataPath, nil)
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
