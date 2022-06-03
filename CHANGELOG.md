@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.16.1](https://github.com/keptn/go-utils/compare/v0.16.0...v0.16.1) (2022-06-03)
+
+
+### Bug Fixes
+
+* Set the path properly for calls to api-service ([#471](https://github.com/keptn/keptn/issues/471)) ([0650f77](https://github.com/keptn/go-utils/commit/0650f7701c35cfd296d85e6e224fab6770028b09))
+
 ## [0.16.0](https://github.com/keptn/go-utils/compare/v0.15.0...v0.16.0) (2022-06-02)
 
 
