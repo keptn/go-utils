@@ -4,10 +4,10 @@ package models
 type GitAuthCredentials struct {
 
 	// git remote URL
-	GitRemoteURL string `json:"gitRemoteURL"`
+	RemoteURL string `json:"remoteURL"`
 
 	// git user
-	GitUser string `json:"gitUser,omitempty"`
+	User string `json:"user,omitempty"`
 
 	// https git credentials
 	HttpsAuth *HttpsGitAuth `json:"https,omitempty"`
@@ -59,10 +59,10 @@ type ProxyGitAuth struct {
 // model for retrieving credentials data with GET request
 type GitAuthCredentialsSecure struct {
 	// git remote URL
-	GitRemoteURL string `json:"gitRemoteURL"`
+	RemoteURL string `json:"remoteURL"`
 
 	// git user
-	GitUser string `json:"gitUser,omitempty"`
+	User string `json:"user,omitempty"`
 
 	// https git credentials
 	HttpsAuth *HttpsGitAuthSecure `json:"https,omitempty"`
