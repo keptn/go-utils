@@ -12,12 +12,9 @@ import (
 // and contains the name, id and subscription data as well as other information
 // needed to register a Keptn service to the control plane
 type Integration struct {
-	ID       string   `json:"id" bson:"_id"`
-	Name     string   `json:"name" bson:"name"`
-	MetaData MetaData `json:"metadata" bson:"metadata"`
-	// Deprecated: for backwards compatibility Subscription is populated
-	// but new code shall use Subscriptions
-	Subscription  Subscription        `json:"subscription" bson:"subscription"`
+	ID            string              `json:"id" bson:"_id"`
+	Name          string              `json:"name" bson:"name"`
+	MetaData      MetaData            `json:"metadata" bson:"metadata"`
 	Subscriptions []EventSubscription `json:"subscriptions" bson:"subscriptions"`
 }
 
@@ -32,27 +29,11 @@ type MetaData struct {
 	LastSeen           time.Time          `json:"lastseen" bson:"lastseen"`
 }
 
-// Subscription describes to what events the Keptn service is subscribed to
-// Deprecated
-type Subscription struct {
-	Topics []string           `json:"topics" bson:"topics"`
-	Status string             `json:"status" bson:"status"`
-	Filter SubscriptionFilter `json:"filter" bson:"filter"`
-}
-
 // EventSubscription describes to what events the Keptn service is subscribed to
 type EventSubscription struct {
 	ID     string                  `json:"id" bson:"id"`
 	Event  string                  `json:"event" bson:"event"`
 	Filter EventSubscriptionFilter `json:"filter" bson:"filter"`
-}
-
-// SubscriptionFilter is used to filter subscriptions by project stage or service
-// Deprecated
-type SubscriptionFilter struct {
-	Project string `json:"project" bson:"project"`
-	Stage   string `json:"stage" bson:"stage"`
-	Service string `json:"service" bson:"service"`
 }
 
 // EventSubscriptionFilter is used to filter subscriptions by projects stages and/or services
