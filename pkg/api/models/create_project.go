@@ -4,40 +4,6 @@ import "encoding/json"
 
 // CreateProject create project
 type CreateProject struct {
-
-	// git remote URL
-	GitRemoteURL string `json:"gitRemoteURL,omitempty"`
-
-	// git token
-	GitToken string `json:"gitToken,omitempty"`
-
-	// git private key
-	GitPrivateKey string `json:"gitPrivateKey,omitempty"`
-
-	// git private key passphrase
-	GitPrivateKeyPass string `json:"gitPrivateKeyPass,omitempty"`
-
-	// git proxy URL
-	GitProxyURL string `json:"gitProxyUrl,omitempty"`
-
-	// git proxy scheme
-	GitProxyScheme string `json:"gitProxyScheme,omitempty"`
-
-	// git proxy user
-	GitProxyUser string `json:"gitProxyUser,omitempty"`
-
-	// insecure skip tls
-	InsecureSkipTLS bool `json:"insecureSkipTLS"`
-
-	// git proxy password
-	GitProxyPassword string `json:"gitProxyPassword,omitempty"`
-
-	//git PEM Certificate
-	GitPemCertificate string `json:"gitPemCertificate,omitempty"`
-
-	// git user
-	GitUser string `json:"gitUser,omitempty"`
-
 	// name
 	// Required: true
 	Name *string `json:"name"`
@@ -45,6 +11,9 @@ type CreateProject struct {
 	// shipyard
 	// Required: true
 	Shipyard *string `json:"shipyard"`
+
+	// git auth credentials
+	GitCredentials GitAuthCredentials `json:"gitCredentials"`
 }
 
 // ToJSON converts object to JSON string

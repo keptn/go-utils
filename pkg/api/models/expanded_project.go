@@ -8,12 +8,6 @@ type ExpandedProject struct {
 	// Creation date of the project
 	CreationDate string `json:"creationDate,omitempty"`
 
-	// Git remote URI
-	GitRemoteURI string `json:"gitRemoteURI,omitempty"`
-
-	// Git User
-	GitUser string `json:"gitUser,omitempty"`
-
 	// last event context
 	LastEventContext *EventContextInfo `json:"lastEventContext,omitempty"`
 
@@ -26,18 +20,9 @@ type ExpandedProject struct {
 	// Version of the shipyard file
 	ShipyardVersion string `json:"shipyardVersion,omitempty"`
 
-	// git proxy URL
-	GitProxyURL string `json:"gitProxyUrl,omitempty"`
-
-	// git proxy scheme
-	GitProxyScheme string `json:"gitProxyScheme,omitempty"`
-
-	// git proxy user
-	GitProxyUser string `json:"gitProxyUser,omitempty"`
-
-	// insecure skip tls
-	InsecureSkipTLS bool `json:"insecureSkipTLS"`
-
 	// stages
 	Stages []*ExpandedStage `json:"stages"`
+
+	// git auth credentials
+	GitCredentials GitAuthCredentialsSecure `json:"gitCredentials"`
 }

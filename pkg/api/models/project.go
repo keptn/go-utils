@@ -8,39 +8,6 @@ type Project struct {
 	// Creation date of the service
 	CreationDate string `json:"creationDate,omitempty"`
 
-	// Git remote URI
-	GitRemoteURI string `json:"gitRemoteURI,omitempty"`
-
-	// Git token
-	GitToken string `json:"gitToken,omitempty"`
-
-	// git private key
-	GitPrivateKey string `json:"gitPrivateKey,omitempty"`
-
-	// git private key passphrase
-	GitPrivateKeyPass string `json:"gitPrivateKeyPass,omitempty"`
-
-	// git proxy URL
-	GitProxyURL string `json:"gitProxyUrl,omitempty"`
-
-	// git proxy scheme
-	GitProxyScheme string `json:"gitProxyScheme,omitempty"`
-
-	// git proxy user
-	GitProxyUser string `json:"gitProxyUser,omitempty"`
-
-	// insecure skip tls
-	InsecureSkipTLS bool `json:"insecureSkipTLS"`
-
-	// git proxy password
-	GitProxyPassword string `json:"gitProxyPassword,omitempty"`
-
-	//git PEM Certificate
-	GitPemCertificate string `json:"gitPemCertificate,omitempty"`
-
-	// Git User
-	GitUser string `json:"gitUser,omitempty"`
-
 	// Project name
 	ProjectName string `json:"projectName,omitempty"`
 
@@ -49,6 +16,9 @@ type Project struct {
 
 	// stages
 	Stages []*Stage `json:"stages"`
+
+	// git auth credentials
+	GitCredentials GitAuthCredentials `json:"gitCredentials"`
 }
 
 // ToJSON converts object to JSON string
