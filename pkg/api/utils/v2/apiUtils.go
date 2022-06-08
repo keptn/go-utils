@@ -63,41 +63,42 @@ type APIInterface interface {
 }
 
 type APIHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	baseURL    string
+	authToken  string
+	authHeader string
+	httpClient *http.Client
+	scheme     string
 }
 
-func createAuthenticatedAPIHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *APIHandler {
+// NewAuthenticatedAPIHandler returns a new APIHandler that authenticates at the api-service endpoint via the provided token
+func NewAuthenticatedAPIHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *APIHandler {
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
 
 	return &APIHandler{
-		BaseURL:    httputils.TrimHTTPScheme(baseURL),
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
+		baseURL:    httputils.TrimHTTPScheme(baseURL),
+		authHeader: authHeader,
+		authToken:  authToken,
+		httpClient: httpClient,
+		scheme:     scheme,
 	}
 }
 
 func (a *APIHandler) getBaseURL() string {
-	return a.BaseURL
+	return a.baseURL
 }
 
 func (a *APIHandler) getAuthToken() string {
-	return a.AuthToken
+	return a.authToken
 }
 
 func (a *APIHandler) getAuthHeader() string {
-	return a.AuthHeader
+	return a.authHeader
 }
 
 func (a *APIHandler) getHTTPClient() *http.Client {
-	return a.HTTPClient
+	return a.httpClient
 }
 
 // SendEvent sends an event to Keptn.
@@ -113,7 +114,7 @@ func (a *APIHandler) SendEvent(ctx context.Context, event models.KeptnContextExt
 		baseURL += "/api"
 	}
 
-	return postWithEventContext(ctx, a.Scheme+"://"+baseURL+v1EventPath, bodyStr, a)
+	return postWithEventContext(ctx, a.scheme+"://"+baseURL+v1EventPath, bodyStr, a)
 }
 
 // TriggerEvaluation triggers a new evaluation.
@@ -122,7 +123,7 @@ func (a *APIHandler) TriggerEvaluation(ctx context.Context, project, stage, serv
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(ctx, a.Scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+service+"/evaluation", bodyStr, a)
+	return postWithEventContext(ctx, a.scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+service+"/evaluation", bodyStr, a)
 }
 
 // CreateProject creates a new project.
@@ -132,7 +133,7 @@ func (a *APIHandler) CreateProject(ctx context.Context, project models.CreatePro
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
-	return post(ctx, a.Scheme+"://"+a.getBaseURL()+v1ProjectPath, bodyStr, a)
+	return post(ctx, a.scheme+"://"+a.getBaseURL()+v1ProjectPath, bodyStr, a)
 }
 
 // UpdateProject updates a project.
@@ -141,12 +142,12 @@ func (a *APIHandler) UpdateProject(ctx context.Context, project models.CreatePro
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
-	return put(ctx, a.Scheme+"://"+a.getBaseURL()+v1ProjectPath, bodyStr, a)
+	return put(ctx, a.scheme+"://"+a.getBaseURL()+v1ProjectPath, bodyStr, a)
 }
 
 // DeleteProject deletes a project.
 func (a *APIHandler) DeleteProject(ctx context.Context, project models.Project, opts APIDeleteProjectOptions) (*models.DeleteProjectResponse, *models.Error) {
-	resp, err := delete(ctx, a.Scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, a)
+	resp, err := delete(ctx, a.scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, a)
 	if err != nil {
 		return nil, err
 	}
@@ -167,12 +168,12 @@ func (a *APIHandler) CreateService(ctx context.Context, project string, service 
 	if err != nil {
 		return "", buildErrorResponse(err.Error())
 	}
-	return post(ctx, a.Scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project+pathToService, bodyStr, a)
+	return post(ctx, a.scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project+pathToService, bodyStr, a)
 }
 
 // DeleteService deletes a service.
 func (a *APIHandler) DeleteService(ctx context.Context, project, service string, opts APIDeleteServiceOptions) (*models.DeleteServiceResponse, *models.Error) {
-	resp, err := delete(ctx, a.Scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project+pathToService+"/"+service, a)
+	resp, err := delete(ctx, a.scheme+"://"+a.getBaseURL()+v1ProjectPath+"/"+project+pathToService+"/"+service, a)
 
 	if err != nil {
 		return nil, err
@@ -196,7 +197,7 @@ func (a *APIHandler) GetMetadata(ctx context.Context, opts APIGetMetadataOptions
 		baseURL += "/api"
 	}
 
-	body, mErr := getAndExpectSuccess(ctx, a.Scheme+"://"+baseURL+v1MetadataPath, nil)
+	body, mErr := getAndExpectSuccess(ctx, a.scheme+"://"+baseURL+v1MetadataPath, nil)
 	if mErr != nil {
 		return nil, mErr
 

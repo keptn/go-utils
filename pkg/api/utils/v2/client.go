@@ -165,17 +165,17 @@ func New(baseURL string, options ...func(*APISet)) (*APISet, error) {
 		}
 	}
 
-	as.apiHandler = createAuthenticatedAPIHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
-	as.authHandler = createAuthenticatedAuthHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
-	as.logHandler = createAuthenticatedLogHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
-	as.eventHandler = createAuthenticatedEventHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
-	as.projectHandler = createAuthenticatedProjectHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
-	as.resourceHandler = createAuthenticatedResourceHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
-	as.secretHandler = createAuthenticatedSecretHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
-	as.sequenceControlHandler = createAuthenticatedSequenceControlHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
-	as.serviceHandler = createAuthenticatedServiceHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
-	as.shipyardControlHandler = createAuthenticatedShipyardControllerHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
-	as.stageHandler = createAuthenticatedStageHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
-	as.uniformHandler = createAuthenticatedUniformHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.apiHandler = NewAuthenticatedAPIHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.authHandler = NewAuthenticatedAuthHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.logHandler = NewAuthenticatedLogHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.eventHandler = NewAuthenticatedEventHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.projectHandler = NewAuthenticatedProjectHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.resourceHandler = NewAuthenticatedResourceHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.secretHandler = NewAuthenticatedSecretHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.sequenceControlHandler = NewAuthenticatedSequenceControlHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.serviceHandler = NewAuthenticatedServiceHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.shipyardControlHandler = NewAuthenticatedShipyardControllerHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.stageHandler = NewAuthenticatedStageHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
+	as.uniformHandler = NewAuthenticatedUniformHandler(baseURL, as.apiToken, as.authHeader, as.httpClient, as.scheme)
 	return as, nil
 }

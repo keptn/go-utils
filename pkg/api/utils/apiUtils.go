@@ -41,7 +41,7 @@ type APIV1Interface interface {
 
 // APIHandler handles projects
 type APIHandler struct {
-	apiHandler v2.APIHandler
+	apiHandler *v2.APIHandler
 	BaseURL    string
 	AuthToken  string
 	AuthHeader string
@@ -60,6 +60,8 @@ func NewAuthenticatedAPIHandler(baseURL string, authToken string, authHeader str
 }
 
 func createAuthenticatedAPIHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *APIHandler {
+	v2APIHandler := v2.NewAuthenticatedAPIHandler(baseURL, authToken, authHeader, httpClient, scheme)
+
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
@@ -70,14 +72,7 @@ func createAuthenticatedAPIHandler(baseURL string, authToken string, authHeader 
 		AuthToken:  authToken,
 		HTTPClient: httpClient,
 		Scheme:     scheme,
-
-		apiHandler: v2.APIHandler{
-			BaseURL:    baseURL,
-			AuthHeader: authHeader,
-			AuthToken:  authToken,
-			HTTPClient: httpClient,
-			Scheme:     scheme,
-		},
+		apiHandler: v2APIHandler,
 	}
 }
 

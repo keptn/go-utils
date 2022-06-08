@@ -102,7 +102,7 @@ func TestLogHandler_Flush(t *testing.T) {
 
 			lh := NewLogHandler(ts.URL)
 
-			lh.LogCache = []models.LogEntry{
+			lh.logCache = []models.LogEntry{
 				{
 					IntegrationID: "id",
 				},
@@ -183,7 +183,7 @@ func TestLogHandler_Log(t *testing.T) {
 	}
 	wg.Wait()
 
-	require.Len(t, lh.LogCache, 100)
+	require.Len(t, lh.logCache, 100)
 }
 
 func TestLogHandler_Start(t *testing.T) {
@@ -198,7 +198,7 @@ func TestLogHandler_Start(t *testing.T) {
 
 	mockClock := clock.NewMock()
 	lh := NewLogHandler(ts.URL)
-	lh.TheClock = mockClock
+	lh.theClock = mockClock
 
 	lh.Log([]models.LogEntry{
 		{

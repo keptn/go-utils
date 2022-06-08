@@ -18,7 +18,7 @@ type SequencesV1Interface interface {
 }
 
 type SequenceControlHandler struct {
-	sequenceControlHandler v2.SequenceControlHandler
+	sequenceControlHandler *v2.SequenceControlHandler
 	BaseURL                string
 	AuthToken              string
 	AuthHeader             string
@@ -79,7 +79,12 @@ func NewSequenceControlHandler(baseURL string) *SequenceControlHandler {
 
 // NewSequenceControlHandlerWithHTTPClient returns a new SequenceControlHandler using the specified http.Client
 func NewSequenceControlHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *SequenceControlHandler {
-	return createSequenceControlHandler(baseURL, "", "", httpClient, "http")
+	return &SequenceControlHandler{
+		BaseURL:                httputils.TrimHTTPScheme(baseURL),
+		HTTPClient:             httpClient,
+		Scheme:                 "http",
+		sequenceControlHandler: v2.NewSequenceControlHandlerWithHTTPClient(baseURL, httpClient),
+	}
 }
 
 // NewAuthenticatedSequenceControlHandler returns a new SequenceControlHandler that authenticates at the api via the provided token
@@ -93,30 +98,20 @@ func NewAuthenticatedSequenceControlHandler(baseURL string, authToken string, au
 }
 
 func createAuthenticatedSequenceControlHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SequenceControlHandler {
+	v2SequenceControlHandler := v2.NewAuthenticatedSequenceControlHandler(baseURL, authToken, authHeader, httpClient, scheme)
+
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
 
-	return createSequenceControlHandler(baseURL, authToken, authHeader, httpClient, scheme)
-}
-
-func createSequenceControlHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SequenceControlHandler {
-	baseURL = httputils.TrimHTTPScheme(baseURL)
 	return &SequenceControlHandler{
-		BaseURL:    baseURL,
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
-
-		sequenceControlHandler: v2.SequenceControlHandler{
-			BaseURL:    baseURL,
-			AuthHeader: authHeader,
-			AuthToken:  authToken,
-			HTTPClient: httpClient,
-			Scheme:     scheme,
-		},
+		BaseURL:                httputils.TrimHTTPScheme(baseURL),
+		AuthHeader:             authHeader,
+		AuthToken:              authToken,
+		HTTPClient:             httpClient,
+		Scheme:                 scheme,
+		sequenceControlHandler: v2SequenceControlHandler,
 	}
 }
 

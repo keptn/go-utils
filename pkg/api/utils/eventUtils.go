@@ -21,7 +21,7 @@ type EventsV1Interface interface {
 
 // EventHandler handles services
 type EventHandler struct {
-	eventHandler v2.EventHandler
+	eventHandler *v2.EventHandler
 	BaseURL      string
 	AuthToken    string
 	AuthHeader   string
@@ -49,7 +49,12 @@ func NewEventHandler(baseURL string) *EventHandler {
 
 // NewEventHandlerWithHTTPClient returns a new EventHandler that uses the specified http.Client
 func NewEventHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *EventHandler {
-	return createEventHandler(baseURL, "", "", httpClient, "http")
+	return &EventHandler{
+		BaseURL:      httputils.TrimHTTPScheme(baseURL),
+		HTTPClient:   httpClient,
+		Scheme:       "http",
+		eventHandler: v2.NewEventHandlerWithHTTPClient(baseURL, httpClient),
+	}
 }
 
 const mongodbDatastoreServiceBaseUrl = "mongodb-datastore"
@@ -65,30 +70,20 @@ func NewAuthenticatedEventHandler(baseURL string, authToken string, authHeader s
 }
 
 func createAuthenticatedEventHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *EventHandler {
+	v2EventHandler := v2.NewAuthenticatedEventHandler(baseURL, authToken, authHeader, httpClient, scheme)
+
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, mongodbDatastoreServiceBaseUrl) {
 		baseURL += "/" + mongodbDatastoreServiceBaseUrl
 	}
 
-	return createEventHandler(baseURL, authToken, authHeader, httpClient, scheme)
-}
-
-func createEventHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *EventHandler {
-	baseURL = httputils.TrimHTTPScheme(baseURL)
 	return &EventHandler{
-		BaseURL:    baseURL,
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
-
-		eventHandler: v2.EventHandler{
-			BaseURL:    baseURL,
-			AuthHeader: authHeader,
-			AuthToken:  authToken,
-			HTTPClient: httpClient,
-			Scheme:     scheme,
-		},
+		BaseURL:      httputils.TrimHTTPScheme(baseURL),
+		AuthHeader:   authHeader,
+		AuthToken:    authToken,
+		HTTPClient:   httpClient,
+		Scheme:       scheme,
+		eventHandler: v2EventHandler,
 	}
 }
 

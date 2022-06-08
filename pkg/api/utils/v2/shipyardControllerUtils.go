@@ -23,11 +23,11 @@ type ShipyardControlInterface interface {
 }
 
 type ShipyardControllerHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	baseURL    string
+	authToken  string
+	authHeader string
+	httpClient *http.Client
+	scheme     string
 }
 
 // NewShipyardControllerHandler returns a new ShipyardControllerHandler which sends all requests directly to the configuration-service
@@ -40,7 +40,9 @@ func NewShipyardControllerHandlerWithHTTPClient(baseURL string, httpClient *http
 	return createShipyardControllerHandler(baseURL, "", "", httpClient, "http")
 }
 
-func createAuthenticatedShipyardControllerHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ShipyardControllerHandler {
+// NewAuthenticatedShipyardControllerHandler returns a new ShipyardControllerHandler that authenticates at the api via the provided token
+// and sends all requests directly to the configuration-service
+func NewAuthenticatedShipyardControllerHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ShipyardControllerHandler {
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
@@ -51,28 +53,28 @@ func createAuthenticatedShipyardControllerHandler(baseURL string, authToken stri
 
 func createShipyardControllerHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ShipyardControllerHandler {
 	return &ShipyardControllerHandler{
-		BaseURL:    httputils.TrimHTTPScheme(baseURL),
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
+		baseURL:    httputils.TrimHTTPScheme(baseURL),
+		authHeader: authHeader,
+		authToken:  authToken,
+		httpClient: httpClient,
+		scheme:     scheme,
 	}
 }
 
 func (s *ShipyardControllerHandler) getBaseURL() string {
-	return s.BaseURL
+	return s.baseURL
 }
 
 func (s *ShipyardControllerHandler) getAuthToken() string {
-	return s.AuthToken
+	return s.authToken
 }
 
 func (s *ShipyardControllerHandler) getAuthHeader() string {
-	return s.AuthHeader
+	return s.authHeader
 }
 
 func (s *ShipyardControllerHandler) getHTTPClient() *http.Client {
-	return s.HTTPClient
+	return s.httpClient
 }
 
 // GetOpenTriggeredEvents returns all open triggered events.
@@ -83,7 +85,7 @@ func (s *ShipyardControllerHandler) GetOpenTriggeredEvents(ctx context.Context, 
 	nextPageKey := ""
 
 	for {
-		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + v1EventPath + "/triggered/" + filter.EventType)
+		url, err := url.Parse(s.scheme + "://" + s.getBaseURL() + v1EventPath + "/triggered/" + filter.EventType)
 
 		q := url.Query()
 		if nextPageKey != "" {

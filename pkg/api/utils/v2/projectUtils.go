@@ -48,11 +48,11 @@ type ProjectsInterface interface {
 
 // ProjectHandler handles projects
 type ProjectHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	baseURL    string
+	authToken  string
+	authHeader string
+	httpClient *http.Client
+	scheme     string
 }
 
 // NewProjectHandler returns a new ProjectHandler which sends all requests directly to the configuration-service
@@ -65,7 +65,9 @@ func NewProjectHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *P
 	return createProjectHandler(baseURL, "", "", httpClient, "http")
 }
 
-func createAuthenticatedProjectHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ProjectHandler {
+// NewAuthenticatedProjectHandler returns a new ProjectHandler that authenticates at the api via the provided token
+// and sends all requests directly to the configuration-service
+func NewAuthenticatedProjectHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ProjectHandler {
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
@@ -76,28 +78,28 @@ func createAuthenticatedProjectHandler(baseURL string, authToken string, authHea
 
 func createProjectHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ProjectHandler {
 	return &ProjectHandler{
-		BaseURL:    httputils.TrimHTTPScheme(baseURL),
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
+		baseURL:    httputils.TrimHTTPScheme(baseURL),
+		authHeader: authHeader,
+		authToken:  authToken,
+		httpClient: httpClient,
+		scheme:     scheme,
 	}
 }
 
 func (p *ProjectHandler) getBaseURL() string {
-	return p.BaseURL
+	return p.baseURL
 }
 
 func (p *ProjectHandler) getAuthToken() string {
-	return p.AuthToken
+	return p.authToken
 }
 
 func (p *ProjectHandler) getAuthHeader() string {
-	return p.AuthHeader
+	return p.authHeader
 }
 
 func (p *ProjectHandler) getHTTPClient() *http.Client {
-	return p.HTTPClient
+	return p.httpClient
 }
 
 // CreateProject creates a new project.
@@ -106,17 +108,17 @@ func (p *ProjectHandler) CreateProject(ctx context.Context, project models.Proje
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(ctx, p.Scheme+"://"+p.getBaseURL()+v1ProjectPath, bodyStr, p)
+	return postWithEventContext(ctx, p.scheme+"://"+p.getBaseURL()+v1ProjectPath, bodyStr, p)
 }
 
 // DeleteProject deletes a project.
 func (p *ProjectHandler) DeleteProject(ctx context.Context, project models.Project, opts ProjectsDeleteProjectOptions) (*models.EventContext, *models.Error) {
-	return deleteWithEventContext(ctx, p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, p)
+	return deleteWithEventContext(ctx, p.scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, p)
 }
 
 // GetProject returns a project.
 func (p *ProjectHandler) GetProject(ctx context.Context, project models.Project, opts ProjectsGetProjectOptions) (*models.Project, *models.Error) {
-	body, mErr := getAndExpectSuccess(ctx, p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, p)
+	body, mErr := getAndExpectSuccess(ctx, p.scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, p)
 	if mErr != nil {
 		return nil, mErr
 	}
@@ -137,7 +139,7 @@ func (p *ProjectHandler) GetAllProjects(ctx context.Context, opts ProjectsGetAll
 	nextPageKey := ""
 
 	for {
-		url, err := url.Parse(p.Scheme + "://" + p.getBaseURL() + v1ProjectPath)
+		url, err := url.Parse(p.scheme + "://" + p.getBaseURL() + v1ProjectPath)
 		if err != nil {
 			return nil, err
 		}
@@ -173,5 +175,5 @@ func (p *ProjectHandler) UpdateConfigurationServiceProject(ctx context.Context, 
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return putWithEventContext(ctx, p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, bodyStr, p)
+	return putWithEventContext(ctx, p.scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, bodyStr, p)
 }

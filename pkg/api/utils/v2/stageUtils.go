@@ -29,11 +29,11 @@ type StagesInterface interface {
 
 // StageHandler handles stages
 type StageHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	baseURL    string
+	authToken  string
+	authHeader string
+	httpClient *http.Client
+	scheme     string
 }
 
 // NewStageHandler returns a new StageHandler which sends all requests directly to the configuration-service
@@ -46,7 +46,9 @@ func NewStageHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *Sta
 	return createStageHandler(baseURL, "", "", httpClient, "http")
 }
 
-func createAuthenticatedStageHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *StageHandler {
+// NewAuthenticatedStageHandler returns a new StageHandler that authenticates at the api via the provided token
+// and sends all requests directly to the configuration-service
+func NewAuthenticatedStageHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *StageHandler {
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
@@ -57,28 +59,28 @@ func createAuthenticatedStageHandler(baseURL string, authToken string, authHeade
 
 func createStageHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *StageHandler {
 	return &StageHandler{
-		BaseURL:    httputils.TrimHTTPScheme(baseURL),
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
+		baseURL:    httputils.TrimHTTPScheme(baseURL),
+		authHeader: authHeader,
+		authToken:  authToken,
+		httpClient: httpClient,
+		scheme:     scheme,
 	}
 }
 
 func (s *StageHandler) getBaseURL() string {
-	return s.BaseURL
+	return s.baseURL
 }
 
 func (s *StageHandler) getAuthToken() string {
-	return s.AuthToken
+	return s.authToken
 }
 
 func (s *StageHandler) getAuthHeader() string {
-	return s.AuthHeader
+	return s.authHeader
 }
 
 func (s *StageHandler) getHTTPClient() *http.Client {
-	return s.HTTPClient
+	return s.httpClient
 }
 
 // CreateStage creates a new stage with the provided name.
@@ -88,7 +90,7 @@ func (s *StageHandler) CreateStage(ctx context.Context, project string, stageNam
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(ctx, s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+pathToStage, body, s)
+	return postWithEventContext(ctx, s.scheme+"://"+s.baseURL+v1ProjectPath+"/"+project+pathToStage, body, s)
 }
 
 // GetAllStages returns a list of all stages.
@@ -98,7 +100,7 @@ func (s *StageHandler) GetAllStages(ctx context.Context, project string, opts St
 
 	nextPageKey := ""
 	for {
-		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + v1ProjectPath + "/" + project + pathToStage)
+		url, err := url.Parse(s.scheme + "://" + s.getBaseURL() + v1ProjectPath + "/" + project + pathToStage)
 		if err != nil {
 			return nil, err
 		}

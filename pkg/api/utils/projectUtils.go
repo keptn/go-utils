@@ -31,7 +31,7 @@ type ProjectsV1Interface interface {
 
 // ProjectHandler handles projects
 type ProjectHandler struct {
-	projectHandler v2.ProjectHandler
+	projectHandler *v2.ProjectHandler
 	BaseURL        string
 	AuthToken      string
 	AuthHeader     string
@@ -46,7 +46,12 @@ func NewProjectHandler(baseURL string) *ProjectHandler {
 
 // NewProjectHandlerWithHTTPClient returns a new ProjectHandler which sends all requests directly to the configuration-service using the specified http.Client
 func NewProjectHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *ProjectHandler {
-	return createProjectHandler(baseURL, "", "", httpClient, "http")
+	return &ProjectHandler{
+		BaseURL:        httputils.TrimHTTPScheme(baseURL),
+		HTTPClient:     httpClient,
+		Scheme:         "http",
+		projectHandler: v2.NewProjectHandlerWithHTTPClient(baseURL, httpClient),
+	}
 }
 
 // NewAuthenticatedProjectHandler returns a new ProjectHandler that authenticates at the api via the provided token
@@ -61,30 +66,20 @@ func NewAuthenticatedProjectHandler(baseURL string, authToken string, authHeader
 }
 
 func createAuthenticatedProjectHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ProjectHandler {
+	v2ProjectHandler := v2.NewAuthenticatedProjectHandler(baseURL, authToken, authHeader, httpClient, scheme)
+
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
 
-	return createProjectHandler(baseURL, authToken, authHeader, httpClient, scheme)
-}
-
-func createProjectHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ProjectHandler {
-	baseURL = httputils.TrimHTTPScheme(baseURL)
 	return &ProjectHandler{
-		BaseURL:    baseURL,
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
-
-		projectHandler: v2.ProjectHandler{
-			BaseURL:    baseURL,
-			AuthHeader: authHeader,
-			AuthToken:  authToken,
-			HTTPClient: httpClient,
-			Scheme:     scheme,
-		},
+		BaseURL:        httputils.TrimHTTPScheme(baseURL),
+		AuthHeader:     authHeader,
+		AuthToken:      authToken,
+		HTTPClient:     httpClient,
+		Scheme:         scheme,
+		projectHandler: v2ProjectHandler,
 	}
 }
 

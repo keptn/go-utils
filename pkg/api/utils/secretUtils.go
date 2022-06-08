@@ -34,7 +34,7 @@ type SecretHandlerInterface interface {
 
 // SecretHandler handles services
 type SecretHandler struct {
-	secretHandler v2.SecretHandler
+	secretHandler *v2.SecretHandler
 	BaseURL       string
 	AuthToken     string
 	AuthHeader    string
@@ -49,7 +49,12 @@ func NewSecretHandler(baseURL string) *SecretHandler {
 
 // NewSecretHandlerWithHTTPClient returns a new SecretHandler which sends all requests directly to the secret-service using the specified http.Client
 func NewSecretHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *SecretHandler {
-	return createSecretHandler(baseURL, "", "", httpClient, "http")
+	return &SecretHandler{
+		BaseURL:       httputils.TrimHTTPScheme(baseURL),
+		HTTPClient:    httpClient,
+		Scheme:        "http",
+		secretHandler: v2.NewSecretHandlerWithHTTPClient(baseURL, httpClient),
+	}
 }
 
 // NewAuthenticatedSecretHandler returns a new SecretHandler that authenticates at the api via the provided token
@@ -64,30 +69,20 @@ func NewAuthenticatedSecretHandler(baseURL string, authToken string, authHeader 
 }
 
 func createAuthenticatedSecretHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SecretHandler {
+	v2SecretHandler := v2.NewAuthenticatedSecretHandler(baseURL, authToken, authHeader, httpClient, scheme)
+
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, secretServiceBaseURL) {
 		baseURL += "/" + secretServiceBaseURL
 	}
 
-	return createSecretHandler(baseURL, authToken, authHeader, httpClient, scheme)
-}
-
-func createSecretHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SecretHandler {
-	baseURL = httputils.TrimHTTPScheme(baseURL)
 	return &SecretHandler{
-		BaseURL:    baseURL,
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
-
-		secretHandler: v2.SecretHandler{
-			BaseURL:    baseURL,
-			AuthHeader: authHeader,
-			AuthToken:  authToken,
-			HTTPClient: httpClient,
-			Scheme:     scheme,
-		},
+		BaseURL:       httputils.TrimHTTPScheme(baseURL),
+		AuthHeader:    authHeader,
+		AuthToken:     authToken,
+		HTTPClient:    httpClient,
+		Scheme:        scheme,
+		secretHandler: v2SecretHandler,
 	}
 }
 

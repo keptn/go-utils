@@ -21,7 +21,7 @@ type StagesV1Interface interface {
 
 // StageHandler handles stages
 type StageHandler struct {
-	stageHandler v2.StageHandler
+	stageHandler *v2.StageHandler
 	BaseURL      string
 	AuthToken    string
 	AuthHeader   string
@@ -36,7 +36,12 @@ func NewStageHandler(baseURL string) *StageHandler {
 
 // NewStageHandlerWithHTTPClient returns a new StageHandler which sends all requests directly to the configuration-service using the specified http.Client
 func NewStageHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *StageHandler {
-	return createStageHandler(baseURL, "", "", httpClient, "http")
+	return &StageHandler{
+		BaseURL:      httputils.TrimHTTPScheme(baseURL),
+		HTTPClient:   httpClient,
+		Scheme:       "http",
+		stageHandler: v2.NewStageHandlerWithHTTPClient(baseURL, httpClient),
+	}
 }
 
 // NewAuthenticatedStageHandler returns a new StageHandler that authenticates at the api via the provided token
@@ -51,30 +56,20 @@ func NewAuthenticatedStageHandler(baseURL string, authToken string, authHeader s
 }
 
 func createAuthenticatedStageHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *StageHandler {
+	v2StageHandler := v2.NewAuthenticatedStageHandler(baseURL, authToken, authHeader, httpClient, scheme)
+
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
 
-	return createStageHandler(baseURL, authToken, authHeader, httpClient, scheme)
-}
-
-func createStageHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *StageHandler {
-	baseURL = httputils.TrimHTTPScheme(baseURL)
 	return &StageHandler{
-		BaseURL:    baseURL,
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
-
-		stageHandler: v2.StageHandler{
-			BaseURL:    baseURL,
-			AuthHeader: authHeader,
-			AuthToken:  authToken,
-			HTTPClient: httpClient,
-			Scheme:     scheme,
-		},
+		BaseURL:      httputils.TrimHTTPScheme(baseURL),
+		AuthHeader:   authHeader,
+		AuthToken:    authToken,
+		HTTPClient:   httpClient,
+		Scheme:       scheme,
+		stageHandler: v2StageHandler,
 	}
 }
 

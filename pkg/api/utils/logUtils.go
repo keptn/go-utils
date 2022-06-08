@@ -40,7 +40,7 @@ type ILogHandler interface {
 }
 
 type LogHandler struct {
-	logHandler   v2.LogHandler
+	logHandler   *v2.LogHandler
 	BaseURL      string
 	AuthToken    string
 	AuthHeader   string
@@ -59,7 +59,15 @@ func NewLogHandler(baseURL string) *LogHandler {
 
 // NewLogHandlerWithHTTPClient returns a new LogHandler that uses the specified http.Client
 func NewLogHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *LogHandler {
-	return createLogHandler(baseURL, "", "", httpClient, "http")
+	return &LogHandler{
+		BaseURL:      httputils.TrimHTTPScheme(baseURL),
+		HTTPClient:   httpClient,
+		Scheme:       "http",
+		LogCache:     []models.LogEntry{},
+		TheClock:     clock.New(),
+		SyncInterval: defaultSyncInterval,
+		logHandler:   v2.NewLogHandlerWithHTTPClient(baseURL, httpClient),
+	}
 }
 
 // NewAuthenticatedLogHandler returns a new EventHandler that authenticates at the endpoint via the provided token
@@ -73,18 +81,15 @@ func NewAuthenticatedLogHandler(baseURL string, authToken string, authHeader str
 }
 
 func createAuthenticatedLogHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *LogHandler {
+	v2LogHandler := v2.NewAuthenticatedLogHandler(baseURL, authToken, authHeader, httpClient, scheme)
+
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
 
-	return createLogHandler(baseURL, authToken, authHeader, httpClient, scheme)
-}
-
-func createLogHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *LogHandler {
-	baseURL = httputils.TrimHTTPScheme(baseURL)
 	return &LogHandler{
-		BaseURL:      baseURL,
+		BaseURL:      httputils.TrimHTTPScheme(baseURL),
 		AuthHeader:   authHeader,
 		AuthToken:    authToken,
 		HTTPClient:   httpClient,
@@ -92,17 +97,7 @@ func createLogHandler(baseURL string, authToken string, authHeader string, httpC
 		LogCache:     []models.LogEntry{},
 		TheClock:     clock.New(),
 		SyncInterval: defaultSyncInterval,
-
-		logHandler: v2.LogHandler{
-			BaseURL:      baseURL,
-			AuthHeader:   authHeader,
-			AuthToken:    authToken,
-			HTTPClient:   httpClient,
-			Scheme:       scheme,
-			LogCache:     []models.LogEntry{},
-			TheClock:     clock.New(),
-			SyncInterval: defaultSyncInterval,
-		},
+		logHandler:   v2LogHandler,
 	}
 }
 

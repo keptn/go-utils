@@ -26,7 +26,7 @@ type ServicesV1Interface interface {
 
 // ServiceHandler handles services
 type ServiceHandler struct {
-	serviceHandler v2.ServiceHandler
+	serviceHandler *v2.ServiceHandler
 	BaseURL        string
 	AuthToken      string
 	AuthHeader     string
@@ -41,7 +41,12 @@ func NewServiceHandler(baseURL string) *ServiceHandler {
 
 // NewServiceHandlerWithHTTPClient returns a new ServiceHandler which sends all requests directly to the configuration-service using the specified http.Client
 func NewServiceHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *ServiceHandler {
-	return createServiceHandler(baseURL, "", "", httpClient, "http")
+	return &ServiceHandler{
+		BaseURL:        httputils.TrimHTTPScheme(baseURL),
+		HTTPClient:     httpClient,
+		Scheme:         "http",
+		serviceHandler: v2.NewServiceHandlerWithHTTPClient(baseURL, httpClient),
+	}
 }
 
 // NewAuthenticatedServiceHandler returns a new ServiceHandler that authenticates at the api via the provided token
@@ -56,30 +61,20 @@ func NewAuthenticatedServiceHandler(baseURL string, authToken string, authHeader
 }
 
 func createAuthenticatedServiceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ServiceHandler {
+	v2ServiceHandler := v2.NewAuthenticatedServiceHandler(baseURL, authToken, authHeader, httpClient, scheme)
+
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
 
-	return createServiceHandler(baseURL, authToken, authHeader, httpClient, scheme)
-}
-
-func createServiceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ServiceHandler {
-	baseURL = httputils.TrimHTTPScheme(baseURL)
 	return &ServiceHandler{
-		BaseURL:    baseURL,
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
-
-		serviceHandler: v2.ServiceHandler{
-			BaseURL:    baseURL,
-			AuthHeader: authHeader,
-			AuthToken:  authToken,
-			HTTPClient: httpClient,
-			Scheme:     scheme,
-		},
+		BaseURL:        httputils.TrimHTTPScheme(baseURL),
+		AuthHeader:     authHeader,
+		AuthToken:      authToken,
+		HTTPClient:     httpClient,
+		Scheme:         scheme,
+		serviceHandler: v2ServiceHandler,
 	}
 }
 

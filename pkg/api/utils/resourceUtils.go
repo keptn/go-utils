@@ -90,7 +90,7 @@ type ResourcesV1Interface interface {
 
 // ResourceHandler handles resources
 type ResourceHandler struct {
-	resourceHandler v2.ResourceHandler
+	resourceHandler *v2.ResourceHandler
 	BaseURL         string
 	AuthToken       string
 	AuthHeader      string
@@ -213,7 +213,12 @@ func NewResourceHandler(baseURL string) *ResourceHandler {
 
 // NewResourceHandlerWithHTTPClient returns a new ResourceHandler which sends all requests directly to the configuration-service using the specified http.Client
 func NewResourceHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *ResourceHandler {
-	return createResourceHandler(baseURL, "", "", httpClient, "http")
+	return &ResourceHandler{
+		BaseURL:         httputils.TrimHTTPScheme(baseURL),
+		HTTPClient:      httpClient,
+		Scheme:          "http",
+		resourceHandler: v2.NewResourceHandlerWithHTTPClient(baseURL, httpClient),
+	}
 }
 
 // NewAuthenticatedResourceHandler returns a new ResourceHandler that authenticates at the api via the provided token
@@ -228,30 +233,20 @@ func NewAuthenticatedResourceHandler(baseURL string, authToken string, authHeade
 }
 
 func createAuthenticatedResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ResourceHandler {
+	v2ResourceHandler := v2.NewAuthenticatedResourceHandler(baseURL, authToken, authHeader, httpClient, scheme)
+
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, configurationServiceBaseURL) {
 		baseURL += "/" + configurationServiceBaseURL
 	}
 
-	return createResourceHandler(baseURL, authToken, authHeader, httpClient, scheme)
-}
-
-func createResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ResourceHandler {
-	baseURL = httputils.TrimHTTPScheme(baseURL)
 	return &ResourceHandler{
-		BaseURL:    baseURL,
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
-
-		resourceHandler: v2.ResourceHandler{
-			BaseURL:    baseURL,
-			AuthHeader: authHeader,
-			AuthToken:  authToken,
-			HTTPClient: httpClient,
-			Scheme:     scheme,
-		},
+		BaseURL:         httputils.TrimHTTPScheme(baseURL),
+		AuthHeader:      authHeader,
+		AuthToken:       authToken,
+		HTTPClient:      httpClient,
+		Scheme:          scheme,
+		resourceHandler: v2ResourceHandler,
 	}
 }
 

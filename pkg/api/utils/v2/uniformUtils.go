@@ -40,11 +40,11 @@ type UniformInterface interface {
 }
 
 type UniformHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	baseURL    string
+	authToken  string
+	authHeader string
+	httpClient *http.Client
+	scheme     string
 }
 
 // NewUniformHandler returns a new UniformHandler
@@ -57,7 +57,8 @@ func NewUniformHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *U
 	return createUniformHandler(baseURL, "", "", httpClient, "http")
 }
 
-func createAuthenticatedUniformHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *UniformHandler {
+// NewAuthenticatedUniformHandler returns a new UniformHandler that authenticates at the api via the provided token
+func NewAuthenticatedUniformHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *UniformHandler {
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
@@ -68,28 +69,28 @@ func createAuthenticatedUniformHandler(baseURL string, authToken string, authHea
 
 func createUniformHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *UniformHandler {
 	return &UniformHandler{
-		BaseURL:    httputils.TrimHTTPScheme(baseURL),
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
+		baseURL:    httputils.TrimHTTPScheme(baseURL),
+		authHeader: authHeader,
+		authToken:  authToken,
+		httpClient: httpClient,
+		scheme:     scheme,
 	}
 }
 
 func (u *UniformHandler) getBaseURL() string {
-	return u.BaseURL
+	return u.baseURL
 }
 
 func (u *UniformHandler) getAuthToken() string {
-	return u.AuthToken
+	return u.authToken
 }
 
 func (u *UniformHandler) getAuthHeader() string {
-	return u.AuthHeader
+	return u.authHeader
 }
 
 func (u *UniformHandler) getHTTPClient() *http.Client {
-	return u.HTTPClient
+	return u.httpClient
 }
 
 func (u *UniformHandler) Ping(ctx context.Context, integrationID string, opts UniformPingOptions) (*models.Integration, error) {
@@ -97,7 +98,7 @@ func (u *UniformHandler) Ping(ctx context.Context, integrationID string, opts Un
 		return nil, errors.New("could not ping an invalid IntegrationID")
 	}
 
-	resp, err := put(ctx, u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/ping", nil, u)
+	resp, err := put(ctx, u.scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/ping", nil, u)
 	if err != nil {
 		return nil, errors.New(err.GetMessage())
 	}
@@ -116,7 +117,7 @@ func (u *UniformHandler) RegisterIntegration(ctx context.Context, integration mo
 		return "", err
 	}
 
-	resp, errResponse := post(ctx, u.Scheme+"://"+u.getBaseURL()+v1UniformPath, bodyStr, u)
+	resp, errResponse := post(ctx, u.scheme+"://"+u.getBaseURL()+v1UniformPath, bodyStr, u)
 	if errResponse != nil {
 		return "", fmt.Errorf(errResponse.GetMessage())
 	}
@@ -134,7 +135,7 @@ func (u *UniformHandler) CreateSubscription(ctx context.Context, integrationID s
 	if err != nil {
 		return "", err
 	}
-	resp, errResponse := post(ctx, u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/subscription", bodyStr, u)
+	resp, errResponse := post(ctx, u.scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/subscription", bodyStr, u)
 	if errResponse != nil {
 		return "", fmt.Errorf(errResponse.GetMessage())
 	}
@@ -149,7 +150,7 @@ func (u *UniformHandler) CreateSubscription(ctx context.Context, integrationID s
 }
 
 func (u *UniformHandler) UnregisterIntegration(ctx context.Context, integrationID string, opts UniformUnregisterIntegrationOptions) error {
-	_, err := delete(ctx, u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID, u)
+	_, err := delete(ctx, u.scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID, u)
 	if err != nil {
 		return fmt.Errorf(err.GetMessage())
 	}
@@ -157,7 +158,7 @@ func (u *UniformHandler) UnregisterIntegration(ctx context.Context, integrationI
 }
 
 func (u *UniformHandler) GetRegistrations(ctx context.Context, opts UniformGetRegistrationsOptions) ([]*models.Integration, error) {
-	url, err := url.Parse(u.Scheme + "://" + u.getBaseURL() + v1UniformPath)
+	url, err := url.Parse(u.scheme + "://" + u.getBaseURL() + v1UniformPath)
 	if err != nil {
 		return nil, err
 	}

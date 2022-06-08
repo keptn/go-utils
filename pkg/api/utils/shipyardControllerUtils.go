@@ -19,7 +19,7 @@ type ShipyardControlV1Interface interface {
 
 // ShipyardControllerHandler handles services
 type ShipyardControllerHandler struct {
-	shipyardControllerHandler v2.ShipyardControllerHandler
+	shipyardControllerHandler *v2.ShipyardControllerHandler
 	BaseURL                   string
 	AuthToken                 string
 	AuthHeader                string
@@ -34,7 +34,12 @@ func NewShipyardControllerHandler(baseURL string) *ShipyardControllerHandler {
 
 // NewShipyardControllerHandlerWithHTTPClient returns a new ShipyardControllerHandler which sends all requests directly to the configuration-service using the specified http.Client
 func NewShipyardControllerHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *ShipyardControllerHandler {
-	return createShipyardControllerHandler(baseURL, "", "", httpClient, "http")
+	return &ShipyardControllerHandler{
+		BaseURL:                   httputils.TrimHTTPScheme(baseURL),
+		HTTPClient:                httpClient,
+		Scheme:                    "http",
+		shipyardControllerHandler: v2.NewShipyardControllerHandlerWithHTTPClient(baseURL, httpClient),
+	}
 }
 
 // NewAuthenticatedShipyardControllerHandler returns a new ShipyardControllerHandler that authenticates at the api via the provided token
@@ -49,30 +54,20 @@ func NewAuthenticatedShipyardControllerHandler(baseURL string, authToken string,
 }
 
 func createAuthenticatedShipyardControllerHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ShipyardControllerHandler {
+	v2ShipyardControllerHandler := v2.NewAuthenticatedShipyardControllerHandler(baseURL, authToken, authHeader, httpClient, scheme)
+
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
 
-	return createShipyardControllerHandler(baseURL, authToken, authHeader, httpClient, scheme)
-}
-
-func createShipyardControllerHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ShipyardControllerHandler {
-	baseURL = httputils.TrimHTTPScheme(baseURL)
 	return &ShipyardControllerHandler{
-		BaseURL:    baseURL,
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
-
-		shipyardControllerHandler: v2.ShipyardControllerHandler{
-			BaseURL:    baseURL,
-			AuthHeader: authHeader,
-			AuthToken:  authToken,
-			HTTPClient: httpClient,
-			Scheme:     scheme,
-		},
+		BaseURL:                   httputils.TrimHTTPScheme(baseURL),
+		AuthHeader:                authHeader,
+		AuthToken:                 authToken,
+		HTTPClient:                httpClient,
+		Scheme:                    scheme,
+		shipyardControllerHandler: v2ShipyardControllerHandler,
 	}
 }
 

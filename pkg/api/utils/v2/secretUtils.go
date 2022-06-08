@@ -42,11 +42,11 @@ type SecretsInterface interface {
 
 // SecretHandler handles secrets
 type SecretHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	baseURL    string
+	authToken  string
+	authHeader string
+	httpClient *http.Client
+	scheme     string
 }
 
 // NewSecretHandler returns a new SecretHandler which sends all requests directly to the secret-service
@@ -59,7 +59,9 @@ func NewSecretHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *Se
 	return createSecretHandler(baseURL, "", "", httpClient, "http")
 }
 
-func createAuthenticatedSecretHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SecretHandler {
+// NewAuthenticatedSecretHandler returns a new SecretHandler that authenticates at the api via the provided token
+// and sends all requests directly to the secret-service
+func NewAuthenticatedSecretHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SecretHandler {
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, secretServiceBaseURL) {
 		baseURL += "/" + secretServiceBaseURL
@@ -70,28 +72,28 @@ func createAuthenticatedSecretHandler(baseURL string, authToken string, authHead
 
 func createSecretHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SecretHandler {
 	return &SecretHandler{
-		BaseURL:    httputils.TrimHTTPScheme(baseURL),
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
+		baseURL:    httputils.TrimHTTPScheme(baseURL),
+		authHeader: authHeader,
+		authToken:  authToken,
+		httpClient: httpClient,
+		scheme:     scheme,
 	}
 }
 
 func (s *SecretHandler) getBaseURL() string {
-	return s.BaseURL
+	return s.baseURL
 }
 
 func (s *SecretHandler) getAuthToken() string {
-	return s.AuthToken
+	return s.authToken
 }
 
 func (s *SecretHandler) getAuthHeader() string {
-	return s.AuthHeader
+	return s.authHeader
 }
 
 func (s *SecretHandler) getHTTPClient() *http.Client {
-	return s.HTTPClient
+	return s.httpClient
 }
 
 // CreateSecret creates a new secret.
@@ -100,7 +102,7 @@ func (s *SecretHandler) CreateSecret(ctx context.Context, secret models.Secret, 
 	if err != nil {
 		return err
 	}
-	_, errObj := post(ctx, s.Scheme+"://"+s.BaseURL+v1SecretPath, body, s)
+	_, errObj := post(ctx, s.scheme+"://"+s.baseURL+v1SecretPath, body, s)
 	if errObj != nil {
 		return errors.New(errObj.GetMessage())
 	}
@@ -113,7 +115,7 @@ func (s *SecretHandler) UpdateSecret(ctx context.Context, secret models.Secret, 
 	if err != nil {
 		return err
 	}
-	_, errObj := put(ctx, s.Scheme+"://"+s.BaseURL+v1SecretPath, body, s)
+	_, errObj := put(ctx, s.scheme+"://"+s.baseURL+v1SecretPath, body, s)
 	if errObj != nil {
 		return errors.New(errObj.GetMessage())
 	}
@@ -122,7 +124,7 @@ func (s *SecretHandler) UpdateSecret(ctx context.Context, secret models.Secret, 
 
 // DeleteSecret deletes a secret.
 func (s *SecretHandler) DeleteSecret(ctx context.Context, secretName, secretScope string, opts SecretsDeleteSecretOptions) error {
-	_, err := delete(ctx, s.Scheme+"://"+s.BaseURL+v1SecretPath+"?name="+secretName+"&scope="+secretScope, s)
+	_, err := delete(ctx, s.scheme+"://"+s.baseURL+v1SecretPath+"?name="+secretName+"&scope="+secretScope, s)
 	if err != nil {
 		return errors.New(err.GetMessage())
 	}
@@ -131,7 +133,7 @@ func (s *SecretHandler) DeleteSecret(ctx context.Context, secretName, secretScop
 
 // GetSecrets returns a list of created secrets.
 func (s *SecretHandler) GetSecrets(ctx context.Context, opts SecretsGetSecretsOptions) (*models.GetSecretsResponse, error) {
-	body, mErr := getAndExpectOK(ctx, s.Scheme+"://"+s.BaseURL+v1SecretPath, s)
+	body, mErr := getAndExpectOK(ctx, s.scheme+"://"+s.baseURL+v1SecretPath, s)
 	if mErr != nil {
 		return nil, mErr.ToError()
 	}

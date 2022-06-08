@@ -53,14 +53,14 @@ type LogsInterface interface {
 }
 
 type LogHandler struct {
-	BaseURL      string
-	AuthToken    string
-	AuthHeader   string
-	HTTPClient   *http.Client
-	Scheme       string
-	LogCache     []models.LogEntry
-	TheClock     clock.Clock
-	SyncInterval time.Duration
+	baseURL      string
+	authToken    string
+	authHeader   string
+	httpClient   *http.Client
+	scheme       string
+	logCache     []models.LogEntry
+	theClock     clock.Clock
+	syncInterval time.Duration
 	lock         sync.Mutex
 }
 
@@ -74,7 +74,8 @@ func NewLogHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *LogHa
 	return createLogHandler(baseURL, "", "", httpClient, "http")
 }
 
-func createAuthenticatedLogHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *LogHandler {
+// NewAuthenticatedLogHandler returns a new LogHandler that authenticates at the endpoint via the provided token
+func NewAuthenticatedLogHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *LogHandler {
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
@@ -85,43 +86,43 @@ func createAuthenticatedLogHandler(baseURL string, authToken string, authHeader 
 
 func createLogHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *LogHandler {
 	return &LogHandler{
-		BaseURL:      httputils.TrimHTTPScheme(baseURL),
-		AuthHeader:   authHeader,
-		AuthToken:    authToken,
-		HTTPClient:   httpClient,
-		Scheme:       scheme,
-		LogCache:     []models.LogEntry{},
-		TheClock:     clock.New(),
-		SyncInterval: defaultSyncInterval,
+		baseURL:      httputils.TrimHTTPScheme(baseURL),
+		authHeader:   authHeader,
+		authToken:    authToken,
+		httpClient:   httpClient,
+		scheme:       scheme,
+		logCache:     []models.LogEntry{},
+		theClock:     clock.New(),
+		syncInterval: defaultSyncInterval,
 	}
 }
 
 func (lh *LogHandler) getBaseURL() string {
-	return lh.BaseURL
+	return lh.baseURL
 }
 
 func (lh *LogHandler) getAuthToken() string {
-	return lh.AuthToken
+	return lh.authToken
 }
 
 func (lh *LogHandler) getAuthHeader() string {
-	return lh.AuthHeader
+	return lh.authHeader
 }
 
 func (lh *LogHandler) getHTTPClient() *http.Client {
-	return lh.HTTPClient
+	return lh.httpClient
 }
 
 // Log appends the specified logs to the log cache.
 func (lh *LogHandler) Log(logs []models.LogEntry, opts LogsLogOptions) {
 	lh.lock.Lock()
 	defer lh.lock.Unlock()
-	lh.LogCache = append(lh.LogCache, logs...)
+	lh.logCache = append(lh.logCache, logs...)
 }
 
 // GetLogs gets logs with the specified parameters.
 func (lh *LogHandler) GetLogs(ctx context.Context, params models.GetLogsParams, opts LogsGetLogsOptions) (*models.GetLogsResponse, error) {
-	u, err := url.Parse(lh.Scheme + "://" + lh.getBaseURL() + v1LogPath)
+	u, err := url.Parse(lh.scheme + "://" + lh.getBaseURL() + v1LogPath)
 	if err != nil {
 		log.Fatal("error parsing url")
 	}
@@ -158,7 +159,7 @@ func (lh *LogHandler) GetLogs(ctx context.Context, params models.GetLogsParams, 
 
 // DeleteLogs deletes logs matching the specified log filter.
 func (lh *LogHandler) DeleteLogs(ctx context.Context, params models.LogFilter, opts LogsDeleteLogsOptions) error {
-	u, err := url.Parse(lh.Scheme + "://" + lh.getBaseURL() + v1LogPath)
+	u, err := url.Parse(lh.scheme + "://" + lh.getBaseURL() + v1LogPath)
 	if err != nil {
 		log.Fatal("error parsing url")
 	}
@@ -181,7 +182,7 @@ func (lh *LogHandler) DeleteLogs(ctx context.Context, params models.LogFilter, o
 }
 
 func (lh *LogHandler) Start(ctx context.Context, opts LogsStartOptions) {
-	ticker := lh.TheClock.Ticker(lh.SyncInterval)
+	ticker := lh.theClock.Ticker(lh.syncInterval)
 	go func() {
 		for {
 			select {
@@ -198,20 +199,20 @@ func (lh *LogHandler) Start(ctx context.Context, opts LogsStartOptions) {
 func (lh *LogHandler) Flush(ctx context.Context, opts LogsFlushOptions) error {
 	lh.lock.Lock()
 	defer lh.lock.Unlock()
-	if len(lh.LogCache) == 0 {
+	if len(lh.logCache) == 0 {
 		// only send a request if we actually have some logs to send
 		return nil
 	}
 	createLogsPayload := &models.CreateLogsRequest{
-		Logs: lh.LogCache,
+		Logs: lh.logCache,
 	}
 	bodyStr, err := createLogsPayload.ToJSON()
 	if err != nil {
 		return err
 	}
-	if _, err := post(ctx, lh.Scheme+"://"+lh.getBaseURL()+v1LogPath, bodyStr, lh); err != nil {
+	if _, err := post(ctx, lh.scheme+"://"+lh.getBaseURL()+v1LogPath, bodyStr, lh); err != nil {
 		return errors.New(err.GetMessage())
 	}
-	lh.LogCache = []models.LogEntry{}
+	lh.logCache = []models.LogEntry{}
 	return nil
 }

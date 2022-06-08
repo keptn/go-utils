@@ -40,11 +40,11 @@ type ServicesInterface interface {
 
 // ServiceHandler handles services
 type ServiceHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	baseURL    string
+	authToken  string
+	authHeader string
+	httpClient *http.Client
+	scheme     string
 }
 
 // NewServiceHandler returns a new ServiceHandler which sends all requests directly to the configuration-service
@@ -57,7 +57,9 @@ func NewServiceHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *S
 	return createServiceHandler(baseURL, "", "", httpClient, "http")
 }
 
-func createAuthenticatedServiceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ServiceHandler {
+// NewAuthenticatedServiceHandler returns a new ServiceHandler that authenticates at the api via the provided token
+// and sends all requests directly to the configuration-service
+func NewAuthenticatedServiceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ServiceHandler {
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
@@ -68,28 +70,28 @@ func createAuthenticatedServiceHandler(baseURL string, authToken string, authHea
 
 func createServiceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ServiceHandler {
 	return &ServiceHandler{
-		BaseURL:    httputils.TrimHTTPScheme(baseURL),
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
+		baseURL:    httputils.TrimHTTPScheme(baseURL),
+		authHeader: authHeader,
+		authToken:  authToken,
+		httpClient: httpClient,
+		scheme:     scheme,
 	}
 }
 
 func (s *ServiceHandler) getBaseURL() string {
-	return s.BaseURL
+	return s.baseURL
 }
 
 func (s *ServiceHandler) getAuthToken() string {
-	return s.AuthToken
+	return s.authToken
 }
 
 func (s *ServiceHandler) getAuthHeader() string {
-	return s.AuthHeader
+	return s.authHeader
 }
 
 func (s *ServiceHandler) getHTTPClient() *http.Client {
-	return s.HTTPClient
+	return s.httpClient
 }
 
 // CreateServiceInStage creates a new service.
@@ -99,19 +101,19 @@ func (s *ServiceHandler) CreateServiceInStage(ctx context.Context, project strin
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
 	}
-	return postWithEventContext(ctx, s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService, body, s)
+	return postWithEventContext(ctx, s.scheme+"://"+s.baseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService, body, s)
 }
 
 // DeleteServiceFromStage deletes a service from a stage.
 func (s *ServiceHandler) DeleteServiceFromStage(ctx context.Context, project string, stage string, serviceName string, opts ServicesDeleteServiceFromStageOptions) (*models.EventContext, *models.Error) {
-	return deleteWithEventContext(ctx, s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+serviceName, s)
+	return deleteWithEventContext(ctx, s.scheme+"://"+s.baseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+serviceName, s)
 }
 
 // GetService gets a service.
 func (s *ServiceHandler) GetService(ctx context.Context, project, stage, service string, opts ServicesGetServiceOptions) (*models.Service, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-	url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + v1ProjectPath + "/" + project + pathToStage + "/" + stage + pathToService + "/" + service)
+	url, err := url.Parse(s.scheme + "://" + s.getBaseURL() + v1ProjectPath + "/" + project + pathToStage + "/" + stage + pathToService + "/" + service)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +139,7 @@ func (s *ServiceHandler) GetAllServices(ctx context.Context, project string, sta
 	nextPageKey := ""
 
 	for {
-		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + v1ProjectPath + "/" + project + pathToStage + "/" + stage + pathToService)
+		url, err := url.Parse(s.scheme + "://" + s.getBaseURL() + v1ProjectPath + "/" + project + pathToStage + "/" + stage + pathToService)
 		if err != nil {
 			return nil, err
 		}

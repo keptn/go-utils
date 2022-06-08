@@ -16,7 +16,7 @@ type AuthV1Interface interface {
 
 // AuthHandler handles projects
 type AuthHandler struct {
-	authHandler v2.AuthHandler
+	authHandler *v2.AuthHandler
 	BaseURL     string
 	AuthToken   string
 	AuthHeader  string
@@ -31,7 +31,12 @@ func NewAuthHandler(baseURL string) *AuthHandler {
 
 // NewAuthHandlerWithHTTPClient returns a new AuthHandler that uses the specified http.Client
 func NewAuthHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *AuthHandler {
-	return createAuthHandler(baseURL, "", "", httpClient, "http")
+	return &AuthHandler{
+		BaseURL:     httputils.TrimHTTPScheme(baseURL),
+		HTTPClient:  httpClient,
+		Scheme:      "http",
+		authHandler: v2.NewAuthHandlerWithHTTPClient(baseURL, httpClient),
+	}
 }
 
 // NewAuthenticatedAuthHandler returns a new AuthHandler that authenticates at the endpoint via the provided token
@@ -46,25 +51,13 @@ func NewAuthenticatedAuthHandler(baseURL string, authToken string, authHeader st
 }
 
 func createAuthenticatedAuthHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *AuthHandler {
-	return createAuthHandler(baseURL, authToken, authHeader, httpClient, scheme)
-}
-
-func createAuthHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *AuthHandler {
-	baseURL = httputils.TrimHTTPScheme(baseURL)
 	return &AuthHandler{
-		BaseURL:    baseURL,
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
-
-		authHandler: v2.AuthHandler{
-			BaseURL:    baseURL,
-			AuthHeader: authHeader,
-			AuthToken:  authToken,
-			HTTPClient: httpClient,
-			Scheme:     scheme,
-		},
+		BaseURL:     httputils.TrimHTTPScheme(baseURL),
+		AuthHeader:  authHeader,
+		AuthToken:   authToken,
+		HTTPClient:  httpClient,
+		Scheme:      scheme,
+		authHandler: v2.NewAuthenticatedAuthHandler(baseURL, authToken, authHeader, httpClient, scheme),
 	}
 }
 

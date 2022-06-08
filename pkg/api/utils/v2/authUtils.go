@@ -17,11 +17,11 @@ type AuthInterface interface {
 }
 
 type AuthHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	baseURL    string
+	authToken  string
+	authHeader string
+	httpClient *http.Client
+	scheme     string
 }
 
 // NewAuthHandler returns a new AuthHandler
@@ -34,37 +34,38 @@ func NewAuthHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *Auth
 	return createAuthHandler(baseURL, "", "", httpClient, "http")
 }
 
-func createAuthenticatedAuthHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *AuthHandler {
+// NewAuthenticatedAuthHandler returns a new AuthHandler that authenticates at the endpoint via the provided token
+func NewAuthenticatedAuthHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *AuthHandler {
 	return createAuthHandler(baseURL, authToken, authHeader, httpClient, scheme)
 }
 
 func createAuthHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *AuthHandler {
 	return &AuthHandler{
-		BaseURL:    httputils.TrimHTTPScheme(baseURL),
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
+		baseURL:    httputils.TrimHTTPScheme(baseURL),
+		authHeader: authHeader,
+		authToken:  authToken,
+		httpClient: httpClient,
+		scheme:     scheme,
 	}
 }
 
 func (a *AuthHandler) getBaseURL() string {
-	return a.BaseURL
+	return a.baseURL
 }
 
 func (a *AuthHandler) getAuthToken() string {
-	return a.AuthToken
+	return a.authToken
 }
 
 func (a *AuthHandler) getAuthHeader() string {
-	return a.AuthHeader
+	return a.authHeader
 }
 
 func (a *AuthHandler) getHTTPClient() *http.Client {
-	return a.HTTPClient
+	return a.httpClient
 }
 
 // Authenticate authenticates the client request against the server.
 func (a *AuthHandler) Authenticate(ctx context.Context, opts AuthAuthenticateOptions) (*models.EventContext, *models.Error) {
-	return postWithEventContext(ctx, a.Scheme+"://"+a.getBaseURL()+"/v1/auth", nil, a)
+	return postWithEventContext(ctx, a.scheme+"://"+a.getBaseURL()+"/v1/auth", nil, a)
 }

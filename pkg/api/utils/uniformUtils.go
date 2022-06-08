@@ -22,7 +22,7 @@ type UniformV1Interface interface {
 }
 
 type UniformHandler struct {
-	uniformHandler v2.UniformHandler
+	uniformHandler *v2.UniformHandler
 	BaseURL        string
 	AuthToken      string
 	AuthHeader     string
@@ -37,7 +37,12 @@ func NewUniformHandler(baseURL string) *UniformHandler {
 
 // NewUniformHandlerWithHTTPClient returns a new UniformHandler using the specified http.Client
 func NewUniformHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *UniformHandler {
-	return createUniformHandler(baseURL, "", "", httpClient, "http")
+	return &UniformHandler{
+		BaseURL:        httputils.TrimHTTPScheme(baseURL),
+		HTTPClient:     httpClient,
+		Scheme:         "http",
+		uniformHandler: v2.NewUniformHandlerWithHTTPClient(baseURL, httpClient),
+	}
 }
 
 // NewAuthenticatedUniformHandler returns a new UniformHandler that authenticates at the api via the provided token
@@ -51,30 +56,20 @@ func NewAuthenticatedUniformHandler(baseURL string, authToken string, authHeader
 }
 
 func createAuthenticatedUniformHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *UniformHandler {
+	v2UniformHandler := v2.NewAuthenticatedUniformHandler(baseURL, authToken, authHeader, httpClient, scheme)
+
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
 
-	return createUniformHandler(baseURL, authToken, authHeader, httpClient, scheme)
-}
-
-func createUniformHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *UniformHandler {
-	baseURL = httputils.TrimHTTPScheme(baseURL)
 	return &UniformHandler{
-		BaseURL:    baseURL,
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
-
-		uniformHandler: v2.UniformHandler{
-			BaseURL:    baseURL,
-			AuthHeader: authHeader,
-			AuthToken:  authToken,
-			HTTPClient: httpClient,
-			Scheme:     scheme,
-		},
+		BaseURL:        httputils.TrimHTTPScheme(baseURL),
+		AuthHeader:     authHeader,
+		AuthToken:      authToken,
+		HTTPClient:     httpClient,
+		Scheme:         scheme,
+		uniformHandler: v2UniformHandler,
 	}
 }
 

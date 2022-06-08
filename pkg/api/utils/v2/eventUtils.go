@@ -29,11 +29,11 @@ type EventsInterface interface {
 }
 
 type EventHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	baseURL    string
+	authToken  string
+	authHeader string
+	httpClient *http.Client
+	scheme     string
 }
 
 // EventFilter allows to filter events based on the provided properties
@@ -61,7 +61,8 @@ func NewEventHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *Eve
 
 const mongodbDatastoreServiceBaseUrl = "mongodb-datastore"
 
-func createAuthenticatedEventHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *EventHandler {
+// NewAuthenticatedEventHandler returns a new EventHandler that authenticates at the endpoint via the provided token
+func NewAuthenticatedEventHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *EventHandler {
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, mongodbDatastoreServiceBaseUrl) {
 		baseURL += "/" + mongodbDatastoreServiceBaseUrl
@@ -72,33 +73,33 @@ func createAuthenticatedEventHandler(baseURL string, authToken string, authHeade
 
 func createEventHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *EventHandler {
 	return &EventHandler{
-		BaseURL:    httputils.TrimHTTPScheme(baseURL),
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
+		baseURL:    httputils.TrimHTTPScheme(baseURL),
+		authHeader: authHeader,
+		authToken:  authToken,
+		httpClient: httpClient,
+		scheme:     scheme,
 	}
 }
 
 func (e *EventHandler) getBaseURL() string {
-	return e.BaseURL
+	return e.baseURL
 }
 
 func (e *EventHandler) getAuthToken() string {
-	return e.AuthToken
+	return e.authToken
 }
 
 func (e *EventHandler) getAuthHeader() string {
-	return e.AuthHeader
+	return e.authHeader
 }
 
 func (e *EventHandler) getHTTPClient() *http.Client {
-	return e.HTTPClient
+	return e.httpClient
 }
 
 // GetEvents returns all events matching the properties in the passed filter object.
 func (e *EventHandler) GetEvents(ctx context.Context, filter *EventFilter, opts EventsGetEventsOptions) ([]*models.KeptnContextExtendedCE, *models.Error) {
-	u, err := url.Parse(e.Scheme + "://" + e.getBaseURL() + "/event?")
+	u, err := url.Parse(e.scheme + "://" + e.getBaseURL() + "/event?")
 	if err != nil {
 		log.Fatal("error parsing url")
 	}

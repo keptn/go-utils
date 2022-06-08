@@ -100,11 +100,11 @@ type ResourcesInterface interface {
 
 // ResourceHandler handles resources
 type ResourceHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	baseURL    string
+	authToken  string
+	authHeader string
+	httpClient *http.Client
+	scheme     string
 }
 
 type resourceRequest struct {
@@ -177,7 +177,7 @@ func (s *ResourceScope) GetResourcePath() string {
 }
 
 func (r *ResourceHandler) buildResourceURI(scope ResourceScope) string {
-	buildURI := r.Scheme + "://" + r.BaseURL + scope.GetProjectPath() + scope.GetStagePath() + scope.GetServicePath() + scope.GetResourcePath()
+	buildURI := r.scheme + "://" + r.baseURL + scope.GetProjectPath() + scope.GetStagePath() + scope.GetServicePath() + scope.GetResourcePath()
 	return buildURI
 }
 
@@ -225,7 +225,9 @@ func NewResourceHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *
 	return createResourceHandler(baseURL, "", "", httpClient, "http")
 }
 
-func createAuthenticatedResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ResourceHandler {
+// NewAuthenticatedResourceHandler returns a new ResourceHandler that authenticates at the api via the provided token
+// and sends all requests directly to the configuration-service
+func NewAuthenticatedResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ResourceHandler {
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, configurationServiceBaseURL) {
 		baseURL += "/" + configurationServiceBaseURL
@@ -236,28 +238,28 @@ func createAuthenticatedResourceHandler(baseURL string, authToken string, authHe
 
 func createResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ResourceHandler {
 	return &ResourceHandler{
-		BaseURL:    httputils.TrimHTTPScheme(baseURL),
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
+		baseURL:    httputils.TrimHTTPScheme(baseURL),
+		authHeader: authHeader,
+		authToken:  authToken,
+		httpClient: httpClient,
+		scheme:     scheme,
 	}
 }
 
 func (r *ResourceHandler) getBaseURL() string {
-	return r.BaseURL
+	return r.baseURL
 }
 
 func (r *ResourceHandler) getAuthToken() string {
-	return r.AuthToken
+	return r.authToken
 }
 
 func (r *ResourceHandler) getAuthHeader() string {
-	return r.AuthHeader
+	return r.authHeader
 }
 
 func (r *ResourceHandler) getHTTPClient() *http.Client {
-	return r.HTTPClient
+	return r.httpClient
 }
 
 // CreateResources creates a resource for the specified entity.
@@ -277,27 +279,27 @@ func (r *ResourceHandler) CreateResources(ctx context.Context, project string, s
 	}
 
 	if project != "" && stage != "" && service != "" {
-		return postWithEventContext(ctx, r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+service+pathToResource, requestStr, r)
+		return postWithEventContext(ctx, r.scheme+"://"+r.baseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+service+pathToResource, requestStr, r)
 	} else if project != "" && stage != "" && service == "" {
-		return postWithEventContext(ctx, r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToResource, requestStr, r)
+		return postWithEventContext(ctx, r.scheme+"://"+r.baseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToResource, requestStr, r)
 	} else {
-		return postWithEventContext(ctx, r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+"/"+pathToResource, requestStr, r)
+		return postWithEventContext(ctx, r.scheme+"://"+r.baseURL+v1ProjectPath+"/"+project+"/"+pathToResource, requestStr, r)
 	}
 }
 
 // CreateProjectResources creates multiple project resources.
 func (r *ResourceHandler) CreateProjectResources(ctx context.Context, project string, resources []*models.Resource, opts ResourcesCreateProjectResourcesOptions) (string, error) {
-	return r.CreateResourcesByURI(ctx, r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToResource, resources)
+	return r.CreateResourcesByURI(ctx, r.scheme+"://"+r.baseURL+v1ProjectPath+"/"+project+pathToResource, resources)
 }
 
 // UpdateProjectResources updates multiple project resources.
 func (r *ResourceHandler) UpdateProjectResources(ctx context.Context, project string, resources []*models.Resource, opts ResourcesUpdateProjectResourcesOptions) (string, error) {
-	return r.UpdateResourcesByURI(ctx, r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToResource, resources)
+	return r.UpdateResourcesByURI(ctx, r.scheme+"://"+r.baseURL+v1ProjectPath+"/"+project+pathToResource, resources)
 }
 
 // UpdateServiceResources updates multiple service resources.
 func (r *ResourceHandler) UpdateServiceResources(ctx context.Context, project string, stage string, service string, resources []*models.Resource, opts ResourcesUpdateServiceResourcesOptions) (string, error) {
-	return r.UpdateResourcesByURI(ctx, r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+url.QueryEscape(service)+pathToResource, resources)
+	return r.UpdateResourcesByURI(ctx, r.scheme+"://"+r.baseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+url.QueryEscape(service)+pathToResource, resources)
 }
 
 func (r *ResourceHandler) CreateResourcesByURI(ctx context.Context, uri string, resources []*models.Resource) (string, error) {
@@ -329,7 +331,7 @@ func (r *ResourceHandler) writeResources(ctx context.Context, uri string, method
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, r)
 
-	resp, err := r.HTTPClient.Do(req)
+	resp, err := r.httpClient.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -370,7 +372,7 @@ func (r *ResourceHandler) writeResource(ctx context.Context, uri string, method 
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, r)
 
-	resp, err := r.HTTPClient.Do(req)
+	resp, err := r.httpClient.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -460,7 +462,7 @@ func (r *ResourceHandler) DeleteResourceByURI(ctx context.Context, uri string) e
 	req.Header.Set("Content-Type", "application/json")
 	addAuthHeader(req, r)
 
-	resp, err := r.HTTPClient.Do(req)
+	resp, err := r.httpClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -471,7 +473,7 @@ func (r *ResourceHandler) DeleteResourceByURI(ctx context.Context, uri string) e
 
 // GetAllStageResources returns a list of all resources.
 func (r *ResourceHandler) GetAllStageResources(ctx context.Context, project string, stage string, opts ResourcesGetAllStageResourcesOptions) ([]*models.Resource, error) {
-	myURL, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + v1ProjectPath + "/" + project + pathToStage + "/" + stage + pathToResource)
+	myURL, err := url.Parse(r.scheme + "://" + r.getBaseURL() + v1ProjectPath + "/" + project + pathToStage + "/" + stage + pathToResource)
 	if err != nil {
 		return nil, err
 	}
@@ -480,7 +482,7 @@ func (r *ResourceHandler) GetAllStageResources(ctx context.Context, project stri
 
 // GetAllServiceResources returns a list of all resources.
 func (r *ResourceHandler) GetAllServiceResources(ctx context.Context, project string, stage string, service string, opts ResourcesGetAllServiceResourcesOptions) ([]*models.Resource, error) {
-	myURL, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + v1ProjectPath + "/" + project + pathToStage + "/" + stage +
+	myURL, err := url.Parse(r.scheme + "://" + r.getBaseURL() + v1ProjectPath + "/" + project + pathToStage + "/" + stage +
 		pathToService + "/" + service + pathToResource + "/")
 	if err != nil {
 		return nil, err
