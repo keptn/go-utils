@@ -18,7 +18,7 @@ type Project struct {
 	Stages []*Stage `json:"stages"`
 
 	// git auth credentials
-	GitCredentials GitAuthCredentials `json:"gitCredentials"`
+	GitCredentials *GitAuthCredentials `json:"gitCredentials,omitempty"`
 }
 
 // ToJSON converts object to JSON string

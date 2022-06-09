@@ -24,5 +24,5 @@ type ExpandedProject struct {
 	Stages []*ExpandedStage `json:"stages"`
 
 	// git auth credentials
-	GitCredentials GitAuthCredentialsSecure `json:"gitCredentials"`
+	GitCredentials *GitAuthCredentialsSecure `json:"gitCredentials,omitempty"`
 }

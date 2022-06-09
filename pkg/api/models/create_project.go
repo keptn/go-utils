@@ -13,7 +13,7 @@ type CreateProject struct {
 	Shipyard *string `json:"shipyard"`
 
 	// git auth credentials
-	GitCredentials GitAuthCredentials `json:"gitCredentials"`
+	GitCredentials *GitAuthCredentials `json:"gitCredentials,omitempty"`
 }
 
 // ToJSON converts object to JSON string
