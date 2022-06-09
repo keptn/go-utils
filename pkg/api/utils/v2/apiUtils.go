@@ -70,12 +70,26 @@ type APIHandler struct {
 	scheme     string
 }
 
+// NewAPIHandler returns a new APIHandler
+func NewAPIHandler(baseURL string) *APIHandler {
+	return NewAPIHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
+}
+
+// NewAPIHandlerWithHTTPClient returns a new APIHandler using the specified http.Client
+func NewAPIHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *APIHandler {
+	return createAPIHandler(baseURL, "", "", httpClient, "http")
+}
+
 // NewAuthenticatedAPIHandler returns a new APIHandler that authenticates at the api-service endpoint via the provided token
 func NewAuthenticatedAPIHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *APIHandler {
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
 
+	return createAPIHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
+
+func createAPIHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *APIHandler {
 	return &APIHandler{
 		baseURL:    httputils.TrimHTTPScheme(baseURL),
 		authHeader: authHeader,

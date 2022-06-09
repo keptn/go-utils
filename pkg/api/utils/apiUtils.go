@@ -49,6 +49,21 @@ type APIHandler struct {
 	Scheme     string
 }
 
+// NewAPIHandler returns a new APIHandler
+func NewAPIHandler(baseURL string) *APIHandler {
+	return NewAPIHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
+}
+
+// NewAPIHandlerWithHTTPClient returns a new APIHandler that uses the specified http.Client
+func NewAPIHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *APIHandler {
+	return &APIHandler{
+		BaseURL:    httputils.TrimHTTPScheme(baseURL),
+		HTTPClient: httpClient,
+		Scheme:     "http",
+		apiHandler: v2.NewAPIHandlerWithHTTPClient(baseURL, httpClient),
+	}
+}
+
 // NewAuthenticatedAPIHandler returns a new APIHandler that authenticates at the api-service endpoint via the provided token
 // Deprecated: use APISet instead
 func NewAuthenticatedAPIHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *APIHandler {
