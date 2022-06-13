@@ -152,7 +152,7 @@ type HttpsGitAuthSecure struct {
 	InsecureSkipTLS bool `json:"insecureSkipTLS" bson:"insecureSkipTLS"`
 
 	// git proxy credentials
-	Proxy *ProxyGitAuth `json:"proxy,omitempty" bson:"proxy"`
+	Proxy *ProxyGitAuthSecure `json:"proxy,omitempty" bson:"proxy"`
 }
 
 // ToJSON converts object to JSON string
