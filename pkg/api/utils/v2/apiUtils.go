@@ -117,15 +117,11 @@ func (a *APIHandler) getHTTPClient() *http.Client {
 
 // SendEvent sends an event to Keptn.
 func (a *APIHandler) SendEvent(ctx context.Context, event models.KeptnContextExtendedCE, opts APISendEventOptions) (*models.EventContext, *models.Error) {
+	baseURL := a.getAPIServicePath()
+
 	bodyStr, err := event.ToJSON()
 	if err != nil {
 		return nil, buildErrorResponse(err.Error())
-	}
-
-	baseURL := a.getBaseURL()
-	if strings.HasSuffix(baseURL, "/"+shipyardControllerBaseURL) {
-		baseURL = strings.TrimSuffix(a.getBaseURL(), "/"+shipyardControllerBaseURL)
-		baseURL += "/api"
 	}
 
 	return postWithEventContext(ctx, a.scheme+"://"+baseURL+v1EventPath, bodyStr, a)
@@ -205,11 +201,7 @@ func (a *APIHandler) DeleteService(ctx context.Context, project, service string,
 
 // GetMetadata retrieves Keptn metadata information.
 func (a *APIHandler) GetMetadata(ctx context.Context, opts APIGetMetadataOptions) (*models.Metadata, *models.Error) {
-	baseURL := a.getBaseURL()
-	if strings.HasSuffix(baseURL, "/"+shipyardControllerBaseURL) {
-		baseURL = strings.TrimSuffix(a.getBaseURL(), "/"+shipyardControllerBaseURL)
-		baseURL += "/api"
-	}
+	baseURL := a.getAPIServicePath()
 
 	body, mErr := getAndExpectSuccess(ctx, a.scheme+"://"+baseURL+v1MetadataPath, nil)
 	if mErr != nil {
@@ -223,4 +215,12 @@ func (a *APIHandler) GetMetadata(ctx context.Context, opts APIGetMetadataOptions
 	}
 
 	return respMetadata, nil
+}
+
+func (a *APIHandler) getAPIServicePath() string {
+	baseURL := a.getBaseURL()
+	if strings.HasSuffix(baseURL, "/"+shipyardControllerBaseURL) {
+		baseURL = strings.TrimSuffix(a.getBaseURL(), "/"+shipyardControllerBaseURL)
+	}
+	return baseURL
 }
