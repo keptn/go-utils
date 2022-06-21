@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/url"
 	"strings"
@@ -18,7 +17,7 @@ const pathToService = "/service"
 const pathToStage = "/stage"
 const configurationServiceBaseURL = "configuration-service"
 
-var ResourceNotFoundError = errors.New("Resource not found")
+var ResourceNotFoundError = v2.ResourceNotFoundError
 
 type ResourcesV1Interface interface {
 	// CreateResources creates a resource for the specified entity.
