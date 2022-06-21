@@ -203,7 +203,7 @@ func (a *APIHandler) DeleteService(ctx context.Context, project, service string,
 func (a *APIHandler) GetMetadata(ctx context.Context, opts APIGetMetadataOptions) (*models.Metadata, *models.Error) {
 	baseURL := a.getAPIServicePath()
 
-	body, mErr := getAndExpectSuccess(ctx, a.scheme+"://"+baseURL+v1MetadataPath, nil)
+	body, mErr := getAndExpectSuccess(ctx, a.scheme+"://"+baseURL+v1MetadataPath, a)
 	if mErr != nil {
 		return nil, mErr
 
