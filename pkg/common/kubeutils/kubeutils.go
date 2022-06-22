@@ -11,7 +11,6 @@ import (
 	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/client-go/kubernetes"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	"k8s.io/client-go/util/retry"
 
 	typesv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -132,22 +131,6 @@ func GetKeptnManagedNamespace(useInClusterConfig bool) ([]string, error) {
 	return namespaces, nil
 }
 
-// ExistsNamespace checks whether a namespace with the provided name exists
-func ExistsNamespace(useInClusterConfig bool, namespace string) (bool, error) {
-	clientset, err := GetClientset(useInClusterConfig)
-	if err != nil {
-		return false, err
-	}
-	_, err = clientset.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
-	if err != nil {
-		if statusErr, ok := err.(*apierr.StatusError); ok && statusErr.ErrStatus.Reason == metav1.StatusReasonNotFound {
-			return false, nil
-		}
-		return false, err
-	}
-	return true, nil
-}
-
 // GetKeptnDirectory returns a path, which is used to store logs and possibly creds
 func GetKeptnDirectory() (string, error) {
 
@@ -164,9 +147,15 @@ func GetKeptnDirectory() (string, error) {
 	return keptnDir, nil
 }
 
-// IsDeployment tests whether the provided struct is a deployment
-func IsDeployment(dpl *appsv1.Deployment) bool {
-	return strings.ToLower(dpl.Kind) == "deployment"
+// GetKubeAPI returns the CoreV1Interface
+func GetKubeAPI(useInClusterConfig bool) (v1.CoreV1Interface, error) {
+
+	clientset, err := GetClientset(useInClusterConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return clientset.CoreV1(), nil
 }
 
 // WaitForDeploymentToBeRolledOut waits until the deployment is Available
@@ -222,9 +211,20 @@ func getDeployment(clientset *kubernetes.Clientset, namespace string, deployment
 	return dep, nil
 }
 
-// IsService tests whether the provided struct is a service
-func IsService(svc *typesv1.Service) bool {
-	return strings.ToLower(svc.Kind) == "service"
+// ExistsNamespace checks whether a namespace with the provided name exists
+func ExistsNamespace(useInClusterConfig bool, namespace string) (bool, error) {
+	clientset, err := GetClientset(useInClusterConfig)
+	if err != nil {
+		return false, err
+	}
+	_, err = clientset.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
+	if err != nil {
+		if statusErr, ok := err.(*apierr.StatusError); ok && statusErr.ErrStatus.Reason == metav1.StatusReasonNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
 }
 
 // CreateNamespace creates a new Kubernetes namespace with the provided name
@@ -257,63 +257,6 @@ func PatchKeptnManagedNamespace(useInClusterConfig bool, namespace string) error
 		metav1.PatchOptions{})
 	if err != nil {
 		return err
-	}
-	return nil
-}
-
-func GetHelmChartURI(chartName string) string {
-	return "helm/" + chartName + ".tgz"
-}
-
-// GetKubeAPI returns the CoreV1Interface
-func GetKubeAPI(useInClusterConfig bool) (v1.CoreV1Interface, error) {
-
-	clientset, err := GetClientset(useInClusterConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	return clientset.CoreV1(), nil
-}
-
-func ScaleDeployment(useInClusterConfig bool, deployment string, namespace string, replicas int32) error {
-	clientset, err := GetClientset(useInClusterConfig)
-	if err != nil {
-		return err
-	}
-	deploymentsClient := clientset.AppsV1().Deployments(namespace)
-
-	retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		// Retrieve the latest version of Deployment before attempting update
-		// RetryOnConflict uses exponential backoff to avoid exhausting the apiserver
-		result, getErr := deploymentsClient.Get(context.TODO(), deployment, metav1.GetOptions{})
-		if getErr != nil {
-			return fmt.Errorf("Failed to get latest version of Deployment: %v", getErr)
-		}
-
-		result.Spec.Replicas = int32Ptr(replicas)
-		_, updateErr := deploymentsClient.Update(context.TODO(), result, metav1.UpdateOptions{})
-		return updateErr
-	})
-	return retryErr
-}
-
-func int32Ptr(i int32) *int32 { return &i }
-
-// RestartPodsWithSelector restarts the pods which are found in the provided namespace and selector
-func RestartPodsWithSelector(useInClusterConfig bool, namespace string, selector string) error {
-	clientset, err := GetKubeAPI(useInClusterConfig)
-	if err != nil {
-		return err
-	}
-	pods, err := clientset.Pods(namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: selector})
-	if err != nil {
-		return err
-	}
-	for _, pod := range pods.Items {
-		if err := clientset.Pods(namespace).Delete(context.TODO(), pod.Name, metav1.DeleteOptions{}); err != nil {
-			return err
-		}
 	}
 	return nil
 }
