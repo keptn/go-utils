@@ -99,7 +99,7 @@ func (u *UniformHandler) Ping(ctx context.Context, integrationID string, opts Un
 	}
 
 	m, _ := json.MarshalIndent(u, "", "  ")
-	fmt.Println(m)
+	fmt.Println(string(m))
 	fmt.Println(u.baseURL)
 	resp, err := put(ctx, u.scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/ping", nil, u)
 	if err != nil {
