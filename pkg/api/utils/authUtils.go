@@ -79,5 +79,18 @@ func (a *AuthHandler) getHTTPClient() *http.Client {
 
 // Authenticate authenticates the client request against the server.
 func (a *AuthHandler) Authenticate() (*models.EventContext, *models.Error) {
+	a.ensureHandlerIsSet()
 	return a.authHandler.Authenticate(context.TODO(), v2.AuthAuthenticateOptions{})
+}
+
+func (a *AuthHandler) ensureHandlerIsSet() {
+	if a.authHandler != nil {
+		return
+	}
+
+	if a.AuthToken != "" {
+		a.authHandler = v2.NewAuthenticatedAuthHandler(a.BaseURL, a.AuthToken, a.AuthHeader, a.HTTPClient, a.Scheme)
+	} else {
+		a.authHandler = v2.NewAuthHandlerWithHTTPClient(a.BaseURL, a.HTTPClient)
+	}
 }

@@ -98,9 +98,6 @@ func (u *UniformHandler) Ping(ctx context.Context, integrationID string, opts Un
 		return nil, errors.New("could not ping an invalid IntegrationID")
 	}
 
-	m, _ := json.MarshalIndent(u, "", "  ")
-	fmt.Println(string(m))
-	fmt.Println(u.baseURL)
 	resp, err := put(ctx, u.scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/ping", nil, u)
 	if err != nil {
 		return nil, errors.New(err.GetMessage())

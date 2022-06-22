@@ -119,24 +119,41 @@ func (lh *LogHandler) getHTTPClient() *http.Client {
 
 // Log appends the specified logs to the log cache.
 func (lh *LogHandler) Log(logs []models.LogEntry) {
+	lh.ensureHandlerIsSet()
 	lh.logHandler.Log(logs, v2.LogsLogOptions{})
 }
 
 // GetLogs gets logs with the specified parameters.
 func (lh *LogHandler) GetLogs(params models.GetLogsParams) (*models.GetLogsResponse, error) {
+	lh.ensureHandlerIsSet()
 	return lh.logHandler.GetLogs(context.TODO(), params, v2.LogsGetLogsOptions{})
 }
 
 // DeleteLogs deletes logs matching the specified log filter.
 func (lh *LogHandler) DeleteLogs(params models.LogFilter) error {
+	lh.ensureHandlerIsSet()
 	return lh.logHandler.DeleteLogs(context.TODO(), params, v2.LogsDeleteLogsOptions{})
 }
 
 func (lh *LogHandler) Start(ctx context.Context) {
+	lh.ensureHandlerIsSet()
 	lh.logHandler.Start(ctx, v2.LogsStartOptions{})
 }
 
 // Flush flushes the log cache.
 func (lh *LogHandler) Flush() error {
+	lh.ensureHandlerIsSet()
 	return lh.logHandler.Flush(context.TODO(), v2.LogsFlushOptions{})
+}
+
+func (lh *LogHandler) ensureHandlerIsSet() {
+	if lh.logHandler != nil {
+		return
+	}
+
+	if lh.AuthToken != "" {
+		lh.logHandler = v2.NewAuthenticatedLogHandler(lh.BaseURL, lh.AuthToken, lh.AuthHeader, lh.HTTPClient, lh.Scheme)
+	} else {
+		lh.logHandler = v2.NewLogHandlerWithHTTPClient(lh.BaseURL, lh.HTTPClient)
+	}
 }

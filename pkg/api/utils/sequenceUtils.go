@@ -132,6 +132,7 @@ func (s *SequenceControlHandler) getHTTPClient() *http.Client {
 }
 
 func (s *SequenceControlHandler) ControlSequence(params SequenceControlParams) error {
+	s.ensureHandlerIsSet()
 	return s.sequenceControlHandler.ControlSequence(
 		context.TODO(),
 		v2.SequenceControlParams{
@@ -141,4 +142,16 @@ func (s *SequenceControlHandler) ControlSequence(params SequenceControlParams) e
 			State:        params.State,
 		},
 		v2.SequencesControlSequenceOptions{})
+}
+
+func (s *SequenceControlHandler) ensureHandlerIsSet() {
+	if s.sequenceControlHandler != nil {
+		return
+	}
+
+	if s.AuthToken != "" {
+		s.sequenceControlHandler = v2.NewAuthenticatedSequenceControlHandler(s.BaseURL, s.AuthToken, s.AuthHeader, s.HTTPClient, s.Scheme)
+	} else {
+		s.sequenceControlHandler = v2.NewSequenceControlHandlerWithHTTPClient(s.BaseURL, s.HTTPClient)
+	}
 }

@@ -109,40 +109,60 @@ func (a *APIHandler) getHTTPClient() *http.Client {
 
 // SendEvent sends an event to Keptn.
 func (a *APIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.EventContext, *models.Error) {
+	a.ensureHandlerIsSet()
 	return a.apiHandler.SendEvent(context.TODO(), event, v2.APISendEventOptions{})
 }
 
 // TriggerEvaluation triggers a new evaluation.
 func (a *APIHandler) TriggerEvaluation(project, stage, service string, evaluation models.Evaluation) (*models.EventContext, *models.Error) {
+	a.ensureHandlerIsSet()
 	return a.apiHandler.TriggerEvaluation(context.TODO(), project, stage, service, evaluation, v2.APITriggerEvaluationOptions{})
 }
 
 // CreateProject creates a new project.
 func (a *APIHandler) CreateProject(project models.CreateProject) (string, *models.Error) {
+	a.ensureHandlerIsSet()
 	return a.apiHandler.CreateProject(context.TODO(), project, v2.APICreateProjectOptions{})
 }
 
 // UpdateProject updates a project.
 func (a *APIHandler) UpdateProject(project models.CreateProject) (string, *models.Error) {
+	a.ensureHandlerIsSet()
 	return a.apiHandler.UpdateProject(context.TODO(), project, v2.APIUpdateProjectOptions{})
 }
 
 // DeleteProject deletes a project.
 func (a *APIHandler) DeleteProject(project models.Project) (*models.DeleteProjectResponse, *models.Error) {
+	a.ensureHandlerIsSet()
 	return a.apiHandler.DeleteProject(context.TODO(), project, v2.APIDeleteProjectOptions{})
 }
 
 // CreateService creates a new service.
 func (a *APIHandler) CreateService(project string, service models.CreateService) (string, *models.Error) {
+	a.ensureHandlerIsSet()
 	return a.apiHandler.CreateService(context.TODO(), project, service, v2.APICreateServiceOptions{})
 }
 
 // DeleteService deletes a service.
 func (a *APIHandler) DeleteService(project, service string) (*models.DeleteServiceResponse, *models.Error) {
+	a.ensureHandlerIsSet()
 	return a.apiHandler.DeleteService(context.TODO(), project, service, v2.APIDeleteServiceOptions{})
 }
 
 // GetMetadata retrieves Keptn metadata information.
 func (a *APIHandler) GetMetadata() (*models.Metadata, *models.Error) {
+	a.ensureHandlerIsSet()
 	return a.apiHandler.GetMetadata(context.TODO(), v2.APIGetMetadataOptions{})
+}
+
+func (a *APIHandler) ensureHandlerIsSet() {
+	if a.apiHandler != nil {
+		return
+	}
+
+	if a.AuthToken != "" {
+		a.apiHandler = v2.NewAuthenticatedAPIHandler(a.BaseURL, a.AuthToken, a.AuthHeader, a.HTTPClient, a.Scheme)
+	} else {
+		a.apiHandler = v2.NewAPIHandlerWithHTTPClient(a.BaseURL, a.HTTPClient)
+	}
 }

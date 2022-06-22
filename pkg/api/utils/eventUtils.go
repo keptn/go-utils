@@ -105,11 +105,13 @@ func (e *EventHandler) getHTTPClient() *http.Client {
 
 // GetEvents returns all events matching the properties in the passed filter object.
 func (e *EventHandler) GetEvents(filter *EventFilter) ([]*models.KeptnContextExtendedCE, *models.Error) {
+	e.ensureHandlerIsSet()
 	return e.eventHandler.GetEvents(context.TODO(), toV2EventFilter(filter), v2.EventsGetEventsOptions{})
 }
 
 // GetEventsWithRetry tries to retrieve events matching the passed filter.
 func (e *EventHandler) GetEventsWithRetry(filter *EventFilter, maxRetries int, retrySleepTime time.Duration) ([]*models.KeptnContextExtendedCE, error) {
+	e.ensureHandlerIsSet()
 	return e.eventHandler.GetEventsWithRetry(context.TODO(), toV2EventFilter(filter), maxRetries, retrySleepTime, v2.EventsGetEventsWithRetryOptions{})
 }
 
@@ -124,5 +126,17 @@ func toV2EventFilter(filter *EventFilter) *v2.EventFilter {
 		PageSize:      filter.PageSize,
 		NumberOfPages: filter.NumberOfPages,
 		FromTime:      filter.FromTime,
+	}
+}
+
+func (e *EventHandler) ensureHandlerIsSet() {
+	if e.eventHandler != nil {
+		return
+	}
+
+	if e.AuthToken != "" {
+		e.eventHandler = v2.NewAuthenticatedEventHandler(e.BaseURL, e.AuthToken, e.AuthHeader, e.HTTPClient, e.Scheme)
+	} else {
+		e.eventHandler = v2.NewEventHandlerWithHTTPClient(e.BaseURL, e.HTTPClient)
 	}
 }

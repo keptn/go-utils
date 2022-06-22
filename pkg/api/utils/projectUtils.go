@@ -101,25 +101,42 @@ func (p *ProjectHandler) getHTTPClient() *http.Client {
 
 // CreateProject creates a new project.
 func (p *ProjectHandler) CreateProject(project models.Project) (*models.EventContext, *models.Error) {
+	p.ensureHandlerIsSet()
 	return p.projectHandler.CreateProject(context.TODO(), project, v2.ProjectsCreateProjectOptions{})
 }
 
 // DeleteProject deletes a project.
 func (p *ProjectHandler) DeleteProject(project models.Project) (*models.EventContext, *models.Error) {
+	p.ensureHandlerIsSet()
 	return p.projectHandler.DeleteProject(context.TODO(), project, v2.ProjectsDeleteProjectOptions{})
 }
 
 // GetProject returns a project.
 func (p *ProjectHandler) GetProject(project models.Project) (*models.Project, *models.Error) {
+	p.ensureHandlerIsSet()
 	return p.projectHandler.GetProject(context.TODO(), project, v2.ProjectsGetProjectOptions{})
 }
 
 // GetAllProjects returns all projects.
 func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
+	p.ensureHandlerIsSet()
 	return p.projectHandler.GetAllProjects(context.TODO(), v2.ProjectsGetAllProjectsOptions{})
 }
 
 // UpdateConfigurationServiceProject updates a configuration service project.
 func (p *ProjectHandler) UpdateConfigurationServiceProject(project models.Project) (*models.EventContext, *models.Error) {
+	p.ensureHandlerIsSet()
 	return p.projectHandler.UpdateConfigurationServiceProject(context.TODO(), project, v2.ProjectsUpdateConfigurationServiceProjectOptions{})
+}
+
+func (p *ProjectHandler) ensureHandlerIsSet() {
+	if p.projectHandler != nil {
+		return
+	}
+
+	if p.AuthToken != "" {
+		p.projectHandler = v2.NewAuthenticatedProjectHandler(p.BaseURL, p.AuthToken, p.AuthHeader, p.HTTPClient, p.Scheme)
+	} else {
+		p.projectHandler = v2.NewProjectHandlerWithHTTPClient(p.BaseURL, p.HTTPClient)
+	}
 }

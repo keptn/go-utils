@@ -91,10 +91,24 @@ func (s *StageHandler) getHTTPClient() *http.Client {
 
 // CreateStage creates a new stage with the provided name.
 func (s *StageHandler) CreateStage(project string, stageName string) (*models.EventContext, *models.Error) {
+	s.ensureHandlerIsSet()
 	return s.stageHandler.CreateStage(context.TODO(), project, stageName, v2.StagesCreateStageOptions{})
 }
 
 // GetAllStages returns a list of all stages.
 func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
+	s.ensureHandlerIsSet()
 	return s.stageHandler.GetAllStages(context.TODO(), project, v2.StagesGetAllStagesOptions{})
+}
+
+func (s *StageHandler) ensureHandlerIsSet() {
+	if s.stageHandler != nil {
+		return
+	}
+
+	if s.AuthToken != "" {
+		s.stageHandler = v2.NewAuthenticatedStageHandler(s.BaseURL, s.AuthToken, s.AuthHeader, s.HTTPClient, s.Scheme)
+	} else {
+		s.stageHandler = v2.NewStageHandlerWithHTTPClient(s.BaseURL, s.HTTPClient)
+	}
 }
