@@ -2,20 +2,30 @@ package kubeutils
 
 import (
 	"context"
+	"fmt"
 
 	typesv1 "k8s.io/api/core/v1"
 	apierr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes"
 )
 
-// ExistsNamespace checks whether a namespace with the provided name exists
-func ExistsNamespace(useInClusterConfig bool, namespace string) (bool, error) {
-	clientset, err := GetClientset(useInClusterConfig)
+type NamespaceManager struct {
+	clientSet kubernetes.Interface
+}
+
+func NewManespaceManager(useInClusterConfig bool) (*NamespaceManager, error) {
+	clientSet, err := GetClientSet(useInClusterConfig)
 	if err != nil {
-		return false, err
+		return nil, fmt.Errorf("Could not create ApiTokenProvider: %s", err.Error())
 	}
-	_, err = clientset.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
+	return &NamespaceManager{clientSet: clientSet}, nil
+}
+
+// ExistsNamespace checks whether a namespace with the provided name exists
+func (a *NamespaceManager) ExistsNamespace(namespace string) (bool, error) {
+	_, err := a.clientSet.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
 	if err != nil {
 		if statusErr, ok := err.(*apierr.StatusError); ok && statusErr.ErrStatus.Reason == metav1.StatusReasonNotFound {
 			return false, nil
@@ -26,8 +36,7 @@ func ExistsNamespace(useInClusterConfig bool, namespace string) (bool, error) {
 }
 
 // CreateNamespace creates a new Kubernetes namespace with the provided name
-func CreateNamespace(useInClusterConfig bool, namespace string, namespaceMetadata ...metav1.ObjectMeta) error {
-
+func (a *NamespaceManager) CreateNamespace(namespace string, namespaceMetadata ...metav1.ObjectMeta) error {
 	var buildNamespaceMetadata metav1.ObjectMeta
 	if len(namespaceMetadata) > 0 {
 		buildNamespaceMetadata = namespaceMetadata[0]
@@ -36,22 +45,15 @@ func CreateNamespace(useInClusterConfig bool, namespace string, namespaceMetadat
 	buildNamespaceMetadata.Name = namespace
 
 	ns := &typesv1.Namespace{ObjectMeta: buildNamespaceMetadata}
-	clientset, err := GetClientset(useInClusterConfig)
-	if err != nil {
-		return err
-	}
-	_, err = clientset.CoreV1().Namespaces().Create(context.TODO(), ns, metav1.CreateOptions{})
+	_, err := a.clientSet.CoreV1().Namespaces().Create(context.TODO(), ns, metav1.CreateOptions{})
 	return err
 }
 
 // PatchKeptnManagedNamespace to patch the namespace with the annotation & label `keptn.sh/managed-by: keptn`
-func PatchKeptnManagedNamespace(useInClusterConfig bool, namespace string) error {
+func (a *NamespaceManager) PatchKeptnManagedNamespace(namespace string) error {
 	var patchData = []byte(`{"metadata": {"annotations": {"keptn.sh/managed-by": "keptn"}, "labels": {"keptn.sh/managed-by": "keptn"}}}`)
-	clientset, err := GetClientset(useInClusterConfig)
-	if err != nil {
-		return err
-	}
-	_, err = clientset.CoreV1().Namespaces().Patch(context.TODO(), namespace, types.StrategicMergePatchType, patchData,
+
+	_, err := a.clientSet.CoreV1().Namespaces().Patch(context.TODO(), namespace, types.StrategicMergePatchType, patchData,
 		metav1.PatchOptions{})
 	if err != nil {
 		return err
@@ -60,14 +62,10 @@ func PatchKeptnManagedNamespace(useInClusterConfig bool, namespace string) error
 }
 
 // GetKeptnManagedNamespace returns the list of namespace with the annotation & label `keptn.sh/managed-by: keptn`
-func GetKeptnManagedNamespace(useInClusterConfig bool) ([]string, error) {
-	var namespaceList *typesv1.NamespaceList
+func (a *NamespaceManager) GetKeptnManagedNamespace() ([]string, error) {
 	var namespaces []string
-	clientset, err := GetClientset(useInClusterConfig)
-	if err != nil {
-		return nil, err
-	}
-	namespaceList, err = clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{
+
+	namespaceList, err := a.clientSet.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{
 		LabelSelector: "keptn.sh/managed-by",
 	})
 	if err != nil {

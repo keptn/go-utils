@@ -13,7 +13,7 @@ import (
 )
 
 // GetClientset returns the kubernetes Clientset
-func GetClientset(useInClusterConfig bool) (*kubernetes.Clientset, error) {
+func GetClientSet(useInClusterConfig bool) (*kubernetes.Clientset, error) {
 
 	var config *rest.Config
 	var err error
