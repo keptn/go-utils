@@ -122,6 +122,6 @@ func (u *UniformHandler) ensureUniformHandlerIsSet() {
 	if u.AuthToken != "" {
 		u.uniformHandler = v2.NewAuthenticatedUniformHandler(u.BaseURL, u.AuthToken, u.AuthHeader, u.HTTPClient, u.Scheme)
 	} else {
-		v2.NewUniformHandlerWithHTTPClient(u.BaseURL, u.HTTPClient)
+		u.uniformHandler = v2.NewUniformHandlerWithHTTPClient(u.BaseURL, u.HTTPClient)
 	}
 }
