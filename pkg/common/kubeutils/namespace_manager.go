@@ -7,7 +7,6 @@ import (
 	typesv1 "k8s.io/api/core/v1"
 	apierr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -47,18 +46,6 @@ func (a *NamespaceManager) CreateNamespace(namespace string, namespaceMetadata .
 	ns := &typesv1.Namespace{ObjectMeta: buildNamespaceMetadata}
 	_, err := a.clientSet.CoreV1().Namespaces().Create(context.TODO(), ns, metav1.CreateOptions{})
 	return err
-}
-
-// PatchKeptnManagedNamespace to patch the namespace with the annotation & label `keptn.sh/managed-by: keptn`
-func (a *NamespaceManager) PatchKeptnManagedNamespace(namespace string) error {
-	var patchData = []byte(`{"metadata": {"annotations": {"keptn.sh/managed-by": "keptn"}, "labels": {"keptn.sh/managed-by": "keptn"}}}`)
-
-	_, err := a.clientSet.CoreV1().Namespaces().Patch(context.TODO(), namespace, types.StrategicMergePatchType, patchData,
-		metav1.PatchOptions{})
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 // GetKeptnManagedNamespace returns the list of namespace with the annotation & label `keptn.sh/managed-by: keptn`
