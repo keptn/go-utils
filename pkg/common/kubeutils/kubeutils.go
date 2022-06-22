@@ -18,13 +18,9 @@ import (
 
 	apierr "k8s.io/apimachinery/pkg/api/errors"
 
-	// Initialize all known client auth plugins.
-	_ "github.com/Azure/go-autorest/autorest"
 	"github.com/keptn/go-utils/pkg/common/fileutils"
 
-	// Initialize all known client auth plugins.
 	appsv1 "k8s.io/api/apps/v1"
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
