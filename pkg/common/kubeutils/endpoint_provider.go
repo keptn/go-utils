@@ -12,6 +12,7 @@ type KeptnEndpointProvider struct {
 	clientSet kubernetes.Interface
 }
 
+// NewKeptnEndpointProvider creates new KeptnEndpointProvider
 func NewKeptnEndpointProvider(useInClusterConfig bool) (*KeptnEndpointProvider, error) {
 	clientSet, err := GetClientSet(useInClusterConfig)
 	if err != nil {

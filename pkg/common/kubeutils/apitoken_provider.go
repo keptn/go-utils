@@ -12,6 +12,7 @@ type ApiTokenProvider struct {
 	clientSet kubernetes.Interface
 }
 
+// NewApiTokenProvider creates new ApiTokenProvider
 func NewApiTokenProvider(useInClusterConfig bool) (*ApiTokenProvider, error) {
 	clientSet, err := GetClientSet(useInClusterConfig)
 	if err != nil {

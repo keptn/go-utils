@@ -14,6 +14,7 @@ type NamespaceManager struct {
 	clientSet kubernetes.Interface
 }
 
+// NewMamespaceManager creates new NamespaceManager
 func NewMamespaceManager(useInClusterConfig bool) (*NamespaceManager, error) {
 	clientSet, err := GetClientSet(useInClusterConfig)
 	if err != nil {
