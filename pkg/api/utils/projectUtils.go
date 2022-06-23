@@ -1,45 +1,56 @@
 package api
 
 import (
-	"crypto/tls"
-	"io/ioutil"
+	"context"
 	"net/http"
-	"net/url"
 	"strings"
 
-	"github.com/keptn/go-utils/pkg/common/httputils"
-
 	"github.com/keptn/go-utils/pkg/api/models"
+	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 const v1ProjectPath = "/v1/project"
 
 type ProjectsV1Interface interface {
+	// CreateProject creates a new project.
 	CreateProject(project models.Project) (*models.EventContext, *models.Error)
+
+	// DeleteProject deletes a project.
 	DeleteProject(project models.Project) (*models.EventContext, *models.Error)
+
+	// GetProject returns a project.
 	GetProject(project models.Project) (*models.Project, *models.Error)
+
+	// GetAllProjects returns all projects.
 	GetAllProjects() ([]*models.Project, error)
+
+	// UpdateConfigurationServiceProject updates a configuration service project.
 	UpdateConfigurationServiceProject(project models.Project) (*models.EventContext, *models.Error)
 }
 
 // ProjectHandler handles projects
 type ProjectHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	projectHandler *v2.ProjectHandler
+	BaseURL        string
+	AuthToken      string
+	AuthHeader     string
+	HTTPClient     *http.Client
+	Scheme         string
 }
 
 // NewProjectHandler returns a new ProjectHandler which sends all requests directly to the configuration-service
 func NewProjectHandler(baseURL string) *ProjectHandler {
-	baseURL = httputils.TrimHTTPScheme(baseURL)
+	return NewProjectHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
+}
+
+// NewProjectHandlerWithHTTPClient returns a new ProjectHandler which sends all requests directly to the configuration-service using the specified http.Client
+func NewProjectHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *ProjectHandler {
 	return &ProjectHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
-		Scheme:     "http",
+		BaseURL:        httputils.TrimHTTPScheme(baseURL),
+		HTTPClient:     httpClient,
+		Scheme:         "http",
+		projectHandler: v2.NewProjectHandlerWithHTTPClient(baseURL, httpClient),
 	}
 }
 
@@ -51,24 +62,24 @@ func NewAuthenticatedProjectHandler(baseURL string, authToken string, authHeader
 		httpClient = &http.Client{}
 	}
 	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
-	return createAuthProjectHandler(baseURL, authToken, authHeader, httpClient, scheme)
+	return createAuthenticatedProjectHandler(baseURL, authToken, authHeader, httpClient, scheme)
 }
 
-func createAuthProjectHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ProjectHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
-	baseURL = strings.TrimRight(baseURL, "/")
+func createAuthenticatedProjectHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ProjectHandler {
+	v2ProjectHandler := v2.NewAuthenticatedProjectHandler(baseURL, authToken, authHeader, httpClient, scheme)
 
+	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
 
 	return &ProjectHandler{
-		BaseURL:    baseURL,
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
+		BaseURL:        httputils.TrimHTTPScheme(baseURL),
+		AuthHeader:     authHeader,
+		AuthToken:      authToken,
+		HTTPClient:     httpClient,
+		Scheme:         scheme,
+		projectHandler: v2ProjectHandler,
 	}
 }
 
@@ -88,119 +99,44 @@ func (p *ProjectHandler) getHTTPClient() *http.Client {
 	return p.HTTPClient
 }
 
-// CreateProject creates a new project
+// CreateProject creates a new project.
 func (p *ProjectHandler) CreateProject(project models.Project) (*models.EventContext, *models.Error) {
-	bodyStr, err := project.ToJSON()
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
-	}
-	return postWithEventContext(p.Scheme+"://"+p.getBaseURL()+v1ProjectPath, bodyStr, p)
+	p.ensureHandlerIsSet()
+	return p.projectHandler.CreateProject(context.TODO(), project, v2.ProjectsCreateProjectOptions{})
 }
 
-// DeleteProject deletes a project
+// DeleteProject deletes a project.
 func (p *ProjectHandler) DeleteProject(project models.Project) (*models.EventContext, *models.Error) {
-	return deleteWithEventContext(p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, p)
+	p.ensureHandlerIsSet()
+	return p.projectHandler.DeleteProject(context.TODO(), project, v2.ProjectsDeleteProjectOptions{})
 }
 
-// GetProject returns a project
+// GetProject returns a project.
 func (p *ProjectHandler) GetProject(project models.Project) (*models.Project, *models.Error) {
-	return getProject(p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, p)
+	p.ensureHandlerIsSet()
+	return p.projectHandler.GetProject(context.TODO(), project, v2.ProjectsGetProjectOptions{})
 }
 
-// GetProjects returns a project
+// GetAllProjects returns all projects.
 func (p *ProjectHandler) GetAllProjects() ([]*models.Project, error) {
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	projects := []*models.Project{}
-
-	nextPageKey := ""
-
-	for {
-		url, err := url.Parse(p.Scheme + "://" + p.getBaseURL() + v1ProjectPath)
-		if err != nil {
-			return nil, err
-		}
-		q := url.Query()
-		if nextPageKey != "" {
-			q.Set("nextPageKey", nextPageKey)
-			url.RawQuery = q.Encode()
-		}
-		req, err := http.NewRequest("GET", url.String(), nil)
-		if err != nil {
-			return nil, err
-		}
-		req.Header.Set("Content-Type", "application/json")
-		addAuthHeader(req, p)
-
-		resp, err := p.HTTPClient.Do(req)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		if resp.StatusCode == 200 {
-
-			received := &models.Projects{}
-			if err = received.FromJSON(body); err != nil {
-				return nil, err
-			}
-			projects = append(projects, received.Projects...)
-
-			if received.NextPageKey == "" || received.NextPageKey == "0" {
-				break
-			}
-			nextPageKey = received.NextPageKey
-		} else {
-			return nil, handleErrStatusCode(resp.StatusCode, body).ToError()
-		}
-	}
-
-	return projects, nil
+	p.ensureHandlerIsSet()
+	return p.projectHandler.GetAllProjects(context.TODO(), v2.ProjectsGetAllProjectsOptions{})
 }
 
-func getProject(uri string, api APIService) (*models.Project, *models.Error) {
-
-	req, err := http.NewRequest("GET", uri, nil)
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
-	}
-	req.Header.Set("Content-Type", "application/json")
-	addAuthHeader(req, api)
-
-	resp, err := api.getHTTPClient().Do(req)
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
-	}
-
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		if len(body) > 0 {
-			respProject := &models.Project{}
-			if err = respProject.FromJSON(body); err != nil {
-				return nil, buildErrorResponse(err.Error())
-			}
-
-			return respProject, nil
-		}
-		return nil, nil
-	}
-
-	return nil, handleErrStatusCode(resp.StatusCode, body)
-}
-
+// UpdateConfigurationServiceProject updates a configuration service project.
 func (p *ProjectHandler) UpdateConfigurationServiceProject(project models.Project) (*models.EventContext, *models.Error) {
-	bodyStr, err := project.ToJSON()
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
+	p.ensureHandlerIsSet()
+	return p.projectHandler.UpdateConfigurationServiceProject(context.TODO(), project, v2.ProjectsUpdateConfigurationServiceProjectOptions{})
+}
+
+func (p *ProjectHandler) ensureHandlerIsSet() {
+	if p.projectHandler != nil {
+		return
 	}
-	return putWithEventContext(p.Scheme+"://"+p.getBaseURL()+v1ProjectPath+"/"+project.ProjectName, bodyStr, p)
+
+	if p.AuthToken != "" {
+		p.projectHandler = v2.NewAuthenticatedProjectHandler(p.BaseURL, p.AuthToken, p.AuthHeader, p.HTTPClient, p.Scheme)
+	} else {
+		p.projectHandler = v2.NewProjectHandlerWithHTTPClient(p.BaseURL, p.HTTPClient)
+	}
 }

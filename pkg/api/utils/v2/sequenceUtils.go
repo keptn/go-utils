@@ -1,4 +1,4 @@
-package api
+package v2
 
 import (
 	"context"
@@ -7,23 +7,24 @@ import (
 	"net/http"
 	"strings"
 
-	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
 	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 const v1SequenceControlPath = "/v1/sequence/%s/%s/control"
 
-type SequencesV1Interface interface {
-	ControlSequence(params SequenceControlParams) error
+// SequencesControlSequenceOptions are options for SequencesInterface.ControlSequence().
+type SequencesControlSequenceOptions struct{}
+
+type SequencesInterface interface {
+	ControlSequence(ctx context.Context, params SequenceControlParams, opts SequencesControlSequenceOptions) error
 }
 
 type SequenceControlHandler struct {
-	sequenceControlHandler *v2.SequenceControlHandler
-	BaseURL                string
-	AuthToken              string
-	AuthHeader             string
-	HTTPClient             *http.Client
-	Scheme                 string
+	baseURL    string
+	authToken  string
+	authHeader string
+	httpClient *http.Client
+	scheme     string
 }
 
 type SequenceControlParams struct {
@@ -72,86 +73,75 @@ func (s *SequenceControlBody) FromJSON(b []byte) error {
 	return nil
 }
 
-// NewSequenceControlHandler returns a new SequenceControlHandler
+// NewSequenceControlHandlerWithHTTPClient returns a new SequenceControlHandler
 func NewSequenceControlHandler(baseURL string) *SequenceControlHandler {
 	return NewSequenceControlHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
 }
 
 // NewSequenceControlHandlerWithHTTPClient returns a new SequenceControlHandler using the specified http.Client
 func NewSequenceControlHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *SequenceControlHandler {
-	return &SequenceControlHandler{
-		BaseURL:                httputils.TrimHTTPScheme(baseURL),
-		HTTPClient:             httpClient,
-		Scheme:                 "http",
-		sequenceControlHandler: v2.NewSequenceControlHandlerWithHTTPClient(baseURL, httpClient),
-	}
+	return createSequenceControlHandler(baseURL, "", "", httpClient, "http")
 }
 
 // NewAuthenticatedSequenceControlHandler returns a new SequenceControlHandler that authenticates at the api via the provided token
-// Deprecated: use APISet instead
 func NewAuthenticatedSequenceControlHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SequenceControlHandler {
-	if httpClient == nil {
-		httpClient = &http.Client{}
-	}
-	httpClient.Transport = wrapOtelTransport(getClientTransport(httpClient.Transport))
-	return createAuthenticatedSequenceControlHandler(baseURL, authToken, authHeader, httpClient, scheme)
-}
-
-func createAuthenticatedSequenceControlHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SequenceControlHandler {
-	v2SequenceControlHandler := v2.NewAuthenticatedSequenceControlHandler(baseURL, authToken, authHeader, httpClient, scheme)
-
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
 
+	return createSequenceControlHandler(baseURL, authToken, authHeader, httpClient, scheme)
+}
+
+func createSequenceControlHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SequenceControlHandler {
 	return &SequenceControlHandler{
-		BaseURL:                httputils.TrimHTTPScheme(baseURL),
-		AuthHeader:             authHeader,
-		AuthToken:              authToken,
-		HTTPClient:             httpClient,
-		Scheme:                 scheme,
-		sequenceControlHandler: v2SequenceControlHandler,
+		baseURL:    httputils.TrimHTTPScheme(baseURL),
+		authHeader: authHeader,
+		authToken:  authToken,
+		httpClient: httpClient,
+		scheme:     scheme,
 	}
 }
 
 func (s *SequenceControlHandler) getBaseURL() string {
-	return s.BaseURL
+	return s.baseURL
 }
 
 func (s *SequenceControlHandler) getAuthToken() string {
-	return s.AuthToken
+	return s.authToken
 }
 
 func (s *SequenceControlHandler) getAuthHeader() string {
-	return s.AuthHeader
+	return s.authHeader
 }
 
 func (s *SequenceControlHandler) getHTTPClient() *http.Client {
-	return s.HTTPClient
+	return s.httpClient
 }
 
-func (s *SequenceControlHandler) ControlSequence(params SequenceControlParams) error {
-	s.ensureHandlerIsSet()
-	return s.sequenceControlHandler.ControlSequence(
-		context.TODO(),
-		v2.SequenceControlParams{
-			Project:      params.Project,
-			KeptnContext: params.KeptnContext,
-			Stage:        params.Stage,
-			State:        params.State,
-		},
-		v2.SequencesControlSequenceOptions{})
-}
-
-func (s *SequenceControlHandler) ensureHandlerIsSet() {
-	if s.sequenceControlHandler != nil {
-		return
+func (s *SequenceControlHandler) ControlSequence(ctx context.Context, params SequenceControlParams, opts SequencesControlSequenceOptions) error {
+	err := params.Validate()
+	if err != nil {
+		return err
 	}
 
-	if s.AuthToken != "" {
-		s.sequenceControlHandler = v2.NewAuthenticatedSequenceControlHandler(s.BaseURL, s.AuthToken, s.AuthHeader, s.HTTPClient, s.Scheme)
-	} else {
-		s.sequenceControlHandler = v2.NewSequenceControlHandlerWithHTTPClient(s.BaseURL, s.HTTPClient)
+	baseurl := fmt.Sprintf("%s://%s", s.scheme, s.getBaseURL())
+	path := fmt.Sprintf(v1SequenceControlPath, params.Project, params.KeptnContext)
+
+	body := SequenceControlBody{
+		Stage: params.Stage,
+		State: params.State,
 	}
+
+	payload, err := body.ToJSON()
+	if err != nil {
+		return err
+	}
+
+	_, errResponse := post(ctx, baseurl+path, payload, s)
+	if errResponse != nil {
+		return fmt.Errorf(errResponse.GetMessage())
+	}
+
+	return nil
 }

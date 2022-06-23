@@ -1,12 +1,13 @@
 package api
 
 import (
-	"errors"
-	"io/ioutil"
+	"context"
 	"net/http"
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 const secretServiceBaseURL = "secrets"
@@ -18,34 +19,41 @@ type SecretsV1Interface interface {
 
 //go:generate moq -pkg utils_mock -skip-ensure -out ./fake/secret_handler_mock.go . SecretHandlerInterface
 type SecretHandlerInterface interface {
+	// CreateSecret creates a new secret.
 	CreateSecret(secret models.Secret) error
+
+	// UpdateSecret creates a new secret.
 	UpdateSecret(secret models.Secret) error
+
+	// DeleteSecret deletes a secret.
 	DeleteSecret(secretName, secretScope string) error
+
+	// GetSecrets returns a list of created secrets.
 	GetSecrets() (*models.GetSecretsResponse, error)
 }
 
 // SecretHandler handles services
 type SecretHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	secretHandler *v2.SecretHandler
+	BaseURL       string
+	AuthToken     string
+	AuthHeader    string
+	HTTPClient    *http.Client
+	Scheme        string
 }
 
 // NewSecretHandler returns a new SecretHandler which sends all requests directly to the secret-service
 func NewSecretHandler(baseURL string) *SecretHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
+	return NewSecretHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
+}
+
+// NewSecretHandlerWithHTTPClient returns a new SecretHandler which sends all requests directly to the secret-service using the specified http.Client
+func NewSecretHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *SecretHandler {
 	return &SecretHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
-		Scheme:     "http",
+		BaseURL:       httputils.TrimHTTPScheme(baseURL),
+		HTTPClient:    httpClient,
+		Scheme:        "http",
+		secretHandler: v2.NewSecretHandlerWithHTTPClient(baseURL, httpClient),
 	}
 }
 
@@ -61,21 +69,20 @@ func NewAuthenticatedSecretHandler(baseURL string, authToken string, authHeader 
 }
 
 func createAuthenticatedSecretHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *SecretHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
+	v2SecretHandler := v2.NewAuthenticatedSecretHandler(baseURL, authToken, authHeader, httpClient, scheme)
 
 	baseURL = strings.TrimRight(baseURL, "/")
-
 	if !strings.HasSuffix(baseURL, secretServiceBaseURL) {
 		baseURL += "/" + secretServiceBaseURL
 	}
 
 	return &SecretHandler{
-		BaseURL:    baseURL,
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
+		BaseURL:       httputils.TrimHTTPScheme(baseURL),
+		AuthHeader:    authHeader,
+		AuthToken:     authToken,
+		HTTPClient:    httpClient,
+		Scheme:        scheme,
+		secretHandler: v2SecretHandler,
 	}
 }
 
@@ -95,67 +102,38 @@ func (s *SecretHandler) getHTTPClient() *http.Client {
 	return s.HTTPClient
 }
 
-// CreateSecret creates a new secret
+// CreateSecret creates a new secret.
 func (s *SecretHandler) CreateSecret(secret models.Secret) error {
-	body, err := secret.ToJSON()
-	if err != nil {
-		return err
-	}
-	_, errObj := post(s.Scheme+"://"+s.BaseURL+v1SecretPath, body, s)
-	if errObj != nil {
-		return errors.New(errObj.GetMessage())
-	}
-	return nil
+	s.ensureHandlerIsSet()
+	return s.secretHandler.CreateSecret(context.TODO(), secret, v2.SecretsCreateSecretOptions{})
 }
 
-// UpdateSecret creates a new secret
+// UpdateSecret creates a new secret.
 func (s *SecretHandler) UpdateSecret(secret models.Secret) error {
-	body, err := secret.ToJSON()
-	if err != nil {
-		return err
-	}
-	_, errObj := put(s.Scheme+"://"+s.BaseURL+v1SecretPath, body, s)
-	if errObj != nil {
-		return errors.New(errObj.GetMessage())
-	}
-	return nil
+	s.ensureHandlerIsSet()
+	return s.secretHandler.UpdateSecret(context.TODO(), secret, v2.SecretsUpdateSecretOptions{})
 }
 
-// DeleteSecret deletes a secret
+// DeleteSecret deletes a secret.
 func (s *SecretHandler) DeleteSecret(secretName, secretScope string) error {
-	_, err := delete(s.Scheme+"://"+s.BaseURL+v1SecretPath+"?name="+secretName+"&scope="+secretScope, s)
-	if err != nil {
-		return errors.New(err.GetMessage())
-	}
-	return nil
+	s.ensureHandlerIsSet()
+	return s.secretHandler.DeleteSecret(context.TODO(), secretName, secretScope, v2.SecretsDeleteSecretOptions{})
 }
 
-// GetSecrets returns a list of created secrets
+// GetSecrets returns a list of created secrets.
 func (s *SecretHandler) GetSecrets() (*models.GetSecretsResponse, error) {
-	req, err := http.NewRequest("GET", s.Scheme+"://"+s.BaseURL+v1SecretPath, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	addAuthHeader(req, s)
+	s.ensureHandlerIsSet()
+	return s.secretHandler.GetSecrets(context.TODO(), v2.SecretsGetSecretsOptions{})
+}
 
-	resp, err := s.HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+func (s *SecretHandler) ensureHandlerIsSet() {
+	if s.secretHandler != nil {
+		return
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, handleErrStatusCode(resp.StatusCode, body).ToError()
+	if s.AuthToken != "" {
+		s.secretHandler = v2.NewAuthenticatedSecretHandler(s.BaseURL, s.AuthToken, s.AuthHeader, s.HTTPClient, s.Scheme)
+	} else {
+		s.secretHandler = v2.NewSecretHandlerWithHTTPClient(s.BaseURL, s.HTTPClient)
 	}
-	result := &models.GetSecretsResponse{}
-	if err := result.FromJSON(body); err != nil {
-		return nil, err
-	}
-	return result, nil
 }

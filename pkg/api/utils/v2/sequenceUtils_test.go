@@ -1,6 +1,7 @@
-package api
+package v2
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -72,7 +73,7 @@ func TestSequenceControlHandler_ControlSequence(t *testing.T) {
 			ts := httptest.NewServer(tt.Handler)
 			defer ts.Close()
 			s := NewSequenceControlHandler(ts.URL)
-			if err := s.ControlSequence(tt.params); (err != nil) != tt.wantErr {
+			if err := s.ControlSequence(context.Background(), tt.params, SequencesControlSequenceOptions{}); (err != nil) != tt.wantErr {
 				t.Errorf("AbortSequence() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

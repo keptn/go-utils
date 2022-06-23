@@ -1,17 +1,15 @@
 package api
 
 import (
-	"bytes"
-	"crypto/tls"
-	b64 "encoding/base64"
+	"context"
 	"encoding/json"
-	"errors"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 const pathToResource = "/resource"
@@ -19,36 +17,84 @@ const pathToService = "/service"
 const pathToStage = "/stage"
 const configurationServiceBaseURL = "configuration-service"
 
-var ResourceNotFoundError = errors.New("Resource not found")
+var ResourceNotFoundError = v2.ResourceNotFoundError
 
 type ResourcesV1Interface interface {
+	// CreateResources creates a resource for the specified entity.
 	CreateResources(project string, stage string, service string, resources []*models.Resource) (*models.EventContext, *models.Error)
+
+	// CreateProjectResources creates multiple project resources.
 	CreateProjectResources(project string, resources []*models.Resource) (string, error)
+
+	// GetProjectResource retrieves a project resource from the configuration service.
+	// Deprecated: use GetResource instead.
 	GetProjectResource(project string, resourceURI string) (*models.Resource, error)
+
+	// UpdateProjectResource updates a project resource.
+	// Deprecated: use UpdateResource instead.
 	UpdateProjectResource(project string, resource *models.Resource) (string, error)
+
+	// DeleteProjectResource deletes a project resource.
+	// Deprecated: use DeleteResource instead.
 	DeleteProjectResource(project string, resourceURI string) error
+
+	// UpdateProjectResources updates multiple project resources.
 	UpdateProjectResources(project string, resources []*models.Resource) (string, error)
+
+	// CreateStageResources creates a stage resource.
+	// Deprecated: use CreateResource instead.
 	CreateStageResources(project string, stage string, resources []*models.Resource) (string, error)
+
+	// GetStageResource retrieves a stage resource from the configuration service.
+	// Deprecated: use GetResource instead.
 	GetStageResource(project string, stage string, resourceURI string) (*models.Resource, error)
+
+	// UpdateStageResource updates a stage resource.
+	// Deprecated: use UpdateResource instead.
 	UpdateStageResource(project string, stage string, resource *models.Resource) (string, error)
+
+	// UpdateStageResources updates multiple stage resources.
+	// Deprecated: use UpdateResource instead.
 	UpdateStageResources(project string, stage string, resources []*models.Resource) (string, error)
+
+	// DeleteStageResource deletes a stage resource.
+	// Deprecated: use DeleteResource instead.
 	DeleteStageResource(project string, stage string, resourceURI string) error
+
+	// CreateServiceResources creates a service resource.
+	// Deprecated: use CreateResource instead.
 	CreateServiceResources(project string, stage string, service string, resources []*models.Resource) (string, error)
+
+	// GetServiceResource retrieves a service resource from the configuration service.
+	// Deprecated: use GetResource instead.
 	GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error)
+
+	// UpdateServiceResource updates a service resource.
+	// Deprecated: use UpdateResource instead.
 	UpdateServiceResource(project string, stage string, service string, resource *models.Resource) (string, error)
+
+	// UpdateServiceResources updates multiple service resources.
 	UpdateServiceResources(project string, stage string, service string, resources []*models.Resource) (string, error)
+
+	// DeleteServiceResource deletes a service resource.
+	// Deprecated: use DeleteResource instead.
 	DeleteServiceResource(project string, stage string, service string, resourceURI string) error
+
+	// GetAllStageResources returns a list of all resources.
 	GetAllStageResources(project string, stage string) ([]*models.Resource, error)
+
+	// GetAllServiceResources returns a list of all resources.
 	GetAllServiceResources(project string, stage string, service string) ([]*models.Resource, error)
 }
 
 // ResourceHandler handles resources
 type ResourceHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	resourceHandler *v2.ResourceHandler
+	BaseURL         string
+	AuthToken       string
+	AuthHeader      string
+	HTTPClient      *http.Client
+	Scheme          string
 }
 
 type resourceRequest struct {
@@ -161,17 +207,16 @@ func (r *resourceRequest) FromJSON(b []byte) error {
 
 // NewResourceHandler returns a new ResourceHandler which sends all requests directly to the configuration-service
 func NewResourceHandler(baseURL string) *ResourceHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
+	return NewResourceHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
+}
+
+// NewResourceHandlerWithHTTPClient returns a new ResourceHandler which sends all requests directly to the configuration-service using the specified http.Client
+func NewResourceHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *ResourceHandler {
 	return &ResourceHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
-		Scheme:     "http",
+		BaseURL:         httputils.TrimHTTPScheme(baseURL),
+		HTTPClient:      httpClient,
+		Scheme:          "http",
+		resourceHandler: v2.NewResourceHandlerWithHTTPClient(baseURL, httpClient),
 	}
 }
 
@@ -187,18 +232,20 @@ func NewAuthenticatedResourceHandler(baseURL string, authToken string, authHeade
 }
 
 func createAuthenticatedResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ResourceHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
+	v2ResourceHandler := v2.NewAuthenticatedResourceHandler(baseURL, authToken, authHeader, httpClient, scheme)
+
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, configurationServiceBaseURL) {
 		baseURL += "/" + configurationServiceBaseURL
 	}
+
 	return &ResourceHandler{
-		BaseURL:    baseURL,
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
+		BaseURL:         httputils.TrimHTTPScheme(baseURL),
+		AuthHeader:      authHeader,
+		AuthToken:       authToken,
+		HTTPClient:      httpClient,
+		Scheme:          scheme,
+		resourceHandler: v2ResourceHandler,
 	}
 }
 
@@ -218,368 +265,151 @@ func (r *ResourceHandler) getHTTPClient() *http.Client {
 	return r.HTTPClient
 }
 
-// CreateResources creates a resource for the specified entity
+// CreateResources creates a resource for the specified entity.
 func (r *ResourceHandler) CreateResources(project string, stage string, service string, resources []*models.Resource) (*models.EventContext, *models.Error) {
-
-	copiedResources := make([]*models.Resource, len(resources), len(resources))
-	for i, val := range resources {
-		resourceContent := b64.StdEncoding.EncodeToString([]byte(val.ResourceContent))
-		copiedResources[i] = &models.Resource{ResourceURI: val.ResourceURI, ResourceContent: resourceContent}
-	}
-
-	resReq := &resourceRequest{
-		Resources: copiedResources,
-	}
-	requestStr, err := resReq.ToJSON()
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
-	}
-
-	if project != "" && stage != "" && service != "" {
-		return postWithEventContext(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+service+pathToResource, requestStr, r)
-	} else if project != "" && stage != "" && service == "" {
-		return postWithEventContext(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToResource, requestStr, r)
-	} else {
-		return postWithEventContext(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+"/"+pathToResource, requestStr, r)
-	}
+	r.ensureHandlerIsSet()
+	return r.resourceHandler.CreateResources(context.TODO(), project, stage, service, resources, v2.ResourcesCreateResourcesOptions{})
 }
 
-// CreateProjectResources creates multiple project resources
+// CreateProjectResources creates multiple project resources.
 func (r *ResourceHandler) CreateProjectResources(project string, resources []*models.Resource) (string, error) {
-	return r.createResources(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToResource, resources)
+	r.ensureHandlerIsSet()
+	return r.resourceHandler.CreateProjectResources(context.TODO(), project, resources, v2.ResourcesCreateProjectResourcesOptions{})
 }
 
-// GetProjectResource retrieves a project resource from the configuration service
-// Deprecated: use GetResource instead
+// GetProjectResource retrieves a project resource from the configuration service.
+// Deprecated: use GetResource instead.
 func (r *ResourceHandler) GetProjectResource(project string, resourceURI string) (*models.Resource, error) {
+	r.ensureHandlerIsSet()
 	buildURI := r.Scheme + "://" + r.BaseURL + v1ProjectPath + "/" + project + pathToResource + "/" + url.QueryEscape(resourceURI)
-	return r.getResource(buildURI)
+	return r.resourceHandler.GetResourceByURI(context.TODO(), buildURI)
 }
 
-// UpdateProjectResource updates a project resource
-// Deprecated: use UpdateResource instead
+// UpdateProjectResource updates a project resource.
+// Deprecated: use UpdateResource instead.
 func (r *ResourceHandler) UpdateProjectResource(project string, resource *models.Resource) (string, error) {
-	return r.updateResource(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToResource+"/"+url.QueryEscape(*resource.ResourceURI), resource)
+	r.ensureHandlerIsSet()
+	return r.resourceHandler.UpdateResourceByURI(context.TODO(), r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToResource+"/"+url.QueryEscape(*resource.ResourceURI), resource)
 }
 
-// DeleteProjectResource deletes a project resource
-// Deprecated: use DeleteResource instead
+// DeleteProjectResource deletes a project resource.
+// Deprecated: use DeleteResource instead.
 func (r *ResourceHandler) DeleteProjectResource(project string, resourceURI string) error {
-	return r.deleteResource(r.Scheme + "://" + r.BaseURL + v1ProjectPath + "/" + project + pathToResource + "/" + url.QueryEscape(resourceURI))
+	r.ensureHandlerIsSet()
+	return r.resourceHandler.DeleteResourceByURI(context.TODO(), r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToResource+"/"+url.QueryEscape(resourceURI))
 }
 
-// UpdateProjectResources updates multiple project resources
+// UpdateProjectResources updates multiple project resources.
 func (r *ResourceHandler) UpdateProjectResources(project string, resources []*models.Resource) (string, error) {
-	return r.updateResources(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToResource, resources)
+	r.ensureHandlerIsSet()
+	return r.resourceHandler.UpdateProjectResources(context.TODO(), project, resources, v2.ResourcesUpdateProjectResourcesOptions{})
 }
 
-// CreateStageResources creates a stage resource
-// Deprecated: use CreateResource instead
+// CreateStageResources creates a stage resource.
+// Deprecated: use CreateResource instead.
 func (r *ResourceHandler) CreateStageResources(project string, stage string, resources []*models.Resource) (string, error) {
-	return r.createResources(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToResource, resources)
+	r.ensureHandlerIsSet()
+	return r.resourceHandler.CreateResourcesByURI(context.TODO(), r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToResource, resources)
 }
 
-// GetStageResource retrieves a stage resource from the configuration service
-// Deprecated: use GetResource instead
+// GetStageResource retrieves a stage resource from the configuration service.
+// Deprecated: use GetResource instead.
 func (r *ResourceHandler) GetStageResource(project string, stage string, resourceURI string) (*models.Resource, error) {
+	r.ensureHandlerIsSet()
 	buildURI := r.Scheme + "://" + r.BaseURL + v1ProjectPath + "/" + project + pathToStage + "/" + stage + pathToResource + "/" + url.QueryEscape(resourceURI)
-	return r.getResource(buildURI)
+	return r.resourceHandler.GetResourceByURI(context.TODO(), buildURI)
 }
 
-// UpdateStageResource updates a stage resource
-// Deprecated: use UpdateResource instead
+// UpdateStageResource updates a stage resource.
+// Deprecated: use UpdateResource instead.
 func (r *ResourceHandler) UpdateStageResource(project string, stage string, resource *models.Resource) (string, error) {
-	return r.updateResource(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToResource+"/"+url.QueryEscape(*resource.ResourceURI), resource)
+	r.ensureHandlerIsSet()
+	return r.resourceHandler.UpdateResourceByURI(context.TODO(), r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToResource+"/"+url.QueryEscape(*resource.ResourceURI), resource)
 }
 
-// UpdateStageResources updates multiple stage resources
-// Deprecated: use UpdateResource instead
+// UpdateStageResources updates multiple stage resources.
+// Deprecated: use UpdateResource instead.
 func (r *ResourceHandler) UpdateStageResources(project string, stage string, resources []*models.Resource) (string, error) {
-	return r.updateResources(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToResource, resources)
+	r.ensureHandlerIsSet()
+	return r.resourceHandler.UpdateResourcesByURI(context.TODO(), r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToResource, resources)
 }
 
-// DeleteStageResource deletes a stage resource
-// Deprecated: use DeleteResource instead
+// DeleteStageResource deletes a stage resource.
+// Deprecated: use DeleteResource instead.
 func (r *ResourceHandler) DeleteStageResource(project string, stage string, resourceURI string) error {
-	return r.deleteResource(r.Scheme + "://" + r.BaseURL + v1ProjectPath + "/" + project + pathToStage + "/" + stage + pathToResource + "/" + url.QueryEscape(resourceURI))
+	r.ensureHandlerIsSet()
+	return r.resourceHandler.DeleteResourceByURI(context.TODO(), r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToResource+"/"+url.QueryEscape(resourceURI))
 }
 
-// CreateServiceResources creates a service resource
-// Deprecated: use CreateResource instead
+// CreateServiceResources creates a service resource.
+// Deprecated: use CreateResource instead.
 func (r *ResourceHandler) CreateServiceResources(project string, stage string, service string, resources []*models.Resource) (string, error) {
-	return r.createResources(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+service+pathToResource, resources)
+	r.ensureHandlerIsSet()
+	return r.resourceHandler.CreateResourcesByURI(context.TODO(), r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+service+pathToResource, resources)
 }
 
-// GetServiceResource retrieves a service resource from the configuration service
-// Deprecated: use GetResource instead
+// GetServiceResource retrieves a service resource from the configuration service.
+// Deprecated: use GetResource instead.
 func (r *ResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
+	r.ensureHandlerIsSet()
 	buildURI := r.Scheme + "://" + r.BaseURL + v1ProjectPath + "/" + project + pathToStage + "/" + stage + pathToService + "/" + url.QueryEscape(service) + pathToResource + "/" + url.QueryEscape(resourceURI)
-	return r.getResource(buildURI)
+	return r.resourceHandler.GetResourceByURI(context.TODO(), buildURI)
 }
 
-// UpdateServiceResource updates a service resource
-// Deprecated: use UpdateResource instead
+// UpdateServiceResource updates a service resource.
+// Deprecated: use UpdateResource instead.
 func (r *ResourceHandler) UpdateServiceResource(project string, stage string, service string, resource *models.Resource) (string, error) {
-	return r.updateResource(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+url.QueryEscape(service)+pathToResource+"/"+url.QueryEscape(*resource.ResourceURI), resource)
+	r.ensureHandlerIsSet()
+	return r.resourceHandler.UpdateResourceByURI(context.TODO(), r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+url.QueryEscape(service)+pathToResource+"/"+url.QueryEscape(*resource.ResourceURI), resource)
 }
 
-// UpdateServiceResources updates multiple service resources
+// UpdateServiceResources updates multiple service resources.
 func (r *ResourceHandler) UpdateServiceResources(project string, stage string, service string, resources []*models.Resource) (string, error) {
-	return r.updateResources(r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+url.QueryEscape(service)+pathToResource, resources)
+	r.ensureHandlerIsSet()
+	return r.resourceHandler.UpdateServiceResources(context.TODO(), project, stage, service, resources, v2.ResourcesUpdateServiceResourcesOptions{})
 }
 
-// DeleteServiceResource deletes a service resource
-// Deprecated: use DeleteResource instead
+// DeleteServiceResource deletes a service resource.
+// Deprecated: use DeleteResource instead.
 func (r *ResourceHandler) DeleteServiceResource(project string, stage string, service string, resourceURI string) error {
-	return r.deleteResource(r.Scheme + "://" + r.BaseURL + v1ProjectPath + "/" + project + pathToStage + "/" + stage + pathToService + "/" + url.QueryEscape(service) + pathToResource + "/" + url.QueryEscape(resourceURI))
+	r.ensureHandlerIsSet()
+	return r.resourceHandler.DeleteResourceByURI(context.TODO(), r.Scheme+"://"+r.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+url.QueryEscape(service)+pathToResource+"/"+url.QueryEscape(resourceURI))
 }
 
-func (r *ResourceHandler) createResources(uri string, resources []*models.Resource) (string, error) {
-	return r.writeResources(uri, "POST", resources)
-}
-
-func (r *ResourceHandler) updateResources(uri string, resources []*models.Resource) (string, error) {
-	return r.writeResources(uri, "PUT", resources)
-}
-
-func (r *ResourceHandler) writeResources(uri string, method string, resources []*models.Resource) (string, error) {
-
-	copiedResources := make([]*models.Resource, len(resources), len(resources))
-	for i, val := range resources {
-		copiedResources[i] = &models.Resource{ResourceURI: val.ResourceURI, ResourceContent: b64.StdEncoding.EncodeToString([]byte(val.ResourceContent))}
-	}
-	resReq := &resourceRequest{
-		Resources: copiedResources,
-	}
-
-	resourceStr, err := resReq.ToJSON()
-	if err != nil {
-		return "", err
-	}
-	req, err := http.NewRequest(method, uri, bytes.NewBuffer(resourceStr))
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	addAuthHeader(req, r)
-
-	resp, err := r.HTTPClient.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	version := &models.Version{}
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
-		return "", errors.New(string(body))
-	}
-
-	if err = version.FromJSON(body); err != nil {
-		return "", err
-	}
-
-	return version.Version, nil
-}
-
-func (r *ResourceHandler) updateResource(uri string, resource *models.Resource) (string, error) {
-	return r.writeResource(uri, "PUT", resource)
-}
-
-func (r *ResourceHandler) writeResource(uri string, method string, resource *models.Resource) (string, error) {
-
-	copiedResource := &models.Resource{ResourceURI: resource.ResourceURI, ResourceContent: b64.StdEncoding.EncodeToString([]byte(resource.ResourceContent))}
-
-	resourceStr, err := copiedResource.ToJSON()
-	if err != nil {
-		return "", err
-	}
-	req, err := http.NewRequest(method, uri, bytes.NewBuffer(resourceStr))
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	addAuthHeader(req, r)
-
-	resp, err := r.HTTPClient.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
-		return "", errors.New(string(body))
-	}
-
-	version := &models.Version{}
-	if err = version.FromJSON(body); err != nil {
-		return "", err
-	}
-
-	return version.Version, nil
-}
-
-//GetResource returns a resource from the defined ResourceScope after applying all URI change configured in the options
+//GetResource returns a resource from the defined ResourceScope after applying all URI change configured in the options.
 func (r *ResourceHandler) GetResource(scope ResourceScope, options ...URIOption) (*models.Resource, error) {
-	buildURI := r.buildResourceURI(scope)
-	return r.getResource(r.applyOptions(buildURI, options))
+	r.ensureHandlerIsSet()
+	return r.resourceHandler.GetResource(context.TODO(), toV2ResourceScope(scope), v2.ResourcesGetResourceOptions{URIOptions: toV2URIOptions(options)})
 }
 
-//DeleteResource delete a resource from the URI defined by ResourceScope  and modified by the URIOption
+//DeleteResource delete a resource from the URI defined by ResourceScope and modified by the URIOption.
 func (r *ResourceHandler) DeleteResource(scope ResourceScope, options ...URIOption) error {
-	buildURI := r.buildResourceURI(scope)
-	return r.deleteResource(r.applyOptions(buildURI, options))
+	r.ensureHandlerIsSet()
+	return r.resourceHandler.DeleteResource(context.TODO(), toV2ResourceScope(scope), v2.ResourcesDeleteResourceOptions{URIOptions: toV2URIOptions(options)})
 }
 
-//UpdateResource updates a resource from the URI defined by ResourceScope  and modified by the URIOption
+//UpdateResource updates a resource from the URI defined by ResourceScope and modified by the URIOption.
 func (r *ResourceHandler) UpdateResource(resource *models.Resource, scope ResourceScope, options ...URIOption) (string, error) {
-	buildURI := r.buildResourceURI(scope)
-	return r.updateResource(r.applyOptions(buildURI, options), resource)
+	r.ensureHandlerIsSet()
+	return r.resourceHandler.UpdateResource(context.TODO(), resource, toV2ResourceScope(scope), v2.ResourcesUpdateResourceOptions{URIOptions: toV2URIOptions(options)})
 }
 
-//CreateResource creates one or more resources at the URI defined by ResourceScope and modified by the URIOption
+//CreateResource creates one or more resources at the URI defined by ResourceScope and modified by the URIOption.
 func (r *ResourceHandler) CreateResource(resource []*models.Resource, scope ResourceScope, options ...URIOption) (string, error) {
-	buildURI := r.buildResourceURI(scope)
-	return r.createResources(r.applyOptions(buildURI, options), resource)
-}
-
-func (r *ResourceHandler) getResource(uri string) (*models.Resource, error) {
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	req, err := http.NewRequest("GET", uri, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	addAuthHeader(req, r)
-
-	resp, err := r.HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode == 404 {
-		// need to handle this case differently (e.g. https://github.com/keptn/keptn/issues/1480)
-		return nil, ResourceNotFoundError
-	}
-	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
-		return nil, errors.New(string(body))
-	}
-
-	resource := &models.Resource{}
-	if err = resource.FromJSON(body); err != nil {
-		return nil, err
-	}
-
-	// decode resource content
-	decodedStr, err := b64.StdEncoding.DecodeString(resource.ResourceContent)
-	if err != nil {
-		return nil, err
-	}
-	resource.ResourceContent = string(decodedStr)
-
-	return resource, nil
-}
-
-func (r *ResourceHandler) deleteResource(uri string) error {
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	req, err := http.NewRequest("DELETE", uri, nil)
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	addAuthHeader(req, r)
-
-	resp, err := r.HTTPClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	return nil
+	r.ensureHandlerIsSet()
+	return r.resourceHandler.CreateResource(context.TODO(), resource, toV2ResourceScope(scope), v2.ResourcesCreateResourceOptions{URIOptions: toV2URIOptions(options)})
 }
 
 // GetAllStageResources returns a list of all resources.
 func (r *ResourceHandler) GetAllStageResources(project string, stage string) ([]*models.Resource, error) {
-	myURL, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + v1ProjectPath + "/" + project + pathToStage + "/" + stage + pathToResource)
-	if err != nil {
-		return nil, err
-	}
-	return r.getAllResources(myURL)
+	r.ensureHandlerIsSet()
+	return r.resourceHandler.GetAllStageResources(context.TODO(), project, stage, v2.ResourcesGetAllStageResourcesOptions{})
 }
 
 // GetAllServiceResources returns a list of all resources.
 func (r *ResourceHandler) GetAllServiceResources(project string, stage string, service string) ([]*models.Resource, error) {
-	myURL, err := url.Parse(r.Scheme + "://" + r.getBaseURL() + v1ProjectPath + "/" + project + pathToStage + "/" + stage +
-		pathToService + "/" + service + pathToResource + "/")
-	if err != nil {
-		return nil, err
-	}
-	return r.getAllResources(myURL)
-}
-
-func (r *ResourceHandler) getAllResources(u *url.URL) ([]*models.Resource, error) {
-
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	resources := []*models.Resource{}
-
-	nextPageKey := ""
-
-	for {
-		if nextPageKey != "" {
-			q := u.Query()
-			q.Set("nextPageKey", nextPageKey)
-			u.RawQuery = q.Encode()
-		}
-		req, err := http.NewRequest("GET", u.String(), nil)
-		if err != nil {
-			return nil, err
-		}
-		req.Header.Set("Content-Type", "application/json")
-		addAuthHeader(req, r)
-
-		resp, err := r.HTTPClient.Do(req)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		if resp.StatusCode == 200 {
-			received := &models.Resources{}
-			if err = received.FromJSON(body); err != nil {
-				return nil, err
-			}
-			resources = append(resources, received.Resources...)
-
-			if received.NextPageKey == "" || received.NextPageKey == "0" {
-				break
-			}
-			nextPageKey = received.NextPageKey
-
-		} else {
-			return nil, handleErrStatusCode(resp.StatusCode, body).ToError()
-		}
-	}
-
-	return resources, nil
+	r.ensureHandlerIsSet()
+	return r.resourceHandler.GetAllServiceResources(context.TODO(), project, stage, service, v2.ResourcesGetAllServiceResourcesOptions{})
 }
 
 func buildPath(base, name string) string {
@@ -588,4 +418,28 @@ func buildPath(base, name string) string {
 		path = base + "/" + name
 	}
 	return path
+}
+
+func toV2URIOptions(uriOptions []URIOption) []v2.URIOption {
+	var v2URIOptions []v2.URIOption
+	for _, v := range uriOptions {
+		v2URIOptions = append(v2URIOptions, v2.URIOption(v))
+	}
+	return v2URIOptions
+}
+
+func toV2ResourceScope(scope ResourceScope) v2.ResourceScope {
+	return *(v2.NewResourceScope().Project(scope.project).Stage(scope.stage).Service(scope.service).Resource(scope.resource))
+}
+
+func (r *ResourceHandler) ensureHandlerIsSet() {
+	if r.resourceHandler != nil {
+		return
+	}
+
+	if r.AuthToken != "" {
+		r.resourceHandler = v2.NewAuthenticatedResourceHandler(r.BaseURL, r.AuthToken, r.AuthHeader, r.HTTPClient, r.Scheme)
+	} else {
+		r.resourceHandler = v2.NewResourceHandlerWithHTTPClient(r.BaseURL, r.HTTPClient)
+	}
 }

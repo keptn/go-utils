@@ -1,8 +1,9 @@
-package api
+package v2
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestResourceHandler_buildResourceURI(t *testing.T) {
@@ -66,8 +67,8 @@ func TestResourceHandler_buildResourceURI(t *testing.T) {
 	}
 
 	r := &ResourceHandler{
-		BaseURL: configurationServiceBaseURL,
-		Scheme:  scheme,
+		baseURL: configurationServiceBaseURL,
+		scheme:  scheme,
 	}
 
 	for _, tt := range tests {

@@ -1,15 +1,12 @@
 package api
 
 import (
-	"encoding/json"
-	"errors"
-	"fmt"
-	"io/ioutil"
+	"context"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
 	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
@@ -25,21 +22,26 @@ type UniformV1Interface interface {
 }
 
 type UniformHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	uniformHandler *v2.UniformHandler
+	BaseURL        string
+	AuthToken      string
+	AuthHeader     string
+	HTTPClient     *http.Client
+	Scheme         string
 }
 
+// NewUniformHandler returns a new UniformHandler
 func NewUniformHandler(baseURL string) *UniformHandler {
-	baseURL = httputils.TrimHTTPScheme(baseURL)
+	return NewUniformHandlerWithHTTPClient(baseURL, &http.Client{Transport: getClientTransport(nil)})
+}
+
+// NewUniformHandlerWithHTTPClient returns a new UniformHandler using the specified http.Client
+func NewUniformHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *UniformHandler {
 	return &UniformHandler{
-		BaseURL:    baseURL,
-		AuthToken:  "",
-		AuthHeader: "",
-		HTTPClient: &http.Client{Transport: getClientTransport(nil)},
-		Scheme:     "http",
+		BaseURL:        httputils.TrimHTTPScheme(baseURL),
+		HTTPClient:     httpClient,
+		Scheme:         "http",
+		uniformHandler: v2.NewUniformHandlerWithHTTPClient(baseURL, httpClient),
 	}
 }
 
@@ -54,19 +56,20 @@ func NewAuthenticatedUniformHandler(baseURL string, authToken string, authHeader
 }
 
 func createAuthenticatedUniformHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *UniformHandler {
-	baseURL = httputils.TrimHTTPScheme(baseURL)
-	baseURL = strings.TrimRight(baseURL, "/")
+	v2UniformHandler := v2.NewAuthenticatedUniformHandler(baseURL, authToken, authHeader, httpClient, scheme)
 
+	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
 
 	return &UniformHandler{
-		BaseURL:    baseURL,
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
+		BaseURL:        httputils.TrimHTTPScheme(baseURL),
+		AuthHeader:     authHeader,
+		AuthToken:      authToken,
+		HTTPClient:     httpClient,
+		Scheme:         scheme,
+		uniformHandler: v2UniformHandler,
 	}
 }
 
@@ -87,101 +90,38 @@ func (u *UniformHandler) getHTTPClient() *http.Client {
 }
 
 func (u *UniformHandler) Ping(integrationID string) (*models.Integration, error) {
-	if integrationID == "" {
-		return nil, errors.New("could not ping an invalid IntegrationID")
-	}
-
-	resp, err := put(u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/ping", nil, u)
-	if err != nil {
-		return nil, errors.New(err.GetMessage())
-	}
-
-	response := &models.Integration{}
-	if err := response.FromJSON([]byte(resp)); err != nil {
-		return nil, err
-	}
-
-	return response, nil
+	u.ensureHandlerIsSet()
+	return u.uniformHandler.Ping(context.TODO(), integrationID, v2.UniformPingOptions{})
 }
 
 func (u *UniformHandler) RegisterIntegration(integration models.Integration) (string, error) {
-	bodyStr, err := integration.ToJSON()
-	if err != nil {
-		return "", err
-	}
-
-	resp, errResponse := post(u.Scheme+"://"+u.getBaseURL()+v1UniformPath, bodyStr, u)
-	if errResponse != nil {
-		return "", fmt.Errorf(errResponse.GetMessage())
-	}
-
-	registerIntegrationResponse := &models.RegisterIntegrationResponse{}
-	if err := registerIntegrationResponse.FromJSON([]byte(resp)); err != nil {
-		return "", err
-	}
-
-	return registerIntegrationResponse.ID, nil
+	u.ensureHandlerIsSet()
+	return u.uniformHandler.RegisterIntegration(context.TODO(), integration, v2.UniformRegisterIntegrationOptions{})
 }
 
 func (u *UniformHandler) CreateSubscription(integrationID string, subscription models.EventSubscription) (string, error) {
-	bodyStr, err := subscription.ToJSON()
-	if err != nil {
-		return "", err
-	}
-	resp, errResponse := post(u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID+"/subscription", bodyStr, u)
-	if errResponse != nil {
-		return "", fmt.Errorf(errResponse.GetMessage())
-	}
-	_ = resp
-
-	createSubscriptionResponse := &models.CreateSubscriptionResponse{}
-	if err := createSubscriptionResponse.FromJSON([]byte(resp)); err != nil {
-		return "", err
-	}
-
-	return createSubscriptionResponse.ID, nil
+	u.ensureHandlerIsSet()
+	return u.uniformHandler.CreateSubscription(context.TODO(), integrationID, subscription, v2.UniformCreateSubscriptionOptions{})
 }
 
 func (u *UniformHandler) UnregisterIntegration(integrationID string) error {
-	_, err := delete(u.Scheme+"://"+u.getBaseURL()+v1UniformPath+"/"+integrationID, u)
-	if err != nil {
-		return fmt.Errorf(err.GetMessage())
-	}
-	return nil
+	u.ensureHandlerIsSet()
+	return u.uniformHandler.UnregisterIntegration(context.TODO(), integrationID, v2.UniformUnregisterIntegrationOptions{})
 }
 
 func (u *UniformHandler) GetRegistrations() ([]*models.Integration, error) {
-	url, err := url.Parse(u.Scheme + "://" + u.getBaseURL() + v1UniformPath)
-	if err != nil {
-		return nil, err
+	u.ensureHandlerIsSet()
+	return u.uniformHandler.GetRegistrations(context.TODO(), v2.UniformGetRegistrationsOptions{})
+}
+
+func (u *UniformHandler) ensureHandlerIsSet() {
+	if u.uniformHandler != nil {
+		return
 	}
 
-	req, err := http.NewRequest("GET", url.String(), nil)
-	if err != nil {
-		return nil, err
+	if u.AuthToken != "" {
+		u.uniformHandler = v2.NewAuthenticatedUniformHandler(u.BaseURL, u.AuthToken, u.AuthHeader, u.HTTPClient, u.Scheme)
+	} else {
+		u.uniformHandler = v2.NewUniformHandlerWithHTTPClient(u.BaseURL, u.HTTPClient)
 	}
-	req.Header.Set("Content-Type", "application/json")
-	addAuthHeader(req, u)
-
-	resp, err := u.HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode == http.StatusOK {
-		var received []*models.Integration
-		err := json.Unmarshal(body, &received)
-		if err != nil {
-			return nil, err
-		}
-		return received, nil
-	}
-
-	return nil, nil
 }

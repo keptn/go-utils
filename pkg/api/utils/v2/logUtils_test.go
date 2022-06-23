@@ -1,16 +1,17 @@
-package api
+package v2
 
 import (
 	"context"
 	"errors"
-	"github.com/benbjohnson/clock"
-	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/benbjohnson/clock"
+	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/stretchr/testify/require"
 )
 
 func getTestHTTPServer(handlerFunc func(writer http.ResponseWriter, request *http.Request)) *httptest.Server {
@@ -60,7 +61,7 @@ func TestLogHandler_DeleteLogs(t *testing.T) {
 
 			lh := NewLogHandler(ts.URL)
 
-			got := lh.DeleteLogs(tt.args.params)
+			got := lh.DeleteLogs(context.Background(), tt.args.params, LogsDeleteLogsOptions{})
 			require.Equal(t, tt.want, got)
 		})
 	}
@@ -101,12 +102,12 @@ func TestLogHandler_Flush(t *testing.T) {
 
 			lh := NewLogHandler(ts.URL)
 
-			lh.LogCache = []models.LogEntry{
+			lh.logCache = []models.LogEntry{
 				{
 					IntegrationID: "id",
 				},
 			}
-			got := lh.Flush()
+			got := lh.Flush(context.Background(), LogsFlushOptions{})
 			if tt.wantErr {
 				require.NotNil(t, got)
 			} else {
@@ -157,7 +158,7 @@ func TestLogHandler_GetLogs(t *testing.T) {
 
 			lh := NewLogHandler(ts.URL)
 
-			got, err := lh.GetLogs(models.GetLogsParams{})
+			got, err := lh.GetLogs(context.Background(), models.GetLogsParams{}, LogsGetLogsOptions{})
 			require.Equal(t, tt.wantErr, err)
 			require.Equal(t, tt.want, got)
 		})
@@ -176,13 +177,13 @@ func TestLogHandler_Log(t *testing.T) {
 					IntegrationID: "my-id",
 					Message:       "message",
 				},
-			})
+			}, LogsLogOptions{})
 			wg.Done()
 		}()
 	}
 	wg.Wait()
 
-	require.Len(t, lh.LogCache, 100)
+	require.Len(t, lh.logCache, 100)
 }
 
 func TestLogHandler_Start(t *testing.T) {
@@ -197,15 +198,15 @@ func TestLogHandler_Start(t *testing.T) {
 
 	mockClock := clock.NewMock()
 	lh := NewLogHandler(ts.URL)
-	lh.TheClock = mockClock
+	lh.theClock = mockClock
 
 	lh.Log([]models.LogEntry{
 		{
 			IntegrationID: "my-id",
 		},
-	})
+	}, LogsLogOptions{})
 
-	lh.Start(context.Background())
+	lh.Start(context.Background(), LogsStartOptions{})
 
 	mockClock.Add(60 * time.Second)
 

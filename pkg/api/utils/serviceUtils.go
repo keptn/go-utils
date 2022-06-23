@@ -1,44 +1,51 @@
 package api
 
 import (
-	"crypto/tls"
-	"io/ioutil"
+	"context"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 type ServicesV1Interface interface {
+	// CreateServiceInStage creates a new service.
 	CreateServiceInStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error)
+
+	// DeleteServiceFromStage deletes a service from a stage.
 	DeleteServiceFromStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error)
+
+	// GetService gets a service.
 	GetService(project, stage, service string) (*models.Service, error)
+
+	// GetAllServices returns a list of all services.
 	GetAllServices(project string, stage string) ([]*models.Service, error)
 }
 
 // ServiceHandler handles services
 type ServiceHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	serviceHandler *v2.ServiceHandler
+	BaseURL        string
+	AuthToken      string
+	AuthHeader     string
+	HTTPClient     *http.Client
+	Scheme         string
 }
 
 // NewServiceHandler returns a new ServiceHandler which sends all requests directly to the configuration-service
 func NewServiceHandler(baseURL string) *ServiceHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
+	return NewServiceHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
+}
+
+// NewServiceHandlerWithHTTPClient returns a new ServiceHandler which sends all requests directly to the configuration-service using the specified http.Client
+func NewServiceHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *ServiceHandler {
 	return &ServiceHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
-		Scheme:     "http",
+		BaseURL:        httputils.TrimHTTPScheme(baseURL),
+		HTTPClient:     httpClient,
+		Scheme:         "http",
+		serviceHandler: v2.NewServiceHandlerWithHTTPClient(baseURL, httpClient),
 	}
 }
 
@@ -54,21 +61,20 @@ func NewAuthenticatedServiceHandler(baseURL string, authToken string, authHeader
 }
 
 func createAuthenticatedServiceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ServiceHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
+	v2ServiceHandler := v2.NewAuthenticatedServiceHandler(baseURL, authToken, authHeader, httpClient, scheme)
 
 	baseURL = strings.TrimRight(baseURL, "/")
-
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
 
 	return &ServiceHandler{
-		BaseURL:    baseURL,
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
+		BaseURL:        httputils.TrimHTTPScheme(baseURL),
+		AuthHeader:     authHeader,
+		AuthToken:      authToken,
+		HTTPClient:     httpClient,
+		Scheme:         scheme,
+		serviceHandler: v2ServiceHandler,
 	}
 }
 
@@ -88,109 +94,38 @@ func (s *ServiceHandler) getHTTPClient() *http.Client {
 	return s.HTTPClient
 }
 
-// CreateService creates a new service
+// CreateServiceInStage creates a new service.
 func (s *ServiceHandler) CreateServiceInStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error) {
-
-	service := models.Service{ServiceName: serviceName}
-	body, err := service.ToJSON()
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
-	}
-	return postWithEventContext(s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService, body, s)
+	s.ensureHandlerIsSet()
+	return s.serviceHandler.CreateServiceInStage(context.TODO(), project, stage, serviceName, v2.ServicesCreateServiceInStageOptions{})
 }
 
-// DeleteServiceFromStage godoc
+// DeleteServiceFromStage deletes a service from a stage.
 func (s *ServiceHandler) DeleteServiceFromStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error) {
-	return deleteWithEventContext(s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+pathToStage+"/"+stage+pathToService+"/"+serviceName, s)
+	s.ensureHandlerIsSet()
+	return s.serviceHandler.DeleteServiceFromStage(context.TODO(), project, stage, serviceName, v2.ServicesDeleteServiceFromStageOptions{})
 }
 
+// GetService gets a service.
 func (s *ServiceHandler) GetService(project, stage, service string) (*models.Service, error) {
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-
-	url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + v1ProjectPath + "/" + project + pathToStage + "/" + stage + pathToService + "/" + service)
-	if err != nil {
-		return nil, err
-	}
-	req, err := http.NewRequest("GET", url.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	addAuthHeader(req, s)
-
-	resp, err := s.HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode == 200 {
-		received := &models.Service{}
-		if err = received.FromJSON(body); err != nil {
-			return nil, err
-		}
-		return received, nil
-	} else {
-		return nil, handleErrStatusCode(resp.StatusCode, body).ToError()
-	}
+	s.ensureHandlerIsSet()
+	return s.serviceHandler.GetService(context.TODO(), project, stage, service, v2.ServicesGetServiceOptions{})
 }
 
 // GetAllServices returns a list of all services.
 func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models.Service, error) {
+	s.ensureHandlerIsSet()
+	return s.serviceHandler.GetAllServices(context.TODO(), project, stage, v2.ServicesGetAllServicesOptions{})
+}
 
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	services := []*models.Service{}
-
-	nextPageKey := ""
-
-	for {
-		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + v1ProjectPath + "/" + project + pathToStage + "/" + stage + pathToService)
-		if err != nil {
-			return nil, err
-		}
-		q := url.Query()
-		if nextPageKey != "" {
-			q.Set("nextPageKey", nextPageKey)
-			url.RawQuery = q.Encode()
-		}
-		req, err := http.NewRequest("GET", url.String(), nil)
-		if err != nil {
-			return nil, err
-		}
-		req.Header.Set("Content-Type", "application/json")
-		addAuthHeader(req, s)
-
-		resp, err := s.HTTPClient.Do(req)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		if resp.StatusCode == 200 {
-			received := &models.Services{}
-			if err = received.FromJSON(body); err != nil {
-				return nil, err
-			}
-			services = append(services, received.Services...)
-
-			if received.NextPageKey == "" || received.NextPageKey == "0" {
-				break
-			}
-			nextPageKey = received.NextPageKey
-		} else {
-			return nil, handleErrStatusCode(resp.StatusCode, body).ToError()
-		}
+func (s *ServiceHandler) ensureHandlerIsSet() {
+	if s.serviceHandler != nil {
+		return
 	}
 
-	return services, nil
+	if s.AuthToken != "" {
+		s.serviceHandler = v2.NewAuthenticatedServiceHandler(s.BaseURL, s.AuthToken, s.AuthHeader, s.HTTPClient, s.Scheme)
+	} else {
+		s.serviceHandler = v2.NewServiceHandlerWithHTTPClient(s.BaseURL, s.HTTPClient)
+	}
 }

@@ -1,44 +1,44 @@
 package api
 
 import (
-	"crypto/tls"
-	"io/ioutil"
+	"context"
 	"net/http"
-	"net/url"
-	"strconv"
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 const shipyardControllerBaseURL = "controlPlane"
 
 type ShipyardControlV1Interface interface {
+	// GetOpenTriggeredEvents returns all open triggered events.
 	GetOpenTriggeredEvents(filter EventFilter) ([]*models.KeptnContextExtendedCE, error)
 }
 
 // ShipyardControllerHandler handles services
 type ShipyardControllerHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	shipyardControllerHandler *v2.ShipyardControllerHandler
+	BaseURL                   string
+	AuthToken                 string
+	AuthHeader                string
+	HTTPClient                *http.Client
+	Scheme                    string
 }
 
 // NewShipyardControllerHandler returns a new ShipyardControllerHandler which sends all requests directly to the configuration-service
 func NewShipyardControllerHandler(baseURL string) *ShipyardControllerHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
+	return NewShipyardControllerHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
+}
+
+// NewShipyardControllerHandlerWithHTTPClient returns a new ShipyardControllerHandler which sends all requests directly to the configuration-service using the specified http.Client
+func NewShipyardControllerHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *ShipyardControllerHandler {
 	return &ShipyardControllerHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
-		Scheme:     "http",
+		BaseURL:                   httputils.TrimHTTPScheme(baseURL),
+		HTTPClient:                httpClient,
+		Scheme:                    "http",
+		shipyardControllerHandler: v2.NewShipyardControllerHandlerWithHTTPClient(baseURL, httpClient),
 	}
 }
 
@@ -54,19 +54,20 @@ func NewAuthenticatedShipyardControllerHandler(baseURL string, authToken string,
 }
 
 func createAuthenticatedShipyardControllerHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ShipyardControllerHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
+	v2ShipyardControllerHandler := v2.NewAuthenticatedShipyardControllerHandler(baseURL, authToken, authHeader, httpClient, scheme)
 
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
+
 	return &ShipyardControllerHandler{
-		BaseURL:    baseURL,
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
+		BaseURL:                   httputils.TrimHTTPScheme(baseURL),
+		AuthHeader:                authHeader,
+		AuthToken:                 authToken,
+		HTTPClient:                httpClient,
+		Scheme:                    scheme,
+		shipyardControllerHandler: v2ShipyardControllerHandler,
 	}
 }
 
@@ -86,75 +87,20 @@ func (s *ShipyardControllerHandler) getHTTPClient() *http.Client {
 	return s.HTTPClient
 }
 
-// GetOpenTriggeredEvents returns all open triggered events
+// GetOpenTriggeredEvents returns all open triggered events.
 func (s *ShipyardControllerHandler) GetOpenTriggeredEvents(filter EventFilter) ([]*models.KeptnContextExtendedCE, error) {
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	s.ensureHandlerIsSet()
+	return s.shipyardControllerHandler.GetOpenTriggeredEvents(context.TODO(), *toV2EventFilter(&filter), v2.ShipyardControlGetOpenTriggeredEventsOptions{})
+}
 
-	events := []*models.KeptnContextExtendedCE{}
-	nextPageKey := ""
-
-	for {
-		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + v1EventPath + "/triggered/" + filter.EventType)
-
-		q := url.Query()
-		if nextPageKey != "" {
-			q.Set("nextPageKey", nextPageKey)
-			url.RawQuery = q.Encode()
-		}
-		if filter.Project != "" {
-			q.Set("project", filter.Project)
-		}
-		if filter.Service != "" {
-			q.Set("service", filter.Service)
-		}
-		if filter.Stage != "" {
-			q.Set("stage", filter.Stage)
-		}
-
-		url.RawQuery = q.Encode()
-
-		if err != nil {
-			return nil, err
-		}
-		req, err := http.NewRequest("GET", url.String(), nil)
-		if err != nil {
-			return nil, err
-		}
-		req.Header.Set("Content-Type", "application/json")
-		addAuthHeader(req, s)
-
-		resp, err := s.HTTPClient.Do(req)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		if resp.StatusCode == 200 {
-			received := &models.Events{}
-			if err = received.FromJSON(body); err != nil {
-				return nil, err
-			}
-			events = append(events, received.Events...)
-
-			if received.NextPageKey == "" || received.NextPageKey == "0" {
-				break
-			}
-
-			nextPageKeyInt, _ := strconv.Atoi(received.NextPageKey)
-
-			if filter.NumberOfPages > 0 && nextPageKeyInt >= filter.NumberOfPages {
-				break
-			}
-
-			nextPageKey = received.NextPageKey
-		} else {
-			return nil, handleErrStatusCode(resp.StatusCode, body).ToError()
-		}
+func (s *ShipyardControllerHandler) ensureHandlerIsSet() {
+	if s.shipyardControllerHandler != nil {
+		return
 	}
-	return events, nil
+
+	if s.AuthToken != "" {
+		s.shipyardControllerHandler = v2.NewAuthenticatedShipyardControllerHandler(s.BaseURL, s.AuthToken, s.AuthHeader, s.HTTPClient, s.Scheme)
+	} else {
+		s.shipyardControllerHandler = v2.NewShipyardControllerHandlerWithHTTPClient(s.BaseURL, s.HTTPClient)
+	}
 }

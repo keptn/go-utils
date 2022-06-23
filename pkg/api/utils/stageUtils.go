@@ -1,43 +1,46 @@
 package api
 
 import (
-	"crypto/tls"
-	"io/ioutil"
+	"context"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 type StagesV1Interface interface {
+	// CreateStage creates a new stage with the provided name.
 	CreateStage(project string, stageName string) (*models.EventContext, *models.Error)
+
+	// GetAllStages returns a list of all stages.
 	GetAllStages(project string) ([]*models.Stage, error)
 }
 
 // StageHandler handles stages
 type StageHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	stageHandler *v2.StageHandler
+	BaseURL      string
+	AuthToken    string
+	AuthHeader   string
+	HTTPClient   *http.Client
+	Scheme       string
 }
 
 // NewStageHandler returns a new StageHandler which sends all requests directly to the configuration-service
 func NewStageHandler(baseURL string) *StageHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
+	return NewStageHandlerWithHTTPClient(baseURL, &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)})
+}
+
+// NewStageHandlerWithHTTPClient returns a new StageHandler which sends all requests directly to the configuration-service using the specified http.Client
+func NewStageHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *StageHandler {
 	return &StageHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)},
-		Scheme:     "http",
+		BaseURL:      httputils.TrimHTTPScheme(baseURL),
+		HTTPClient:   httpClient,
+		Scheme:       "http",
+		stageHandler: v2.NewStageHandlerWithHTTPClient(baseURL, httpClient),
 	}
 }
 
@@ -53,19 +56,20 @@ func NewAuthenticatedStageHandler(baseURL string, authToken string, authHeader s
 }
 
 func createAuthenticatedStageHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *StageHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
-	baseURL = strings.TrimRight(baseURL, "/")
+	v2StageHandler := v2.NewAuthenticatedStageHandler(baseURL, authToken, authHeader, httpClient, scheme)
 
+	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
 		baseURL += "/" + shipyardControllerBaseURL
 	}
+
 	return &StageHandler{
-		BaseURL:    baseURL,
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
+		BaseURL:      httputils.TrimHTTPScheme(baseURL),
+		AuthHeader:   authHeader,
+		AuthToken:    authToken,
+		HTTPClient:   httpClient,
+		Scheme:       scheme,
+		stageHandler: v2StageHandler,
 	}
 }
 
@@ -85,63 +89,26 @@ func (s *StageHandler) getHTTPClient() *http.Client {
 	return s.HTTPClient
 }
 
-// CreateStage creates a new stage with the provided name
+// CreateStage creates a new stage with the provided name.
 func (s *StageHandler) CreateStage(project string, stageName string) (*models.EventContext, *models.Error) {
-
-	stage := models.Stage{StageName: stageName}
-	body, err := stage.ToJSON()
-	if err != nil {
-		return nil, buildErrorResponse(err.Error())
-	}
-	return postWithEventContext(s.Scheme+"://"+s.BaseURL+v1ProjectPath+"/"+project+pathToStage, body, s)
+	s.ensureHandlerIsSet()
+	return s.stageHandler.CreateStage(context.TODO(), project, stageName, v2.StagesCreateStageOptions{})
 }
 
 // GetAllStages returns a list of all stages.
 func (s *StageHandler) GetAllStages(project string) ([]*models.Stage, error) {
+	s.ensureHandlerIsSet()
+	return s.stageHandler.GetAllStages(context.TODO(), project, v2.StagesGetAllStagesOptions{})
+}
 
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	stages := []*models.Stage{}
-
-	nextPageKey := ""
-	for {
-		url, err := url.Parse(s.Scheme + "://" + s.getBaseURL() + v1ProjectPath + "/" + project + pathToStage)
-		if err != nil {
-			return nil, err
-		}
-		q := url.Query()
-		if nextPageKey != "" {
-			q.Set("nextPageKey", nextPageKey)
-			url.RawQuery = q.Encode()
-		}
-		req, err := http.NewRequest("GET", url.String(), nil)
-		if err != nil {
-			return nil, err
-		}
-		req.Header.Set("Content-Type", "application/json")
-		addAuthHeader(req, s)
-
-		resp, err := s.HTTPClient.Do(req)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-
-		body, _ := ioutil.ReadAll(resp.Body)
-
-		if resp.StatusCode == 200 {
-			received := &models.Stages{}
-			if err = received.FromJSON(body); err != nil {
-				return nil, err
-			}
-			stages = append(stages, received.Stages...)
-
-			if received.NextPageKey == "" || received.NextPageKey == "0" {
-				break
-			}
-			nextPageKey = received.NextPageKey
-		} else {
-			return nil, handleErrStatusCode(resp.StatusCode, body).ToError()
-		}
+func (s *StageHandler) ensureHandlerIsSet() {
+	if s.stageHandler != nil {
+		return
 	}
-	return stages, nil
+
+	if s.AuthToken != "" {
+		s.stageHandler = v2.NewAuthenticatedStageHandler(s.BaseURL, s.AuthToken, s.AuthHeader, s.HTTPClient, s.Scheme)
+	} else {
+		s.stageHandler = v2.NewStageHandlerWithHTTPClient(s.BaseURL, s.HTTPClient)
+	}
 }

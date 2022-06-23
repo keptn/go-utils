@@ -129,7 +129,7 @@ func (k *Keptn) SendTaskStatusChangedEvent(data keptn.EventProperties, source st
 	return k.sendEventWithBaseEventContext(data, source, err, outEventType)
 }
 
-// SendTaskStartedEvent sends a .finished event for the incoming .triggered event the KeptnHandler was initialized with.
+// SendTaskFinishedEvent sends a .finished event for the incoming .triggered event the KeptnHandler was initialized with.
 // It returns the ID of the sent CloudEvent or an error
 func (k *Keptn) SendTaskFinishedEvent(data keptn.EventProperties, source string) (string, error) {
 	if k.CloudEvent == nil {

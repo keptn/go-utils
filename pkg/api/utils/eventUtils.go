@@ -1,30 +1,32 @@
 package api
 
 import (
-	"fmt"
-	"io/ioutil"
-	"log"
+	"context"
 	"net/http"
-	"net/url"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	v2 "github.com/keptn/go-utils/pkg/api/utils/v2"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 )
 
 type EventsV1Interface interface {
+	// GetEvents returns all events matching the properties in the passed filter object.
 	GetEvents(filter *EventFilter) ([]*models.KeptnContextExtendedCE, *models.Error)
+
+	// GetEventsWithRetry tries to retrieve events matching the passed filter.
 	GetEventsWithRetry(filter *EventFilter, maxRetries int, retrySleepTime time.Duration) ([]*models.KeptnContextExtendedCE, error)
 }
 
 // EventHandler handles services
 type EventHandler struct {
-	BaseURL    string
-	AuthToken  string
-	AuthHeader string
-	HTTPClient *http.Client
-	Scheme     string
+	eventHandler *v2.EventHandler
+	BaseURL      string
+	AuthToken    string
+	AuthHeader   string
+	HTTPClient   *http.Client
+	Scheme       string
 }
 
 // EventFilter allows to filter events based on the provided properties
@@ -42,17 +44,16 @@ type EventFilter struct {
 
 // NewEventHandler returns a new EventHandler
 func NewEventHandler(baseURL string) *EventHandler {
-	if strings.Contains(baseURL, "https://") {
-		baseURL = strings.TrimPrefix(baseURL, "https://")
-	} else if strings.Contains(baseURL, "http://") {
-		baseURL = strings.TrimPrefix(baseURL, "http://")
-	}
+	return NewEventHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
+}
+
+// NewEventHandlerWithHTTPClient returns a new EventHandler that uses the specified http.Client
+func NewEventHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *EventHandler {
 	return &EventHandler{
-		BaseURL:    baseURL,
-		AuthHeader: "",
-		AuthToken:  "",
-		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))},
-		Scheme:     "http",
+		BaseURL:      httputils.TrimHTTPScheme(baseURL),
+		HTTPClient:   httpClient,
+		Scheme:       "http",
+		eventHandler: v2.NewEventHandlerWithHTTPClient(baseURL, httpClient),
 	}
 }
 
@@ -69,19 +70,20 @@ func NewAuthenticatedEventHandler(baseURL string, authToken string, authHeader s
 }
 
 func createAuthenticatedEventHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *EventHandler {
-	baseURL = strings.TrimPrefix(baseURL, "http://")
-	baseURL = strings.TrimPrefix(baseURL, "https://")
+	v2EventHandler := v2.NewAuthenticatedEventHandler(baseURL, authToken, authHeader, httpClient, scheme)
+
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, mongodbDatastoreServiceBaseUrl) {
 		baseURL += "/" + mongodbDatastoreServiceBaseUrl
 	}
 
 	return &EventHandler{
-		BaseURL:    baseURL,
-		AuthHeader: authHeader,
-		AuthToken:  authToken,
-		HTTPClient: httpClient,
-		Scheme:     scheme,
+		BaseURL:      httputils.TrimHTTPScheme(baseURL),
+		AuthHeader:   authHeader,
+		AuthToken:    authToken,
+		HTTPClient:   httpClient,
+		Scheme:       scheme,
+		eventHandler: v2EventHandler,
 	}
 }
 
@@ -101,112 +103,40 @@ func (e *EventHandler) getHTTPClient() *http.Client {
 	return e.HTTPClient
 }
 
-// GetEvents returns all events matching the properties in the passed filter object
+// GetEvents returns all events matching the properties in the passed filter object.
 func (e *EventHandler) GetEvents(filter *EventFilter) ([]*models.KeptnContextExtendedCE, *models.Error) {
-
-	u, err := url.Parse(e.Scheme + "://" + e.getBaseURL() + "/event?")
-	if err != nil {
-		log.Fatal("error parsing url")
-	}
-
-	query := u.Query()
-
-	if filter.Project != "" {
-		query.Set("project", filter.Project)
-	}
-	if filter.Stage != "" {
-		query.Set("stage", filter.Stage)
-	}
-	if filter.Service != "" {
-		query.Set("service", filter.Service)
-	}
-	if filter.KeptnContext != "" {
-		query.Set("keptnContext", filter.KeptnContext)
-	}
-	if filter.EventID != "" {
-		query.Set("eventID", filter.EventID)
-	}
-	if filter.EventType != "" {
-		query.Set("type", filter.EventType)
-	}
-	if filter.PageSize != "" {
-		query.Set("pageSize", filter.PageSize)
-	}
-	if filter.FromTime != "" {
-		query.Set("fromTime", filter.FromTime)
-	}
-
-	u.RawQuery = query.Encode()
-
-	return e.getEvents(u.String(), filter.NumberOfPages)
+	e.ensureHandlerIsSet()
+	return e.eventHandler.GetEvents(context.TODO(), toV2EventFilter(filter), v2.EventsGetEventsOptions{})
 }
 
-// GetEventsWithRetry tries to retrieve events matching the passed filter
+// GetEventsWithRetry tries to retrieve events matching the passed filter.
 func (e *EventHandler) GetEventsWithRetry(filter *EventFilter, maxRetries int, retrySleepTime time.Duration) ([]*models.KeptnContextExtendedCE, error) {
-	for i := 0; i < maxRetries; i = i + 1 {
-		events, errObj := e.GetEvents(filter)
-		if errObj == nil && len(events) > 0 {
-			return events, nil
-		}
-		<-time.After(retrySleepTime)
-	}
-	return nil, fmt.Errorf("could not find matching event after %d x %s", maxRetries, retrySleepTime.String())
+	e.ensureHandlerIsSet()
+	return e.eventHandler.GetEventsWithRetry(context.TODO(), toV2EventFilter(filter), maxRetries, retrySleepTime, v2.EventsGetEventsWithRetryOptions{})
 }
 
-func (e *EventHandler) getEvents(uri string, numberOfPages int) ([]*models.KeptnContextExtendedCE, *models.Error) {
-	events := []*models.KeptnContextExtendedCE{}
-	nextPageKey := ""
+func toV2EventFilter(filter *EventFilter) *v2.EventFilter {
+	return &v2.EventFilter{
+		Project:       filter.Project,
+		Stage:         filter.Stage,
+		Service:       filter.Service,
+		EventType:     filter.EventType,
+		KeptnContext:  filter.KeptnContext,
+		EventID:       filter.EventID,
+		PageSize:      filter.PageSize,
+		NumberOfPages: filter.NumberOfPages,
+		FromTime:      filter.FromTime,
+	}
+}
 
-	for {
-		url, err := url.Parse(uri)
-		if err != nil {
-			return nil, buildErrorResponse(err.Error())
-		}
-		q := url.Query()
-		if nextPageKey != "" {
-			q.Set("nextPageKey", nextPageKey)
-			url.RawQuery = q.Encode()
-		}
-		req, err := http.NewRequest("GET", url.String(), nil)
-		if err != nil {
-			return nil, buildErrorResponse(err.Error())
-		}
-		req.Header.Set("Content-Type", "application/json")
-		addAuthHeader(req, e)
-
-		resp, err := e.HTTPClient.Do(req)
-		if err != nil {
-			return nil, buildErrorResponse(err.Error())
-		}
-		defer resp.Body.Close()
-
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, buildErrorResponse(err.Error())
-		}
-
-		if resp.StatusCode == 200 {
-			received := &models.Events{}
-			if err = received.FromJSON(body); err != nil {
-				return nil, buildErrorResponse(err.Error())
-			}
-			events = append(events, received.Events...)
-
-			if received.NextPageKey == "" || received.NextPageKey == "0" {
-				break
-			}
-
-			nextPageKeyInt, _ := strconv.Atoi(received.NextPageKey)
-
-			if numberOfPages > 0 && nextPageKeyInt >= numberOfPages {
-				break
-			}
-
-			nextPageKey = received.NextPageKey
-		} else {
-			return nil, handleErrStatusCode(resp.StatusCode, body)
-		}
+func (e *EventHandler) ensureHandlerIsSet() {
+	if e.eventHandler != nil {
+		return
 	}
 
-	return events, nil
+	if e.AuthToken != "" {
+		e.eventHandler = v2.NewAuthenticatedEventHandler(e.BaseURL, e.AuthToken, e.AuthHeader, e.HTTPClient, e.Scheme)
+	} else {
+		e.eventHandler = v2.NewEventHandlerWithHTTPClient(e.BaseURL, e.HTTPClient)
+	}
 }
