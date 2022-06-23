@@ -20,6 +20,7 @@ func TestApiTokenProvider_GetKeptnAPITokenFromSecret_FailClientSet(t *testing.T)
 	res, err := apiTokenProvider.GetKeptnAPITokenFromSecret("keptn", "secret")
 	require.Equal(t, "", res)
 	require.Error(t, err)
+	require.Equal(t, fmt.Errorf("Error retrieving kubernetes secret"), err)
 
 }
 
@@ -32,6 +33,7 @@ func TestApiTokenProvider_GetKeptnAPITokenFromSecret_InvalidData(t *testing.T) {
 	res, err := apiTokenProvider.GetKeptnAPITokenFromSecret("keptn", "secret")
 	require.Equal(t, "", res)
 	require.Error(t, err)
+	require.Equal(t, fmt.Errorf("data 'keptn-api-token' not found"), err)
 
 }
 

@@ -26,7 +26,10 @@ func (a *KeptnEndpointProvider) GetKeptnEndpointFromIngress(namespace string, in
 	if err != nil {
 		return "", err
 	}
-	return keptnIngress.Spec.Rules[0].Host, nil
+	if keptnIngress.Spec.Rules != nil {
+		return keptnIngress.Spec.Rules[0].Host, nil
+	}
+	return "", fmt.Errorf("cannot retrieve ingress data: ingress rule does not exist")
 }
 
 // GetKeptnEndpointFromService returns the loadbalancer service IP from Keptn Installation

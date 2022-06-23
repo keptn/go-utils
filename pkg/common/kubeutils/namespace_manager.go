@@ -14,10 +14,10 @@ type NamespaceManager struct {
 	clientSet kubernetes.Interface
 }
 
-func NewManespaceManager(useInClusterConfig bool) (*NamespaceManager, error) {
+func NewMamespaceManager(useInClusterConfig bool) (*NamespaceManager, error) {
 	clientSet, err := GetClientSet(useInClusterConfig)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create ApiTokenProvider: %s", err.Error())
+		return nil, fmt.Errorf("Could not create NamespaceManager: %s", err.Error())
 	}
 	return &NamespaceManager{clientSet: clientSet}, nil
 }
