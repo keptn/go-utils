@@ -10,7 +10,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// NamespaceManager
+// NamespaceManager wraps around the kubernetes interface to enhance testability
 type NamespaceManager struct {
 	clientSet kubernetes.Interface
 }

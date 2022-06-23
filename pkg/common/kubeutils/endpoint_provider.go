@@ -8,7 +8,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// KeptnEndpointProvider
+// KeptnEndpointProvider wraps around the kubernetes interface to enhance testability
 type KeptnEndpointProvider struct {
 	clientSet kubernetes.Interface
 }

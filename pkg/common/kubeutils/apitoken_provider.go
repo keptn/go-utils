@@ -8,7 +8,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// APITokenProvider
+// APITokenProvider wraps around the kubernetes interface to enhance testability
 type APITokenProvider struct {
 	clientSet kubernetes.Interface
 }
