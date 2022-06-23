@@ -12,7 +12,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-// GetClientset returns the kubernetes Clientset
+// GetClientSet returns the kubernetes Clientset
 func GetClientSet(useInClusterConfig bool) (*kubernetes.Clientset, error) {
 
 	var config *rest.Config

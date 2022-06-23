@@ -8,6 +8,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// KeptnEndpointProvider
 type KeptnEndpointProvider struct {
 	clientSet kubernetes.Interface
 }

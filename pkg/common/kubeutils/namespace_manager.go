@@ -10,12 +10,13 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// NamespaceManager
 type NamespaceManager struct {
 	clientSet kubernetes.Interface
 }
 
-// NewMamespaceManager creates new NamespaceManager
-func NewMamespaceManager(useInClusterConfig bool) (*NamespaceManager, error) {
+// NewNamespaceManager creates new NamespaceManager
+func NewNamespaceManager(useInClusterConfig bool) (*NamespaceManager, error) {
 	clientSet, err := GetClientSet(useInClusterConfig)
 	if err != nil {
 		return nil, fmt.Errorf("Could not create NamespaceManager: %s", err.Error())
