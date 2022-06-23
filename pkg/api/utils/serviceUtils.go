@@ -96,20 +96,36 @@ func (s *ServiceHandler) getHTTPClient() *http.Client {
 
 // CreateServiceInStage creates a new service.
 func (s *ServiceHandler) CreateServiceInStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error) {
+	s.ensureHandlerIsSet()
 	return s.serviceHandler.CreateServiceInStage(context.TODO(), project, stage, serviceName, v2.ServicesCreateServiceInStageOptions{})
 }
 
 // DeleteServiceFromStage deletes a service from a stage.
 func (s *ServiceHandler) DeleteServiceFromStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error) {
+	s.ensureHandlerIsSet()
 	return s.serviceHandler.DeleteServiceFromStage(context.TODO(), project, stage, serviceName, v2.ServicesDeleteServiceFromStageOptions{})
 }
 
 // GetService gets a service.
 func (s *ServiceHandler) GetService(project, stage, service string) (*models.Service, error) {
+	s.ensureHandlerIsSet()
 	return s.serviceHandler.GetService(context.TODO(), project, stage, service, v2.ServicesGetServiceOptions{})
 }
 
 // GetAllServices returns a list of all services.
 func (s *ServiceHandler) GetAllServices(project string, stage string) ([]*models.Service, error) {
+	s.ensureHandlerIsSet()
 	return s.serviceHandler.GetAllServices(context.TODO(), project, stage, v2.ServicesGetAllServicesOptions{})
+}
+
+func (s *ServiceHandler) ensureHandlerIsSet() {
+	if s.serviceHandler != nil {
+		return
+	}
+
+	if s.AuthToken != "" {
+		s.serviceHandler = v2.NewAuthenticatedServiceHandler(s.BaseURL, s.AuthToken, s.AuthHeader, s.HTTPClient, s.Scheme)
+	} else {
+		s.serviceHandler = v2.NewServiceHandlerWithHTTPClient(s.BaseURL, s.HTTPClient)
+	}
 }

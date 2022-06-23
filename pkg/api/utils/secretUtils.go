@@ -104,20 +104,36 @@ func (s *SecretHandler) getHTTPClient() *http.Client {
 
 // CreateSecret creates a new secret.
 func (s *SecretHandler) CreateSecret(secret models.Secret) error {
+	s.ensureHandlerIsSet()
 	return s.secretHandler.CreateSecret(context.TODO(), secret, v2.SecretsCreateSecretOptions{})
 }
 
 // UpdateSecret creates a new secret.
 func (s *SecretHandler) UpdateSecret(secret models.Secret) error {
+	s.ensureHandlerIsSet()
 	return s.secretHandler.UpdateSecret(context.TODO(), secret, v2.SecretsUpdateSecretOptions{})
 }
 
 // DeleteSecret deletes a secret.
 func (s *SecretHandler) DeleteSecret(secretName, secretScope string) error {
+	s.ensureHandlerIsSet()
 	return s.secretHandler.DeleteSecret(context.TODO(), secretName, secretScope, v2.SecretsDeleteSecretOptions{})
 }
 
 // GetSecrets returns a list of created secrets.
 func (s *SecretHandler) GetSecrets() (*models.GetSecretsResponse, error) {
+	s.ensureHandlerIsSet()
 	return s.secretHandler.GetSecrets(context.TODO(), v2.SecretsGetSecretsOptions{})
+}
+
+func (s *SecretHandler) ensureHandlerIsSet() {
+	if s.secretHandler != nil {
+		return
+	}
+
+	if s.AuthToken != "" {
+		s.secretHandler = v2.NewAuthenticatedSecretHandler(s.BaseURL, s.AuthToken, s.AuthHeader, s.HTTPClient, s.Scheme)
+	} else {
+		s.secretHandler = v2.NewSecretHandlerWithHTTPClient(s.BaseURL, s.HTTPClient)
+	}
 }

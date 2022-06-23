@@ -89,5 +89,18 @@ func (s *ShipyardControllerHandler) getHTTPClient() *http.Client {
 
 // GetOpenTriggeredEvents returns all open triggered events.
 func (s *ShipyardControllerHandler) GetOpenTriggeredEvents(filter EventFilter) ([]*models.KeptnContextExtendedCE, error) {
+	s.ensureHandlerIsSet()
 	return s.shipyardControllerHandler.GetOpenTriggeredEvents(context.TODO(), *toV2EventFilter(&filter), v2.ShipyardControlGetOpenTriggeredEventsOptions{})
+}
+
+func (s *ShipyardControllerHandler) ensureHandlerIsSet() {
+	if s.shipyardControllerHandler != nil {
+		return
+	}
+
+	if s.AuthToken != "" {
+		s.shipyardControllerHandler = v2.NewAuthenticatedShipyardControllerHandler(s.BaseURL, s.AuthToken, s.AuthHeader, s.HTTPClient, s.Scheme)
+	} else {
+		s.shipyardControllerHandler = v2.NewShipyardControllerHandlerWithHTTPClient(s.BaseURL, s.HTTPClient)
+	}
 }

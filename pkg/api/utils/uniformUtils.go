@@ -90,21 +90,38 @@ func (u *UniformHandler) getHTTPClient() *http.Client {
 }
 
 func (u *UniformHandler) Ping(integrationID string) (*models.Integration, error) {
+	u.ensureHandlerIsSet()
 	return u.uniformHandler.Ping(context.TODO(), integrationID, v2.UniformPingOptions{})
 }
 
 func (u *UniformHandler) RegisterIntegration(integration models.Integration) (string, error) {
+	u.ensureHandlerIsSet()
 	return u.uniformHandler.RegisterIntegration(context.TODO(), integration, v2.UniformRegisterIntegrationOptions{})
 }
 
 func (u *UniformHandler) CreateSubscription(integrationID string, subscription models.EventSubscription) (string, error) {
+	u.ensureHandlerIsSet()
 	return u.uniformHandler.CreateSubscription(context.TODO(), integrationID, subscription, v2.UniformCreateSubscriptionOptions{})
 }
 
 func (u *UniformHandler) UnregisterIntegration(integrationID string) error {
+	u.ensureHandlerIsSet()
 	return u.uniformHandler.UnregisterIntegration(context.TODO(), integrationID, v2.UniformUnregisterIntegrationOptions{})
 }
 
 func (u *UniformHandler) GetRegistrations() ([]*models.Integration, error) {
+	u.ensureHandlerIsSet()
 	return u.uniformHandler.GetRegistrations(context.TODO(), v2.UniformGetRegistrationsOptions{})
+}
+
+func (u *UniformHandler) ensureHandlerIsSet() {
+	if u.uniformHandler != nil {
+		return
+	}
+
+	if u.AuthToken != "" {
+		u.uniformHandler = v2.NewAuthenticatedUniformHandler(u.BaseURL, u.AuthToken, u.AuthHeader, u.HTTPClient, u.Scheme)
+	} else {
+		u.uniformHandler = v2.NewUniformHandlerWithHTTPClient(u.BaseURL, u.HTTPClient)
+	}
 }
