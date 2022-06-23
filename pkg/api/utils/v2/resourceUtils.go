@@ -483,7 +483,7 @@ func (r *ResourceHandler) GetAllStageResources(ctx context.Context, project stri
 // GetAllServiceResources returns a list of all resources.
 func (r *ResourceHandler) GetAllServiceResources(ctx context.Context, project string, stage string, service string, opts ResourcesGetAllServiceResourcesOptions) ([]*models.Resource, error) {
 	myURL, err := url.Parse(r.scheme + "://" + r.getBaseURL() + v1ProjectPath + "/" + project + pathToStage + "/" + stage +
-		pathToService + "/" + service + pathToResource + "/")
+		pathToService + "/" + service + pathToResource)
 	if err != nil {
 		return nil, err
 	}
