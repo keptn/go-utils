@@ -19,14 +19,14 @@ type NamespaceManager struct {
 func NewNamespaceManager(useInClusterConfig bool) (*NamespaceManager, error) {
 	clientSet, err := GetClientSet(useInClusterConfig)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create NamespaceManager: %s", err.Error())
+		return nil, fmt.Errorf("could not create NamespaceManager: %s", err.Error())
 	}
 	return &NamespaceManager{clientSet: clientSet}, nil
 }
 
 // ExistsNamespace checks whether a namespace with the provided name exists
-func (a *NamespaceManager) ExistsNamespace(namespace string) (bool, error) {
-	_, err := a.clientSet.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
+func (a *NamespaceManager) ExistsNamespace(ctx context.Context, namespace string) (bool, error) {
+	_, err := a.clientSet.CoreV1().Namespaces().Get(ctx, namespace, metav1.GetOptions{})
 	if err != nil {
 		if statusErr, ok := err.(*apierr.StatusError); ok && statusErr.ErrStatus.Reason == metav1.StatusReasonNotFound {
 			return false, nil
@@ -37,7 +37,7 @@ func (a *NamespaceManager) ExistsNamespace(namespace string) (bool, error) {
 }
 
 // CreateNamespace creates a new Kubernetes namespace with the provided name
-func (a *NamespaceManager) CreateNamespace(namespace string, namespaceMetadata ...metav1.ObjectMeta) error {
+func (a *NamespaceManager) CreateNamespace(ctx context.Context, namespace string, namespaceMetadata ...metav1.ObjectMeta) error {
 	var buildNamespaceMetadata metav1.ObjectMeta
 	if len(namespaceMetadata) > 0 {
 		buildNamespaceMetadata = namespaceMetadata[0]
@@ -46,15 +46,15 @@ func (a *NamespaceManager) CreateNamespace(namespace string, namespaceMetadata .
 	buildNamespaceMetadata.Name = namespace
 
 	ns := &typesv1.Namespace{ObjectMeta: buildNamespaceMetadata}
-	_, err := a.clientSet.CoreV1().Namespaces().Create(context.TODO(), ns, metav1.CreateOptions{})
+	_, err := a.clientSet.CoreV1().Namespaces().Create(ctx, ns, metav1.CreateOptions{})
 	return err
 }
 
 // GetKeptnManagedNamespace returns the list of namespace with the annotation & label `keptn.sh/managed-by: keptn`
-func (a *NamespaceManager) GetKeptnManagedNamespace() ([]string, error) {
+func (a *NamespaceManager) GetKeptnManagedNamespace(ctx context.Context) ([]string, error) {
 	var namespaces []string
 
-	namespaceList, err := a.clientSet.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{
+	namespaceList, err := a.clientSet.CoreV1().Namespaces().List(ctx, metav1.ListOptions{
 		LabelSelector: "keptn.sh/managed-by",
 	})
 	if err != nil {

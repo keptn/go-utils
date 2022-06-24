@@ -17,14 +17,14 @@ type KeptnEndpointProvider struct {
 func NewKeptnEndpointProvider(useInClusterConfig bool) (*KeptnEndpointProvider, error) {
 	clientSet, err := GetClientSet(useInClusterConfig)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create KeptnEndpointProvider: %s", err.Error())
+		return nil, fmt.Errorf("could not create KeptnEndpointProvider: %s", err.Error())
 	}
 	return &KeptnEndpointProvider{clientSet: clientSet}, nil
 }
 
 // GetKeptnEndpointFromIngress returns the host of ingress object Keptn Installation
-func (a *KeptnEndpointProvider) GetKeptnEndpointFromIngress(namespace string, ingressName string) (string, error) {
-	keptnIngress, err := a.clientSet.ExtensionsV1beta1().Ingresses(namespace).Get(context.TODO(), ingressName, metav1.GetOptions{})
+func (a *KeptnEndpointProvider) GetKeptnEndpointFromIngress(ctx context.Context, namespace string, ingressName string) (string, error) {
+	keptnIngress, err := a.clientSet.ExtensionsV1beta1().Ingresses(namespace).Get(ctx, ingressName, metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}
@@ -35,8 +35,8 @@ func (a *KeptnEndpointProvider) GetKeptnEndpointFromIngress(namespace string, in
 }
 
 // GetKeptnEndpointFromService returns the loadbalancer service IP from Keptn Installation
-func (a *KeptnEndpointProvider) GetKeptnEndpointFromService(namespace string, serviceName string) (string, error) {
-	keptnService, err := a.clientSet.CoreV1().Services(namespace).Get(context.TODO(), serviceName, metav1.GetOptions{})
+func (a *KeptnEndpointProvider) GetKeptnEndpointFromService(ctx context.Context, namespace string, serviceName string) (string, error) {
+	keptnService, err := a.clientSet.CoreV1().Services(namespace).Get(ctx, serviceName, metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}
@@ -47,6 +47,6 @@ func (a *KeptnEndpointProvider) GetKeptnEndpointFromService(namespace string, se
 		}
 		return "", fmt.Errorf("Loadbalancer IP isn't found")
 	default:
-		return "", fmt.Errorf("It doesn't support ClusterIP & NodePort type service for fetching endpoint automatically")
+		return "", fmt.Errorf("it doesn't support ClusterIP & NodePort type service for fetching endpoint automatically")
 	}
 }

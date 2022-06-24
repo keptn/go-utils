@@ -1,6 +1,7 @@
 package kubeutils
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -15,13 +16,13 @@ import (
 func TestKeptnEndpointProvider_GetKeptnEndpointFromIngress_FailClientSet(t *testing.T) {
 	kubernetes := fake.NewSimpleClientset()
 	kubernetes.Fake.PrependReactor("get", "ingresses", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-		return true, nil, fmt.Errorf("Error retrieving kubernetes ingress")
+		return true, nil, fmt.Errorf("error retrieving kubernetes ingress")
 	})
 	keptnEndpointProvider := &KeptnEndpointProvider{clientSet: kubernetes}
-	res, err := keptnEndpointProvider.GetKeptnEndpointFromIngress("keptn", "ingress")
+	res, err := keptnEndpointProvider.GetKeptnEndpointFromIngress(context.TODO(), "keptn", "ingress")
 	require.Equal(t, "", res)
 	require.Error(t, err)
-	require.Equal(t, fmt.Errorf("Error retrieving kubernetes ingress"), err)
+	require.Equal(t, fmt.Errorf("error retrieving kubernetes ingress"), err)
 }
 
 func TestKeptnEndpointProvider_GetKeptnEndpointFromIngress_Invalid(t *testing.T) {
@@ -30,7 +31,7 @@ func TestKeptnEndpointProvider_GetKeptnEndpointFromIngress_Invalid(t *testing.T)
 		return true, &v1beta1.Ingress{Spec: v1beta1.IngressSpec{}}, nil
 	})
 	keptnEndpointProvider := &KeptnEndpointProvider{clientSet: kubernetes}
-	res, err := keptnEndpointProvider.GetKeptnEndpointFromIngress("keptn", "ingress")
+	res, err := keptnEndpointProvider.GetKeptnEndpointFromIngress(context.TODO(), "keptn", "ingress")
 	require.Equal(t, "", res)
 	require.Error(t, err)
 	require.Equal(t, fmt.Errorf("cannot retrieve ingress data: ingress rule does not exist"), err)
@@ -50,7 +51,7 @@ func TestKeptnEndpointProvider_GetKeptnEndpointFromIngress_Valid(t *testing.T) {
 		}, nil
 	})
 	keptnEndpointProvider := &KeptnEndpointProvider{clientSet: kubernetes}
-	res, err := keptnEndpointProvider.GetKeptnEndpointFromIngress("keptn", "api-keptn-ingress")
+	res, err := keptnEndpointProvider.GetKeptnEndpointFromIngress(context.TODO(), "keptn", "api-keptn-ingress")
 	require.Equal(t, "1.1.1.1", res)
 	require.Nil(t, err)
 }
@@ -58,13 +59,13 @@ func TestKeptnEndpointProvider_GetKeptnEndpointFromIngress_Valid(t *testing.T) {
 func TestKeptnEndpointProvider_GetKeptnEndpointFromService_FailClientSet(t *testing.T) {
 	kubernetes := fake.NewSimpleClientset()
 	kubernetes.Fake.PrependReactor("get", "services", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-		return true, nil, fmt.Errorf("Error retrieving kubernetes service")
+		return true, nil, fmt.Errorf("error retrieving kubernetes service")
 	})
 	keptnEndpointProvider := &KeptnEndpointProvider{clientSet: kubernetes}
-	res, err := keptnEndpointProvider.GetKeptnEndpointFromService("keptn", "service1")
+	res, err := keptnEndpointProvider.GetKeptnEndpointFromService(context.TODO(), "keptn", "service1")
 	require.Equal(t, "", res)
 	require.Error(t, err)
-	require.Equal(t, fmt.Errorf("Error retrieving kubernetes service"), err)
+	require.Equal(t, fmt.Errorf("error retrieving kubernetes service"), err)
 }
 
 func TestKeptnEndpointProvider_GetKeptnEndpointFromService_NoLoadBalancer(t *testing.T) {
@@ -73,10 +74,10 @@ func TestKeptnEndpointProvider_GetKeptnEndpointFromService_NoLoadBalancer(t *tes
 		return true, &v1.Service{Spec: v1.ServiceSpec{Type: v1.ServiceTypeClusterIP}}, nil
 	})
 	keptnEndpointProvider := &KeptnEndpointProvider{clientSet: kubernetes}
-	res, err := keptnEndpointProvider.GetKeptnEndpointFromService("keptn22", "service")
+	res, err := keptnEndpointProvider.GetKeptnEndpointFromService(context.TODO(), "keptn22", "service")
 	require.Equal(t, "", res)
 	require.Error(t, err)
-	require.Equal(t, fmt.Errorf("It doesn't support ClusterIP & NodePort type service for fetching endpoint automatically"), err)
+	require.Equal(t, fmt.Errorf("it doesn't support ClusterIP & NodePort type service for fetching endpoint automatically"), err)
 }
 
 func TestKeptnEndpointProvider_GetKeptnEndpointFromService_LoadBalancerNoIngress(t *testing.T) {
@@ -91,7 +92,7 @@ func TestKeptnEndpointProvider_GetKeptnEndpointFromService_LoadBalancerNoIngress
 		}, nil
 	})
 	keptnEndpointProvider := &KeptnEndpointProvider{clientSet: kubernetes}
-	res, err := keptnEndpointProvider.GetKeptnEndpointFromService("keptn22", "service")
+	res, err := keptnEndpointProvider.GetKeptnEndpointFromService(context.TODO(), "keptn22", "service")
 	require.Equal(t, "", res)
 	require.Error(t, err)
 	require.Equal(t, fmt.Errorf("Loadbalancer IP isn't found"), err)
@@ -112,7 +113,7 @@ func TestKeptnEndpointProvider_GetKeptnEndpointFromService_LoadBalancerIngressIP
 		}, nil
 	})
 	keptnEndpointProvider := &KeptnEndpointProvider{clientSet: kubernetes}
-	res, err := keptnEndpointProvider.GetKeptnEndpointFromService("keptn22", "service")
+	res, err := keptnEndpointProvider.GetKeptnEndpointFromService(context.TODO(), "keptn22", "service")
 	require.Equal(t, "1.1.1.1", res)
 	require.Nil(t, err)
 }

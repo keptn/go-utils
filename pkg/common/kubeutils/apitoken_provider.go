@@ -17,14 +17,14 @@ type APITokenProvider struct {
 func NewAPITokenProvider(useInClusterConfig bool) (*APITokenProvider, error) {
 	clientSet, err := GetClientSet(useInClusterConfig)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create APITokenProvider: %s", err.Error())
+		return nil, fmt.Errorf("could not create APITokenProvider: %s", err.Error())
 	}
 	return &APITokenProvider{clientSet: clientSet}, nil
 }
 
 // GetKeptnAPITokenFromSecret returns the `keptn-api-token` data secret from Keptn Installation
-func (a *APITokenProvider) GetKeptnAPITokenFromSecret(namespace string, secretName string) (string, error) {
-	keptnSecret, err := a.clientSet.CoreV1().Secrets(namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
+func (a *APITokenProvider) GetKeptnAPITokenFromSecret(ctx context.Context, namespace string, secretName string) (string, error) {
+	keptnSecret, err := a.clientSet.CoreV1().Secrets(namespace).Get(ctx, secretName, metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}

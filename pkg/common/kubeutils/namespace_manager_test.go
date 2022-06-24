@@ -1,6 +1,7 @@
 package kubeutils
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -16,12 +17,12 @@ import (
 func TestNamespaceManager_ExistsNamespace_FailClientSet(t *testing.T) {
 	kubernetes := fake.NewSimpleClientset()
 	kubernetes.Fake.PrependReactor("get", "namespaces", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-		return true, nil, fmt.Errorf("Error retrieving kubernetes namespaces")
+		return true, nil, fmt.Errorf("error retrieving kubernetes namespaces")
 	})
 	namespaceManager := &NamespaceManager{clientSet: kubernetes}
-	res, err := namespaceManager.ExistsNamespace("keptn")
+	res, err := namespaceManager.ExistsNamespace(context.TODO(), "keptn")
 	require.Equal(t, false, res)
-	require.Equal(t, fmt.Errorf("Error retrieving kubernetes namespaces"), err)
+	require.Equal(t, fmt.Errorf("error retrieving kubernetes namespaces"), err)
 }
 
 func TestNamespaceManager_ExistsNamespace_NotExists(t *testing.T) {
@@ -35,7 +36,7 @@ func TestNamespaceManager_ExistsNamespace_NotExists(t *testing.T) {
 		return true, nil, &err2
 	})
 	namespaceManager := &NamespaceManager{clientSet: kubernetes}
-	res, err := namespaceManager.ExistsNamespace("keptn")
+	res, err := namespaceManager.ExistsNamespace(context.TODO(), "keptn")
 	require.Equal(t, false, res)
 	require.Nil(t, err)
 }
@@ -46,7 +47,7 @@ func TestNamespaceManager_ExistsNamespace_Exists(t *testing.T) {
 		return true, &typesv1.Namespace{}, nil
 	})
 	namespaceManager := &NamespaceManager{clientSet: kubernetes}
-	res, err := namespaceManager.ExistsNamespace("keptn")
+	res, err := namespaceManager.ExistsNamespace(context.TODO(), "keptn")
 	require.Equal(t, true, res)
 	require.Nil(t, err)
 }
@@ -54,12 +55,12 @@ func TestNamespaceManager_ExistsNamespace_Exists(t *testing.T) {
 func TestNamespaceManager_CreateNamespace_FailClientSet(t *testing.T) {
 	kubernetes := fake.NewSimpleClientset()
 	kubernetes.Fake.PrependReactor("create", "namespaces", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-		return true, nil, fmt.Errorf("Error creating kubernetes namespace")
+		return true, nil, fmt.Errorf("error creating kubernetes namespace")
 	})
 	namespaceManager := &NamespaceManager{clientSet: kubernetes}
-	err := namespaceManager.CreateNamespace("keptn")
+	err := namespaceManager.CreateNamespace(context.TODO(), "keptn")
 	require.Error(t, err)
-	require.Equal(t, fmt.Errorf("Error creating kubernetes namespace"), err)
+	require.Equal(t, fmt.Errorf("error creating kubernetes namespace"), err)
 }
 
 func TestNamespaceManager_CreateNamespace_Success(t *testing.T) {
@@ -68,7 +69,7 @@ func TestNamespaceManager_CreateNamespace_Success(t *testing.T) {
 		return true, &typesv1.Namespace{}, nil
 	})
 	namespaceManager := &NamespaceManager{clientSet: kubernetes}
-	err := namespaceManager.CreateNamespace("keptn")
+	err := namespaceManager.CreateNamespace(context.TODO(), "keptn")
 	require.Nil(t, err)
 }
 
@@ -78,20 +79,20 @@ func TestNamespaceManager_CreateNamespace_SuccessWithMeta(t *testing.T) {
 		return true, &typesv1.Namespace{}, nil
 	})
 	namespaceManager := &NamespaceManager{clientSet: kubernetes}
-	err := namespaceManager.CreateNamespace("keptn", metav1.ObjectMeta{Name: "some-name"})
+	err := namespaceManager.CreateNamespace(context.TODO(), "keptn", metav1.ObjectMeta{Name: "some-name"})
 	require.Nil(t, err)
 }
 
 func TestNamespaceManager_GetKeptnManagedNamespace_FailClientSet(t *testing.T) {
 	kubernetes := fake.NewSimpleClientset()
 	kubernetes.Fake.PrependReactor("list", "namespaces", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-		return true, nil, fmt.Errorf("Error retrieving namespaces")
+		return true, nil, fmt.Errorf("error retrieving namespaces")
 	})
 	namespaceManager := &NamespaceManager{clientSet: kubernetes}
-	res, err := namespaceManager.GetKeptnManagedNamespace()
+	res, err := namespaceManager.GetKeptnManagedNamespace(context.TODO())
 	require.Equal(t, []string([]string(nil)), res)
 	require.Error(t, err)
-	require.Equal(t, fmt.Errorf("Error retrieving namespaces"), err)
+	require.Equal(t, fmt.Errorf("error retrieving namespaces"), err)
 }
 
 func TestNamespaceManager_GetKeptnManagedNamespace_Success(t *testing.T) {
@@ -125,7 +126,7 @@ func TestNamespaceManager_GetKeptnManagedNamespace_Success(t *testing.T) {
 		}, nil
 	})
 	namespaceManager := &NamespaceManager{clientSet: kubernetes}
-	res, err := namespaceManager.GetKeptnManagedNamespace()
+	res, err := namespaceManager.GetKeptnManagedNamespace(context.TODO())
 	require.Equal(t, []string{"name1", "name2"}, res)
 	require.Nil(t, err)
 }
