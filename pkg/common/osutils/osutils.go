@@ -1,6 +1,8 @@
 package osutils
 
-import "os"
+import (
+	"os"
+)
 
 // GetOSEnvOrDefault retrieves the value of the environment variable named by the key.
 // If the environment variable is not present the default value will be returned
