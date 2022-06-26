@@ -8,7 +8,12 @@ import (
 
 // ExecuteCommand executes the command using the args
 func ExecuteCommand(command string, args []string) (string, error) {
-	return ExecuteCommandWithEnv(command, args, []string{})
+	cmd := exec.Command(command, args...)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return string(out), fmt.Errorf("Error executing command %s %s: %s\n%s", command, strings.Join(args, " "), err.Error(), string(out))
+	}
+	return string(out), nil
 }
 
 // ExecuteCommandWithEnv executes the command using the args, appends env to the default command env
