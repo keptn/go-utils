@@ -3,7 +3,7 @@ package api
 import (
 	"fmt"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/go-utils/pkg/common/api"
+	"github.com/keptn/go-utils/pkg/common/apiutils"
 	"github.com/keptn/go-utils/pkg/sdk/internal/config"
 	"net/http"
 	"net/url"
@@ -13,11 +13,11 @@ import (
 // Initializer implements both methods of creating a new keptn API with internal or remote execution plane
 type Initializer struct {
 	Remote   func(baseURL string, options ...func(*keptnapi.APISet)) (*keptnapi.APISet, error)
-	Internal func(client *http.Client, apiMappings ...api.InClusterAPIMappings) (*api.InternalAPISet, error)
+	Internal func(client *http.Client, apiMappings ...apiutils.InClusterAPIMappings) (*apiutils.InternalAPISet, error)
 }
 
 func CreateKeptnAPI(httpClient *http.Client, env config.EnvConfig) (keptnapi.KeptnInterface, error) {
-	return createAPI(httpClient, env, Initializer{keptnapi.New, api.NewInternal})
+	return createAPI(httpClient, env, Initializer{keptnapi.New, apiutils.NewInternal})
 }
 
 func createAPI(httpClient *http.Client, env config.EnvConfig, apiInit Initializer) (keptnapi.KeptnInterface, error) {

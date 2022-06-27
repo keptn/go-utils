@@ -1,4 +1,4 @@
-package api
+package apiutils
 
 import (
 	api "github.com/keptn/go-utils/pkg/api/utils"
