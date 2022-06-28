@@ -1,10 +1,8 @@
-package apiutils
+package api
 
 import (
-	"crypto/tls"
 	"github.com/benbjohnson/clock"
 	"github.com/keptn/go-utils/pkg/api/models"
-	api "github.com/keptn/go-utils/pkg/api/utils"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"net/http"
 	"time"
@@ -16,17 +14,17 @@ type InternalAPISet struct {
 	apimap                 InClusterAPIMappings
 	httpClient             *http.Client
 	apiHandler             *InternalAPIHandler
-	authHandler            *api.AuthHandler
-	eventHandler           *api.EventHandler
-	logHandler             *api.LogHandler
-	projectHandler         *api.ProjectHandler
-	resourceHandler        *api.ResourceHandler
-	secretHandler          *api.SecretHandler
-	sequenceControlHandler *api.SequenceControlHandler
-	serviceHandler         *api.ServiceHandler
-	stageHandler           *api.StageHandler
-	uniformHandler         *api.UniformHandler
-	shipyardControlHandler *api.ShipyardControllerHandler
+	authHandler            *AuthHandler
+	eventHandler           *EventHandler
+	logHandler             *LogHandler
+	projectHandler         *ProjectHandler
+	resourceHandler        *ResourceHandler
+	secretHandler          *SecretHandler
+	sequenceControlHandler *SequenceControlHandler
+	serviceHandler         *ServiceHandler
+	stageHandler           *StageHandler
+	uniformHandler         *UniformHandler
+	shipyardControlHandler *ShipyardControllerHandler
 }
 
 // InternalService is used to enumerate internal Keptn services
@@ -69,19 +67,19 @@ func NewInternal(client *http.Client, apiMappings ...InClusterAPIMappings) (*Int
 	as.httpClient = client
 
 	as.apiHandler = &InternalAPIHandler{
-		shipyardControllerApiHandler: &api.APIHandler{
+		shipyardControllerApiHandler: &APIHandler{
 			BaseURL:    apimap[ShipyardController],
 			HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
 			Scheme:     "http",
 		},
 	}
 
-	as.authHandler = &api.AuthHandler{
+	as.authHandler = &AuthHandler{
 		BaseURL:    apimap[ApiService],
 		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
 		Scheme:     "http",
 	}
-	as.logHandler = &api.LogHandler{
+	as.logHandler = &LogHandler{
 		BaseURL:      apimap[ShipyardController],
 		HTTPClient:   &http.Client{Transport: getClientTransport(as.httpClient.Transport)},
 		Scheme:       "http",
@@ -90,49 +88,49 @@ func NewInternal(client *http.Client, apiMappings ...InClusterAPIMappings) (*Int
 		SyncInterval: 1 * time.Minute,
 	}
 
-	as.eventHandler = &api.EventHandler{
+	as.eventHandler = &EventHandler{
 		BaseURL:    apimap[MongoDBDatastore],
 		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
 		Scheme:     "http",
 	}
 
-	as.projectHandler = &api.ProjectHandler{
+	as.projectHandler = &ProjectHandler{
 		BaseURL:    apimap[ShipyardController],
 		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
 		Scheme:     "http",
 	}
 
-	as.resourceHandler = &api.ResourceHandler{
+	as.resourceHandler = &ResourceHandler{
 		BaseURL:    apimap[ConfigurationService],
 		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
 		Scheme:     "http",
 	}
-	as.secretHandler = &api.SecretHandler{
+	as.secretHandler = &SecretHandler{
 		BaseURL:    apimap[SecretService],
 		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
 		Scheme:     "http",
 	}
-	as.sequenceControlHandler = &api.SequenceControlHandler{
+	as.sequenceControlHandler = &SequenceControlHandler{
 		BaseURL:    apimap[ShipyardController],
 		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
 		Scheme:     "http",
 	}
-	as.serviceHandler = &api.ServiceHandler{
+	as.serviceHandler = &ServiceHandler{
 		BaseURL:    apimap[ShipyardController],
 		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
 		Scheme:     "http",
 	}
-	as.shipyardControlHandler = &api.ShipyardControllerHandler{
+	as.shipyardControlHandler = &ShipyardControllerHandler{
 		BaseURL:    apimap[ShipyardController],
 		HTTPClient: &http.Client{Transport: wrapOtelTransport(getClientTransport(as.httpClient.Transport))},
 		Scheme:     "http",
 	}
-	as.stageHandler = &api.StageHandler{
+	as.stageHandler = &StageHandler{
 		BaseURL:    apimap[ShipyardController],
 		HTTPClient: &http.Client{Transport: otelhttp.NewTransport(as.httpClient.Transport)},
 		Scheme:     "http",
 	}
-	as.uniformHandler = &api.UniformHandler{
+	as.uniformHandler = &UniformHandler{
 		BaseURL:    apimap[ShipyardController],
 		HTTPClient: &http.Client{Transport: getClientTransport(as.httpClient.Transport)},
 		Scheme:     "http",
@@ -141,91 +139,70 @@ func NewInternal(client *http.Client, apiMappings ...InClusterAPIMappings) (*Int
 }
 
 // APIV1 retrieves the APIHandler
-func (c *InternalAPISet) APIV1() api.APIV1Interface {
+func (c *InternalAPISet) APIV1() APIV1Interface {
 	return c.apiHandler
 }
 
 // AuthV1 retrieves the AuthHandler
-func (c *InternalAPISet) AuthV1() api.AuthV1Interface {
+func (c *InternalAPISet) AuthV1() AuthV1Interface {
 	return c.authHandler
 }
 
 // EventsV1 retrieves the EventHandler
-func (c *InternalAPISet) EventsV1() api.EventsV1Interface {
+func (c *InternalAPISet) EventsV1() EventsV1Interface {
 	return c.eventHandler
 }
 
 // LogsV1 retrieves the LogHandler
-func (c *InternalAPISet) LogsV1() api.LogsV1Interface {
+func (c *InternalAPISet) LogsV1() LogsV1Interface {
 	return c.logHandler
 }
 
 // ProjectsV1 retrieves the ProjectHandler
-func (c *InternalAPISet) ProjectsV1() api.ProjectsV1Interface {
+func (c *InternalAPISet) ProjectsV1() ProjectsV1Interface {
 	return c.projectHandler
 }
 
 // ResourcesV1 retrieves the ResourceHandler
-func (c *InternalAPISet) ResourcesV1() api.ResourcesV1Interface {
+func (c *InternalAPISet) ResourcesV1() ResourcesV1Interface {
 	return c.resourceHandler
 }
 
 // SecretsV1 retrieves the SecretHandler
-func (c *InternalAPISet) SecretsV1() api.SecretsV1Interface {
+func (c *InternalAPISet) SecretsV1() SecretsV1Interface {
 	return c.secretHandler
 }
 
 // SequencesV1 retrieves the SequenceControlHandler
-func (c *InternalAPISet) SequencesV1() api.SequencesV1Interface {
+func (c *InternalAPISet) SequencesV1() SequencesV1Interface {
 	return c.sequenceControlHandler
 }
 
 // ServicesV1 retrieves the ServiceHandler
-func (c *InternalAPISet) ServicesV1() api.ServicesV1Interface {
+func (c *InternalAPISet) ServicesV1() ServicesV1Interface {
 	return c.serviceHandler
 }
 
 // StagesV1 retrieves the StageHandler
-func (c *InternalAPISet) StagesV1() api.StagesV1Interface {
+func (c *InternalAPISet) StagesV1() StagesV1Interface {
 	return c.stageHandler
 }
 
 // UniformV1 retrieves the UniformHandler
-func (c *InternalAPISet) UniformV1() api.UniformV1Interface {
+func (c *InternalAPISet) UniformV1() UniformV1Interface {
 	return c.uniformHandler
 }
 
 // ShipyardControlV1 retrieves the ShipyardControllerHandler
-func (c *InternalAPISet) ShipyardControlV1() api.ShipyardControlV1Interface {
+func (c *InternalAPISet) ShipyardControlV1() ShipyardControlV1Interface {
 	return c.shipyardControlHandler
-}
-
-func wrapOtelTransport(base http.RoundTripper) *otelhttp.Transport {
-	return otelhttp.NewTransport(base)
-}
-
-func getClientTransport(rt http.RoundTripper) http.RoundTripper {
-	if rt == nil {
-		tr := &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			Proxy:           http.ProxyFromEnvironment,
-		}
-		return tr
-	}
-	if tr, isDefaultTransport := rt.(*http.Transport); isDefaultTransport {
-		tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-		tr.Proxy = http.ProxyFromEnvironment
-		return tr
-	}
-	return rt
-
 }
 
 // InternalAPIHandler is used instead of APIHandler from go-utils because we cannot support
 // (unauthenticated) internal calls to the api-service at the moment. So this implementation
 // will panic as soon as a client wants to call these methods
 type InternalAPIHandler struct {
-	shipyardControllerApiHandler *api.APIHandler
+	shipyardControllerApiHandler *APIHandler
 }
 
 func (i *InternalAPIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.EventContext, *models.Error) {
