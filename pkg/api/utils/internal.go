@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/keptn/go-utils/pkg/api/models"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 // InternalAPISet is an implementation of APISet
@@ -109,7 +108,7 @@ func NewInternal(client *http.Client, apiMappings ...InClusterAPIMappings) (*Int
 
 	as.stageHandler = NewStageHandlerWithHTTPClient(
 		apimap[ShipyardController],
-		&http.Client{Transport: otelhttp.NewTransport(as.httpClient.Transport)})
+		&http.Client{Transport: wrapOtelTransport(as.httpClient.Transport)})
 
 	as.uniformHandler = NewUniformHandlerWithHTTPClient(
 		apimap[ShipyardController],
