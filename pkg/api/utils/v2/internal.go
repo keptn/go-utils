@@ -1,12 +1,13 @@
-package api
+package v2
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 )
 
-// InternalAPISet is an implementation of APISet
+// InternalAPISet is an implementation of KeptnInterface
 // which can be used from within the Keptn control plane
 type InternalAPISet struct {
 	apimap                 InClusterAPIMappings
@@ -48,7 +49,7 @@ var DefaultInClusterAPIMappings = InClusterAPIMappings{
 	MongoDBDatastore:     "mongodb-datastore:8080",
 }
 
-// NewInternal creates a new InternalAPISet usable for calling keptn services from within the control plane
+// NewInternal creates a new InternalAPISet usable for calling Keptn services from within the control plane
 func NewInternal(client *http.Client, apiMappings ...InClusterAPIMappings) (*InternalAPISet, error) {
 	var apimap InClusterAPIMappings
 	if len(apiMappings) > 0 {
@@ -117,63 +118,63 @@ func NewInternal(client *http.Client, apiMappings ...InClusterAPIMappings) (*Int
 	return as, nil
 }
 
-// APIV1 retrieves the APIHandler
-func (c *InternalAPISet) APIV1() APIV1Interface {
+// API retrieves the APIHandler
+func (c *InternalAPISet) API() APIInterface {
 	return c.apiHandler
 }
 
-// AuthV1 retrieves the AuthHandler
-func (c *InternalAPISet) AuthV1() AuthV1Interface {
+// Auth retrieves the AuthHandler
+func (c *InternalAPISet) Auth() AuthInterface {
 	return c.authHandler
 }
 
-// EventsV1 retrieves the EventHandler
-func (c *InternalAPISet) EventsV1() EventsV1Interface {
+// Events retrieves the EventHandler
+func (c *InternalAPISet) Events() EventsInterface {
 	return c.eventHandler
 }
 
-// LogsV1 retrieves the LogHandler
-func (c *InternalAPISet) LogsV1() LogsV1Interface {
+// Logs retrieves the LogHandler
+func (c *InternalAPISet) Logs() LogsInterface {
 	return c.logHandler
 }
 
-// ProjectsV1 retrieves the ProjectHandler
-func (c *InternalAPISet) ProjectsV1() ProjectsV1Interface {
+// Projects retrieves the ProjectHandler
+func (c *InternalAPISet) Projects() ProjectsInterface {
 	return c.projectHandler
 }
 
-// ResourcesV1 retrieves the ResourceHandler
-func (c *InternalAPISet) ResourcesV1() ResourcesV1Interface {
+// Resources retrieves the ResourceHandler
+func (c *InternalAPISet) Resources() ResourcesInterface {
 	return c.resourceHandler
 }
 
-// SecretsV1 retrieves the SecretHandler
-func (c *InternalAPISet) SecretsV1() SecretsV1Interface {
+// Secrets retrieves the SecretHandler
+func (c *InternalAPISet) Secrets() SecretsInterface {
 	return c.secretHandler
 }
 
-// SequencesV1 retrieves the SequenceControlHandler
-func (c *InternalAPISet) SequencesV1() SequencesV1Interface {
+// Sequences retrieves the SequenceControlHandler
+func (c *InternalAPISet) Sequences() SequencesInterface {
 	return c.sequenceControlHandler
 }
 
-// ServicesV1 retrieves the ServiceHandler
-func (c *InternalAPISet) ServicesV1() ServicesV1Interface {
+// Services retrieves the ServiceHandler
+func (c *InternalAPISet) Services() ServicesInterface {
 	return c.serviceHandler
 }
 
-// StagesV1 retrieves the StageHandler
-func (c *InternalAPISet) StagesV1() StagesV1Interface {
+// Stages retrieves the StageHandler
+func (c *InternalAPISet) Stages() StagesInterface {
 	return c.stageHandler
 }
 
-// UniformV1 retrieves the UniformHandler
-func (c *InternalAPISet) UniformV1() UniformV1Interface {
+// Uniform retrieves the UniformHandler
+func (c *InternalAPISet) Uniform() UniformInterface {
 	return c.uniformHandler
 }
 
-// ShipyardControlV1 retrieves the ShipyardControllerHandler
-func (c *InternalAPISet) ShipyardControlV1() ShipyardControlV1Interface {
+// ShipyardControl retrieves the ShipyardControllerHandler
+func (c *InternalAPISet) ShipyardControl() ShipyardControlInterface {
 	return c.shipyardControlHandler
 }
 
@@ -184,34 +185,34 @@ type InternalAPIHandler struct {
 	shipyardControllerApiHandler *APIHandler
 }
 
-func (i *InternalAPIHandler) SendEvent(event models.KeptnContextExtendedCE) (*models.EventContext, *models.Error) {
+func (i *InternalAPIHandler) SendEvent(_ context.Context, event models.KeptnContextExtendedCE, _ APISendEventOptions) (*models.EventContext, *models.Error) {
 	panic("SendEvent() is not not supported for internal usage")
 }
 
-func (i *InternalAPIHandler) TriggerEvaluation(project string, stage string, service string, evaluation models.Evaluation) (*models.EventContext, *models.Error) {
-	return i.shipyardControllerApiHandler.TriggerEvaluation(project, stage, service, evaluation)
+func (i *InternalAPIHandler) TriggerEvaluation(ctx context.Context, project string, stage string, service string, evaluation models.Evaluation, opts APITriggerEvaluationOptions) (*models.EventContext, *models.Error) {
+	return i.shipyardControllerApiHandler.TriggerEvaluation(ctx, project, stage, service, evaluation, opts)
 }
 
-func (i *InternalAPIHandler) CreateProject(project models.CreateProject) (string, *models.Error) {
-	return i.shipyardControllerApiHandler.CreateProject(project)
+func (i *InternalAPIHandler) CreateProject(ctx context.Context, project models.CreateProject, opts APICreateProjectOptions) (string, *models.Error) {
+	return i.shipyardControllerApiHandler.CreateProject(ctx, project, opts)
 }
 
-func (i *InternalAPIHandler) UpdateProject(project models.CreateProject) (string, *models.Error) {
-	return i.shipyardControllerApiHandler.UpdateProject(project)
+func (i *InternalAPIHandler) UpdateProject(ctx context.Context, project models.CreateProject, opts APIUpdateProjectOptions) (string, *models.Error) {
+	return i.shipyardControllerApiHandler.UpdateProject(ctx, project, opts)
 }
 
-func (i *InternalAPIHandler) DeleteProject(project models.Project) (*models.DeleteProjectResponse, *models.Error) {
-	return i.shipyardControllerApiHandler.DeleteProject(project)
+func (i *InternalAPIHandler) DeleteProject(ctx context.Context, project models.Project, opts APIDeleteProjectOptions) (*models.DeleteProjectResponse, *models.Error) {
+	return i.shipyardControllerApiHandler.DeleteProject(ctx, project, opts)
 }
 
-func (i *InternalAPIHandler) CreateService(project string, service models.CreateService) (string, *models.Error) {
-	return i.shipyardControllerApiHandler.CreateService(project, service)
+func (i *InternalAPIHandler) CreateService(ctx context.Context, project string, service models.CreateService, opts APICreateServiceOptions) (string, *models.Error) {
+	return i.shipyardControllerApiHandler.CreateService(ctx, project, service, opts)
 }
 
-func (i *InternalAPIHandler) DeleteService(project string, service string) (*models.DeleteServiceResponse, *models.Error) {
-	return i.shipyardControllerApiHandler.DeleteService(project, service)
+func (i *InternalAPIHandler) DeleteService(ctx context.Context, project string, service string, opts APIDeleteServiceOptions) (*models.DeleteServiceResponse, *models.Error) {
+	return i.shipyardControllerApiHandler.DeleteService(ctx, project, service, opts)
 }
 
-func (i *InternalAPIHandler) GetMetadata() (*models.Metadata, *models.Error) {
+func (i *InternalAPIHandler) GetMetadata(_ context.Context, _ APIGetMetadataOptions) (*models.Metadata, *models.Error) {
 	panic("GetMetadata() is not not supported for internal usage")
 }
