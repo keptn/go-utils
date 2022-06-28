@@ -108,6 +108,8 @@ func TestControlPlaneInboundEventIsForwardedToIntegration(t *testing.T) {
 	var eventChan chan types.EventUpdate
 	var subsChan chan []models.EventSubscription
 	var integrationReceivedEvent models.KeptnContextExtendedCE
+
+	mtx := &sync.Mutex{}
 	eventUpdate := types.EventUpdate{KeptnEvent: models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.triggered")}, MetaData: types.EventUpdateMetaData{Subject: "sh.keptn.event.echo.triggered"}}
 
 	callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }
@@ -152,6 +154,8 @@ func TestControlPlaneInboundEventIsForwardedToIntegration(t *testing.T) {
 	eventChan <- eventUpdate
 
 	require.Eventually(t, func() bool {
+		mtx.Lock()
+		defer mtx.Unlock()
 		eventUpdate.KeptnEvent.Data = integrationReceivedEvent.Data
 		return reflect.DeepEqual(eventUpdate.KeptnEvent, integrationReceivedEvent)
 	}, time.Second, time.Millisecond*100)
