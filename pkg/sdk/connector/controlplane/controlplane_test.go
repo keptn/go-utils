@@ -586,12 +586,16 @@ func TestControlPlane_StoppedByReceivingErrEvent(t *testing.T) {
 	var errorC chan error
 	var eventSourceStopCalled bool
 	var subscriptionSourceStopCalled bool
+
+	mtx := &sync.RWMutex{}
 	//var integrationReceivedEvent models.KeptnContextExtendedCE
 	//eventUpdate := types.EventUpdate{KeptnEvent: models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.triggered")}, MetaData: types.EventUpdateMetaData{Subject: "sh.keptn.event.echo.triggered"}}
 	callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }
 
 	ssm := &fake.SubscriptionSourceMock{
 		StartFn: func(ctx context.Context, data types.RegistrationData, subC chan []models.EventSubscription, errC chan error, wg *sync.WaitGroup) error {
+			mtx.Lock()
+			defer mtx.Unlock()
 			subsChan = subC
 			errorC = errC
 			return nil
@@ -600,26 +604,30 @@ func TestControlPlane_StoppedByReceivingErrEvent(t *testing.T) {
 			return "some-other-id", nil
 		},
 		StopFn: func() error {
+			mtx.Lock()
+			defer mtx.Unlock()
 			subscriptionSourceStopCalled = true
 			return nil
 		},
 	}
 	esm := &fake.EventSourceMock{
 		StartFn: func(ctx context.Context, data types.RegistrationData, evC chan types.EventUpdate, errC chan error, wg *sync.WaitGroup) error {
+			mtx.Lock()
+			defer mtx.Unlock()
 			eventChan = evC
 			errorC = errC
-			go func() {
-				errorC <- fmt.Errorf("LKJ") //SOMETHING WENT WRONG
-			}()
 			return nil
 		},
 		OnSubscriptionUpdateFn: func(subscriptions []models.EventSubscription) {},
 		SenderFn:               func() types.EventSender { return callBackSender },
 		StopFn: func() error {
+			mtx.Lock()
+			defer mtx.Unlock()
 			eventSourceStopCalled = true
 			return nil
 		},
 	}
+
 	fm := &LogForwarderMock{
 		ForwardFn: func(keptnEvent models.KeptnContextExtendedCE, integrationID string) error {
 			return nil
@@ -634,8 +642,16 @@ func TestControlPlane_StoppedByReceivingErrEvent(t *testing.T) {
 	}
 
 	go controlPlane.Register(context.TODO(), integration)
-	require.Eventually(t, func() bool { return subsChan != nil }, time.Second, time.Millisecond*100)
-	require.Eventually(t, func() bool { return eventChan != nil }, time.Second, time.Millisecond*100)
+	require.Eventually(t, func() bool {
+		mtx.RLock()
+		defer mtx.RUnlock()
+		return subsChan != nil
+	}, time.Second, time.Millisecond*100)
+	require.Eventually(t, func() bool {
+		mtx.RLock()
+		defer mtx.RUnlock()
+		return eventChan != nil
+	}, time.Second, time.Millisecond*100)
 
 	go func() {
 		fmt.Println("printing to channel")
@@ -643,10 +659,9 @@ func TestControlPlane_StoppedByReceivingErrEvent(t *testing.T) {
 		errorC <- fmt.Errorf("some-error")
 	}()
 
-	fmt.Println("waiting for err on channel")
-	<-errorC
-
 	require.Eventually(t, func() bool {
+		mtx.RLock()
+		defer mtx.RUnlock()
 		return subscriptionSourceStopCalled && eventSourceStopCalled
 	}, time.Second, 100*time.Millisecond)
 }
