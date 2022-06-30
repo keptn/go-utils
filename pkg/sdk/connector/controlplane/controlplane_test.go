@@ -109,7 +109,7 @@ func TestControlPlaneInboundEventIsForwardedToIntegration(t *testing.T) {
 	var subsChan chan []models.EventSubscription
 	var integrationReceivedEvent models.KeptnContextExtendedCE
 
-	mtx := &sync.RWMutex{}
+	mtx := sync.RWMutex{}
 	eventUpdate := types.EventUpdate{KeptnEvent: models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.triggered")}, MetaData: types.EventUpdateMetaData{Subject: "sh.keptn.event.echo.triggered"}}
 
 	callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }
@@ -192,7 +192,7 @@ func TestControlPlaneInboundEventIsForwardedToIntegrationWithoutLogForwarder(t *
 	var subsChan chan []models.EventSubscription
 	var integrationReceivedEvent models.KeptnContextExtendedCE
 
-	mtx := &sync.RWMutex{}
+	mtx := sync.RWMutex{}
 	eventUpdate := types.EventUpdate{KeptnEvent: models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.triggered")}, MetaData: types.EventUpdateMetaData{Subject: "sh.keptn.event.echo.triggered"}}
 
 	callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }
@@ -270,7 +270,7 @@ func TestControlPlaneIntegrationIDIsForwarded(t *testing.T) {
 	var subsChan chan []models.EventSubscription
 	var integrationReceivedEvent models.KeptnContextExtendedCE
 
-	mtx := &sync.RWMutex{}
+	mtx := sync.RWMutex{}
 	eventUpdate := types.EventUpdate{KeptnEvent: models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.triggered")}, MetaData: types.EventUpdateMetaData{Subject: "sh.keptn.event.echo.triggered"}}
 
 	callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }
@@ -359,7 +359,7 @@ func TestControlPlaneIntegrationOnEventThrowsIgnoreableError(t *testing.T) {
 	var subsChan chan []models.EventSubscription
 	var integrationReceivedEvent bool
 
-	mtx := &sync.RWMutex{}
+	mtx := sync.RWMutex{}
 
 	callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }
 
@@ -430,8 +430,8 @@ func TestControlPlaneIntegrationOnEventThrowsFatalError(t *testing.T) {
 	var subsChan chan []models.EventSubscription
 	var integrationReceivedEvent bool
 
-	mtx := &sync.RWMutex{}
-	mtx2 := &sync.RWMutex{}
+	mtx := sync.RWMutex{}
+	mtx2 := sync.RWMutex{}
 
 	callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }
 
@@ -509,7 +509,7 @@ func TestControlPlane_IsRegistered(t *testing.T) {
 	var eventChan chan types.EventUpdate
 	var subsChan chan []models.EventSubscription
 
-	mtx := &sync.RWMutex{}
+	mtx := sync.RWMutex{}
 
 	callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }
 
@@ -587,7 +587,7 @@ func TestControlPlane_StoppedByReceivingErrEvent(t *testing.T) {
 	var eventSourceStopCalled bool
 	var subscriptionSourceStopCalled bool
 
-	mtx := &sync.RWMutex{}
+	mtx := sync.RWMutex{}
 	//var integrationReceivedEvent models.KeptnContextExtendedCE
 	//eventUpdate := types.EventUpdate{KeptnEvent: models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.triggered")}, MetaData: types.EventUpdateMetaData{Subject: "sh.keptn.event.echo.triggered"}}
 	callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }

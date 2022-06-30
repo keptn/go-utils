@@ -11,6 +11,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
 	"os"
+	"sync"
 	"testing"
 	"time"
 )
@@ -43,6 +44,7 @@ func TestDisconnect(t *testing.T) {
 
 func TestSubscribe(t *testing.T) {
 	received := false
+	mtx := sync.RWMutex{}
 	msg := `{
 				"data": "",
 				"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
@@ -58,6 +60,8 @@ func TestSubscribe(t *testing.T) {
 	require.NotNil(t, nc)
 
 	err := nc.Subscribe("subj", func(msg *nats.Msg) error {
+		mtx.Lock()
+		defer mtx.Unlock()
 		received = true
 		return nil
 	})
@@ -67,6 +71,8 @@ func TestSubscribe(t *testing.T) {
 
 	localClient.Publish("subj", []byte(msg))
 	require.Eventually(t, func() bool {
+		mtx.RLock()
+		defer mtx.RUnlock()
 		return received
 	}, 10*time.Second, time.Second)
 }
@@ -101,6 +107,7 @@ func TestSubscribeWithEmptyProcessFn(t *testing.T) {
 
 func TestSubscribeMultiple(t *testing.T) {
 	numberReceived := 0
+	mtx := sync.RWMutex{}
 	msg := `{}`
 
 	svr, shutdown := runNATSServer()
@@ -111,6 +118,8 @@ func TestSubscribeMultiple(t *testing.T) {
 	subjects := []string{"subj1", "subj2"}
 
 	err := nc.SubscribeMultiple(subjects, func(msg *nats.Msg) error {
+		mtx.Lock()
+		defer mtx.Unlock()
 		numberReceived++
 		return nil
 	})
@@ -122,6 +131,8 @@ func TestSubscribeMultiple(t *testing.T) {
 	require.NoError(t, localClient.Publish("subj2", []byte(msg)))
 
 	require.Eventually(t, func() bool {
+		mtx.RLock()
+		defer mtx.RUnlock()
 		return numberReceived == 2
 	}, 10*time.Second, time.Second)
 }
@@ -142,12 +153,16 @@ func TestUnsubscribeAll(t *testing.T) {
 	svr, shutDown := runNATSServer()
 	defer shutDown()
 
+	mtx := sync.RWMutex{}
+
 	receivedBeforeUnsubscribeAll := false
 	receivedAfterUnsubscribeAll := false
 
 	nc := nats2.New(svr.ClientURL())
 
 	err := nc.Subscribe("subj", func(msg *nats.Msg) error {
+		mtx.Lock()
+		defer mtx.Unlock()
 		receivedBeforeUnsubscribeAll = true
 		return nil
 	})
@@ -156,6 +171,8 @@ func TestUnsubscribeAll(t *testing.T) {
 	defer localClient.Close()
 	require.NoError(t, localClient.Publish("subj", []byte(msg)))
 	require.Eventually(t, func() bool {
+		mtx.RLock()
+		defer mtx.RUnlock()
 		return receivedBeforeUnsubscribeAll
 	}, 10*time.Second, time.Second)
 
@@ -168,6 +185,7 @@ func TestUnsubscribeAll(t *testing.T) {
 
 func TestPublish(t *testing.T) {
 	received := false
+	mtx := sync.RWMutex{}
 	msg := models.KeptnContextExtendedCE{
 		Type: strutils.Stringp("subj"),
 		Data: v0_2_0.EventData{
@@ -183,6 +201,8 @@ func TestPublish(t *testing.T) {
 	require.NotNil(t, nc)
 
 	err := nc.Subscribe("subj", func(e *nats.Msg) error {
+		mtx.Lock()
+		defer mtx.Unlock()
 		received = true
 		ev := &models.KeptnContextExtendedCE{}
 		err := json.Unmarshal(e.Data, ev)
@@ -198,12 +218,15 @@ func TestPublish(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Eventually(t, func() bool {
+		mtx.RLock()
+		defer mtx.RUnlock()
 		return received
 	}, 10*time.Second, time.Second)
 }
 
 func TestPublishWithID(t *testing.T) {
 	received := false
+	mtx := sync.RWMutex{}
 	msg := models.KeptnContextExtendedCE{
 		ID:   "my-id",
 		Type: strutils.Stringp("subj"),
@@ -220,6 +243,8 @@ func TestPublishWithID(t *testing.T) {
 	require.NotNil(t, nc)
 
 	err := nc.Subscribe("subj", func(e *nats.Msg) error {
+		mtx.Lock()
+		defer mtx.Unlock()
 		received = true
 		ev := &models.KeptnContextExtendedCE{}
 		err := json.Unmarshal(e.Data, ev)
@@ -235,6 +260,8 @@ func TestPublishWithID(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Eventually(t, func() bool {
+		mtx.RLock()
+		defer mtx.RUnlock()
 		return received
 	}, 10*time.Second, time.Second)
 }
