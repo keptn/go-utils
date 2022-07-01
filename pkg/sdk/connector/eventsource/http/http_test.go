@@ -136,6 +136,7 @@ func TestAPIPassEventOnlyOnce(t *testing.T) {
 			},
 		}, nil
 	}
+	mtx := sync.RWMutex{}
 	clock := clock.NewMock()
 	eventsource := New(clock, eventGetSender)
 	eventChan := make(chan types.EventUpdate)
@@ -148,12 +149,16 @@ func TestAPIPassEventOnlyOnce(t *testing.T) {
 	go func() {
 		for {
 			<-eventChan
+			mtx.Lock()
 			eventsReceived++
+			mtx.Unlock()
 		}
 	}()
 	clock.Add(time.Second)
 	clock.Add(time.Second)
 	time.Sleep(time.Second)
+	mtx.RLock()
+	defer mtx.RUnlock()
 	require.Equal(t, 1, eventsReceived)
 }
 

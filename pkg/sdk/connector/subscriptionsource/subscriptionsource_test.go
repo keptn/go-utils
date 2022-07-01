@@ -6,6 +6,7 @@ import (
 	"github.com/keptn/go-utils/pkg/sdk/connector/fake"
 	"github.com/keptn/go-utils/pkg/sdk/connector/types"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -82,7 +83,7 @@ func TestSubscriptionSourceWithFetchInterval(t *testing.T) {
 func TestSubscriptionSourceCancel(t *testing.T) {
 	integrationID := "iID"
 	integrationName := "integrationName"
-	pingCount := 0
+	var pingCount int32
 
 	initialRegistrationData := types.RegistrationData{
 		Name:          integrationName,
@@ -93,7 +94,7 @@ func TestSubscriptionSourceCancel(t *testing.T) {
 
 	uniformInterface := &fake.UniformAPIMock{
 		PingFn: func(id string) (*models.Integration, error) {
-			pingCount++
+			atomic.AddInt32(&pingCount, 1)
 			require.Equal(t, id, integrationID)
 			return &models.Integration{
 				ID:            integrationID,
@@ -120,13 +121,13 @@ func TestSubscriptionSourceCancel(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	err := subscriptionSource.Start(ctx, initialRegistrationData, subscriptionUpdates, make(chan error), wg)
-	require.Eventually(t, func() bool { return pingCount == 1 }, 3*time.Second, time.Millisecond*100)
+	require.Eventually(t, func() bool { return atomic.LoadInt32(&pingCount) == 1 }, 3*time.Second, time.Millisecond*100)
 	require.NoError(t, err)
 	clock.Add(10 * time.Second)
-	require.Equal(t, 2, pingCount)
+	require.EqualValues(t, 2, atomic.LoadInt32(&pingCount))
 	cancel()
 	clock.Add(10 * time.Second)
-	require.Equal(t, 2, pingCount)
+	require.EqualValues(t, 2, atomic.LoadInt32(&pingCount))
 	wg.Wait()
 }
 

@@ -45,6 +45,7 @@ type ControlPlane struct {
 	registered           bool
 	integrationID        string
 	logForwarder         logforwarder.LogForwarder
+	mtx                  *sync.RWMutex
 }
 
 // WithLogger sets the logger to use
@@ -89,6 +90,7 @@ func New(subscriptionSource subscriptionsource.SubscriptionSource, eventSource e
 		logger:               logger.NewDefaultLogger(),
 		logForwarder:         logForwarder,
 		registered:           false,
+		mtx:                  &sync.RWMutex{},
 	}
 	for _, o := range opts {
 		o(cp)
@@ -127,7 +129,7 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 		return err
 	}
 	cp.logger.Debug("Subscription source started")
-	cp.registered = true
+	cp.setRegistrationStatus(true)
 	for {
 		select {
 		// event updates
@@ -148,7 +150,7 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 		case <-ctx.Done():
 			cp.logger.Debug("Controlplane cancelled via context. Unregistering...")
 			wg.Wait()
-			cp.registered = false
+			cp.setRegistrationStatus(false)
 			return nil
 
 		// control plane cancelled via error in either one of the sub components
@@ -157,7 +159,7 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 			cp.cleanup()
 			cp.logger.Debug("Waiting for components to shutdown")
 			wg.Wait()
-			cp.registered = false
+			cp.setRegistrationStatus(false)
 			return nil
 		}
 	}
@@ -165,6 +167,8 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 
 // IsRegistered can be called to detect whether the controlPlane is registered and ready to receive events
 func (cp *ControlPlane) IsRegistered() bool {
+	cp.mtx.RLock()
+	defer cp.mtx.RUnlock()
 	return cp.registered
 }
 
@@ -231,4 +235,10 @@ func (cp *ControlPlane) cleanup() {
 	if err := cp.eventSource.Stop(); err != nil {
 		log.Fatalf("Unable to stop event source: %v", err)
 	}
+}
+
+func (cp *ControlPlane) setRegistrationStatus(registered bool) {
+	cp.mtx.Lock()
+	defer cp.mtx.Unlock()
+	cp.registered = registered
 }
