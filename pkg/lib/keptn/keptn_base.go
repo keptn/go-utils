@@ -76,7 +76,7 @@ type SLIConfig struct {
 	Indicators map[string]string `json:"indicators" yaml:"indicators"`
 }
 
-const ConfigurationServiceURL = "configuration-service:8080"
+const ConfigurationServiceURL = "resource-service:8080"
 const DatastoreURL = "mongodb-datastore:8080"
 const DefaultLoggingServiceName = "keptn"
 
@@ -229,7 +229,7 @@ func GetServiceEndpoint(service string) (url.URL, error) {
 		url.Scheme = "http"
 	}
 
-	// check if only a service name has been provided, e.g. 'configuration-service'
+	// check if only a service name has been provided, e.g. 'resource-service'
 	if url.Host == "" && url.Path != "" {
 		url.Host = url.Path
 		url.Path = ""

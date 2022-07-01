@@ -42,7 +42,7 @@ type InClusterAPIMappings map[InternalService]string
 
 // DefaultInClusterAPIMappings gives you the default InClusterAPIMappings
 var DefaultInClusterAPIMappings = InClusterAPIMappings{
-	ConfigurationService: "configuration-service:8080",
+	ConfigurationService: "resource-service:8080",
 	ShipyardController:   "shipyard-controller:8080",
 	ApiService:           "api-service:8080",
 	SecretService:        "secret-service:8080",
