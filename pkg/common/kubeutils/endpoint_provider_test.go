@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/api/extensions/v1beta1"
+	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
 	k8stesting "k8s.io/client-go/testing"
@@ -28,7 +28,7 @@ func TestKeptnEndpointProvider_GetKeptnEndpointFromIngress_FailClientSet(t *test
 func TestKeptnEndpointProvider_GetKeptnEndpointFromIngress_Invalid(t *testing.T) {
 	kubernetes := fake.NewSimpleClientset()
 	kubernetes.Fake.PrependReactor("get", "ingresses", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-		return true, &v1beta1.Ingress{Spec: v1beta1.IngressSpec{}}, nil
+		return true, &networkingv1.Ingress{Spec: networkingv1.IngressSpec{}}, nil
 	})
 	keptnEndpointProvider := &KeptnEndpointProvider{clientSet: kubernetes}
 	res, err := keptnEndpointProvider.GetKeptnEndpointFromIngress(context.TODO(), "keptn", "ingress")
@@ -40,9 +40,9 @@ func TestKeptnEndpointProvider_GetKeptnEndpointFromIngress_Invalid(t *testing.T)
 func TestKeptnEndpointProvider_GetKeptnEndpointFromIngress_Valid(t *testing.T) {
 	kubernetes := fake.NewSimpleClientset()
 	kubernetes.Fake.PrependReactor("get", "ingresses", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-		return true, &v1beta1.Ingress{
-			Spec: v1beta1.IngressSpec{
-				Rules: []v1beta1.IngressRule{
+		return true, &networkingv1.Ingress{
+			Spec: networkingv1.IngressSpec{
+				Rules: []networkingv1.IngressRule{
 					{
 						Host: "1.1.1.1",
 					},

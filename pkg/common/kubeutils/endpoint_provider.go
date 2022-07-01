@@ -24,7 +24,7 @@ func NewKeptnEndpointProvider(useInClusterConfig bool) (*KeptnEndpointProvider, 
 
 // GetKeptnEndpointFromIngress returns the host of ingress object Keptn Installation
 func (a *KeptnEndpointProvider) GetKeptnEndpointFromIngress(ctx context.Context, namespace string, ingressName string) (string, error) {
-	keptnIngress, err := a.clientSet.ExtensionsV1beta1().Ingresses(namespace).Get(ctx, ingressName, metav1.GetOptions{})
+	keptnIngress, err := a.clientSet.NetworkingV1().Ingresses(namespace).Get(ctx, ingressName, metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}
