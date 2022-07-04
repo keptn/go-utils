@@ -83,3 +83,38 @@ if err != nil {
 	log.Fatal(err)
 }
 ```
+
+## Creating and inspecting Keptn events:
+```go
+// Creating a new event
+newEvent, _ := lib.KeptnEvent(lib.GetStartedEventType("echo-task"), "my-service", lib.EventData{
+	Project: "my-project",
+	Stage:   "my-stage",
+	Service: "my-service",
+}).Build()
+
+// Converting KeptnContextExtendedCE to cloudevent sdk event
+cloudEvent := lib.ToCloudEvent(newEvent)
+fmt.Println(cloudEvent.ID())
+
+// Converting cloudevents sdk event to KeptnContextExtendedCE
+newEvent, _ = lib.ToKeptnEvent(cloudEvent)
+
+// Marshalling a keptn event to JSON
+newEventAsJSON, _ := newEvent.ToJSON()
+fmt.Println(string(newEventAsJSON))
+
+// Creating a started event for a triggered event
+startedEventType, _ := lib.ReplaceEventTypeKind(*triggeredEvent.Type, "started")
+startedEvent := lib.KeptnEvent(startedEventType, "my-service", triggeredEvent.Data)
+
+startedEventAsJSON, _ := startedEvent.ToJSON()
+fmt.Println(string(startedEventAsJSON))
+
+// Checking for event types
+fmt.Println(lib.IsSequenceEventType("sh.keptn.event.echo.triggered"))       // false
+fmt.Println(lib.IsSequenceEventType("sh.keptn.event.stage.echo.triggered")) // true
+fmt.Println(lib.IsTaskEventType("sh.keptn.event.echo.triggered"))           // true
+fmt.Println(lib.IsTaskEventType("sh.keptn.event.stage.echo.triggered"))     // false
+fmt.Println(lib.IsTriggeredEventType("sh.keptn.event.echo.triggered"))      // true
+```
