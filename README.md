@@ -29,7 +29,7 @@ Please also see [CONTRIBUTING.md](CONTRIBUTING.md) instructions on how to contri
 
 One way to create a Keptn integration (a.k.a. Keptn service) is to use the `cp-connector` library which abstracts away
 the
-details of how to interact with the keptn api to register your implementation as an Keptn integration to the control
+details of how to interact with the Keptn API to register your implementation as an integration to the control
 plane.
 
 [Example](./examples/cp-connector)
@@ -72,7 +72,7 @@ log.Fatal(err)
 
 ### Accessing the Keptn API from within the control plane
 
-If you are developing an Keptn integration that is supposed to run *inside/as part of* the Keptn control plane,
+If you are developing a Keptn integration that is supposed to run *inside/as part of* the Keptn control plane,
 there is no need to talk to the Keptn API via the API gateway. In this case one option is to use the `InternalAPISet`.
 
 Import the following package:
@@ -100,11 +100,11 @@ Stage:   "my-stage",
 Service: "my-service",
 }).Build()
 
-// Converting KeptnContextExtendedCE to cloudevent sdk event
+// Converting KeptnContextExtendedCE to cloudevents SDK event
 cloudEvent := lib.ToCloudEvent(newEvent)
 fmt.Println(cloudEvent.ID())
 
-// Converting cloudevents sdk event to KeptnContextExtendedCE
+// Converting cloudevents SDK event to KeptnContextExtendedCE
 newEvent, _ = lib.ToKeptnEvent(cloudEvent)
 
 // Marshalling a keptn event to JSON
@@ -144,7 +144,7 @@ events, _ = apiSet.ShipyardControlV1().GetOpenTriggeredEvents(api.EventFilter{Pr
 
 ## Ingesting Keptn events
 
-When using `cp-connector` or `go-sdk` there is a way pedefined way to get a handle to the event sender for being able
+When using `cp-connector` or `go-sdk` there is a way predefined way to get a handle to the event sender for being able
 to *send back* events to Keptn (see [examples](./examples/cp-connector)).
 Below is an example of how to use the `APISet` directly to send an event to Keptn:
 
@@ -167,7 +167,7 @@ fmt.Println(*eventContext.KeptnContext)
 
 ## Keptn GO models / structs
 
-The go models for the Keptn the Keptn API can be used by importing: `github.com/keptn/go-utils/pkg/api/models`.
+The GO models for the Keptn API can be used by importing: `github.com/keptn/go-utils/pkg/api/models`.
 
-Further, the go models for e.g. the shipyard `yaml` etc. can be used by
+Further, the GO models for e.g. the shipyard `yaml` etc. can be used by
 importing: `github.com/keptn/go-utils/pkg/lib/v0_2_0`
