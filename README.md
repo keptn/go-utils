@@ -127,6 +127,9 @@ fmt.Println(lib.IsTriggeredEventType("sh.keptn.event.echo.triggered")) // true
 ```
 
 ## Querying Keptn events
+Events can be retrieved from Keptn by using the event API of the `APISet`.
+
+*Note, that when providing an event filter, either `Project` or `KeptnContext` **must** be set.*
 
 ```go
 // Creating the APISet
