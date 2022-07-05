@@ -1,187 +1,176 @@
 # Keptn go-utils
+
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/keptn/go-utils)
 ![tests](https://github.com/keptn/go-utils/workflows/tests/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/keptn/go-utils)](https://goreportcard.com/report/github.com/keptn/go-utils)
 
-This repo serves as a util package for common functionalities such as logging of the [Keptn Project](https://github.com/keptn).
+<img src="./gopher.png" alt="go-utils-gopher" width="210"/>
 
-Please post any issues with this package to the [keptn/keptn repository](https://github.com/keptn/keptn/issues) and label them with `area:go-utils`.
+This repository contains packages for common functionality around the [Keptn Project](https://github.com/keptn).
+Please post any issues to [keptn/keptn repository](https://github.com/keptn/keptn/issues) and label them
+with `area:go-utils`.
 
 ## Installation
 
 Get the latest version using
+
 ```console
 go get github.com/keptn/go-utils
 ```
-Also consider browsing our [Releases Page](https://github.com/keptn/go-utils/releases) to find out about all releases.
 
+Also consider browsing our [Releases Page](https://github.com/keptn/go-utils/releases) to find out about all releases.
 
 ## Contributing
 
 If you want to contribute, just create a PR on the **master** branch.
-
 Please also see [CONTRIBUTING.md](CONTRIBUTING.md) instructions on how to contribute.
 
-## Usage
+## Creating a Keptn service using `cp-connector`
 
-Below we have listed some basic examples. You can find more information about the usage within the [docs/](docs/) folder.
+One way to create a Keptn integration (a.k.a. Keptn service) is to use the `cp-connector` library which abstracts away
+the
+details of how to interact with the Keptn API to register your implementation as an integration to the control
+plane.
 
-### Utils
-If you need to access several utility functions:
+[Example](./examples/cp-connector)
 
-```go
-import {
-  "github.com/keptn/go-utils/pkg/lib"
-}
+## Creating a Keptn service using the `go-sdk` (experimental)
+
+If you want to use more features besides what the `cp-connector` provides, you can use the Keptn `go-sdk` which
+basically wraps around `cp-connector` and provides features like automatic sending of `.started/.finished` or error
+events.
+
+[Example](./examples/go-sdk)
+
+## Accessing the Keptn API
+
+The recommended way of accessing the Keptn API using `GO` is to use the `APISet`:
+You can use it by importing the following package:
+
+```golang
+import api "github.com/keptn/go-utils/pkg/api/utils"
 ```
 
-This module provides you with a convenient `Keptn` helper struct that allows you to access several resources that are relevant within the context of a 
-Keptn event. The helper struct can be initialized by passing a CloudEvent to the `NewKeptn` function. Example:
+Then you need to create an `APISet` and provide it the information about
+the Keptn API endpoint URL and the auth token:
 
 ```go
-func HandleEvent(event cloudevents.Event) error {
-	keptnHandler, err := keptn.NewKeptn(&event, keptn.KeptnOpts{})
-	if err != nil {
-		return nil, err
-	}
-	
-    // get the shipyard file of the project
-    shipyard, _ := keptnHandler.GetShipyard()
-    
-    // get a resource within the current context (i.e., project, stage, service) of the event
-    resourceContent, _ := keptnHandler.GetKeptnResource("resource.yaml")
-
-    // send a cloud event
-    _ = keptnHandler.SendCloudEvent(event)
-    // ...
-}
-```
-
-By default, the `SendCloudEvent` function of the `Keptn` struct will send events to the distributor sidecar that is running within the same pod of the Keptn service (see [the Keptn doc](https://keptn.sh/docs/0.8.x/integrations/custom_integration/#subscription-to-keptn-event) for more details).
-This behavior can be overridden by passing an implementation of the `EventSender` interface via the `KeptnOpts` object that is passed to the `NewKeptn` function, e.g.:
-
-```go
-// custom EventSender
-
-type MyCustomEventSender struct {
-}
-
-func (es *MyCustomEventSender) SendEvent(event cloudevents.Event) error {
-    // custom implementation
-    return nil
-}
-//...
-keptnHandler, err := keptn.NewKeptn(&event, keptn.KeptnOpts{
-    EventSender: &MyCustomEventSender{}
-})
+keptnAPI, err := api.New("https://url-to-my-keptn-cluster/api", api.WithAuthToken(mySecretToken))
 if err != nil {
-    return nil, err
+log.Fatal(err)
 }
 ```
 
-For unit testing purposes, we offer a mock implementation of the `EventSender` interface in the `keptn/v0_2_0/fake` package. This mock implementation can be used to check if your service sends the expected events. E.g.:
+Once you have a handle to the `APISet` you can start using it:
 
 ```go
-func MyTest(t *testing.T) {
-    fakeSender := &keptnfake.EventSender{}
-
-    // optionally, you can add custom behavior for certain event types (e.g. returning an error for a certain event type):
-    fakeSender.AddReactor("sh.keptn.event.deployment.finished", func(event cloudevents.Event) error {
-        return errors.New("i throw an error if i should send a 'sh.keptn.event.deployment.finished' event")
-    })
-
-    keptnHandler, err := keptn.NewKeptn(&event, keptn.KeptnOpts{
-        EventSender: fakeSender
-    })
-
-    myService := &MyKeptnService{
-        KeptnHandler: keptnHandler
-    }
-    
-    myService.handleEvent(myReceivedCloudEvent)
-    
-    // check if your service sends out events of the type "sh.keptn.event.deployment.started" and "sh.keptn.event.deployment.finished"
-    if err := fakeSender.AssertSentEventTypes([]string{"sh.keptn.event.deployment.started", "sh.keptn.event.deployment.finished"}); err != nil {
-        t.Errorf("%s", err.Error())
-    }
-
-    // to inspect the sent events in more detail, you can access them via fakeSender.SentEvents
-    for _, event := range fakeSender.SentEvents {
-        // do some validation here
-    }
-
-    if err != nil {
-        return nil, err
-    }
-}
-
-```
-
-### CloudEvent Data
-If you need to access data within CloudEvents:
-
-```go
-import {
-	"github.com/keptn/go-utils/pkg/lib"
-)
-```
-
-Example:
-
-```go
-func parseCloudEvent(event cloudevents.Event) (keptnevents.TestFinishedEventData, error) {
-	eventData := &keptn.TestsFinishedEventData{}
-	err := event.DataAs(eventData)
-    
-    return eventData, err
+resources, err := keptnAPI.ResourcesV1().GetAllServiceResources("my-project", "my-stage", "my-service")
+if err != nil {
+log.Fatal(err)
 }
 ```
 
-### Models
-If you need to access Models for YAML files:
+### Accessing the Keptn API from within the control plane
+
+If you are developing a Keptn integration that is supposed to run *inside/as part of* the Keptn control plane,
+there is no need to talk to the Keptn API via the API gateway. In this case one option is to use the `InternalAPISet`.
+
+Import the following package:
 
 ```go
-import {
-	"github.com/keptn/go-utils/pkg/lib"
-)
+import api "github.com/keptn/go-utils/pkg/api/utils"
 ```
 
-### Querying Events from event store
-```
-// Create an event Handler
-eventHandler := apiutils.NewAuthenticatedEventHandler("1.2.3.4/api", token, "x-token", nil, "http")
+Then create an `InternalAPISet`. Note, that this does *not* require you to pass the URL to the keptn API or an API token
 
-// Create a filter
-filter := &apiutils.EventFilter{KeptnContext:  "03b2b951-9835-4e87-b0b0-0ad0bc288214"}
-
-// Query for event(s)
-events, err := eventHandler.GetEvents(filter)
+```go
+keptnAPI, err := api.NewInternal(nil)
+if err != nil {
+log.Fatal(err)
+}
 ```
 
-### Watching for events in event store
+## Creating and inspecting Keptn events:
+
+```go
+// Creating a new event
+newEvent, _ := lib.KeptnEvent(lib.GetStartedEventType("echo-task"), "my-service", lib.EventData{
+Project: "my-project",
+Stage:   "my-stage",
+Service: "my-service",
+}).Build()
+
+// Converting KeptnContextExtendedCE to cloudevents SDK event
+cloudEvent := lib.ToCloudEvent(newEvent)
+fmt.Println(cloudEvent.ID())
+
+// Converting cloudevents SDK event to KeptnContextExtendedCE
+newEvent, _ = lib.ToKeptnEvent(cloudEvent)
+
+// Marshalling a keptn event to JSON
+newEventAsJSON, _ := newEvent.ToJSON()
+fmt.Println(string(newEventAsJSON))
+
+// Creating a started event for a triggered event
+startedEventType, _ := lib.ReplaceEventTypeKind(*triggeredEvent.Type, "started")
+startedEvent := lib.KeptnEvent(startedEventType, "my-service", triggeredEvent.Data)
+
+startedEventAsJSON, _ := startedEvent.ToJSON()
+fmt.Println(string(startedEventAsJSON))
+
+// Checking for event types
+fmt.Println(lib.IsSequenceEventType("sh.keptn.event.echo.triggered")) // false
+fmt.Println(lib.IsSequenceEventType("sh.keptn.event.stage.echo.triggered")) // true
+fmt.Println(lib.IsTaskEventType("sh.keptn.event.echo.triggered")) // true
+fmt.Println(lib.IsTaskEventType("sh.keptn.event.stage.echo.triggered")) // false
+fmt.Println(lib.IsTriggeredEventType("sh.keptn.event.echo.triggered")) // true
 ```
-// Create a watcher
-watcher := api.NewEventWatcher(eventhandler),
-	api.WithEventFilter(api.EventFilter{  // use custom filter
-           Project: "sockshop",
-           KeptnContext: "..."}),
-	api.WithInterval(time.NewTicker(5*time.Second)), // fetch every 5 seconds
-	api.WithStartTime(time.Now()),                  // start fetching events newer than this timestamp
-	api.WithTimeout(time.Second * 15),             // stop fetching events after 15 secs
-)
 
-    // start watcher and consume events
-	allEvents, _ := watcher.Watch(context.Background())
-	for events := range allEvents {
-		for _, e := range events {
-			fmt.Println(*e.Type)
-		}
-	}
-``` 
+## Querying Keptn events
+Events can be retrieved from Keptn by using the event API of the `APISet`.
 
+*Note, that when providing an event filter, either `Project` or `KeptnContext` **must** be set.*
 
-## Automation
+```go
+// Creating the APISet
+apiSet, _ := api.New("http://<keptn-url>/api", api.WithAuthToken("<api-token>"))
 
-A [GitHub Action](https://github.com/keptn/go-utils/actions?query=workflow%3A%22Auto+PR+to+keptn%2Fkeptn%22) is used
-that creates a Pull Request to  [github.com/keptn/keptn](https://github.com/keptn/keptn) to update `go.mod`
-files with an updated version of this  package (based on the commit hash).
+// Getting all events for a specific project
+events, _ := apiSet.EventsV1().GetEvents(&api.EventFilter{Project: "echo-project"})
+
+// Getting all event matching a specific keptn context
+events, _ = apiSet.EventsV1().GetEvents(&api.EventFilter{KeptnContext: "7d4ca79a-6f38-4b88-9139-433342e350bf",})
+
+// Getting all .triggered events that are "not yet processed" by a keptn integration for a specific project
+events, _ = apiSet.ShipyardControlV1().GetOpenTriggeredEvents(api.EventFilter{Project: "echo-project"})
+```
+
+## Ingesting Keptn events
+
+When using `cp-connector` or `go-sdk` there is a way predefined way to get a handle to the event sender for being able
+to *send back* events to Keptn (see [examples](./examples/cp-connector)).
+Below is an example of how to use the `APISet` directly to send an event to Keptn:
+
+```go
+// Creating the APISet
+apiSet, _ := api.New("http://<keptn-url>/api", api.WithAuthToken("<api-token>"))
+
+// Create event you want to send
+eventToSend, _ := lib.KeptnEvent(lib.GetStartedEventType("echo-task"), "my-service",
+	lib.EventData{
+	    Project: "my-project", 
+		Stage: "my-stage", 
+		Service: "my-service",
+	}).Build()
+
+// Sending the event to Keptn
+eventContext, _ := apiSet.APIV1().SendEvent(eventToSend)
+fmt.Println(*eventContext.KeptnContext)
+```
+
+## Keptn GO models / structs
+
+The GO models for the Keptn API can be used by importing: `github.com/keptn/go-utils/pkg/api/models`.
+
+Further, the GO models for e.g. the shipyard `yaml` etc. can be used by
+importing: `github.com/keptn/go-utils/pkg/lib/v0_2_0`
