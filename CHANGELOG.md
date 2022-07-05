@@ -2,6 +2,41 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.17.0](https://github.com/keptn/go-utils/compare/v0.16.0...v0.17.0) (2022-07-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* Git credentials for git authentication were moved to a separate sub-structure and split to either ssh or http sub-structures depending on the used authentication method.
+ 
+### Features
+
+* Add `v2.InternalAPISet` that implements the `v2.KeptnInterface` ([#487](https://github.com/keptn/keptn/issues/487)) ([eb5fb9b](https://github.com/keptn/go-utils/commit/eb5fb9ba43e021fd8de4467ac086d1bda4df6da0))
+* Add `v2.KeptnInterface` that adds `context.Context` support to `api.KeptnInterface` ([#449](https://github.com/keptn/keptn/issues/449)) ([0874051](https://github.com/keptn/go-utils/commit/0874051eb4dd2f20e6c4b19e750d37931b426330)), closes [#479](https://github.com/keptn/keptn/issues/479)
+* Move commonly used modules from keptn/keptn into sub-packages of go-utils ([#483](https://github.com/keptn/keptn/issues/483)) ([3ed2fc6](https://github.com/keptn/go-utils/commit/3ed2fc6cf1edd6cafa55a2b0b8cab19edcd0fc7d))
+* Refactor git remote repository credentials models ([#475](https://github.com/keptn/keptn/issues/475)) ([fc5b6f9](https://github.com/keptn/go-utils/commit/fc5b6f967e50bc7765311a706e052bc21c19ad07))
+
+
+### Bug Fixes
+
+* **go-utils:** Pass logger implementation from go-sdk to cp-connector ([#494](https://github.com/keptn/keptn/issues/494)) ([29e14a0](https://github.com/keptn/go-utils/commit/29e14a06fcb70ada7f3704dc80c02cb69b522aba))
+* Make GetAllServiceResources compatible with Keptn 0.16.0+ ([#480](https://github.com/keptn/keptn/issues/480)) ([0d19a1b](https://github.com/keptn/go-utils/commit/0d19a1b4509e82c678bb77d3a216fe2597eef37e))
+* Make unit tests work with `-race` flag ([#489](https://github.com/keptn/keptn/issues/489)) ([9b0c779](https://github.com/keptn/go-utils/commit/9b0c779950b66d699df08987dd26a40b14cccf8b))
+* Set the path properly for calls to api-service ([#470](https://github.com/keptn/keptn/issues/470)) ([a3c50ce](https://github.com/keptn/go-utils/commit/a3c50ce6446d7bc5226ff71c0a31c193972e5aca))
+* Use ExecuteCommand implementation from kubernetes-utils ([#482](https://github.com/keptn/keptn/issues/482)) ([8d145bc](https://github.com/keptn/go-utils/commit/8d145bc902942b486c6872d4cbcbfaf188c3c4ec))
+* Use NetworkingV1 instead of deprecated ExtensionsV1beta1 ([#492](https://github.com/keptn/keptn/issues/492)) ([0fc8c36](https://github.com/keptn/go-utils/commit/0fc8c36d130663fbfe443872f4020a220c5cac24))
+
+
+### Other
+
+* **go-utils:** Removed deprecated subscription from uniform ([#474](https://github.com/keptn/keptn/issues/474)) ([647fbac](https://github.com/keptn/go-utils/commit/647fbacf27d0d60775142524d516fa529ca21066))
+* Introduce needed methods before deprecating kubernetes-utils ([#477](https://github.com/keptn/keptn/issues/477)) ([4d49101](https://github.com/keptn/go-utils/commit/4d49101f88b408c90fc691d893e480f809634178))
+
+
+### Docs
+
+* **go-utils:** Update `README.md` documentation of `go-utils` ([#493](https://github.com/keptn/keptn/issues/493)) ([8369229](https://github.com/keptn/go-utils/commit/83692294c5793f5bcf7eda43aac1884c15c961f5))
+
 ## [0.16.0](https://github.com/keptn/go-utils/compare/v0.15.0...v0.16.0) (2022-06-02)
 
 
