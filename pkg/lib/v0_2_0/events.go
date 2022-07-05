@@ -428,6 +428,7 @@ func ToCloudEvent(keptnEvent models.KeptnContextExtendedCE) cloudevents.Event {
 	event := cloudevents.NewEvent()
 	event.SetType(*keptnEvent.Type)
 	event.SetID(keptnEvent.ID)
+	event.SetTime(keptnEvent.Time)
 	event.SetSource(*keptnEvent.Source)
 	event.SetDataContentType(keptnEvent.Contenttype)
 	event.SetSpecVersion(keptnEvent.Specversion)
