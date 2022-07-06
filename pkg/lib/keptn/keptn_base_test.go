@@ -148,10 +148,10 @@ func TestGetServiceEndpoint(t *testing.T) {
 			args: args{
 				service: "CONFIGURATION_SERVICE",
 			},
-			envVarValue: "http://configuration-service",
+			envVarValue: "http://resource-service",
 			want: url.URL{
 				Scheme: "http",
-				Host:   "configuration-service",
+				Host:   "resource-service",
 			},
 			wantErr: false,
 		},
@@ -160,10 +160,10 @@ func TestGetServiceEndpoint(t *testing.T) {
 			args: args{
 				service: "CONFIGURATION_SERVICE",
 			},
-			envVarValue: "https://configuration-service",
+			envVarValue: "https://resource-service",
 			want: url.URL{
 				Scheme: "https",
-				Host:   "configuration-service",
+				Host:   "resource-service",
 			},
 			wantErr: false,
 		},
@@ -172,10 +172,10 @@ func TestGetServiceEndpoint(t *testing.T) {
 			args: args{
 				service: "CONFIGURATION_SERVICE",
 			},
-			envVarValue: "configuration-service",
+			envVarValue: "resource-service",
 			want: url.URL{
 				Scheme: "http",
-				Host:   "configuration-service",
+				Host:   "resource-service",
 			},
 			wantErr: false,
 		},

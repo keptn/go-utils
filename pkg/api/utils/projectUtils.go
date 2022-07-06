@@ -39,12 +39,12 @@ type ProjectHandler struct {
 	Scheme         string
 }
 
-// NewProjectHandler returns a new ProjectHandler which sends all requests directly to the configuration-service
+// NewProjectHandler returns a new ProjectHandler which sends all requests directly to the resource-service
 func NewProjectHandler(baseURL string) *ProjectHandler {
 	return NewProjectHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
 }
 
-// NewProjectHandlerWithHTTPClient returns a new ProjectHandler which sends all requests directly to the configuration-service using the specified http.Client
+// NewProjectHandlerWithHTTPClient returns a new ProjectHandler which sends all requests directly to the resource-service using the specified http.Client
 func NewProjectHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *ProjectHandler {
 	return &ProjectHandler{
 		BaseURL:        httputils.TrimHTTPScheme(baseURL),
@@ -55,7 +55,7 @@ func NewProjectHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *P
 }
 
 // NewAuthenticatedProjectHandler returns a new ProjectHandler that authenticates at the api via the provided token
-// and sends all requests directly to the configuration-service
+// and sends all requests directly to the resource-service
 // Deprecated: use APISet instead
 func NewAuthenticatedProjectHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ProjectHandler {
 	if httpClient == nil {

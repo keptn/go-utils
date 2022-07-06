@@ -15,7 +15,7 @@ import (
 const pathToResource = "/resource"
 const pathToService = "/service"
 const pathToStage = "/stage"
-const configurationServiceBaseURL = "configuration-service"
+const configurationServiceBaseURL = "resource-service"
 
 var ResourceNotFoundError = v2.ResourceNotFoundError
 
@@ -205,12 +205,12 @@ func (r *resourceRequest) FromJSON(b []byte) error {
 	return nil
 }
 
-// NewResourceHandler returns a new ResourceHandler which sends all requests directly to the configuration-service
+// NewResourceHandler returns a new ResourceHandler which sends all requests directly to the resource-service
 func NewResourceHandler(baseURL string) *ResourceHandler {
 	return NewResourceHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
 }
 
-// NewResourceHandlerWithHTTPClient returns a new ResourceHandler which sends all requests directly to the configuration-service using the specified http.Client
+// NewResourceHandlerWithHTTPClient returns a new ResourceHandler which sends all requests directly to the resource-service using the specified http.Client
 func NewResourceHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *ResourceHandler {
 	return &ResourceHandler{
 		BaseURL:         httputils.TrimHTTPScheme(baseURL),
@@ -221,7 +221,7 @@ func NewResourceHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *
 }
 
 // NewAuthenticatedResourceHandler returns a new ResourceHandler that authenticates at the api via the provided token
-// and sends all requests directly to the configuration-service
+// and sends all requests directly to the resource-service
 // Deprecated: use APISet instead
 func NewAuthenticatedResourceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ResourceHandler {
 	if httpClient == nil {

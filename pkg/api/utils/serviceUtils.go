@@ -34,12 +34,12 @@ type ServiceHandler struct {
 	Scheme         string
 }
 
-// NewServiceHandler returns a new ServiceHandler which sends all requests directly to the configuration-service
+// NewServiceHandler returns a new ServiceHandler which sends all requests directly to the resource-service
 func NewServiceHandler(baseURL string) *ServiceHandler {
 	return NewServiceHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
 }
 
-// NewServiceHandlerWithHTTPClient returns a new ServiceHandler which sends all requests directly to the configuration-service using the specified http.Client
+// NewServiceHandlerWithHTTPClient returns a new ServiceHandler which sends all requests directly to the resource-service using the specified http.Client
 func NewServiceHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *ServiceHandler {
 	return &ServiceHandler{
 		BaseURL:        httputils.TrimHTTPScheme(baseURL),
@@ -50,7 +50,7 @@ func NewServiceHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *S
 }
 
 // NewAuthenticatedServiceHandler returns a new ServiceHandler that authenticates at the api via the provided token
-// and sends all requests directly to the configuration-service
+// and sends all requests directly to the resource-service
 // Deprecated: use APISet instead
 func NewAuthenticatedServiceHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ServiceHandler {
 	if httpClient == nil {
