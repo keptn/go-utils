@@ -174,7 +174,10 @@ func (nc *NatsConnector) Publish(event models.KeptnContextExtendedCE) error {
 	if err != nil {
 		return fmt.Errorf("could not connect to NATS to publish event: %w", err)
 	}
-	return conn.Publish(*event.Type, serializedEvent)
+	if err := conn.Publish(*event.Type, serializedEvent); err != nil {
+		return fmt.Errorf("could not publish message to NATS: %w", err)
+	}
+	return nil
 }
 
 // Disconnect disconnects/closes the connection to NATS
@@ -182,6 +185,12 @@ func (nc *NatsConnector) Disconnect() error {
 	connection, err := nc.ensureConnection()
 	if err != nil {
 		return fmt.Errorf("could not disconnect from NATS: %w", err)
+	}
+
+	// call the Flush() method to make sure the payload does not stay in the buffer and will get lost if a shutdown happens
+	err = connection.Flush()
+	if err != nil {
+		nc.logger.Errorf("Could not flush connection: %v", err)
 	}
 	connection.Close()
 	return nil

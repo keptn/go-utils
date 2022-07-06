@@ -665,3 +665,82 @@ func TestControlPlane_StoppedByReceivingErrEvent(t *testing.T) {
 		return subscriptionSourceStopCalled && eventSourceStopCalled
 	}, time.Second, 100*time.Millisecond)
 }
+
+func TestControlPlane_Shutdown(t *testing.T) {
+	var eventChan chan types.EventUpdate
+	var subsChan chan []models.EventSubscription
+	var eventSourceStopCalled bool
+	var subscriptionSourceStopCalled bool
+
+	mtx := sync.RWMutex{}
+	//var integrationReceivedEvent models.KeptnContextExtendedCE
+	//eventUpdate := types.EventUpdate{KeptnEvent: models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.triggered")}, MetaData: types.EventUpdateMetaData{Subject: "sh.keptn.event.echo.triggered"}}
+	callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }
+
+	ssm := &fake.SubscriptionSourceMock{
+		StartFn: func(ctx context.Context, data types.RegistrationData, subC chan []models.EventSubscription, errC chan error, wg *sync.WaitGroup) error {
+			mtx.Lock()
+			defer mtx.Unlock()
+			subsChan = subC
+			return nil
+		},
+		RegisterFn: func(integration models.Integration) (string, error) {
+			return "some-other-id", nil
+		},
+		StopFn: func() error {
+			mtx.Lock()
+			defer mtx.Unlock()
+			subscriptionSourceStopCalled = true
+			return nil
+		},
+	}
+	esm := &fake.EventSourceMock{
+		StartFn: func(ctx context.Context, data types.RegistrationData, evC chan types.EventUpdate, errC chan error, wg *sync.WaitGroup) error {
+			mtx.Lock()
+			defer mtx.Unlock()
+			eventChan = evC
+			return nil
+		},
+		OnSubscriptionUpdateFn: func(subscriptions []models.EventSubscription) {},
+		SenderFn:               func() types.EventSender { return callBackSender },
+		StopFn: func() error {
+			mtx.Lock()
+			defer mtx.Unlock()
+			eventSourceStopCalled = true
+			return nil
+		},
+	}
+
+	fm := &LogForwarderMock{
+		ForwardFn: func(keptnEvent models.KeptnContextExtendedCE, integrationID string) error {
+			return nil
+		},
+	}
+
+	controlPlane := New(ssm, esm, fm)
+
+	integration := ExampleIntegration{
+		RegistrationDataFn: func() types.RegistrationData { return types.RegistrationData{} },
+		OnEventFn:          func(ctx context.Context, ce models.KeptnContextExtendedCE) error { return nil },
+	}
+
+	go controlPlane.Register(context.TODO(), integration)
+	require.Eventually(t, func() bool {
+		mtx.RLock()
+		defer mtx.RUnlock()
+		return subsChan != nil
+	}, time.Second, time.Millisecond*100)
+	require.Eventually(t, func() bool {
+		mtx.RLock()
+		defer mtx.RUnlock()
+		return eventChan != nil
+	}, time.Second, time.Millisecond*100)
+
+	controlPlane.Shutdown()
+
+	require.Eventually(t, func() bool {
+		mtx.RLock()
+		defer mtx.RUnlock()
+		return subscriptionSourceStopCalled && eventSourceStopCalled
+	}, time.Second, 100*time.Millisecond)
+}

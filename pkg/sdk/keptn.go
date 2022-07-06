@@ -303,6 +303,9 @@ func (k *Keptn) Start() error {
 	// add additional waiting time to ensure the waitGroup has been increased for all events that have been received between receiving SIGTERM and this point
 	<-time.After(5 * time.Second)
 	wg.Wait()
+	// make sure the controlPlane and its components performs all actions that should be done right before the shutdown
+	// e.g. flushing the buffer for the outgoing messages to nats
+	k.controlPlane.Shutdown()
 	return err
 }
 

@@ -48,7 +48,7 @@ func main() {
 	// If you don't want/need that, you can simply pass nil
 	logForwarder := logforwarder.New(keptnAPI.LogsV1())
 
-	// Create a control plane component that is the main component of cp-connecter and start it
+	// Create a control plane component that is the main component of cp-connector and start it
 	// using RunWithGraceFulShutdown
 	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder, controlplane.WithLogger(logger))
 	if err := controlplane.RunWithGracefulShutdown(controlPlane, LocalService{}, time.Second*10); err != nil {

@@ -61,7 +61,7 @@ func WithLogger(logger logger.Logger) func(plane *ControlPlane) {
 //
 // This call is blocking.
 //
-//If you want to start the controlplane component with an own context you need to call the Regiser(ctx,integration)
+//If you want to start the controlPlane component with an own context you need to call the Register(ctx,integration)
 // method on your own
 func RunWithGracefulShutdown(controlPlane *ControlPlane, integration Integration, shutdownTimeout time.Duration) error {
 	ctxShutdown, cancel := context.WithCancel(context.Background())
@@ -72,6 +72,9 @@ func RunWithGracefulShutdown(controlPlane *ControlPlane, integration Integration
 		<-ctxShutdown.Done()
 		time.Sleep(shutdownTimeout) // shutdown timeout
 		log.Printf("failed to gracefully shutdown")
+		// make sure the controlPlane and its components performs all actions that should be done right before the shutdown
+		// e.g. flushing the buffer for the outgoing messages to nats
+		controlPlane.Shutdown()
 		os.Exit(1)
 	}()
 
@@ -170,6 +173,12 @@ func (cp *ControlPlane) IsRegistered() bool {
 	cp.mtx.RLock()
 	defer cp.mtx.RUnlock()
 	return cp.registered
+}
+
+// Shutdown should be called right before the application using the controlPlane is about to exit
+// this will make sure that the teardown logic of all components used by the controlPlane is executed
+func (cp *ControlPlane) Shutdown() {
+	cp.cleanup()
 }
 
 func (cp *ControlPlane) handle(ctx context.Context, eventUpdate types.EventUpdate, integration Integration) error {
