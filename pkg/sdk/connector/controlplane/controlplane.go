@@ -38,14 +38,15 @@ type Integration interface {
 
 // ControlPlane can be used to connect to the Keptn Control Plane
 type ControlPlane struct {
-	subscriptionSource   subscriptionsource.SubscriptionSource
-	eventSource          eventsource.EventSource
-	currentSubscriptions []models.EventSubscription
-	logger               logger.Logger
-	registered           bool
-	integrationID        string
-	logForwarder         logforwarder.LogForwarder
-	mtx                  *sync.RWMutex
+	subscriptionSource    subscriptionsource.SubscriptionSource
+	eventSource           eventsource.EventSource
+	currentSubscriptions  []models.EventSubscription
+	logger                logger.Logger
+	registered            bool
+	integrationID         string
+	logForwarder          logforwarder.LogForwarder
+	mtx                   *sync.RWMutex
+	eventHandlerWaitGroup *sync.WaitGroup
 }
 
 // WithLogger sets the logger to use
@@ -72,13 +73,11 @@ func RunWithGracefulShutdown(controlPlane *ControlPlane, integration Integration
 		<-ctxShutdown.Done()
 		time.Sleep(shutdownTimeout) // shutdown timeout
 		log.Printf("failed to gracefully shutdown")
-		// make sure the controlPlane and its components performs all actions that should be done right before the shutdown
-		// e.g. flushing the buffer for the outgoing messages to nats
-		controlPlane.Shutdown()
 		os.Exit(1)
 	}()
 
 	return controlPlane.Register(ctxShutdown, integration)
+
 }
 
 // New creates a new ControlPlane
@@ -87,13 +86,14 @@ func RunWithGracefulShutdown(controlPlane *ControlPlane, integration Integration
 // and a LogForwarder to forward error logs
 func New(subscriptionSource subscriptionsource.SubscriptionSource, eventSource eventsource.EventSource, logForwarder logforwarder.LogForwarder, opts ...func(plane *ControlPlane)) *ControlPlane {
 	cp := &ControlPlane{
-		subscriptionSource:   subscriptionSource,
-		eventSource:          eventSource,
-		currentSubscriptions: []models.EventSubscription{},
-		logger:               logger.NewDefaultLogger(),
-		logForwarder:         logForwarder,
-		registered:           false,
-		mtx:                  &sync.RWMutex{},
+		subscriptionSource:    subscriptionSource,
+		eventSource:           eventSource,
+		currentSubscriptions:  []models.EventSubscription{},
+		logger:                logger.NewDefaultLogger(),
+		logForwarder:          logForwarder,
+		registered:            false,
+		mtx:                   &sync.RWMutex{},
+		eventHandlerWaitGroup: &sync.WaitGroup{},
 	}
 	for _, o := range opts {
 		o(cp)
@@ -153,15 +153,20 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 		case <-ctx.Done():
 			cp.logger.Debug("Controlplane cancelled via context. Unregistering...")
 			wg.Wait()
+			// wait for all event handlers to finish
+			cp.eventHandlerWaitGroup.Wait()
+			cp.cleanup()
 			cp.setRegistrationStatus(false)
 			return nil
 
 		// control plane cancelled via error in either one of the sub components
 		case e := <-errC:
 			cp.logger.Debugf("Stopping control plane due to error: %v", e)
-			cp.cleanup()
 			cp.logger.Debug("Waiting for components to shutdown")
 			wg.Wait()
+			// wait for all event handlers to finish
+			cp.eventHandlerWaitGroup.Wait()
+			cp.cleanup()
 			cp.setRegistrationStatus(false)
 			return nil
 		}
@@ -175,10 +180,15 @@ func (cp *ControlPlane) IsRegistered() bool {
 	return cp.registered
 }
 
-// Shutdown should be called right before the application using the controlPlane is about to exit
-// this will make sure that the teardown logic of all components used by the controlPlane is executed
-func (cp *ControlPlane) Shutdown() {
-	cp.cleanup()
+func (cp *ControlPlane) cleanup() {
+	cp.logger.Info("Stopping subscription source...")
+	if err := cp.subscriptionSource.Stop(); err != nil {
+		log.Fatalf("Unable to stop subscription source: %v", err)
+	}
+	cp.logger.Info("Stopping event source...")
+	if err := cp.eventSource.Stop(); err != nil {
+		log.Fatalf("Unable to stop event source: %v", err)
+	}
 }
 
 func (cp *ControlPlane) handle(ctx context.Context, eventUpdate types.EventUpdate, integration Integration) error {
@@ -213,6 +223,11 @@ func (cp *ControlPlane) getSender(sender types.EventSender) types.EventSender {
 }
 
 func (cp *ControlPlane) forwardMatchedEvent(ctx context.Context, eventUpdate types.EventUpdate, integration Integration, subscription models.EventSubscription) error {
+	// increase the eventHandler WaitGroup
+	cp.eventHandlerWaitGroup.Add(1)
+	// when the event handler is done, decrease the WaitGroup again
+	defer cp.eventHandlerWaitGroup.Done()
+
 	err := eventUpdate.KeptnEvent.AddTemporaryData(
 		tmpDataDistributorKey,
 		types.AdditionalSubscriptionData{
@@ -233,17 +248,6 @@ func (cp *ControlPlane) forwardMatchedEvent(ctx context.Context, eventUpdate typ
 		cp.logger.Warnf("Error during handling of event: %v", err)
 	}
 	return nil
-}
-
-func (cp *ControlPlane) cleanup() {
-	cp.logger.Info("Stopping subscription source...")
-	if err := cp.subscriptionSource.Stop(); err != nil {
-		log.Fatalf("Unable to stop subscription source: %v", err)
-	}
-	cp.logger.Info("Stopping event source...")
-	if err := cp.eventSource.Stop(); err != nil {
-		log.Fatalf("Unable to stop event source: %v", err)
-	}
 }
 
 func (cp *ControlPlane) setRegistrationStatus(registered bool) {

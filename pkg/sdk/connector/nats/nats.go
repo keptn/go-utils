@@ -182,17 +182,16 @@ func (nc *NatsConnector) Publish(event models.KeptnContextExtendedCE) error {
 
 // Disconnect disconnects/closes the connection to NATS
 func (nc *NatsConnector) Disconnect() error {
-	connection, err := nc.ensureConnection()
-	if err != nil {
-		return fmt.Errorf("could not disconnect from NATS: %w", err)
+	// if we are already disconnected, there is no need to do anything
+	if !nc.connection.IsConnected() {
+		return nil
 	}
-
 	// call the Flush() method to make sure the payload does not stay in the buffer and will get lost if a shutdown happens
-	err = connection.Flush()
+	err := nc.connection.Flush()
 	if err != nil {
 		nc.logger.Errorf("Could not flush connection: %v", err)
 	}
-	connection.Close()
+	nc.connection.Close()
 	return nil
 }
 
