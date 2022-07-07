@@ -151,9 +151,6 @@ func putWithEventContext(ctx context.Context, uri string, data []byte, api APISe
 			return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
 		}
 
-		if eventContext.KeptnContext != nil {
-			fmt.Println("ID of Keptn context: " + *eventContext.KeptnContext)
-		}
 		return eventContext, nil
 	}
 
@@ -224,9 +221,6 @@ func postWithEventContext(ctx context.Context, uri string, data []byte, api APIS
 			return nil, buildErrorResponse(err.Error() + "\n" + "-----DETAILS-----" + string(body))
 		}
 
-		if eventContext.KeptnContext != nil {
-			fmt.Println("ID of Keptn context: " + *eventContext.KeptnContext)
-		}
 		return eventContext, nil
 	}
 
