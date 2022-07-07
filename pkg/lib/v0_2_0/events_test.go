@@ -319,10 +319,13 @@ func TestToCloudEvent(t *testing.T) {
 		Content string `json:"content"`
 	}
 
+	time := time.Now().UTC()
+
 	expected := cloudevents.NewEvent()
 	expected.SetType("sh.keptn.event.dev.delivery.triggered")
 	expected.SetID("my-id")
 	expected.SetSource("source")
+	expected.SetTime(time)
 	expected.SetData(cloudevents.ApplicationJSON, TestData{Content: "testdata"})
 	expected.SetDataContentType(cloudevents.ApplicationJSON)
 	expected.SetSpecVersion(defaultSpecVersion)
@@ -342,6 +345,7 @@ func TestToCloudEvent(t *testing.T) {
 		Triggeredid:        "my-triggered-id",
 		GitCommitID:        "git-commit-id",
 		Type:               strutils.Stringp("sh.keptn.event.dev.delivery.triggered"),
+		Time:               time,
 	}
 	cloudevent := ToCloudEvent(keptnEvent)
 	assert.Equal(t, expected, cloudevent)
@@ -354,6 +358,7 @@ func TestToKeptnEvent(t *testing.T) {
 		Content string `json:"content"`
 	}
 
+	time := time.Now().UTC()
 	expected := models.KeptnContextExtendedCE{
 		Contenttype:        "application/json",
 		Data:               map[string]interface{}{"content": "testdata"},
@@ -362,7 +367,7 @@ func TestToKeptnEvent(t *testing.T) {
 		Shkeptnspecversion: config.GetKeptnGoUtilsConfig().ShKeptnSpecVersion,
 		Source:             strutils.Stringp("my-source"),
 		Specversion:        defaultSpecVersion,
-		Time:               time.Time{},
+		Time:               time,
 		Triggeredid:        "my-triggered-id",
 		GitCommitID:        "my-commit-id",
 		Type:               strutils.Stringp("sh.keptn.event.dev.delivery.triggered"),
@@ -372,6 +377,7 @@ func TestToKeptnEvent(t *testing.T) {
 	ce.SetType("sh.keptn.event.dev.delivery.triggered")
 	ce.SetID("my-id")
 	ce.SetSource("my-source")
+	ce.SetTime(time)
 	ce.SetDataContentType(cloudevents.ApplicationJSON)
 	ce.SetSpecVersion(defaultSpecVersion)
 	ce.SetData(cloudevents.ApplicationJSON, TestData{Content: "testdata"})

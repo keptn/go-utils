@@ -36,18 +36,18 @@ type StageHandler struct {
 	scheme     string
 }
 
-// NewStageHandler returns a new StageHandler which sends all requests directly to the configuration-service
+// NewStageHandler returns a new StageHandler which sends all requests directly to the resource-service
 func NewStageHandler(baseURL string) *StageHandler {
 	return NewStageHandlerWithHTTPClient(baseURL, &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)})
 }
 
-// NewStageHandlerWithHTTPClient returns a new StageHandler which sends all requests directly to the configuration-service using the specified http.Client
+// NewStageHandlerWithHTTPClient returns a new StageHandler which sends all requests directly to the resource-service using the specified http.Client
 func NewStageHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *StageHandler {
 	return createStageHandler(baseURL, "", "", httpClient, "http")
 }
 
 // NewAuthenticatedStageHandler returns a new StageHandler that authenticates at the api via the provided token
-// and sends all requests directly to the configuration-service
+// and sends all requests directly to the resource-service
 func NewAuthenticatedStageHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *StageHandler {
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {

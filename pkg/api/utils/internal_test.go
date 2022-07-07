@@ -26,7 +26,7 @@ func TestApiSetInternalMappings(t *testing.T) {
 
 	t.Run("TestInternalAPISet - Override Mappings", func(t *testing.T) {
 		overrideMappings := InClusterAPIMappings{
-			ConfigurationService: "special-configuration-service:8080",
+			ConfigurationService: "special-resource-service:8080",
 			ShipyardController:   "special-shipyard-controller:8080",
 			ApiService:           "speclial-api-service:8080",
 			SecretService:        "special-secret-service:8080",

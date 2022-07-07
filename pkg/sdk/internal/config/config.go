@@ -9,7 +9,7 @@ import (
 
 type EnvConfig struct {
 	APIProxyHTTPTimeout     string   `envconfig:"API_PROXY_HTTP_TIMEOUT" default:"30"`
-	ConfigurationServiceURL string   `envconfig:"CONFIGURATION_SERVICE" default:"configuration-service:8080"`
+	ConfigurationServiceURL string   `envconfig:"CONFIGURATION_SERVICE" default:"resource-service:8080"`
 	EventBrokerURL          string   `envconfig:"EVENTBROKER" default:"nats://keptn-nats"`
 	PubSubTopic             string   `envconfig:"PUBSUB_TOPIC" default:""`
 	HealthEndpointPort      string   `envconfig:"HEALTH_ENDPOINT_PORT" default:"8080"`

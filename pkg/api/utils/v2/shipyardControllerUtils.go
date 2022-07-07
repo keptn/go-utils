@@ -30,18 +30,18 @@ type ShipyardControllerHandler struct {
 	scheme     string
 }
 
-// NewShipyardControllerHandler returns a new ShipyardControllerHandler which sends all requests directly to the configuration-service
+// NewShipyardControllerHandler returns a new ShipyardControllerHandler which sends all requests directly to the resource-service
 func NewShipyardControllerHandler(baseURL string) *ShipyardControllerHandler {
 	return NewShipyardControllerHandlerWithHTTPClient(baseURL, &http.Client{Transport: wrapOtelTransport(getClientTransport(nil))})
 }
 
-// NewShipyardControllerHandlerWithHTTPClient returns a new ShipyardControllerHandler which sends all requests directly to the configuration-service using the specified http.Client
+// NewShipyardControllerHandlerWithHTTPClient returns a new ShipyardControllerHandler which sends all requests directly to the resource-service using the specified http.Client
 func NewShipyardControllerHandlerWithHTTPClient(baseURL string, httpClient *http.Client) *ShipyardControllerHandler {
 	return createShipyardControllerHandler(baseURL, "", "", httpClient, "http")
 }
 
 // NewAuthenticatedShipyardControllerHandler returns a new ShipyardControllerHandler that authenticates at the api via the provided token
-// and sends all requests directly to the configuration-service
+// and sends all requests directly to the resource-service
 func NewAuthenticatedShipyardControllerHandler(baseURL string, authToken string, authHeader string, httpClient *http.Client, scheme string) *ShipyardControllerHandler {
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.HasSuffix(baseURL, shipyardControllerBaseURL) {
