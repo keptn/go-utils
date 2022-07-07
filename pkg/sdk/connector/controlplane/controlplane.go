@@ -153,7 +153,7 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 		case <-ctx.Done():
 			cp.logger.Debug("Controlplane cancelled via context. Unregistering...")
 			wg.Wait()
-			// wait for all event handlers to finish
+			cp.logger.Debug("wait for all event handlers to finish")
 			cp.eventHandlerWaitGroup.Wait()
 			cp.cleanup()
 			cp.setRegistrationStatus(false)
