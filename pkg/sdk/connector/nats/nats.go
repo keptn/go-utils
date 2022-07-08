@@ -187,6 +187,7 @@ func (nc *NatsConnector) Disconnect() error {
 		return nil
 	}
 	// call the Flush() method to make sure the payload does not stay in the buffer and will get lost if a shutdown happens
+	nc.logger.Debug("flushing NATS buffer")
 	err := nc.connection.Flush()
 	if err != nil {
 		nc.logger.Errorf("Could not flush connection: %v", err)
