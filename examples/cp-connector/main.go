@@ -48,7 +48,7 @@ func main() {
 	// If you don't want/need that, you can simply pass nil
 	logForwarder := logforwarder.New(keptnAPI.LogsV1())
 
-	// Create a control plane component that is the main component of cp-connecter and start it
+	// Create a control plane component that is the main component of cp-connector and start it
 	// using RunWithGraceFulShutdown
 	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder, controlplane.WithLogger(logger))
 	if err := controlplane.RunWithGracefulShutdown(controlPlane, LocalService{}, time.Second*10); err != nil {
@@ -65,6 +65,10 @@ type LocalService struct{}
 //
 // Note, that you are responsible for sending corresponding .started and .finished events
 // on your own.
+// Also note, that if you need to ensure that every incoming event is completely processed before the pod running your
+// integration is shut down (e.g., due to an upgrade to a newer version), the OnEvent method should process the incoming events synchronously,
+// i.e. not in a separate go routine. If you need to process events asynchronously, you need to implement your own synchronization mechanism to ensure all
+// events have been completely processed before a shutdown
 func (e LocalService) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE) error {
 	// You can grab handle the event and grab a sender to send back started / finished events to keptn
 	// eventSender := ctx.Value(controlplane.EventSenderKeyType{}).(types.EventSender)

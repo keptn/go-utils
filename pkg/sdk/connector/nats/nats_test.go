@@ -25,10 +25,10 @@ func TestNewFromEnv(t *testing.T) {
 	require.NotNil(t, sub)
 }
 
-func TestConnectFails(t *testing.T) {
+func TestNoConnection(t *testing.T) {
 	nc := nats2.New("nats://something:3456")
 	require.NotNil(t, nc)
-	err := nc.Disconnect()
+	err := nc.Publish(models.KeptnContextExtendedCE{})
 	require.NotNil(t, err)
 }
 
