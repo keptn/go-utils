@@ -151,26 +151,30 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 
 		// control plane cancelled via context
 		case <-ctx.Done():
-			cp.logger.Debug("Controlplane cancelled via context. Unregistering...")
+			cp.logger.Info("ControlPlane cancelled via context. Unregistering...")
 			wg.Wait()
-			cp.logger.Debug("wait for all event handlers to finish")
-			cp.eventHandlerWaitGroup.Wait()
+			cp.waitForEventHandlers()
 			cp.cleanup()
 			cp.setRegistrationStatus(false)
 			return nil
 
 		// control plane cancelled via error in either one of the sub components
 		case e := <-errC:
-			cp.logger.Debugf("Stopping control plane due to error: %v", e)
-			cp.logger.Debug("Waiting for components to shutdown")
+			cp.logger.Errorf("Stopping control plane due to error: %v", e)
+			cp.logger.Info("Waiting for components to shutdown")
 			wg.Wait()
-			// wait for all event handlers to finish
-			cp.eventHandlerWaitGroup.Wait()
+			cp.waitForEventHandlers()
 			cp.cleanup()
 			cp.setRegistrationStatus(false)
 			return nil
 		}
 	}
+}
+
+func (cp *ControlPlane) waitForEventHandlers() {
+	cp.logger.Info("Wait for all event handlers to finish")
+	cp.eventHandlerWaitGroup.Wait()
+	cp.logger.Info("All event handlers done - ready to shut down")
 }
 
 // IsRegistered can be called to detect whether the controlPlane is registered and ready to receive events
