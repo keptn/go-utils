@@ -31,7 +31,7 @@ const (
 	// DefaultMaxPingAttempts is the default number of times we try to contact Keptn's control plane
 	// for renewing the registration.
 	DefaultMaxPingAttempts = 10
-	// DefaultMaxPingAttempts is the default wait time between subsequent tries to contact Keptn's control plane
+	// DefaultPingAttemptsInterval is the default wait time between subsequent tries to contact Keptn's control plane
 	// for renewing the registration.
 	DefaultPingAttemptsInterval = time.Second * 3
 )
