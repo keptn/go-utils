@@ -149,15 +149,15 @@ func (s *UniformSubscriptionSource) Stop() error {
 	return nil
 }
 
-func (s *UniformSubscriptionSource) ping(registrationId string, subscriptionChannel chan []models.EventSubscription) error {
-	s.logger.Debugf("UniformSubscriptionSource: Renewing Integration ID %s", registrationId)
-	updatedIntegrationData, err := s.uniformAPI.Ping(registrationId)
+func (s *UniformSubscriptionSource) ping(registrationID string, subscriptionC chan []models.EventSubscription) error {
+	s.logger.Debugf("UniformSubscriptionSource: Renewing Integration ID %s", registrationID)
+	updatedIntegrationData, err := s.uniformAPI.Ping(registrationID)
 	if err != nil {
 		s.logger.Errorf("Unable to ping control plane: %v", err)
 		return err
 	}
-	s.logger.Debugf("UniformSubscriptionSource: Ping successful, got %d subscriptions for %s", len(updatedIntegrationData.Subscriptions), registrationId)
-	subscriptionChannel <- updatedIntegrationData.Subscriptions
+	s.logger.Debugf("UniformSubscriptionSource: Ping successful, got %d subscriptions for %s", len(updatedIntegrationData.Subscriptions), registrationID)
+	subscriptionC <- updatedIntegrationData.Subscriptions
 	return nil
 }
 
