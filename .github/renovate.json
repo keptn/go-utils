@@ -1,0 +1,29 @@
+{
+  "extends": [
+    "config:base",
+    ":gitSignOff",
+    "schedule:nonOfficeHours",
+    ":semanticCommitTypeAll(build)",
+    ":semanticCommitScope(deps)",
+    ":automergePatch"
+  ],
+  "addLabels": ["dependencies"],
+  "cloneSubmodules": true,
+  "prConcurrentLimit": 15,
+  "stabilityDays": 3,
+  "timezone": "Europe/Vienna",
+  "postUpdateOptions": [
+    "gomodTidy"
+  ],
+  "packageRules": [
+    {
+      "matchManagers": ["gomod"],
+      "addLabels": ["go"]
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "addLabels": ["github_actions"]
+    }
+  ],
+  "commitMessageSuffix": "[skip ci]"
+}
