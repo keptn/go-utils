@@ -25,5 +25,5 @@
       "addLabels": ["github_actions"]
     }
   ],
-  "commitBody": "[skip ci]"
+  "commitMessageSuffix": "[skip ci]"
 }
