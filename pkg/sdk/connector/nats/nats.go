@@ -88,8 +88,18 @@ func NewFromEnv() *NatsConnector {
 func (nc *NatsConnector) ensureConnection() (*nats.Conn, error) {
 
 	if !nc.connection.IsConnected() {
+		disconnectLogger := func(con *nats.Conn, err error) {
+			if err != nil {
+				nc.logger.Errorf("Disconnected from NATS due to an error: %v", err)
+			} else {
+				nc.logger.Info("Disconnected from NATS")
+			}
+		}
+		reconnectLogger := func(*nats.Conn) {
+			nc.logger.Info("Reconnected to NATS")
+		}
 		var err error
-		nc.connection, err = nats.Connect(nc.connectURL, nats.MaxReconnects(-1))
+		nc.connection, err = nats.Connect(nc.connectURL, nats.MaxReconnects(-1), nats.ReconnectHandler(reconnectLogger), nats.DisconnectErrHandler(disconnectLogger))
 
 		if err != nil {
 			return nil, fmt.Errorf("could not connect to NATS: %w", err)
