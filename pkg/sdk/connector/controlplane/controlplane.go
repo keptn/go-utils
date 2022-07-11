@@ -105,7 +105,7 @@ func New(subscriptionSource subscriptionsource.SubscriptionSource, eventSource e
 func (cp *ControlPlane) Register(ctx context.Context, integration Integration) error {
 	eventUpdates := make(chan types.EventUpdate)
 	subscriptionUpdates := make(chan []models.EventSubscription)
-	errC := make(chan error)
+	errC := make(chan error, 1)
 
 	var err error
 	registrationData := integration.RegistrationData()
