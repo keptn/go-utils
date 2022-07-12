@@ -22,5 +22,5 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           go_version: ${{ env.GO_VERSION }}
           fail_on_error: true
-          reporter: github-pr-check
+          reporter: github-pr-review
           golangci_lint_flags: --timeout 3m
