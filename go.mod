@@ -62,7 +62,7 @@ require (
 	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd // indirect
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
-	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
+	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
@@ -80,4 +80,4 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-replace golang.org/x/net => golang.org/x/net v0.0.0-20211205041911-012df41ee64c
+replace golang.org/x/net => golang.org/x/net v0.0.0-20220708220712-1185a9018129
