@@ -16,12 +16,6 @@ jobs:
       - name: Check out code.
         uses: actions/checkout@v3
 
-      - name: golangci-lint-action
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: v1.46.2
-          args: --timeout 3m --verbose
-
       - name: reviewdog-action
         uses: reviewdog/action-golangci-lint@v2.1.5
         with:
@@ -29,3 +23,10 @@ jobs:
           go_version: ${{ env.GO_VERSION }}
           fail_on_error: true
           reporter: github-pr-check
+          golangci_lint_flags: --timeout 3m --verbose
+
+      - name: golangci-lint-action
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.46.2
+          args: --timeout 3m --verbose
