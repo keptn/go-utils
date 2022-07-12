@@ -20,6 +20,7 @@ jobs:
         uses: golangci/golangci-lint-action@v3
         with:
           version: v1.46.2
+          args: --timeout 3m --verbose
 
       - name: reviewdog-action
         uses: reviewdog/action-golangci-lint@v2.1.5
