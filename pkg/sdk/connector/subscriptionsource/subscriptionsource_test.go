@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSubscriptionSourceCPPingFails(t *testing.T) {
+func TestNumberOfFailedInitialTriesToPingExceedMaxAllowedAttempts(t *testing.T) {
 	initialRegistrationData := types.RegistrationData{}
 
 	uniformInterface := &fake.UniformAPIMock{
@@ -23,19 +23,60 @@ func TestSubscriptionSourceCPPingFails(t *testing.T) {
 			return nil, fmt.Errorf("error occured")
 		}}
 	subscriptionUpdates := make(chan []models.EventSubscription)
+	// this is the "consumer" of the subscription updates received via ping
+	// we don't expect to receive any update since every call fails
 	go func() {
 		<-subscriptionUpdates
 		require.FailNow(t, "got subscription event via channel")
 	}()
 
-	subscriptionSource := New(uniformInterface)
+	subscriptionSource := New(uniformInterface, WithMaxPingAttempts(2), WithPingAttemptsInterval(10*time.Millisecond))
 	clock := clock.NewMock()
 	subscriptionSource.clock = clock
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	err := subscriptionSource.Start(context.TODO(), initialRegistrationData, subscriptionUpdates, make(chan error), wg)
+	errC := make(chan error)
+	err := subscriptionSource.Start(context.TODO(), initialRegistrationData, subscriptionUpdates, errC, wg)
 	require.NoError(t, err)
-	clock.Add(5 * time.Second)
+	// expect error via this channel
+	<-errC
+	// expect subscription source to finish
+	wg.Wait()
+}
+
+func TestNumberOfFailedSubsequentTriesToPingsExceedMaxAllowedAttempts(t *testing.T) {
+	initialRegistrationData := types.RegistrationData{}
+
+	pingCalled := 0
+	uniformInterface := &fake.UniformAPIMock{
+		PingFn: func(s string) (*models.Integration, error) {
+			pingCalled++
+			// simulate that subsequent pings will fail
+			if pingCalled > 1 {
+				return nil, fmt.Errorf("error occured")
+			}
+			return &models.Integration{}, nil
+		}}
+
+	subscriptionUpdates := make(chan []models.EventSubscription)
+	// this is the "consumer" of the results of the first (successful)
+	// subscription attempts
+	go func() { <-subscriptionUpdates }()
+
+	subscriptionSource := New(uniformInterface, WithMaxPingAttempts(2), WithPingAttemptsInterval(10*time.Millisecond))
+	clock := clock.NewMock()
+	subscriptionSource.clock = clock
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	errC := make(chan error)
+	err := subscriptionSource.Start(context.TODO(), initialRegistrationData, subscriptionUpdates, errC, wg)
+	require.NoError(t, err)
+	clock.Add(5 * time.Second) // fetch interval
+	clock.Add(5 * time.Second) // another fetch interval
+	// expect error via this channel
+	<-errC
+	// expect subscription source to finish
+	wg.Wait()
 }
 
 func TestSubscriptionSourceWithFetchInterval(t *testing.T) {

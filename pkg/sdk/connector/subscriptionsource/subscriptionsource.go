@@ -2,6 +2,8 @@ package subscriptionsource
 
 import (
 	"context"
+	"errors"
+	"github.com/avast/retry-go"
 	"github.com/keptn/go-utils/pkg/sdk/connector/types"
 	"sync"
 	"time"
@@ -12,22 +14,40 @@ import (
 	"github.com/keptn/go-utils/pkg/sdk/connector/logger"
 )
 
+// ErrMaxPingRetriesExceeded is used when the subscription source was not able to
+// contact Keptn's control plane for a certain amount of attempts
+var ErrMaxPingRetriesExceeded = errors.New("maximum retries for polling event api exceeded")
+
 type SubscriptionSource interface {
 	Start(context.Context, types.RegistrationData, chan []models.EventSubscription, chan error, *sync.WaitGroup) error
 	Register(integration models.Integration) (string, error)
 	Stop() error
 }
 
+const (
+	// DefaultFetchInterval is the time to wait between trying to pull subscription updates
+	// from Keptn's control plane.
+	DefaultFetchInterval = time.Second * 5
+	// DefaultMaxPingAttempts is the default number of times we try to contact Keptn's control plane
+	// for renewing the registration.
+	DefaultMaxPingAttempts = 10
+	// DefaultPingAttemptsInterval is the default wait time between subsequent tries to contact Keptn's control plane
+	// for renewing the registration.
+	DefaultPingAttemptsInterval = time.Second * 3
+)
+
 var _ SubscriptionSource = FixedSubscriptionSource{}
 var _ SubscriptionSource = (*UniformSubscriptionSource)(nil)
 
 // UniformSubscriptionSource represents a source for uniform subscriptions
 type UniformSubscriptionSource struct {
-	uniformAPI    api.UniformV1Interface
-	clock         clock.Clock
-	fetchInterval time.Duration
-	logger        logger.Logger
-	quitC         chan struct{}
+	uniformAPI           api.UniformV1Interface
+	clock                clock.Clock
+	fetchInterval        time.Duration
+	logger               logger.Logger
+	quitC                chan struct{}
+	maxPingAttempts      uint
+	pingAttemptsInterval time.Duration
 }
 
 func (s *UniformSubscriptionSource) Register(integration models.Integration) (string, error) {
@@ -53,14 +73,33 @@ func WithLogger(logger logger.Logger) func(s *UniformSubscriptionSource) {
 	}
 }
 
+// WithMaxPingAttempts sets the max number of attempts of retrying to ping Keptn's
+// control plane for renewing the registration
+func WithMaxPingAttempts(maxPingAttempts uint) func(s *UniformSubscriptionSource) {
+	return func(s *UniformSubscriptionSource) {
+		s.maxPingAttempts = maxPingAttempts
+	}
+}
+
+// WithPingAttemptsInterval sets the time between subsequent tries to ping Keptn's control plane for renewing
+// the registration
+func WithPingAttemptsInterval(duration time.Duration) func(s *UniformSubscriptionSource) {
+	return func(s *UniformSubscriptionSource) {
+		s.pingAttemptsInterval = duration
+	}
+}
+
 // New creates a new UniformSubscriptionSource
 func New(uniformAPI api.UniformV1Interface, options ...func(source *UniformSubscriptionSource)) *UniformSubscriptionSource {
 	s := &UniformSubscriptionSource{
-		uniformAPI:    uniformAPI,
-		clock:         clock.New(),
-		fetchInterval: time.Second * 5,
-		quitC:         make(chan struct{}, 1),
-		logger:        logger.NewDefaultLogger()}
+		uniformAPI:           uniformAPI,
+		clock:                clock.New(),
+		fetchInterval:        DefaultFetchInterval,
+		quitC:                make(chan struct{}, 1),
+		logger:               logger.NewDefaultLogger(),
+		maxPingAttempts:      DefaultMaxPingAttempts,
+		pingAttemptsInterval: DefaultPingAttemptsInterval}
+
 	for _, o := range options {
 		o(s)
 	}
@@ -71,15 +110,31 @@ func New(uniformAPI api.UniformV1Interface, options ...func(source *UniformSubsc
 func (s *UniformSubscriptionSource) Start(ctx context.Context, registrationData types.RegistrationData, subscriptionChannel chan []models.EventSubscription, errC chan error, wg *sync.WaitGroup) error {
 	s.logger.Debugf("UniformSubscriptionSource: Starting to fetch subscriptions for Integration ID %s", registrationData.ID)
 	ticker := s.clock.Ticker(s.fetchInterval)
+
 	go func() {
-		s.ping(registrationData.ID, subscriptionChannel)
+		if err := retry.Do(func() error {
+			return s.ping(registrationData.ID, subscriptionChannel)
+		}, retry.Attempts(s.maxPingAttempts), retry.Delay(s.pingAttemptsInterval), retry.DelayType(retry.FixedDelay)); err != nil {
+			s.logger.Errorf("Reached max number of attempts to ping control plane")
+			errC <- ErrMaxPingRetriesExceeded
+			wg.Done()
+			return
+		}
+
 		for {
 			select {
 			case <-ctx.Done():
 				wg.Done()
 				return
 			case <-ticker.C:
-				s.ping(registrationData.ID, subscriptionChannel)
+				if err := retry.Do(func() error {
+					return s.ping(registrationData.ID, subscriptionChannel)
+				}, retry.Attempts(s.maxPingAttempts), retry.Delay(s.pingAttemptsInterval), retry.DelayType(retry.FixedDelay)); err != nil {
+					s.logger.Errorf("Reached max number of attempts to ping control plane")
+					errC <- ErrMaxPingRetriesExceeded
+					wg.Done()
+					return
+				}
 			case <-s.quitC:
 				wg.Done()
 				return
@@ -94,15 +149,16 @@ func (s *UniformSubscriptionSource) Stop() error {
 	return nil
 }
 
-func (s *UniformSubscriptionSource) ping(registrationId string, subscriptionChannel chan []models.EventSubscription) {
-	s.logger.Debugf("UniformSubscriptionSource: Renewing Integration ID %s", registrationId)
-	updatedIntegrationData, err := s.uniformAPI.Ping(registrationId)
+func (s *UniformSubscriptionSource) ping(registrationID string, subscriptionC chan []models.EventSubscription) error {
+	s.logger.Debugf("UniformSubscriptionSource: Renewing Integration ID %s", registrationID)
+	updatedIntegrationData, err := s.uniformAPI.Ping(registrationID)
 	if err != nil {
 		s.logger.Errorf("Unable to ping control plane: %v", err)
-		return
+		return err
 	}
-	s.logger.Debugf("UniformSubscriptionSource: Ping successful, got %d subscriptions for %s", len(updatedIntegrationData.Subscriptions), registrationId)
-	subscriptionChannel <- updatedIntegrationData.Subscriptions
+	s.logger.Debugf("UniformSubscriptionSource: Ping successful, got %d subscriptions for %s", len(updatedIntegrationData.Subscriptions), registrationID)
+	subscriptionC <- updatedIntegrationData.Subscriptions
+	return nil
 }
 
 // FixedSubscriptionSource can be used to use a fixed list of subscriptions rather than
