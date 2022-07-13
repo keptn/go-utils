@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
+	"sync"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/sdk/connector/logger"
 	"github.com/nats-io/nats.go"
-	"os"
-	"time"
 )
 
 var _ NATS = (*NatsConnector)(nil)
@@ -43,10 +45,11 @@ type ProcessEventFn func(msg *nats.Msg) error
 // NatsConnector can be used to subscribe to certain events
 // on the NATS event system
 type NatsConnector struct {
-	connection    *nats.Conn
-	connectURL    string
-	subscriptions map[string]*nats.Subscription
-	logger        logger.Logger
+	connectionLock sync.Mutex
+	connection     *nats.Conn
+	connectURL     string
+	subscriptions  map[string]*nats.Subscription
+	logger         logger.Logger
 }
 
 // WithLogger sets the logger to use
@@ -86,6 +89,8 @@ func NewFromEnv() *NatsConnector {
 // Note that this will automatically and indefinitely try to reconnect
 // as soon as it looses connection
 func (nc *NatsConnector) ensureConnection() (*nats.Conn, error) {
+	nc.connectionLock.Lock()
+	defer nc.connectionLock.Unlock()
 
 	if !nc.connection.IsConnected() {
 		disconnectLogger := func(con *nats.Conn, err error) {
