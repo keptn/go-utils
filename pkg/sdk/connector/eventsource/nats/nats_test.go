@@ -2,6 +2,7 @@ package nats
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/keptn/go-utils/pkg/sdk/connector/types"
 	"sync"
@@ -309,24 +310,55 @@ func TestEventSourceSenderFails(t *testing.T) {
 	require.Equal(t, 1, natsConnectorMock.publishCalls)
 }
 
-func TestEventSourceStopDisconnectsFromEventBroker(t *testing.T) {
+func TestEventSourceStopUnsubscribesFromEventBroker(t *testing.T) {
+	natsConnectorMock := &NATSConnectorMock{
+		QueueSubscribeMultipleFn: func(strings []string, s string, fn nats2.ProcessEventFn) error {
+			return nil
+		},
+		UnsubscribeAllFn: func() error {
+			return nil
+		},
+	}
+
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+
+	es := New(natsConnectorMock)
+	err := es.Start(context.TODO(), types.RegistrationData{}, make(chan types.EventUpdate), make(chan error), wg)
+	require.NoError(t, err)
+	err = es.Stop()
+	require.NoError(t, err)
+	require.Eventually(t, func() bool {
+		return natsConnectorMock.unsubscribeAllCalls == 1
+	}, 100*time.Millisecond, 10*time.Millisecond)
+}
+
+func TestEventSourceCleanup(t *testing.T) {
 	natsConnectorMock := &NATSConnectorMock{
 		DisconnectFn: func() error {
 			return nil
 		},
 	}
-	err := New(natsConnectorMock).Stop()
+
+	es := New(natsConnectorMock)
+	err := es.Cleanup()
 	require.NoError(t, err)
-	require.Equal(t, 1, natsConnectorMock.disconnectCalls)
+	require.Eventually(t, func() bool {
+		return natsConnectorMock.DisconnectCalls() == 1
+	}, 100*time.Millisecond, 10*time.Millisecond)
 }
 
-func TestEventSourceStopFails(t *testing.T) {
+func TestEventSourceCleanupFails(t *testing.T) {
 	natsConnectorMock := &NATSConnectorMock{
 		DisconnectFn: func() error {
-			return fmt.Errorf("error occured")
+			return errors.New("oops")
 		},
 	}
-	err := New(natsConnectorMock).Stop()
+
+	es := New(natsConnectorMock)
+	err := es.Cleanup()
 	require.Error(t, err)
-	require.Equal(t, 1, natsConnectorMock.disconnectCalls)
+	require.Eventually(t, func() bool {
+		return natsConnectorMock.DisconnectCalls() == 1
+	}, 100*time.Millisecond, 10*time.Millisecond)
 }

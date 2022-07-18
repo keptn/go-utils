@@ -23,6 +23,7 @@ type NATSEventSource struct {
 	eventProcessFn  natseventsource.ProcessEventFn
 	queueGroup      string
 	logger          logger.Logger
+	quitC           chan struct{}
 }
 
 // New creates a new NATSEventSource
@@ -31,6 +32,7 @@ func New(natsConnector natseventsource.NATS, opts ...func(source *NATSEventSourc
 		currentSubjects: []string{},
 		connector:       natsConnector,
 		eventProcessFn:  func(event *nats.Msg) error { return nil },
+		quitC:           make(chan struct{}, 1),
 		logger:          logger.NewDefaultLogger(),
 	}
 	for _, o := range opts {
@@ -63,15 +65,26 @@ func (n *NATSEventSource) Start(ctx context.Context, registrationData types.Regi
 		return fmt.Errorf("could not start NATS event source: %w", err)
 	}
 	go func() {
-		defer wg.Done()
-		<-ctx.Done()
-		if err := n.connector.UnsubscribeAll(); err != nil {
-			n.logger.Errorf("Unable to unsubscribe from NATS: %v", err)
+		select {
+		case <-ctx.Done():
+			n.unsubscribe()
+			wg.Done()
+			return
+		case <-n.quitC:
+			n.unsubscribe()
+			wg.Done()
 			return
 		}
-		n.logger.Debug("Unsubscribed from NATS")
 	}()
 	return nil
+}
+
+func (n *NATSEventSource) unsubscribe() {
+	if err := n.connector.UnsubscribeAll(); err != nil {
+		n.logger.Errorf("Unable to unsubscribe from NATS: %v", err)
+	} else {
+		n.logger.Debug("Unsubscribed from NATS")
+	}
 }
 
 func (n *NATSEventSource) OnSubscriptionUpdate(subj []models.EventSubscription) {
@@ -100,6 +113,11 @@ func (n *NATSEventSource) Sender() types.EventSender {
 }
 
 func (n *NATSEventSource) Stop() error {
+	n.quitC <- struct{}{}
+	return nil
+}
+
+func (n *NATSEventSource) Cleanup() error {
 	return n.connector.Disconnect()
 }
 

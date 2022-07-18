@@ -152,6 +152,7 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 		// control plane cancelled via context
 		case <-ctx.Done():
 			cp.logger.Info("ControlPlane cancelled via context. Unregistering...")
+			cp.stopComponents()
 			wg.Wait()
 			cp.waitForEventHandlers()
 			cp.cleanup()
@@ -162,6 +163,7 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 		case e := <-errC:
 			cp.logger.Errorf("Stopping control plane due to error: %v", e)
 			cp.logger.Info("Waiting for components to shutdown")
+			cp.stopComponents()
 			wg.Wait()
 			cp.waitForEventHandlers()
 			cp.cleanup()
@@ -184,7 +186,7 @@ func (cp *ControlPlane) IsRegistered() bool {
 	return cp.registered
 }
 
-func (cp *ControlPlane) cleanup() {
+func (cp *ControlPlane) stopComponents() {
 	cp.logger.Info("Stopping subscription source...")
 	if err := cp.subscriptionSource.Stop(); err != nil {
 		log.Fatalf("Unable to stop subscription source: %v", err)
@@ -258,4 +260,11 @@ func (cp *ControlPlane) setRegistrationStatus(registered bool) {
 	cp.mtx.Lock()
 	defer cp.mtx.Unlock()
 	cp.registered = registered
+}
+
+func (cp *ControlPlane) cleanup() {
+	cp.logger.Info("Cleaning up event source...")
+	if err := cp.eventSource.Cleanup(); err != nil {
+		log.Fatalf("Unable to clean up event source: %v", err)
+	}
 }

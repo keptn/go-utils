@@ -20,4 +20,6 @@ type EventSource interface {
 	Sender() types.EventSender
 	//Stop is stopping the EventSource
 	Stop() error
+	// Cleanup performs all cleanup actions that should be executed before the component gets shut down
+	Cleanup() error
 }
