@@ -328,9 +328,8 @@ func TestEventSourceStopUnsubscribesFromEventBroker(t *testing.T) {
 	require.NoError(t, err)
 	err = es.Stop()
 	require.NoError(t, err)
-	require.Eventually(t, func() bool {
-		return natsConnectorMock.unsubscribeAllCalls == 1
-	}, 100*time.Millisecond, 10*time.Millisecond)
+	wg.Wait()
+	require.Equal(t, 1, natsConnectorMock.unsubscribeAllCalls)
 }
 
 func TestEventSourceCleanup(t *testing.T) {
