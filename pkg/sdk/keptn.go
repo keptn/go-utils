@@ -2,7 +2,10 @@ package sdk
 
 import (
 	"context"
-	eventsource "github.com/keptn/go-utils/pkg/sdk/connector/eventsource/nats"
+	"github.com/benbjohnson/clock"
+	"github.com/keptn/go-utils/pkg/sdk/connector/eventsource"
+	"github.com/keptn/go-utils/pkg/sdk/connector/eventsource/http"
+	eventsourceNats "github.com/keptn/go-utils/pkg/sdk/connector/eventsource/nats"
 	"github.com/keptn/go-utils/pkg/sdk/connector/logforwarder"
 	"github.com/keptn/go-utils/pkg/sdk/connector/logger"
 	"github.com/keptn/go-utils/pkg/sdk/connector/subscriptionsource"
@@ -394,9 +397,15 @@ func newControlPlaneFromEnv(logger logger.Logger) (api.KeptnInterface, *controlp
 		logger.Fatal(err)
 	}
 
-	natsConnector := nats.New(env.EventBrokerURL, nats.WithLogger(logger))
-	eventSource := eventsource.New(natsConnector, eventsource.WithLogger(logger))
+	var eventSource eventsource.EventSource
+	if env.PubSubConnectionType() == config.ConnectionTypeHTTP {
+		eventSource = http.New(clock.New(), http.NewEventAPI(apiSet.ShipyardControlV1(), apiSet.APIV1()))
+	} else {
+		natsConnector := nats.New(env.EventBrokerURL, nats.WithLogger(logger))
+		eventSource = eventsourceNats.New(natsConnector, eventsourceNats.WithLogger(logger))
+	}
 	eventSender := eventSource.Sender()
+
 	subscriptionSource := subscriptionsource.New(apiSet.UniformV1(), subscriptionsource.WithLogger(logger))
 	logForwarder := logforwarder.New(apiSet.LogsV1(), logforwarder.WithLogger(logger))
 	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder, controlplane.WithLogger(logger))
