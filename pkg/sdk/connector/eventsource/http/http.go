@@ -116,6 +116,10 @@ func (hes *HTTPEventSource) Stop() error {
 	return nil
 }
 
+func (hes *HTTPEventSource) Cleanup() error {
+	return nil
+}
+
 func (hes *HTTPEventSource) doPoll(eventUpdates chan types.EventUpdate) error {
 	hes.mutex.Lock()
 	subscriptions := hes.currentSubscriptions

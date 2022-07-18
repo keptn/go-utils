@@ -150,6 +150,9 @@ func TestControlPlaneInboundEventIsForwardedToIntegration(t *testing.T) {
 			eventSourceStopCalled = true
 			return nil
 		},
+		CleanupFn: func() error {
+			return nil
+		},
 	}
 	fm := &LogForwarderMock{
 		ForwardFn: func(keptnEvent models.KeptnContextExtendedCE, integrationID string) error {
@@ -572,6 +575,9 @@ func TestControlPlane_IsRegistered(t *testing.T) {
 		StopFn: func() error {
 			return nil
 		},
+		CleanupFn: func() error {
+			return nil
+		},
 	}
 	fm := &LogForwarderMock{
 		ForwardFn: func(keptnEvent models.KeptnContextExtendedCE, integrationID string) error {
@@ -623,13 +629,24 @@ func TestControlPlane_StoppedByReceivingErrEvent(t *testing.T) {
 	//eventUpdate := types.EventUpdate{KeptnEvent: models.KeptnContextExtendedCE{ID: "some-id", Type: strutils.Stringp("sh.keptn.event.echo.triggered")}, MetaData: types.EventUpdateMetaData{Subject: "sh.keptn.event.echo.triggered"}}
 	callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }
 
-	ssm := &fake.SubscriptionSourceMock{
+	type mySubscriptionSourceMock struct {
+		fake.SubscriptionSourceMock
+		wg *sync.WaitGroup
+	}
+
+	type myEventSourceMock struct {
+		fake.EventSourceMock
+		wg *sync.WaitGroup
+	}
+
+	ssm := &mySubscriptionSourceMock{}
+	ssm.SubscriptionSourceMock = fake.SubscriptionSourceMock{
 		StartFn: func(ctx context.Context, data types.RegistrationData, subC chan []models.EventSubscription, errC chan error, wg *sync.WaitGroup) error {
 			mtx.Lock()
 			defer mtx.Unlock()
 			subsChan = subC
 			errorC = errC
-			wg.Done()
+			ssm.wg = wg
 			return nil
 		},
 		RegisterFn: func(integration models.Integration) (string, error) {
@@ -639,16 +656,19 @@ func TestControlPlane_StoppedByReceivingErrEvent(t *testing.T) {
 			mtx.Lock()
 			defer mtx.Unlock()
 			subscriptionSourceStopCalled = true
+			ssm.wg.Done()
 			return nil
 		},
 	}
-	esm := &fake.EventSourceMock{
+
+	esm := &myEventSourceMock{}
+	esm.EventSourceMock = fake.EventSourceMock{
 		StartFn: func(ctx context.Context, data types.RegistrationData, evC chan types.EventUpdate, errC chan error, wg *sync.WaitGroup) error {
 			mtx.Lock()
 			defer mtx.Unlock()
 			eventChan = evC
 			errorC = errC
-			wg.Done()
+			esm.wg = wg
 			return nil
 		},
 		OnSubscriptionUpdateFn: func(subscriptions []models.EventSubscription) {},
@@ -657,6 +677,10 @@ func TestControlPlane_StoppedByReceivingErrEvent(t *testing.T) {
 			mtx.Lock()
 			defer mtx.Unlock()
 			eventSourceStopCalled = true
+			esm.wg.Done()
+			return nil
+		},
+		CleanupFn: func() error {
 			return nil
 		},
 	}

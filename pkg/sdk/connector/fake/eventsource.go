@@ -12,6 +12,7 @@ type EventSourceMock struct {
 	OnSubscriptionUpdateFn func([]models.EventSubscription)
 	SenderFn               func() types.EventSender
 	StopFn                 func() error
+	CleanupFn              func() error
 }
 
 func (e *EventSourceMock) Start(ctx context.Context, data types.RegistrationData, eventC chan types.EventUpdate, errC chan error, wg *sync.WaitGroup) error {
@@ -39,6 +40,13 @@ func (e *EventSourceMock) Sender() types.EventSender {
 func (e *EventSourceMock) Stop() error {
 	if e.StopFn != nil {
 		return e.StopFn()
+	}
+	panic("implement me")
+}
+
+func (e *EventSourceMock) Cleanup() error {
+	if e.CleanupFn != nil {
+		return e.CleanupFn()
 	}
 	panic("implement me")
 }
