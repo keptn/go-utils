@@ -2,13 +2,6 @@ package sdk
 
 import (
 	"context"
-	"github.com/benbjohnson/clock"
-	"github.com/keptn/go-utils/pkg/sdk/connector/eventsource"
-	"github.com/keptn/go-utils/pkg/sdk/connector/eventsource/http"
-	eventsourceNats "github.com/keptn/go-utils/pkg/sdk/connector/eventsource/nats"
-	"github.com/keptn/go-utils/pkg/sdk/connector/logforwarder"
-	"github.com/keptn/go-utils/pkg/sdk/connector/logger"
-	"github.com/keptn/go-utils/pkg/sdk/connector/subscriptionsource"
 	"github.com/keptn/go-utils/pkg/sdk/connector/types"
 	sdk "github.com/keptn/go-utils/pkg/sdk/internal/api"
 	"github.com/keptn/go-utils/pkg/sdk/internal/config"
@@ -24,7 +17,6 @@ import (
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/go-utils/pkg/sdk/connector/controlplane"
-	"github.com/keptn/go-utils/pkg/sdk/connector/nats"
 )
 
 const (
@@ -164,11 +156,26 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 		env:                    config.NewEnvConfig(),
 		healthEndpointRunner:   newHealthEndpointRunner,
 	}
+
 	for _, opt := range opts {
 		opt(keptn)
 	}
-	keptn.api, keptn.controlPlane, keptn.eventSender = newControlPlaneFromEnv(keptn.logger)
-	keptn.resourceHandler = newResourceHandlerFromEnv(keptn.logger)
+
+	var env config.EnvConfig
+	if err := envconfig.Process("", &env); err != nil {
+		keptn.logger.Fatalf("failed to process env vars: %v", err)
+	}
+
+	initializationResult := sdk.Initialize(env, keptn.logger)
+	if initializationResult.Error != nil {
+		keptn.logger.Fatalf("failed to initialize keptn sdk: %v", initializationResult.Error)
+	}
+
+	keptn.api = initializationResult.KeptnAPI
+	keptn.controlPlane = initializationResult.ControlPlane
+	keptn.eventSender = initializationResult.EventSenderCallback
+	keptn.resourceHandler = initializationResult.ResourceHandler
+
 	return keptn
 }
 
@@ -371,43 +378,4 @@ func newHealthEndpointRunner(port string, cp *controlplane.ControlPlane) {
 			return cp.IsRegistered()
 		}))
 	}()
-}
-
-func newResourceHandlerFromEnv(logger logger.Logger) *api.ResourceHandler {
-	var env config.EnvConfig
-	if err := envconfig.Process("", &env); err != nil {
-		logger.Fatalf("failed to process env var: %s", err)
-	}
-	return api.NewResourceHandler(env.ConfigurationServiceURL)
-}
-
-func newControlPlaneFromEnv(logger logger.Logger) (api.KeptnInterface, *controlplane.ControlPlane, controlplane.EventSender) {
-	var env config.EnvConfig
-	if err := envconfig.Process("", &env); err != nil {
-		logger.Fatalf("failed to process env var: %s", err)
-	}
-
-	httpClient, err := sdk.CreateClientGetter(env).Get()
-	if err != nil {
-		logger.Fatal("Could not initialize http client.", err)
-	}
-
-	apiSet, err := sdk.CreateKeptnAPI(httpClient, env)
-	if err != nil {
-		logger.Fatal(err)
-	}
-
-	var eventSource eventsource.EventSource
-	if env.PubSubConnectionType() == config.ConnectionTypeHTTP {
-		eventSource = http.New(clock.New(), http.NewEventAPI(apiSet.ShipyardControlV1(), apiSet.APIV1()))
-	} else {
-		natsConnector := nats.New(env.EventBrokerURL, nats.WithLogger(logger))
-		eventSource = eventsourceNats.New(natsConnector, eventsourceNats.WithLogger(logger))
-	}
-	eventSender := eventSource.Sender()
-
-	subscriptionSource := subscriptionsource.New(apiSet.UniformV1(), subscriptionsource.WithLogger(logger))
-	logForwarder := logforwarder.New(apiSet.LogsV1(), logforwarder.WithLogger(logger))
-	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder, controlplane.WithLogger(logger))
-	return apiSet, controlPlane, eventSender
 }

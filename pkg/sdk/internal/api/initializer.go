@@ -2,45 +2,99 @@ package api
 
 import (
 	"fmt"
+	"github.com/benbjohnson/clock"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/go-utils/pkg/sdk/connector/controlplane"
+	"github.com/keptn/go-utils/pkg/sdk/connector/eventsource"
+	eventsourceHttp "github.com/keptn/go-utils/pkg/sdk/connector/eventsource/http"
+	eventsourceNats "github.com/keptn/go-utils/pkg/sdk/connector/eventsource/nats"
+	"github.com/keptn/go-utils/pkg/sdk/connector/logforwarder"
+	"github.com/keptn/go-utils/pkg/sdk/connector/logger"
+	"github.com/keptn/go-utils/pkg/sdk/connector/nats"
+	"github.com/keptn/go-utils/pkg/sdk/connector/subscriptionsource"
 	"github.com/keptn/go-utils/pkg/sdk/internal/config"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
-// Initializer implements both methods of creating a new keptn API with internal or remote execution plane
-type Initializer struct {
-	Remote   func(baseURL string, options ...func(*keptnapi.APISet)) (*keptnapi.APISet, error)
-	Internal func(client *http.Client, apiMappings ...keptnapi.InClusterAPIMappings) (*keptnapi.InternalAPISet, error)
+type InitializationResult struct {
+	KeptnAPI            keptnapi.KeptnInterface
+	ControlPlane        *controlplane.ControlPlane
+	EventSenderCallback controlplane.EventSender
+	ResourceHandler     *keptnapi.ResourceHandler
+	Error               error
 }
 
-func CreateKeptnAPI(httpClient *http.Client, env config.EnvConfig) (keptnapi.KeptnInterface, error) {
-	return createAPI(httpClient, env, Initializer{keptnapi.New, keptnapi.NewInternal})
+func Initialize(env config.EnvConfig, logger logger.Logger) *InitializationResult {
+	apiSet, err := apiSet(env)
+	if err != nil {
+		return &InitializationResult{
+			Error: fmt.Errorf("could not initialize control plane client api: %w", err),
+		}
+	}
+	resourceHandler := resourceHandler(env)
+	ss, es, lf := wireComponents(apiSet, logger, env)
+	controlPlane := controlplane.New(ss, es, lf)
+
+	return &InitializationResult{
+		KeptnAPI:            apiSet,
+		ControlPlane:        controlPlane,
+		EventSenderCallback: es.Sender(),
+		ResourceHandler:     resourceHandler,
+	}
+
 }
 
-func createAPI(httpClient *http.Client, env config.EnvConfig, apiInit Initializer) (keptnapi.KeptnInterface, error) {
+func apiSet(env config.EnvConfig) (keptnapi.KeptnInterface, error) {
+	httpClient, err := CreateClientGetter(env).Get()
+	if err != nil {
+		return nil, fmt.Errorf("could not initialize HTTP client: %w", err)
+	}
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
+
 	if env.PubSubConnectionType() == config.ConnectionTypeHTTP {
 		scheme := "http"
 		parsed, err := url.ParseRequestURI(env.KeptnAPIEndpoint)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not parse given Keptn API endpoint: %w", err)
 		}
 
-		// accepts either "" or http
 		if parsed.Scheme == "" || !strings.HasPrefix(parsed.Scheme, "http") {
 			return nil, fmt.Errorf("invalid scheme for keptn endpoint, %s is not http or https", env.KeptnAPIEndpoint)
 		}
 
 		if strings.HasPrefix(parsed.Scheme, "http") {
-			// if no value is assigned to the endpoint than we keep the default scheme
 			scheme = parsed.Scheme
 		}
-		return apiInit.Remote(env.KeptnAPIEndpoint, keptnapi.WithScheme(scheme), keptnapi.WithHTTPClient(httpClient), keptnapi.WithAuthToken(env.KeptnAPIToken))
-	}
+		return keptnapi.New(env.KeptnAPIEndpoint, keptnapi.WithScheme(scheme), keptnapi.WithHTTPClient(httpClient), keptnapi.WithAuthToken(env.KeptnAPIToken))
 
-	return apiInit.Internal(httpClient)
+	}
+	return keptnapi.NewInternal(httpClient)
+
+}
+
+func eventSource(apiSet keptnapi.KeptnInterface, logger logger.Logger, env config.EnvConfig) eventsource.EventSource {
+	if env.PubSubConnectionType() == config.ConnectionTypeHTTP {
+		return eventsourceHttp.New(clock.New(), eventsourceHttp.NewEventAPI(apiSet.ShipyardControlV1(), apiSet.APIV1()))
+	}
+	natsConnector := nats.New(env.EventBrokerURL, nats.WithLogger(logger))
+	return eventsourceNats.New(natsConnector, eventsourceNats.WithLogger(logger))
+}
+
+func subscriptionSource(apiSet keptnapi.KeptnInterface, logger logger.Logger) subscriptionsource.SubscriptionSource {
+	return subscriptionsource.New(apiSet.UniformV1(), subscriptionsource.WithLogger(logger))
+}
+
+func logForwarder(apiSet keptnapi.KeptnInterface, logger logger.Logger) logforwarder.LogForwarder {
+	return logforwarder.New(apiSet.LogsV1(), logforwarder.WithLogger(logger))
+}
+
+func wireComponents(apiSet keptnapi.KeptnInterface, logger logger.Logger, env config.EnvConfig) (subscriptionsource.SubscriptionSource, eventsource.EventSource, logforwarder.LogForwarder) {
+	return subscriptionSource(apiSet, logger), eventSource(apiSet, logger, env), logForwarder(apiSet, logger)
+}
+func resourceHandler(env config.EnvConfig) *keptnapi.ResourceHandler {
+	return keptnapi.NewResourceHandler(env.ConfigurationServiceURL)
 }

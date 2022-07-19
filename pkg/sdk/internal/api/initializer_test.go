@@ -2,73 +2,51 @@ package api
 
 import (
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/go-utils/pkg/sdk/connector/logger"
 	"github.com/keptn/go-utils/pkg/sdk/internal/config"
-	"net/http"
-	"reflect"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
-func Test_createAPI(t *testing.T) {
+func Test_Initialize(t *testing.T) {
+	t.Run("Remote use case - invalid keptn api endpoint", func(t *testing.T) {
+		env := config.EnvConfig{KeptnAPIEndpoint: "://mynotsogoodendpoint"}
+		result := Initialize(env, logger.NewDefaultLogger())
+		require.Error(t, result.Error)
+		require.Nil(t, result.ControlPlane)
+		require.Nil(t, result.EventSenderCallback)
+		require.Nil(t, result.KeptnAPI)
+		require.Nil(t, result.ResourceHandler)
 
-	apiInit := Initializer{
-		Internal: func(client *http.Client, apiMappings ...keptnapi.InClusterAPIMappings) (*keptnapi.InternalAPISet, error) {
-			return &keptnapi.InternalAPISet{}, nil
-		},
-		Remote: func(baseURL string, options ...func(*keptnapi.APISet)) (*keptnapi.APISet, error) {
-			return &keptnapi.APISet{}, nil
-		},
-	}
+	})
+	t.Run("Remote use case - no http address as keptn api endpoint", func(t *testing.T) {
+		env := config.EnvConfig{KeptnAPIEndpoint: "ssh://mynotsogoodendpoint"}
+		result := Initialize(env, logger.NewDefaultLogger())
+		require.Error(t, result.Error)
+		require.Nil(t, result.ControlPlane)
+		require.Nil(t, result.EventSenderCallback)
+		require.Nil(t, result.KeptnAPI)
+		require.Nil(t, result.ResourceHandler)
 
-	tests := []struct {
-		name         string
-		env          config.EnvConfig
-		wantInternal bool
-		wantErr      bool
-	}{
-		{
-			name:         "test no env internal NATS ",
-			env:          config.EnvConfig{},
-			wantInternal: true,
-			wantErr:      false,
-		},
-		{
-			name: "test FAIL for no http address",
-			env: config.EnvConfig{
-				KeptnAPIEndpoint: "ssh://mynotsogoodendpoint",
-			},
-			wantErr:      true,
-			wantInternal: false,
-		},
-		{
-			name: "test FAIL for no good address",
-			env: config.EnvConfig{
-				KeptnAPIEndpoint: ":///MALFORMEDendpoint",
-			},
-			wantErr:      true,
-			wantInternal: false,
-		},
-		{
-			name: "test PASS for http address",
-			env: config.EnvConfig{
-				KeptnAPIEndpoint: "http://endpoint",
-			},
-			wantErr:      false,
-			wantInternal: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := createAPI(nil, tt.env, apiInit)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("createAPI() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if err == nil && tt.wantInternal && !reflect.DeepEqual(got, &keptnapi.InternalAPISet{}) {
-				t.Errorf("createAPI() got = %v, wanted internal API", got)
-			} else if err == nil && !tt.wantInternal && !reflect.DeepEqual(got, &keptnapi.APISet{}) {
-				t.Errorf("createAPI() got = %v, want remote execution plane", got)
-			}
-
-		})
-	}
+	})
+	t.Run("Remote use case - remote api set is used", func(t *testing.T) {
+		env := config.EnvConfig{KeptnAPIEndpoint: "http://endpoint"}
+		result := Initialize(env, logger.NewDefaultLogger())
+		require.NoError(t, result.Error)
+		require.NotNil(t, result.ControlPlane)
+		require.NotNil(t, result.EventSenderCallback)
+		require.NotNil(t, result.KeptnAPI)
+		require.IsType(t, &keptnapi.APISet{}, result.KeptnAPI)
+		require.NotNil(t, result.ResourceHandler)
+	})
+	t.Run("Internal Use case - internal api set is used", func(t *testing.T) {
+		env := config.EnvConfig{}
+		result := Initialize(env, logger.NewDefaultLogger())
+		require.NoError(t, result.Error)
+		require.NotNil(t, result.ControlPlane)
+		require.NotNil(t, result.EventSenderCallback)
+		require.NotNil(t, result.KeptnAPI)
+		require.IsType(t, &keptnapi.InternalAPISet{}, result.KeptnAPI)
+		require.NotNil(t, result.ResourceHandler)
+	})
 }
