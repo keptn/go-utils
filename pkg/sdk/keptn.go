@@ -166,7 +166,8 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 		keptn.logger.Fatalf("failed to process env vars: %v", err)
 	}
 
-	initializationResult := sdk.Initialize(env, keptn.logger)
+	httpClientFactory := sdk.CreateClientGetter(env)
+	initializationResult := sdk.Initialize(env, httpClientFactory, keptn.logger)
 	if initializationResult.Error != nil {
 		keptn.logger.Fatalf("failed to initialize keptn sdk: %v", initializationResult.Error)
 	}
@@ -218,6 +219,7 @@ func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE
 						k.logger.Errorf("Unable to send '.finished' event: %v", err)
 						return
 					}
+					return
 				}
 
 				// execute the filtering functions of the task handler to determine whether the incoming event should be handled

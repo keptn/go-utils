@@ -26,16 +26,32 @@ type InitializationResult struct {
 	Error               error
 }
 
-func Initialize(env config.EnvConfig, logger logger.Logger) *InitializationResult {
-	apiSet, err := apiSet(env)
+// Initialize takes care of creating the API clients and initializing the cp-connector library based
+// on environment variables
+func Initialize(env config.EnvConfig, clientFactory HTTPClientGetter, logger logger.Logger) *InitializationResult {
+	// initialize http client
+	httpClient, err := clientFactory.Get()
+	if err != nil {
+		return &InitializationResult{
+			Error: fmt.Errorf("could not initialize HTTP client: %w", err),
+		}
+	}
+	// fall back to uninitialized http client
+	if httpClient == nil {
+		httpClient = &http.Client{}
+	}
+
+	// initialize api set
+	apiSet, err := apiSet(env, httpClient)
 	if err != nil {
 		return &InitializationResult{
 			Error: fmt.Errorf("could not initialize control plane client api: %w", err),
 		}
 	}
+	// initialize api handlers and cp-connector components
 	resourceHandler := resourceHandler(env)
-	ss, es, lf := wireComponents(apiSet, logger, env)
-	controlPlane := controlplane.New(ss, es, lf)
+	ss, es, lf := createCPComponents(apiSet, logger, env)
+	controlPlane := controlplane.New(ss, es, lf, controlplane.WithLogger(logger))
 
 	return &InitializationResult{
 		KeptnAPI:            apiSet,
@@ -46,14 +62,7 @@ func Initialize(env config.EnvConfig, logger logger.Logger) *InitializationResul
 
 }
 
-func apiSet(env config.EnvConfig) (keptnapi.KeptnInterface, error) {
-	httpClient, err := CreateClientGetter(env).Get()
-	if err != nil {
-		return nil, fmt.Errorf("could not initialize HTTP client: %w", err)
-	}
-	if httpClient == nil {
-		httpClient = &http.Client{}
-	}
+func apiSet(env config.EnvConfig, httpClient *http.Client) (keptnapi.KeptnInterface, error) {
 
 	if env.PubSubConnectionType() == config.ConnectionTypeHTTP {
 		scheme := "http"
@@ -92,7 +101,7 @@ func logForwarder(apiSet keptnapi.KeptnInterface, logger logger.Logger) logforwa
 	return logforwarder.New(apiSet.LogsV1(), logforwarder.WithLogger(logger))
 }
 
-func wireComponents(apiSet keptnapi.KeptnInterface, logger logger.Logger, env config.EnvConfig) (subscriptionsource.SubscriptionSource, eventsource.EventSource, logforwarder.LogForwarder) {
+func createCPComponents(apiSet keptnapi.KeptnInterface, logger logger.Logger, env config.EnvConfig) (subscriptionsource.SubscriptionSource, eventsource.EventSource, logforwarder.LogForwarder) {
 	return subscriptionSource(apiSet, logger), eventSource(apiSet, logger, env), logForwarder(apiSet, logger)
 }
 func resourceHandler(env config.EnvConfig) *keptnapi.ResourceHandler {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/keptn/go-utils/pkg/sdk/internal/config"
+	"math"
 	"testing"
 
 	"github.com/google/uuid"
@@ -12,6 +13,36 @@ import (
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/require"
 )
+
+func Test_NewKeptn(t *testing.T) {
+	t.Run("Create SDK instance", func(t *testing.T) {
+		keptnSDK := NewKeptn("my-service")
+		require.NotNil(t, keptnSDK)
+	})
+	t.Run("Create SDK instance with option(s)", func(t *testing.T) {
+		myLoggerInstance := newDefaultLogger()
+		keptnSDK := NewKeptn("my-service", WithAutomaticResponse(true), WithLogger(myLoggerInstance), WithGracefulShutdown(true))
+		require.NotNil(t, keptnSDK)
+		require.True(t, keptnSDK.automaticEventResponse)
+		require.Equal(t, myLoggerInstance, keptnSDK.logger)
+		require.True(t, keptnSDK.gracefulShutdown)
+	})
+}
+
+func Test_ReceivingInvalidEvent(t *testing.T) {
+	taskHandler := &TaskHandlerMock{}
+	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }
+	fakeKeptn := NewFakeKeptn("fake")
+	fakeKeptn.AddTaskHandler("sh.keptn.event.faketask.triggered", taskHandler)
+	fakeKeptn.NewEvent(models.KeptnContextExtendedCE{
+		Data:           math.Inf(1),
+		ID:             "id",
+		Shkeptncontext: "context",
+		Source:         strutils.Stringp("source"),
+		Type:           strutils.Stringp("sh.keptn.event.faketask.triggered"),
+	})
+	fakeKeptn.AssertNumberOfEventSent(t, 1)
+}
 
 func Test_ReceivingEventWithMissingType(t *testing.T) {
 	taskHandler := &TaskHandlerMock{}
@@ -40,7 +71,6 @@ func Test_CannotGetEventSenderFromContext(t *testing.T) {
 		Source:         strutils.Stringp("source"),
 		Type:           strutils.Stringp("sh.keptn.event.faketask.triggered"),
 	})
-
 	fakeKeptn.AssertNumberOfEventSent(t, 0)
 }
 
