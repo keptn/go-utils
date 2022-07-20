@@ -21,11 +21,19 @@ func Test_NewKeptn(t *testing.T) {
 	})
 	t.Run("Create SDK instance with option(s)", func(t *testing.T) {
 		myLoggerInstance := newDefaultLogger()
-		keptnSDK := NewKeptn("my-service", WithAutomaticResponse(true), WithLogger(myLoggerInstance), WithGracefulShutdown(true))
+		keptnSDK := NewKeptn("my-service",
+			WithAutomaticResponse(true),
+			WithLogger(myLoggerInstance),
+			WithGracefulShutdown(true),
+			WithTaskHandler("event.type", &TaskHandlerMock{}),
+			WithTaskHandler("event2.type", &TaskHandlerMock{}))
 		require.NotNil(t, keptnSDK)
 		require.True(t, keptnSDK.automaticEventResponse)
-		require.Equal(t, myLoggerInstance, keptnSDK.logger)
+		require.Equal(t, myLoggerInstance, keptnSDK.Logger())
 		require.True(t, keptnSDK.gracefulShutdown)
+		require.IsType(t, keptnSDK.taskRegistry.Get("event.type").taskHandler, &TaskHandlerMock{})
+		require.IsType(t, keptnSDK.taskRegistry.Get("event2.type").taskHandler, &TaskHandlerMock{})
+		require.NotNil(t, keptnSDK.GetResourceHandler())
 	})
 }
 

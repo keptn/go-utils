@@ -324,11 +324,11 @@ func (k *Keptn) GetResourceHandler() ResourceHandler {
 }
 
 func (k *Keptn) SendStartedEvent(event KeptnEvent) error {
-	finishedEvent, err := createStartedEvent(k.source, models.KeptnContextExtendedCE(event))
+	startedEvent, err := createStartedEvent(k.source, models.KeptnContextExtendedCE(event))
 	if err != nil {
 		return err
 	}
-	return k.eventSender(*finishedEvent)
+	return k.eventSender(*startedEvent)
 }
 
 func (k *Keptn) SendFinishedEvent(event KeptnEvent, result interface{}) error {
