@@ -54,6 +54,52 @@ func Test_ReceivingInvalidEvent(t *testing.T) {
 	fakeKeptn.AssertNumberOfEventSent(t, 1)
 }
 
+func Test_SendEvents(t *testing.T) {
+	t.Run("Send Started Event", func(t *testing.T) {
+		var sentEvent models.KeptnContextExtendedCE
+		keptnSDK := NewKeptn("my-service")
+		keptnSDK.eventSender = func(ce models.KeptnContextExtendedCE) error {
+			sentEvent = ce
+			return nil
+		}
+		err := keptnSDK.SendStartedEvent(KeptnEvent{
+			Contenttype:    "application/json",
+			Data:           v0_2_0.EventData{Project: "prj", Stage: "stg", Service: "svc"},
+			ID:             "id",
+			Shkeptncontext: "context",
+			Source:         strutils.Stringp("source"),
+			Type:           strutils.Stringp("sh.keptn.event.faketask.triggered"),
+		})
+		require.NoError(t, err)
+		require.NotNil(t, sentEvent)
+		require.NotEmpty(t, sentEvent.ID)
+		require.Equal(t, "sh.keptn.event.faketask.started", *sentEvent.Type)
+		require.Equal(t, v0_2_0.EventData{Project: "prj", Stage: "stg", Service: "svc"}, sentEvent.Data)
+	})
+
+	t.Run("Send Finished Event", func(t *testing.T) {
+		var sentEvent models.KeptnContextExtendedCE
+		keptnSDK := NewKeptn("my-service")
+		keptnSDK.eventSender = func(ce models.KeptnContextExtendedCE) error {
+			sentEvent = ce
+			return nil
+		}
+		err := keptnSDK.SendFinishedEvent(KeptnEvent{
+			Contenttype:    "application/json",
+			ID:             "id",
+			Shkeptncontext: "context",
+			Source:         strutils.Stringp("source"),
+			Type:           strutils.Stringp("sh.keptn.event.faketask.triggered"),
+		}, v0_2_0.EventData{Project: "prj", Stage: "stg", Service: "svc"})
+		require.NoError(t, err)
+		require.NotNil(t, sentEvent)
+		require.NotEmpty(t, sentEvent.ID)
+		require.Equal(t, "sh.keptn.event.faketask.finished", *sentEvent.Type)
+		require.Equal(t, map[string]interface{}{"project": "prj", "result": "pass", "service": "svc", "stage": "stg", "status": "succeeded"}, sentEvent.Data)
+	})
+
+}
+
 func Test_ReceivingEventWithMissingType(t *testing.T) {
 	taskHandler := &TaskHandlerMock{}
 	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }

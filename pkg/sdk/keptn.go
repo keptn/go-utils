@@ -31,9 +31,14 @@ type IKeptn interface {
 	// GetResourceHandler returns a handler to fetch data from the configuration service
 	GetResourceHandler() ResourceHandler
 	// SendStartedEvent sends a started event for the given input event to the Keptn API
-	SendStartedEvent(event KeptnEvent) error
-	// SendFinishedEvent sends a finished event for the given input event to the Keptn API
-	SendFinishedEvent(event KeptnEvent, result interface{}) error
+	// The first parameter is the "parent" event from which common information like e.g.
+	// the keptn context, task name, ... are taken and used for constructing the corresponding .started event
+	SendStartedEvent(KeptnEvent) error
+	// SendFinishedEvent sends a finished event for the given input event to the Keptn API.
+	// The first parameter can be seen as the "parent" event from which common information like e.g.
+	// the keptn context, task name, ... are taken and used for constructing the corresponding .finished event.
+	// The second parameter is the new event data to be set on the newly constructed .finished event
+	SendFinishedEvent(KeptnEvent, interface{}) error
 	// Logger returns the logger used by the sdk
 	// Per default DefaultLogger is used which internally just uses the go logging package
 	// Another logger can be configured using the sdk.WithLogger function
@@ -323,16 +328,16 @@ func (k *Keptn) GetResourceHandler() ResourceHandler {
 	return k.resourceHandler
 }
 
-func (k *Keptn) SendStartedEvent(event KeptnEvent) error {
-	startedEvent, err := createStartedEvent(k.source, models.KeptnContextExtendedCE(event))
+func (k *Keptn) SendStartedEvent(parentEvent KeptnEvent) error {
+	startedEvent, err := createStartedEvent(k.source, models.KeptnContextExtendedCE(parentEvent))
 	if err != nil {
 		return err
 	}
 	return k.eventSender(*startedEvent)
 }
 
-func (k *Keptn) SendFinishedEvent(event KeptnEvent, result interface{}) error {
-	finishedEvent, err := createFinishedEvent(k.source, models.KeptnContextExtendedCE(event), result)
+func (k *Keptn) SendFinishedEvent(parentEvent KeptnEvent, newEventData interface{}) error {
+	finishedEvent, err := createFinishedEvent(k.source, models.KeptnContextExtendedCE(parentEvent), newEventData)
 	if err != nil {
 		return err
 	}
