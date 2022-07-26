@@ -23,42 +23,37 @@ type InitializationResult struct {
 	ControlPlane        *controlplane.ControlPlane
 	EventSenderCallback controlplane.EventSender
 	ResourceHandler     *keptnapi.ResourceHandler
-	Error               error
 }
 
 // Initialize takes care of creating the API clients and initializing the cp-connector library based
 // on environment variables
-func Initialize(env config.EnvConfig, clientFactory HTTPClientGetter, logger logger.Logger) *InitializationResult {
+func Initialize(env config.EnvConfig, clientFactory HTTPClientGetter, logger logger.Logger) (*InitializationResult, error) {
 	// initialize http client
 	httpClient, err := clientFactory.Get()
 	if err != nil {
-		return &InitializationResult{
-			Error: fmt.Errorf("could not initialize HTTP client: %w", err),
-		}
+		return nil, fmt.Errorf("could not initialize HTTP client: %w", err)
 	}
 	// fall back to uninitialized http client
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
 
-	// initialize api set
-	apiSet, err := apiSet(env, httpClient)
+	// initialize api
+	api, err := apiSet(env, httpClient)
 	if err != nil {
-		return &InitializationResult{
-			Error: fmt.Errorf("could not initialize control plane client api: %w", err),
-		}
+		return nil, fmt.Errorf("could not initialize control plane client api: %w", err)
 	}
 	// initialize api handlers and cp-connector components
 	resourceHandler := resourceHandler(env)
-	ss, es, lf := createCPComponents(apiSet, logger, env)
+	ss, es, lf := createCPComponents(api, logger, env)
 	controlPlane := controlplane.New(ss, es, lf, controlplane.WithLogger(logger))
 
 	return &InitializationResult{
-		KeptnAPI:            apiSet,
+		KeptnAPI:            api,
 		ControlPlane:        controlPlane,
 		EventSenderCallback: es.Sender(),
 		ResourceHandler:     resourceHandler,
-	}
+	}, nil
 
 }
 

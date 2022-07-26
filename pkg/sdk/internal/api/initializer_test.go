@@ -21,27 +21,21 @@ func (f *fakeHTTPClientFactory) Get() (*http.Client, error) {
 func Test_Initialize(t *testing.T) {
 	t.Run("Remote use case - invalid keptn api endpoint", func(t *testing.T) {
 		env := config.EnvConfig{KeptnAPIEndpoint: "://mynotsogoodendpoint"}
-		result := Initialize(env, CreateClientGetter(env), logger.NewDefaultLogger())
-		require.Error(t, result.Error)
-		require.Nil(t, result.ControlPlane)
-		require.Nil(t, result.EventSenderCallback)
-		require.Nil(t, result.KeptnAPI)
-		require.Nil(t, result.ResourceHandler)
+		result, err := Initialize(env, CreateClientGetter(env), logger.NewDefaultLogger())
+		require.Error(t, err)
+		require.Nil(t, result)
 	})
 	t.Run("Remote use case - no http address as keptn api endpoint", func(t *testing.T) {
 		env := config.EnvConfig{KeptnAPIEndpoint: "ssh://mynotsogoodendpoint"}
-		result := Initialize(env, CreateClientGetter(env), logger.NewDefaultLogger())
-		require.Error(t, result.Error)
-		require.Nil(t, result.ControlPlane)
-		require.Nil(t, result.EventSenderCallback)
-		require.Nil(t, result.KeptnAPI)
-		require.Nil(t, result.ResourceHandler)
+		result, err := Initialize(env, CreateClientGetter(env), logger.NewDefaultLogger())
+		require.Error(t, err)
+		require.Nil(t, result)
 
 	})
 	t.Run("Remote use case - remote api set is used", func(t *testing.T) {
 		env := config.EnvConfig{KeptnAPIEndpoint: "http://endpoint"}
-		result := Initialize(env, CreateClientGetter(env), logger.NewDefaultLogger())
-		require.NoError(t, result.Error)
+		result, err := Initialize(env, CreateClientGetter(env), logger.NewDefaultLogger())
+		require.NoError(t, err)
 		require.NotNil(t, result.ControlPlane)
 		require.NotNil(t, result.EventSenderCallback)
 		require.NotNil(t, result.KeptnAPI)
@@ -50,8 +44,8 @@ func Test_Initialize(t *testing.T) {
 	})
 	t.Run("Internal Use case - internal api set is used", func(t *testing.T) {
 		env := config.EnvConfig{}
-		result := Initialize(env, CreateClientGetter(env), logger.NewDefaultLogger())
-		require.NoError(t, result.Error)
+		result, err := Initialize(env, CreateClientGetter(env), logger.NewDefaultLogger())
+		require.NoError(t, err)
 		require.NotNil(t, result.ControlPlane)
 		require.NotNil(t, result.EventSenderCallback)
 		require.NotNil(t, result.KeptnAPI)
@@ -60,17 +54,14 @@ func Test_Initialize(t *testing.T) {
 	})
 	t.Run("HTTP client creation fails", func(t *testing.T) {
 		env := config.EnvConfig{KeptnAPIEndpoint: "http://endpoint"}
-		result := Initialize(env, &fakeHTTPClientFactory{GetFn: func() (*http.Client, error) { return nil, fmt.Errorf("err") }}, logger.NewDefaultLogger())
-		require.Error(t, result.Error)
-		require.Nil(t, result.ControlPlane)
-		require.Nil(t, result.EventSenderCallback)
-		require.Nil(t, result.KeptnAPI)
-		require.Nil(t, result.ResourceHandler)
+		result, err := Initialize(env, &fakeHTTPClientFactory{GetFn: func() (*http.Client, error) { return nil, fmt.Errorf("err") }}, logger.NewDefaultLogger())
+		require.Error(t, err)
+		require.Nil(t, result)
 	})
 	t.Run("HTTP client creation returns nil client", func(t *testing.T) {
 		env := config.EnvConfig{KeptnAPIEndpoint: "http://endpoint"}
-		result := Initialize(env, &fakeHTTPClientFactory{GetFn: func() (*http.Client, error) { return nil, nil }}, logger.NewDefaultLogger())
-		require.NoError(t, result.Error)
+		result, err := Initialize(env, &fakeHTTPClientFactory{GetFn: func() (*http.Client, error) { return nil, nil }}, logger.NewDefaultLogger())
+		require.NoError(t, err)
 		require.NotNil(t, result.ControlPlane)
 		require.NotNil(t, result.EventSenderCallback)
 		require.NotNil(t, result.KeptnAPI)

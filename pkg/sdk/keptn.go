@@ -172,9 +172,9 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 	}
 
 	httpClientFactory := sdk.CreateClientGetter(env)
-	initializationResult := sdk.Initialize(env, httpClientFactory, keptn.logger)
-	if initializationResult.Error != nil {
-		keptn.logger.Fatalf("failed to initialize keptn sdk: %v", initializationResult.Error)
+	initializationResult, err := sdk.Initialize(env, httpClientFactory, keptn.logger)
+	if err != nil {
+		keptn.logger.Fatalf("failed to initialize keptn sdk: %v", err)
 	}
 
 	keptn.api = initializationResult.KeptnAPI
