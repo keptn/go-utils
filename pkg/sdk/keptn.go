@@ -2,13 +2,6 @@ package sdk
 
 import (
 	"context"
-	"github.com/benbjohnson/clock"
-	"github.com/keptn/go-utils/pkg/sdk/connector/eventsource"
-	"github.com/keptn/go-utils/pkg/sdk/connector/eventsource/http"
-	eventsourceNats "github.com/keptn/go-utils/pkg/sdk/connector/eventsource/nats"
-	"github.com/keptn/go-utils/pkg/sdk/connector/logforwarder"
-	"github.com/keptn/go-utils/pkg/sdk/connector/logger"
-	"github.com/keptn/go-utils/pkg/sdk/connector/subscriptionsource"
 	"github.com/keptn/go-utils/pkg/sdk/connector/types"
 	sdk "github.com/keptn/go-utils/pkg/sdk/internal/api"
 	"github.com/keptn/go-utils/pkg/sdk/internal/config"
@@ -24,7 +17,6 @@ import (
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/go-utils/pkg/sdk/connector/controlplane"
-	"github.com/keptn/go-utils/pkg/sdk/connector/nats"
 )
 
 const (
@@ -39,9 +31,14 @@ type IKeptn interface {
 	// GetResourceHandler returns a handler to fetch data from the configuration service
 	GetResourceHandler() ResourceHandler
 	// SendStartedEvent sends a started event for the given input event to the Keptn API
-	SendStartedEvent(event KeptnEvent) error
-	// SendFinishedEvent sends a finished event for the given input event to the Keptn API
-	SendFinishedEvent(event KeptnEvent, result interface{}) error
+	// The first parameter is the "parent" event from which common information like e.g.
+	// the keptn context, task name, ... are taken and used for constructing the corresponding .started event
+	SendStartedEvent(KeptnEvent) error
+	// SendFinishedEvent sends a finished event for the given input event to the Keptn API.
+	// The first parameter can be seen as the "parent" event from which common information like e.g.
+	// the keptn context, task name, ... are taken and used for constructing the corresponding .finished event.
+	// The second parameter is the new event data to be set on the newly constructed .finished event
+	SendFinishedEvent(KeptnEvent, interface{}) error
 	// Logger returns the logger used by the sdk
 	// Per default DefaultLogger is used which internally just uses the go logging package
 	// Another logger can be configured using the sdk.WithLogger function
@@ -164,11 +161,27 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 		env:                    config.NewEnvConfig(),
 		healthEndpointRunner:   newHealthEndpointRunner,
 	}
+
 	for _, opt := range opts {
 		opt(keptn)
 	}
-	keptn.api, keptn.controlPlane, keptn.eventSender = newControlPlaneFromEnv(keptn.logger)
-	keptn.resourceHandler = newResourceHandlerFromEnv(keptn.logger)
+
+	var env config.EnvConfig
+	if err := envconfig.Process("", &env); err != nil {
+		keptn.logger.Fatalf("failed to process env vars: %v", err)
+	}
+
+	httpClientFactory := sdk.CreateClientGetter(env)
+	initializationResult, err := sdk.Initialize(env, httpClientFactory, keptn.logger)
+	if err != nil {
+		keptn.logger.Fatalf("failed to initialize keptn sdk: %v", err)
+	}
+
+	keptn.api = initializationResult.KeptnAPI
+	keptn.controlPlane = initializationResult.ControlPlane
+	keptn.eventSender = initializationResult.EventSenderCallback
+	keptn.resourceHandler = initializationResult.ResourceHandler
+
 	return keptn
 }
 
@@ -211,6 +224,7 @@ func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE
 						k.logger.Errorf("Unable to send '.finished' event: %v", err)
 						return
 					}
+					return
 				}
 
 				// execute the filtering functions of the task handler to determine whether the incoming event should be handled
@@ -314,16 +328,16 @@ func (k *Keptn) GetResourceHandler() ResourceHandler {
 	return k.resourceHandler
 }
 
-func (k *Keptn) SendStartedEvent(event KeptnEvent) error {
-	finishedEvent, err := createStartedEvent(k.source, models.KeptnContextExtendedCE(event))
+func (k *Keptn) SendStartedEvent(parentEvent KeptnEvent) error {
+	startedEvent, err := createStartedEvent(k.source, models.KeptnContextExtendedCE(parentEvent))
 	if err != nil {
 		return err
 	}
-	return k.eventSender(*finishedEvent)
+	return k.eventSender(*startedEvent)
 }
 
-func (k *Keptn) SendFinishedEvent(event KeptnEvent, result interface{}) error {
-	finishedEvent, err := createFinishedEvent(k.source, models.KeptnContextExtendedCE(event), result)
+func (k *Keptn) SendFinishedEvent(parentEvent KeptnEvent, newEventData interface{}) error {
+	finishedEvent, err := createFinishedEvent(k.source, models.KeptnContextExtendedCE(parentEvent), newEventData)
 	if err != nil {
 		return err
 	}
@@ -371,43 +385,4 @@ func newHealthEndpointRunner(port string, cp *controlplane.ControlPlane) {
 			return cp.IsRegistered()
 		}))
 	}()
-}
-
-func newResourceHandlerFromEnv(logger logger.Logger) *api.ResourceHandler {
-	var env config.EnvConfig
-	if err := envconfig.Process("", &env); err != nil {
-		logger.Fatalf("failed to process env var: %s", err)
-	}
-	return api.NewResourceHandler(env.ConfigurationServiceURL)
-}
-
-func newControlPlaneFromEnv(logger logger.Logger) (api.KeptnInterface, *controlplane.ControlPlane, controlplane.EventSender) {
-	var env config.EnvConfig
-	if err := envconfig.Process("", &env); err != nil {
-		logger.Fatalf("failed to process env var: %s", err)
-	}
-
-	httpClient, err := sdk.CreateClientGetter(env).Get()
-	if err != nil {
-		logger.Fatal("Could not initialize http client.", err)
-	}
-
-	apiSet, err := sdk.CreateKeptnAPI(httpClient, env)
-	if err != nil {
-		logger.Fatal(err)
-	}
-
-	var eventSource eventsource.EventSource
-	if env.PubSubConnectionType() == config.ConnectionTypeHTTP {
-		eventSource = http.New(clock.New(), http.NewEventAPI(apiSet.ShipyardControlV1(), apiSet.APIV1()))
-	} else {
-		natsConnector := nats.New(env.EventBrokerURL, nats.WithLogger(logger))
-		eventSource = eventsourceNats.New(natsConnector, eventsourceNats.WithLogger(logger))
-	}
-	eventSender := eventSource.Sender()
-
-	subscriptionSource := subscriptionsource.New(apiSet.UniformV1(), subscriptionsource.WithLogger(logger))
-	logForwarder := logforwarder.New(apiSet.LogsV1(), logforwarder.WithLogger(logger))
-	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder, controlplane.WithLogger(logger))
-	return apiSet, controlPlane, eventSender
 }

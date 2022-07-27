@@ -18,4 +18,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Test
-        run: go test -race -v ./...
+        run: go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
+      - name: Report test coverage
+        uses: codecov/codecov-action@v3
+        with:
+          fail_ci_if_error: true
