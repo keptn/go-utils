@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.18.0](https://github.com/keptn/go-utils/compare/v0.17.0...v0.18.0) (2022-07-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* **go-utils:** Since the configuration-service is deprecated, all references to “configuration-service” are now replaced by “resource-service”. This will make the go-utils library from version 0.18.0 INCOMPATIBLE with installations using configuration-service.
+
+### Features
+
+* Disable NATS connection on remote execution-plane configuration ([#524](https://github.com/keptn/keptn/issues/524)) ([866624f](https://github.com/keptn/go-utils/commit/866624f8ce4274c3a9ae9b597fba04a338e20dc3))
+* **go-utils:** Added retry logic to cp-connector for contacting Keptn's control plane for registration and renewal of such ([#503](https://github.com/keptn/keptn/issues/503)) ([69c90ea](https://github.com/keptn/go-utils/commit/69c90ea3a7bcabe095d06144d8bb3b09a209c89b))
+* Wait for all event handlers to complete before exiting `controlPlane.Register()` ([#496](https://github.com/keptn/keptn/issues/496)) ([d9a621b](https://github.com/keptn/go-utils/commit/d9a621b678384a8a1e0e7fcbe2ddcfef292aaa87))
+
+
+### Bug Fixes
+
+* Add mutex to protect `connection` in `nats.NatsConnector` ([#514](https://github.com/keptn/keptn/issues/514)) ([3a171cc](https://github.com/keptn/go-utils/commit/3a171cc6c166bec3c632d47d3ddfbdb5a006054d))
+* Shut down control plane components before calling wg.Wait() ([#523](https://github.com/keptn/keptn/issues/523)) ([6b12679](https://github.com/keptn/go-utils/commit/6b126790c54c120282e8eb69ab882825dac8943c))
+* Time property is not lost between Keptn and CloudEvent conversion ([#495](https://github.com/keptn/keptn/issues/495)) ([3ef0a10](https://github.com/keptn/go-utils/commit/3ef0a10730ad12b551b3ac5885495b108fac0fe7))
+
+
+### Other
+
+* **go-utils:** Changed configuration-service to resource-service ([#491](https://github.com/keptn/keptn/issues/491)) ([6550348](https://github.com/keptn/go-utils/commit/65503489d75aac53e74e089babc7a5258887d93c))
+* increase test coverage of go-sdk ([#526](https://github.com/keptn/keptn/issues/526)) ([c15488f](https://github.com/keptn/go-utils/commit/c15488f2145b2c0235687a0e3884123f4ec47354))
+* Remove unneeded code ([#490](https://github.com/keptn/keptn/issues/490)) ([d00898a](https://github.com/keptn/go-utils/commit/d00898a7fdcf3eebd427a6b6c93866c6cdaea1aa))
+
 ## [0.17.0](https://github.com/keptn/go-utils/compare/v0.16.0...v0.17.0) (2022-07-05)
 
 
