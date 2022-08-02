@@ -146,6 +146,7 @@ func (cp *ControlPlane) Register(ctx context.Context, integration Integration) e
 		// subscription updates
 		case subscriptions := <-subscriptionUpdates:
 			cp.logger.Debugf("ControlPlane: Got a subscription update with %d subscriptions", len(subscriptions))
+			cp.logger.Debugf("Subscription id: %s, event: %s, projects %a", subscriptions[0].ID, subscriptions[0].Event, subscriptions[0].Filter.Projects)
 			cp.currentSubscriptions = subscriptions
 			cp.eventSource.OnSubscriptionUpdate(subscriptions)
 
