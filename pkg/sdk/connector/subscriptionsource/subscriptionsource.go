@@ -113,6 +113,7 @@ func (s *UniformSubscriptionSource) Start(ctx context.Context, registrationData 
 
 	go func() {
 		if err := retry.Do(func() error {
+			s.logger.Debugf("Pinging subscription inital: %s", registrationData.ID)
 			return s.ping(registrationData.ID, subscriptionChannel)
 		}, retry.Attempts(s.maxPingAttempts), retry.Delay(s.pingAttemptsInterval), retry.DelayType(retry.FixedDelay)); err != nil {
 			s.logger.Errorf("Reached max number of attempts to ping control plane")
@@ -128,6 +129,7 @@ func (s *UniformSubscriptionSource) Start(ctx context.Context, registrationData 
 				return
 			case <-ticker.C:
 				if err := retry.Do(func() error {
+					s.logger.Debugf("Pinging subscription: %s", registrationData.ID)
 					return s.ping(registrationData.ID, subscriptionChannel)
 				}, retry.Attempts(s.maxPingAttempts), retry.Delay(s.pingAttemptsInterval), retry.DelayType(retry.FixedDelay)); err != nil {
 					s.logger.Errorf("Reached max number of attempts to ping control plane")
