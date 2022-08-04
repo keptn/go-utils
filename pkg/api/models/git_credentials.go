@@ -2,6 +2,10 @@ package models
 
 import "encoding/json"
 
+const HttpsMode = "https"
+const SshMode = "ssh"
+const ProvisionedMode = "provisioned"
+
 // GitAuthCredentials stores git credentials
 type GitAuthCredentials struct {
 
@@ -10,6 +14,9 @@ type GitAuthCredentials struct {
 
 	// git user
 	User string `json:"user,omitempty" bson:"user"`
+
+	// mode
+	Mode string `json:"mode" bson:"mode"`
 
 	// https git credentials
 	HttpsAuth *HttpsGitAuth `json:"https,omitempty" bson:"https"`
