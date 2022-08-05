@@ -133,6 +133,9 @@ type GitAuthCredentialsSecure struct {
 	// git user
 	User string `json:"user,omitempty" bson:"user"`
 
+	// mode
+	Mode string `json:"mode" bson:"mode"`
+
 	// https git credentials
 	HttpsAuth *HttpsGitAuthSecure `json:"https,omitempty" bson:"https"`
 }
