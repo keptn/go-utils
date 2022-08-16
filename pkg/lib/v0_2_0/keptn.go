@@ -42,6 +42,8 @@ func NewKeptn(incomingEvent *cloudevents.Event, opts keptn.KeptnOpts) (*Keptn, e
 		csURL = opts.ConfigurationServiceURL
 	}
 
+	log.Printf("csURL: %s", csURL)
+
 	if opts.EventBrokerURL != "" && opts.EventSender == nil {
 		httpSender, err := NewHTTPEventSender(opts.EventBrokerURL)
 		if err != nil {

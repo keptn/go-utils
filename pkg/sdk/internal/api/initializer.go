@@ -13,6 +13,7 @@ import (
 	"github.com/keptn/go-utils/pkg/sdk/connector/nats"
 	"github.com/keptn/go-utils/pkg/sdk/connector/subscriptionsource"
 	"github.com/keptn/go-utils/pkg/sdk/internal/config"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -100,5 +101,6 @@ func createCPComponents(apiSet keptnapi.KeptnInterface, logger logger.Logger, en
 	return subscriptionSource(apiSet, logger), eventSource(apiSet, logger, env), logForwarder(apiSet, logger)
 }
 func resourceHandler(env config.EnvConfig) *keptnapi.ResourceHandler {
+	log.Printf("Base directory: %s", env.ConfigurationServiceURL)
 	return keptnapi.NewResourceHandler(env.ConfigurationServiceURL)
 }
