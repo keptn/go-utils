@@ -383,6 +383,8 @@ func (r *ResourceHandler) DeleteServiceResource(project string, stage string, se
 //GetResource returns a resource from the defined ResourceScope after applying all URI change configured in the options.
 func (r *ResourceHandler) GetResource(scope ResourceScope, options ...URIOption) (*models.Resource, error) {
 	r.ensureHandlerIsSet()
+	log.Printf("API options: %v", options)
+	log.Printf("Scope: %v", scope)
 	return r.resourceHandler.GetResource(context.TODO(), toV2ResourceScope(scope), v2.ResourcesGetResourceOptions{URIOptions: toV2URIOptions(options)})
 }
 

@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -398,6 +399,7 @@ func (r *ResourceHandler) writeResource(ctx context.Context, uri string, method 
 // GetResource returns a resource from the defined ResourceScope.
 func (r *ResourceHandler) GetResource(ctx context.Context, scope ResourceScope, opts ResourcesGetResourceOptions) (*models.Resource, error) {
 	buildURI := r.buildResourceURI(scope)
+	log.Printf("buildURI: %s", buildURI)
 	return r.GetResourceByURI(ctx, r.applyOptions(buildURI, opts.URIOptions))
 }
 
