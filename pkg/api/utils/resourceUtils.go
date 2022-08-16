@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -282,6 +283,7 @@ func (r *ResourceHandler) CreateProjectResources(project string, resources []*mo
 func (r *ResourceHandler) GetProjectResource(project string, resourceURI string) (*models.Resource, error) {
 	r.ensureHandlerIsSet()
 	buildURI := r.Scheme + "://" + r.BaseURL + v1ProjectPath + "/" + project + pathToResource + "/" + url.QueryEscape(resourceURI)
+	log.Printf("buildUri: %s", buildURI)
 	return r.resourceHandler.GetResourceByURI(context.TODO(), buildURI)
 }
 
@@ -317,6 +319,7 @@ func (r *ResourceHandler) CreateStageResources(project string, stage string, res
 func (r *ResourceHandler) GetStageResource(project string, stage string, resourceURI string) (*models.Resource, error) {
 	r.ensureHandlerIsSet()
 	buildURI := r.Scheme + "://" + r.BaseURL + v1ProjectPath + "/" + project + pathToStage + "/" + stage + pathToResource + "/" + url.QueryEscape(resourceURI)
+	log.Printf("buildUri: %s", buildURI)
 	return r.resourceHandler.GetResourceByURI(context.TODO(), buildURI)
 }
 
@@ -353,6 +356,7 @@ func (r *ResourceHandler) CreateServiceResources(project string, stage string, s
 func (r *ResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
 	r.ensureHandlerIsSet()
 	buildURI := r.Scheme + "://" + r.BaseURL + v1ProjectPath + "/" + project + pathToStage + "/" + stage + pathToService + "/" + url.QueryEscape(service) + pathToResource + "/" + url.QueryEscape(resourceURI)
+	log.Printf("buildUri: %s", buildURI)
 	return r.resourceHandler.GetResourceByURI(context.TODO(), buildURI)
 }
 
