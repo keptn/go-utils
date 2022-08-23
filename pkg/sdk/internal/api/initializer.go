@@ -44,8 +44,14 @@ func Initialize(env config.EnvConfig, clientFactory HTTPClientGetter, logger log
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize control plane client api: %w", err)
 	}
+
+	// Casting API resource handler to keptnapi type
+	apiResourceHandler := api.ResourcesV1().(*keptnapi.ResourceHandler)
+
 	// initialize api handlers and cp-connector components
-	resourceHandler := resourceHandler(env)
+
+	// TODO: Replace with authenticated resource handler
+	//resourceHandler := resourceHandler(env)
 	ss, es, lf := createCPComponents(api, logger, env)
 	controlPlane := controlplane.New(ss, es, lf, controlplane.WithLogger(logger))
 
@@ -53,7 +59,7 @@ func Initialize(env config.EnvConfig, clientFactory HTTPClientGetter, logger log
 		KeptnAPI:            api,
 		ControlPlane:        controlPlane,
 		EventSenderCallback: es.Sender(),
-		ResourceHandler:     resourceHandler,
+		ResourceHandler:     apiResourceHandler,
 	}, nil
 
 }
