@@ -44,7 +44,7 @@ func Initialize(env config.EnvConfig, clientFactory HTTPClientGetter, logger log
 		return nil, fmt.Errorf("could not initialize control plane client api: %w", err)
 	}
 	// initialize api handlers and cp-connector components
-	resourceHandler := resourceHandler(env)
+	resourceHandler := api.ResourcesV1().(*keptnapi.ResourceHandler)
 	ss, es, lf := createCPComponents(api, logger, env)
 	controlPlane := controlplane.New(ss, es, lf, controlplane.WithLogger(logger))
 
