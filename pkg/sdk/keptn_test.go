@@ -35,6 +35,7 @@ func Test_NewKeptn(t *testing.T) {
 		require.IsType(t, keptnSDK.taskRegistry.Get("event2.type").taskHandler, &TaskHandlerMock{})
 		require.NotNil(t, keptnSDK.GetResourceHandler())
 		require.NotNil(t, keptnSDK.APIV1())
+		require.NotNil(t, keptnSDK.APIV2())
 
 	})
 }

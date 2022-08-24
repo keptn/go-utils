@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	keptnapiv2 "github.com/keptn/go-utils/pkg/api/utils/v2"
 	"github.com/keptn/go-utils/pkg/sdk/connector/logger"
 	"github.com/keptn/go-utils/pkg/sdk/internal/config"
 	"github.com/stretchr/testify/require"
@@ -40,7 +41,8 @@ func Test_Initialize(t *testing.T) {
 		require.NotNil(t, result.EventSenderCallback)
 		require.NotNil(t, result.KeptnAPI)
 		require.IsType(t, &keptnapi.APISet{}, result.KeptnAPI)
-		require.NotNil(t, result.ResourceHandler)
+		require.NotNil(t, result.KeptnAPIV2)
+		require.IsType(t, &keptnapiv2.APISet{}, result.KeptnAPIV2)
 	})
 	t.Run("Internal Use case - internal api set is used", func(t *testing.T) {
 		env := config.EnvConfig{}
@@ -50,7 +52,8 @@ func Test_Initialize(t *testing.T) {
 		require.NotNil(t, result.EventSenderCallback)
 		require.NotNil(t, result.KeptnAPI)
 		require.IsType(t, &keptnapi.InternalAPISet{}, result.KeptnAPI)
-		require.NotNil(t, result.ResourceHandler)
+		require.NotNil(t, result.KeptnAPIV2)
+		require.IsType(t, &keptnapiv2.InternalAPISet{}, result.KeptnAPIV2)
 	})
 	t.Run("HTTP client creation fails", func(t *testing.T) {
 		env := config.EnvConfig{KeptnAPIEndpoint: "http://endpoint"}
@@ -66,6 +69,7 @@ func Test_Initialize(t *testing.T) {
 		require.NotNil(t, result.EventSenderCallback)
 		require.NotNil(t, result.KeptnAPI)
 		require.IsType(t, &keptnapi.APISet{}, result.KeptnAPI)
-		require.NotNil(t, result.ResourceHandler)
+		require.NotNil(t, result.KeptnAPIV2)
+		require.IsType(t, &keptnapiv2.APISet{}, result.KeptnAPIV2)
 	})
 }
