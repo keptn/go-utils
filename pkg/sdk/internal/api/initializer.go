@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/benbjohnson/clock"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	keptnapiv2 "github.com/keptn/go-utils/pkg/api/utils/v2"
 	"github.com/keptn/go-utils/pkg/sdk/connector/controlplane"
 	"github.com/keptn/go-utils/pkg/sdk/connector/eventsource"
 	eventsourceHttp "github.com/keptn/go-utils/pkg/sdk/connector/eventsource/http"
@@ -20,9 +21,9 @@ import (
 
 type InitializationResult struct {
 	KeptnAPI            keptnapi.KeptnInterface
+	KeptnAPIV2          keptnapiv2.KeptnInterface
 	ControlPlane        *controlplane.ControlPlane
 	EventSenderCallback controlplane.EventSender
-	ResourceHandler     *keptnapi.ResourceHandler
 }
 
 // Initialize takes care of creating the API clients and initializing the cp-connector library based
@@ -43,41 +44,63 @@ func Initialize(env config.EnvConfig, clientFactory HTTPClientGetter, logger log
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize control plane client api: %w", err)
 	}
+
+	apiV2, err := apiSetV2(env, httpClient)
+
 	// initialize api handlers and cp-connector components
-	resourceHandler := resourceHandler(env)
 	ss, es, lf := createCPComponents(api, logger, env)
 	controlPlane := controlplane.New(ss, es, lf, controlplane.WithLogger(logger))
 
 	return &InitializationResult{
 		KeptnAPI:            api,
+		KeptnAPIV2:          apiV2,
 		ControlPlane:        controlPlane,
 		EventSenderCallback: es.Sender(),
-		ResourceHandler:     resourceHandler,
 	}, nil
 
 }
 
 func apiSet(env config.EnvConfig, httpClient *http.Client) (keptnapi.KeptnInterface, error) {
-
 	if env.PubSubConnectionType() == config.ConnectionTypeHTTP {
-		scheme := "http"
-		parsed, err := url.ParseRequestURI(env.KeptnAPIEndpoint)
+		scheme, err := getHttpScheme(env)
 		if err != nil {
-			return nil, fmt.Errorf("could not parse given Keptn API endpoint: %w", err)
-		}
-
-		if parsed.Scheme == "" || !strings.HasPrefix(parsed.Scheme, "http") {
-			return nil, fmt.Errorf("invalid scheme for keptn endpoint, %s is not http or https", env.KeptnAPIEndpoint)
-		}
-
-		if strings.HasPrefix(parsed.Scheme, "http") {
-			scheme = parsed.Scheme
+			return nil, err
 		}
 		return keptnapi.New(env.KeptnAPIEndpoint, keptnapi.WithScheme(scheme), keptnapi.WithHTTPClient(httpClient), keptnapi.WithAuthToken(env.KeptnAPIToken))
 
 	}
 	return keptnapi.NewInternal(httpClient)
 
+}
+
+func apiSetV2(env config.EnvConfig, httpClient *http.Client) (keptnapiv2.KeptnInterface, error) {
+	if env.PubSubConnectionType() == config.ConnectionTypeHTTP {
+		scheme, err := getHttpScheme(env)
+		if err != nil {
+			return nil, err
+		}
+		return keptnapiv2.New(env.KeptnAPIEndpoint, keptnapiv2.WithScheme(scheme), keptnapiv2.WithHTTPClient(httpClient), keptnapiv2.WithAuthToken(env.KeptnAPIToken))
+
+	}
+	return keptnapiv2.NewInternal(httpClient)
+
+}
+
+func getHttpScheme(env config.EnvConfig) (string, error) {
+	scheme := "http"
+	parsed, err := url.ParseRequestURI(env.KeptnAPIEndpoint)
+	if err != nil {
+		return "", fmt.Errorf("could not parse given Keptn API endpoint: %w", err)
+	}
+
+	if parsed.Scheme == "" || !strings.HasPrefix(parsed.Scheme, "http") {
+		return "", fmt.Errorf("invalid scheme for keptn endpoint, %s is not http or https", env.KeptnAPIEndpoint)
+	}
+
+	if strings.HasPrefix(parsed.Scheme, "http") {
+		scheme = parsed.Scheme
+	}
+	return scheme, nil
 }
 
 func eventSource(apiSet keptnapi.KeptnInterface, logger logger.Logger, env config.EnvConfig) eventsource.EventSource {
@@ -98,7 +121,4 @@ func logForwarder(apiSet keptnapi.KeptnInterface, logger logger.Logger) logforwa
 
 func createCPComponents(apiSet keptnapi.KeptnInterface, logger logger.Logger, env config.EnvConfig) (subscriptionsource.SubscriptionSource, eventsource.EventSource, logforwarder.LogForwarder) {
 	return subscriptionSource(apiSet, logger), eventSource(apiSet, logger, env), logForwarder(apiSet, logger)
-}
-func resourceHandler(env config.EnvConfig) *keptnapi.ResourceHandler {
-	return keptnapi.NewResourceHandler(env.ConfigurationServiceURL)
 }

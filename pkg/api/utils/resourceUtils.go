@@ -138,6 +138,26 @@ func (s *ResourceScope) Resource(resource string) *ResourceScope {
 	return s
 }
 
+// GetProject returns the project name
+func (s *ResourceScope) GetProject() string {
+	return s.project
+}
+
+// GetStage returns the stage name
+func (s *ResourceScope) GetStage() string {
+	return s.stage
+}
+
+// GetService returns the service name
+func (s *ResourceScope) GetService() string {
+	return s.service
+}
+
+// GetResource returns the resource name
+func (s *ResourceScope) GetResource() string {
+	return s.resource
+}
+
 // GetProjectPath returns a string to construct the url to path eg. /<api-version>/project/<project-name>
 //or an empty string if the project is not set
 func (s *ResourceScope) GetProjectPath() string {
