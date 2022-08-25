@@ -46,6 +46,9 @@ func Initialize(env config.EnvConfig, clientFactory HTTPClientGetter, logger log
 	}
 
 	apiV2, err := apiSetV2(env, httpClient)
+	if err != nil {
+		return nil, fmt.Errorf("could not initialize v2 control plane client api: %w", err)
+	}
 
 	// initialize api handlers and cp-connector components
 	ss, es, lf := createCPComponents(api, logger, env)
