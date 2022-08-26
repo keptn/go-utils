@@ -27,6 +27,9 @@ type ExpandedProject struct {
 
 	// git auth credentials
 	GitCredentials *GitAuthCredentialsSecure `json:"gitCredentials,omitempty"`
+
+	// is upstream auto provisioned
+	IsUpstreamAutoProvisioned bool `json:"isUpstreamAutoProvisioned"`
 }
 
 // ToJSON converts object to JSON string
