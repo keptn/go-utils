@@ -90,20 +90,16 @@ func apiSetV2(env config.EnvConfig, httpClient *http.Client) (keptnapiv2.KeptnIn
 }
 
 func getHttpScheme(env config.EnvConfig) (string, error) {
-	scheme := "http"
 	parsed, err := url.ParseRequestURI(env.KeptnAPIEndpoint)
 	if err != nil {
 		return "", fmt.Errorf("could not parse given Keptn API endpoint: %w", err)
 	}
 
-	if parsed.Scheme == "" || !strings.HasPrefix(parsed.Scheme, "http") {
+	if !strings.HasPrefix(parsed.Scheme, "http") {
 		return "", fmt.Errorf("invalid scheme for keptn endpoint, %s is not http or https", env.KeptnAPIEndpoint)
 	}
 
-	if strings.HasPrefix(parsed.Scheme, "http") {
-		scheme = parsed.Scheme
-	}
-	return scheme, nil
+	return parsed.Scheme, nil
 }
 
 func eventSource(apiSet keptnapi.KeptnInterface, logger logger.Logger, env config.EnvConfig) eventsource.EventSource {
