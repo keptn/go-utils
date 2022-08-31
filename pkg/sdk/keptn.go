@@ -15,6 +15,7 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
+	apiv2 "github.com/keptn/go-utils/pkg/api/utils/v2"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/go-utils/pkg/sdk/connector/controlplane"
 )
@@ -45,6 +46,8 @@ type IKeptn interface {
 	Logger() Logger
 	// APIV1 returns API utils for all Keptn APIs
 	APIV1() api.KeptnInterface
+	// APIV2 returns API utils for all v2 Keptn APIs
+	APIV2() apiv2.KeptnInterface
 }
 
 type TaskHandler interface {
@@ -74,6 +77,16 @@ type KeptnOption func(*Keptn)
 
 type ResourceHandler interface {
 	GetResource(scope api.ResourceScope, options ...api.URIOption) (*models.Resource, error)
+}
+
+type resourceHandlerWrapper struct {
+	resourceHandler apiv2.ResourcesInterface
+}
+
+func (rhw *resourceHandlerWrapper) GetResource(scope api.ResourceScope, options ...api.URIOption) (*models.Resource, error) {
+	v2Scope := apiv2.NewResourceScope().Project(scope.GetProject()).Stage(scope.GetStage()).Service(scope.GetService()).Resource(scope.GetResource())
+
+	return rhw.resourceHandler.GetResource(context.Background(), *v2Scope, apiv2.ResourcesGetResourceOptions{})
 }
 
 type healthEndpointRunner func(port string, cp *controlplane.ControlPlane)
@@ -139,6 +152,7 @@ type Keptn struct {
 	eventSender            controlplane.EventSender
 	resourceHandler        ResourceHandler
 	api                    api.KeptnInterface
+	apiV2                  apiv2.KeptnInterface
 	source                 string
 	taskRegistry           *taskRegistry
 	syncProcessing         bool
@@ -178,9 +192,10 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 	}
 
 	keptn.api = initializationResult.KeptnAPI
+	keptn.apiV2 = initializationResult.KeptnAPIV2
 	keptn.controlPlane = initializationResult.ControlPlane
 	keptn.eventSender = initializationResult.EventSenderCallback
-	keptn.resourceHandler = initializationResult.ResourceHandler
+	keptn.resourceHandler = &resourceHandlerWrapper{resourceHandler: initializationResult.KeptnAPIV2.Resources()}
 
 	return keptn
 }
@@ -344,8 +359,15 @@ func (k *Keptn) SendFinishedEvent(parentEvent KeptnEvent, newEventData interface
 	return k.eventSender(*finishedEvent)
 }
 
+// APIV1 retrieves the APIV1 client
+// Deprecated use APIV2 instead
 func (k *Keptn) APIV1() api.KeptnInterface {
 	return k.api
+}
+
+// APIV2 retrieves the APIV2 client
+func (k *Keptn) APIV2() apiv2.KeptnInterface {
+	return k.apiV2
 }
 
 func (k *Keptn) Logger() Logger {

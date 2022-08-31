@@ -12,6 +12,9 @@ import (
 
 func Test_Handler(t *testing.T) {
 	fakeKeptn := sdk.NewFakeKeptn("test-greeting-svc")
+	fakeKeptn.SetResourceHandler(&sdk.StringResourceHandler{
+		ResourceContent: "my-resource",
+	})
 	fakeKeptn.AddTaskHandler(greetingsTriggeredEventType, NewGreetingsHandler())
 	fakeKeptn.NewEvent(newNewGreetingTriggeredEvent("test-assets/events/greeting.triggered-0.json"))
 	fakeKeptn.AssertNumberOfEventSent(t, 2)

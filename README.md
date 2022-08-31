@@ -48,7 +48,7 @@ The recommended way of accessing the Keptn API using `GO` is to use the `APISet`
 You can use it by importing the following package:
 
 ```golang
-import api "github.com/keptn/go-utils/pkg/api/utils"
+import api "github.com/keptn/go-utils/pkg/api/utils/v2"
 ```
 
 Then you need to create an `APISet` and provide it the information about
@@ -64,7 +64,7 @@ log.Fatal(err)
 Once you have a handle to the `APISet` you can start using it:
 
 ```go
-resources, err := keptnAPI.ResourcesV1().GetAllServiceResources("my-project", "my-stage", "my-service")
+resources, err := keptnAPI.Resources().GetAllServiceResources(context.TODO(), "my-project", "my-stage", "my-service", api.ResourcesGetAllServiceResourcesOptions{})
 if err != nil {
 log.Fatal(err)
 }
@@ -78,7 +78,7 @@ there is no need to talk to the Keptn API via the API gateway. In this case one 
 Import the following package:
 
 ```go
-import api "github.com/keptn/go-utils/pkg/api/utils"
+import api "github.com/keptn/go-utils/pkg/api/utils/v2"
 ```
 
 Then create an `InternalAPISet`. Note, that this does *not* require you to pass the URL to the keptn API or an API token
@@ -136,13 +136,13 @@ Events can be retrieved from Keptn by using the event API of the `APISet`.
 apiSet, _ := api.New("http://<keptn-url>/api", api.WithAuthToken("<api-token>"))
 
 // Getting all events for a specific project
-events, _ := apiSet.EventsV1().GetEvents(&api.EventFilter{Project: "echo-project"})
+events, _ := apiSet.Events().GetEvents(context.TODO(), &api.EventFilter{Project: "echo-project"}, api.EventsGetEventsOptions{})
 
 // Getting all event matching a specific keptn context
-events, _ = apiSet.EventsV1().GetEvents(&api.EventFilter{KeptnContext: "7d4ca79a-6f38-4b88-9139-433342e350bf",})
+events, _ = apiSet.Events().GetEvents(context.TODO(), &api.EventFilter{KeptnContext: "7d4ca79a-6f38-4b88-9139-433342e350bf"}, api.EventsGetEventsOptions{})
 
 // Getting all .triggered events that are "not yet processed" by a keptn integration for a specific project
-events, _ = apiSet.ShipyardControlV1().GetOpenTriggeredEvents(api.EventFilter{Project: "echo-project"})
+events, _ = apiSet.ShipyardControl().GetOpenTriggeredEvents(context.TODO(), api.EventFilter{Project: "echo-project"}, api.ShipyardControlGetOpenTriggeredEventsOptions{})
 ```
 
 ## Ingesting Keptn events
@@ -164,7 +164,7 @@ eventToSend, _ := lib.KeptnEvent(lib.GetStartedEventType("echo-task"), "my-servi
 	}).Build()
 
 // Sending the event to Keptn
-eventContext, _ := apiSet.APIV1().SendEvent(eventToSend)
+eventContext, _ := apiSet.API().SendEvent(context.TODO(), eventToSend, api.APISendEventOptions{})
 fmt.Println(*eventContext.KeptnContext)
 ```
 
