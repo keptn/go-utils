@@ -43,7 +43,7 @@ func Test_NewKeptn(t *testing.T) {
 
 func Test_ReceivingInvalidEvent(t *testing.T) {
 	taskHandler := &TaskHandlerMock{}
-	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *v0_2_0.Error) { return FakeTaskData{}, nil }
+	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }
 	fakeKeptn := NewFakeKeptn("fake")
 	fakeKeptn.AddTaskHandler("sh.keptn.event.faketask.triggered", taskHandler)
 	fakeKeptn.NewEvent(models.KeptnContextExtendedCE{
@@ -104,7 +104,7 @@ func Test_SendEvents(t *testing.T) {
 
 func Test_ReceivingEventWithMissingType(t *testing.T) {
 	taskHandler := &TaskHandlerMock{}
-	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *v0_2_0.Error) { return FakeTaskData{}, nil }
+	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }
 	fakeKeptn := NewFakeKeptn("fake")
 	fakeKeptn.AddTaskHandler("sh.keptn.event.faketask.triggered", taskHandler)
 	fakeKeptn.NewEvent(models.KeptnContextExtendedCE{
@@ -119,7 +119,7 @@ func Test_ReceivingEventWithMissingType(t *testing.T) {
 
 func Test_CannotGetEventSenderFromContext(t *testing.T) {
 	taskHandler := &TaskHandlerMock{}
-	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *v0_2_0.Error) { return FakeTaskData{}, nil }
+	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }
 	fakeKeptn := NewFakeKeptn("fake")
 	fakeKeptn.AddTaskHandler("sh.keptn.event.faketask.triggered", taskHandler)
 	fakeKeptn.Keptn.OnEvent(context.TODO(), models.KeptnContextExtendedCE{
@@ -134,7 +134,7 @@ func Test_CannotGetEventSenderFromContext(t *testing.T) {
 
 func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T) {
 	taskHandler := &TaskHandlerMock{}
-	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *v0_2_0.Error) { return FakeTaskData{}, nil }
+	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }
 	fakeKeptn := NewFakeKeptn("fake")
 	fakeKeptn.AddTaskHandler("sh.keptn.event.faketask.triggered", taskHandler)
 	fakeKeptn.NewEvent(models.KeptnContextExtendedCE{
@@ -211,8 +211,8 @@ func Test_WhenReceivingAnEvent_AndAutomaticEventResponseIsDisabledOnTaskHandler_
 
 func Test_WhenReceivingAnEvent_TaskHandlerFails(t *testing.T) {
 	taskHandler := &TaskHandlerMock{}
-	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *v0_2_0.Error) {
-		return nil, &v0_2_0.Error{
+	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) {
+		return nil, &Error{
 			StatusType: v0_2_0.StatusErrored,
 			ResultType: v0_2_0.ResultFailed,
 			Message:    "something went wrong",
@@ -238,7 +238,7 @@ func Test_WhenReceivingAnEvent_TaskHandlerFails(t *testing.T) {
 
 func Test_WhenReceivingBadEvent_NoEventIsSent(t *testing.T) {
 	taskHandler := &TaskHandlerMock{}
-	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *v0_2_0.Error) { return FakeTaskData{}, nil }
+	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }
 	fakeKeptn := NewFakeKeptn("fake")
 	fakeKeptn.AddTaskHandler("sh.keptn.event.faketask.triggered", taskHandler)
 	fakeKeptn.NewEvent(newTestTaskBadTriggeredEvent())
@@ -247,7 +247,7 @@ func Test_WhenReceivingBadEvent_NoEventIsSent(t *testing.T) {
 
 func Test_WhenReceivingAnEvent_AndNoFilterMatches_NoEventIsSent(t *testing.T) {
 	taskHandler := &TaskHandlerMock{}
-	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *v0_2_0.Error) { return FakeTaskData{}, nil }
+	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }
 	fakeKeptn := NewFakeKeptn("fake")
 	fakeKeptn.AddTaskHandler("sh.keptn.event.faketask.triggered", taskHandler, func(keptnHandle IKeptn, event KeptnEvent) bool { return false })
 	fakeKeptn.NewEvent(models.KeptnContextExtendedCE{
@@ -263,7 +263,7 @@ func Test_WhenReceivingAnEvent_AndNoFilterMatches_NoEventIsSent(t *testing.T) {
 
 func Test_NoFinishedEventDataProvided(t *testing.T) {
 	taskHandler := &TaskHandlerMock{}
-	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *v0_2_0.Error) {
+	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) {
 		return nil, nil
 	}
 	fakeKeptn := NewFakeKeptn("fake")
@@ -337,10 +337,10 @@ type FakeTaskData struct {
 }
 type TaskHandlerMock struct {
 	// ExecuteFunc mocks the Execute method.
-	ExecuteFunc func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *v0_2_0.Error)
+	ExecuteFunc func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error)
 }
 
-func (mock *TaskHandlerMock) Execute(keptnHandle IKeptn, event KeptnEvent) (interface{}, *v0_2_0.Error) {
+func (mock *TaskHandlerMock) Execute(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) {
 	if mock.ExecuteFunc == nil {
 		panic("TaskHandlerMock.ExecuteFunc: method is nil but taskHandler.Execute was just called")
 	}
