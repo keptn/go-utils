@@ -117,18 +117,37 @@ func (w *nopWG) Wait() {
 }
 
 // WithTaskHandler registers a handler which is responsible for processing a .triggered event
+// Deprecated: use WithTaskEventHandler instead
 func WithTaskHandler(eventType string, handler TaskHandler, filters ...func(keptnHandle IKeptn, event KeptnEvent) bool) KeptnOption {
+	return WithTaskEventHandler(eventType, handler, TaskHandlerOptions{
+		Filters:               filters,
+		SkipAutomaticResponse: false,
+	})
+}
+
+// WithTaskEventHandler registers a handler which is responsible for processing a received .triggered event
+func WithTaskEventHandler(eventType string, handler TaskHandler, options TaskHandlerOptions) KeptnOption {
 	return func(k *Keptn) {
-		k.taskRegistry.Add(eventType, taskEntry{taskHandler: handler, eventFilters: filters})
+		k.taskRegistry.Add(eventType, taskEntry{taskHandler: handler, eventFilters: options.Filters, taskHandlerOpts: options})
 	}
 }
 
 // WithAutomaticResponse sets the option to instruct the sdk to automatically send a .started and .finished event.
-// Per default this behavior is turned on and can be disabled with this function
+// Per default this behavior is turned on and can be disabled with this function. Note, that this affects ALL
+// task handlers. If you want to disable automatic event responses for a specific task handler, this can be done
+// with the respective TaskHandlerOptions passed to WithTaskEventHandler
 func WithAutomaticResponse(autoResponse bool) KeptnOption {
 	return func(k *Keptn) {
 		k.automaticEventResponse = autoResponse
 	}
+}
+
+// TaskHandlerOptions are specific options for a task handler
+type TaskHandlerOptions struct {
+	// Filters specifies functions that determine whether the event shall be handled or ignored
+	Filters []func(IKeptn, KeptnEvent) bool
+	// SkipAutomaticResponse determines whether automatic sending of .started/.finished events should be skipped
+	SkipAutomaticResponse bool
 }
 
 // WithGracefulShutdown sets the option to ensure running tasks/handlers will finish in case of interrupt or forced termination
@@ -251,8 +270,11 @@ func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE
 					}
 				}
 
+				// automatic response of events is enabled if it is turned on globally, and not disabled for the specific handler
+				autoResponse := k.automaticEventResponse && !k.taskRegistry.Get(*event.Type).taskHandlerOpts.SkipAutomaticResponse
+
 				// only respond with .started event if the incoming event is a task.triggered event
-				if keptnv2.IsTaskEventType(*event.Type) && keptnv2.IsTriggeredEventType(*event.Type) && k.automaticEventResponse {
+				if keptnv2.IsTaskEventType(*event.Type) && keptnv2.IsTriggeredEventType(*event.Type) && autoResponse {
 					startedEvent, err := createStartedEvent(k.source, event)
 					if err != nil {
 						k.logger.Errorf("Unable to create '.started' event from '.triggered' event: %v", err)
@@ -267,7 +289,7 @@ func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE
 				result, err := handler.taskHandler.Execute(k, *keptnEvent)
 				if err != nil {
 					k.logger.Errorf("Error during task execution %v", err.Err)
-					if k.automaticEventResponse {
+					if autoResponse {
 						errorEvent, err := createErrorEvent(k.source, event, result, err)
 						if err != nil {
 							k.logger.Errorf("Unable to create '.error' event: %v", err)
@@ -282,7 +304,7 @@ func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE
 				}
 				if result == nil {
 					k.logger.Infof("no finished data set by task executor for event %s. Skipping sending finished event", *event.Type)
-				} else if keptnv2.IsTaskEventType(*event.Type) && keptnv2.IsTriggeredEventType(*event.Type) && k.automaticEventResponse {
+				} else if keptnv2.IsTaskEventType(*event.Type) && keptnv2.IsTriggeredEventType(*event.Type) && autoResponse {
 					finishedEvent, err := createFinishedEvent(k.source, event, result)
 					if err != nil {
 						k.logger.Errorf("Unable to create '.finished' event: %v", err)

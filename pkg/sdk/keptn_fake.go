@@ -82,6 +82,12 @@ func (f *FakeKeptn) SetAPI(api api.KeptnInterface) {
 	f.Keptn.api = api
 }
 
+func (f *FakeKeptn) AddTaskEventHandler(eventType string, handler TaskHandler, options TaskHandlerOptions) {
+	f.Keptn.taskRegistry.Add(eventType, taskEntry{taskHandler: handler, eventFilters: options.Filters, taskHandlerOpts: options})
+}
+
+// AddTaskEventHandler registers a TaskHandler
+// Deprecated: use AddTaskEventHandler
 func (f *FakeKeptn) AddTaskHandler(eventType string, handler TaskHandler, filters ...func(keptnHandle IKeptn, event KeptnEvent) bool) {
 	f.AddTaskHandlerWithSubscriptionID(eventType, handler, "", filters...)
 }
