@@ -479,6 +479,7 @@ func ToKeptnEvent(event cloudevents.Event) (models.KeptnContextExtendedCE, error
 	return keptnEvent, nil
 }
 
+// CreateStartedEvent takes a parent event (e.g. .triggered event) and creates a corresponding .started event
 func CreateStartedEvent(source string, parentEvent models.KeptnContextExtendedCE) (*models.KeptnContextExtendedCE, error) {
 	if parentEvent.Shkeptncontext == "" {
 		return nil, fmt.Errorf("unable to get keptn context from parent event %s", parentEvent.ID)
@@ -492,6 +493,7 @@ func CreateStartedEvent(source string, parentEvent models.KeptnContextExtendedCE
 	return createEvent(source, startedEventType, parentEvent, eventData), nil
 }
 
+// CreateFinishedEvent takes a parent event (e.g. .triggered event) and creates a corresponding .finished event
 func CreateFinishedEvent(source string, parentEvent models.KeptnContextExtendedCE, eventData interface{}) (*models.KeptnContextExtendedCE, error) {
 	if parentEvent.Type == nil {
 		return nil, fmt.Errorf("unable to get keptn event type from event %s", parentEvent.ID)
@@ -520,6 +522,7 @@ func CreateFinishedEvent(source string, parentEvent models.KeptnContextExtendedC
 	return createEvent(source, finishedEventType, parentEvent, genericEventData), nil
 }
 
+// CreateFinishedEventWithError takes a parent event (e.g. .triggered event) and creates a corresponding errored .finished event
 func CreateFinishedEventWithError(source string, parentEvent models.KeptnContextExtendedCE, eventData interface{}, errVal *Error) (*models.KeptnContextExtendedCE, error) {
 	if errVal == nil {
 		errVal = &Error{}
@@ -539,6 +542,7 @@ func CreateFinishedEventWithError(source string, parentEvent models.KeptnContext
 	return createEvent(source, finishedEventType, parentEvent, commonEventData), nil
 }
 
+// CreateErrorEvent takes a parent event (e.g. .triggered event) and creates a corresponding errored event
 func CreateErrorEvent(source string, parentEvent models.KeptnContextExtendedCE, eventData interface{}, errVal *Error) (*models.KeptnContextExtendedCE, error) {
 	if errVal == nil {
 		errVal = &Error{}
@@ -558,6 +562,7 @@ func CreateErrorEvent(source string, parentEvent models.KeptnContextExtendedCE, 
 	return errorLogEvent, nil
 }
 
+// CreateErrorEvent takes a parent event (e.g. .triggered event) and creates a corresponding errored .log event
 func CreateErrorLogEvent(source string, parentEvent models.KeptnContextExtendedCE, eventData interface{}, errVal *Error) (*models.KeptnContextExtendedCE, error) {
 	if parentEvent.Type == nil {
 		return nil, fmt.Errorf("unable to get keptn event type from parent event %s", parentEvent.ID)
