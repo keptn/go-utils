@@ -116,8 +116,9 @@ func (w *nopWG) Wait() {
 	// --
 }
 
-// WithTaskHandler registers a handler which is responsible for processing a .triggered event
-// Deprecated: use WithTaskEventHandler instead
+// WithTaskHandler registers a handler which is responsible for processing a .triggered event.
+// Note, that if you want to have more control on configuring the behavior of the task handler,
+// you can use WithTaskEventHandler instead
 func WithTaskHandler(eventType string, handler TaskHandler, filters ...func(keptnHandle IKeptn, event KeptnEvent) bool) KeptnOption {
 	return WithTaskEventHandler(eventType, handler, TaskHandlerOptions{
 		Filters:               filters,
