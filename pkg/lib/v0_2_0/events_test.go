@@ -839,11 +839,13 @@ func Test_CreateStartedEvent(t *testing.T) {
 				parentEvent: models.KeptnContextExtendedCE{
 					Shkeptncontext: "abcde",
 					Type:           strutils.Stringp("sh.keptn.event.eval.triggered"),
+					Data:           EventData{Project: "proj"},
 				},
 				eventData: nil,
 			},
 			assertEvent: func(ce *models.KeptnContextExtendedCE) bool {
-				return *ce.Type == "sh.keptn.event.eval.started"
+				return *ce.Type == "sh.keptn.event.eval.started" &&
+					reflect.DeepEqual(ce.Data, EventData{Project: "proj"})
 			},
 			wantErr: false,
 		},
