@@ -657,7 +657,7 @@ func Test_createFinishedEvent(t *testing.T) {
 			wantErr:     true,
 		},
 		{
-			name: "defalut status succeeded",
+			name: "defalult status succeeded",
 			args: args{
 				source: "source",
 				parentEvent: models.KeptnContextExtendedCE{
@@ -673,7 +673,7 @@ func Test_createFinishedEvent(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "defalut result pass",
+			name: "defalult result pass",
 			args: args{
 				source: "source",
 				parentEvent: models.KeptnContextExtendedCE{
