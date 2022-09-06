@@ -782,7 +782,7 @@ func Test_createStartedEvent(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := CreateStartedEvent(tt.args.source, tt.args.parentEvent)
+			got, err := CreateStartedEvent(tt.args.source, tt.args.parentEvent, nil)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("createStartedEvent() error = %v, wantErr %v", err, tt.wantErr)
 				return
