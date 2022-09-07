@@ -149,6 +149,65 @@ func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T
 	fakeKeptn.AssertSentEventType(t, 1, "sh.keptn.event.faketask.finished")
 }
 
+func Test_WhenReceivingAnEvent_AndAutomaticEventResponseIsGloballyDiabled_StartedEventAndFinishedEventsAreNotSent(t *testing.T) {
+	taskHandler := &TaskHandlerMock{}
+	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }
+	fakeKeptn := NewFakeKeptn("fake")
+	fakeKeptn.Keptn.automaticEventResponse = false
+	fakeKeptn.AddTaskEventHandler("sh.keptn.event.faketask.triggered", taskHandler, TaskHandlerOptions{})
+	fakeKeptn.AddTaskEventHandler("sh.keptn.event.faketask2.triggered", taskHandler, TaskHandlerOptions{})
+	fakeKeptn.NewEvent(models.KeptnContextExtendedCE{
+		Data:           v0_2_0.EventData{Project: "prj", Stage: "stg", Service: "svc"},
+		ID:             "id",
+		Shkeptncontext: "context",
+		Source:         strutils.Stringp("source"),
+		Type:           strutils.Stringp("sh.keptn.event.faketask.triggered"),
+	})
+
+	fakeKeptn.NewEvent(models.KeptnContextExtendedCE{
+		Data:           v0_2_0.EventData{Project: "prj", Stage: "stg", Service: "svc"},
+		ID:             "id",
+		Shkeptncontext: "context",
+		Source:         strutils.Stringp("source"),
+		Type:           strutils.Stringp("sh.keptn.event.faketask2.triggered"),
+	})
+
+	fakeKeptn.AssertNumberOfEventSent(t, 0)
+}
+
+func Test_WhenReceivingAnEvent_AndAutomaticEventResponseIsDisabledOnTaskHandler_StartedEventAndFinishedEventsAreNotSent(t *testing.T) {
+	taskHandler := &TaskHandlerMock{}
+	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) { return FakeTaskData{}, nil }
+	fakeKeptn := NewFakeKeptn("fake")
+	fakeKeptn.AddTaskEventHandler("sh.keptn.event.faketask.triggered", taskHandler, TaskHandlerOptions{
+		Filters:               nil,
+		SkipAutomaticResponse: true,
+	})
+	fakeKeptn.AddTaskEventHandler("sh.keptn.event.faketask2.triggered", taskHandler, TaskHandlerOptions{
+		Filters:               nil,
+		SkipAutomaticResponse: false,
+	})
+	fakeKeptn.NewEvent(models.KeptnContextExtendedCE{
+		Data:           v0_2_0.EventData{Project: "prj", Stage: "stg", Service: "svc"},
+		ID:             "id",
+		Shkeptncontext: "context",
+		Source:         strutils.Stringp("source"),
+		Type:           strutils.Stringp("sh.keptn.event.faketask.triggered"),
+	})
+
+	fakeKeptn.NewEvent(models.KeptnContextExtendedCE{
+		Data:           v0_2_0.EventData{Project: "prj", Stage: "stg", Service: "svc"},
+		ID:             "id",
+		Shkeptncontext: "context",
+		Source:         strutils.Stringp("source"),
+		Type:           strutils.Stringp("sh.keptn.event.faketask2.triggered"),
+	})
+
+	fakeKeptn.AssertNumberOfEventSent(t, 2)
+	fakeKeptn.AssertSentEventType(t, 0, "sh.keptn.event.faketask2.started")
+	fakeKeptn.AssertSentEventType(t, 1, "sh.keptn.event.faketask2.finished")
+}
+
 func Test_WhenReceivingAnEvent_TaskHandlerFails(t *testing.T) {
 	taskHandler := &TaskHandlerMock{}
 	taskHandler.ExecuteFunc = func(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error) {
