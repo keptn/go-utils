@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/avast/retry-go v3.0.0+incompatible
+	github.com/avast/retry-go/v4 v4.1.0
 	github.com/benbjohnson/clock v1.3.0
 	github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.0.0-20211001212819-74757a691209
 	github.com/cloudevents/sdk-go/v2 v2.10.0
