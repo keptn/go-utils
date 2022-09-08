@@ -2,8 +2,10 @@ package v0_2_0
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 	"time"
 
@@ -590,6 +592,625 @@ func TestReplaceEventTypeKind(t *testing.T) {
 			if got != tt.want {
 				t.Errorf("ReplaceEventTypeKind() got = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func Test_CreateFinishedEvent(t *testing.T) {
+	type args struct {
+		source      string
+		parentEvent models.KeptnContextExtendedCE
+		eventData   interface{}
+	}
+	tests := []struct {
+		name        string
+		args        args
+		assertEvent func(*models.KeptnContextExtendedCE) bool
+		wantErr     bool
+	}{
+		{
+			name: "missing event type",
+			args: args{
+				source:      "source",
+				parentEvent: models.KeptnContextExtendedCE{},
+				eventData:   nil,
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool { return ce == nil },
+			wantErr:     true,
+		},
+		{
+			name: "missing event context",
+			args: args{
+				source: "source",
+				parentEvent: models.KeptnContextExtendedCE{
+					Type: strutils.Stringp("sh.keptn.event.evaluation.triggered"),
+				},
+				eventData: nil,
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool { return ce == nil },
+			wantErr:     true,
+		},
+		{
+			name: "event type cannot be replaced",
+			args: args{
+				source: "source",
+				parentEvent: models.KeptnContextExtendedCE{
+					Shkeptncontext: "abcde",
+					Type:           strutils.Stringp("something.weird"),
+				},
+				eventData: nil,
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool { return ce == nil },
+			wantErr:     true,
+		},
+		{
+			name: "passed event data missing",
+			args: args{
+				source: "source",
+				parentEvent: models.KeptnContextExtendedCE{
+					Data:           EventData{},
+					Shkeptncontext: "abcde",
+					Type:           strutils.Stringp("sh.keptn.event.eval.triggered"),
+				},
+				eventData: nil,
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool { return ce == nil },
+			wantErr:     true,
+		},
+		{
+			name: "defalult status succeeded",
+			args: args{
+				source: "source",
+				parentEvent: models.KeptnContextExtendedCE{
+					Data:           EventData{},
+					Shkeptncontext: "abcde",
+					Type:           strutils.Stringp("sh.keptn.event.eval.triggered"),
+				},
+				eventData: EventData{},
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool {
+				return ce.Data.(map[string]interface{})["status"] == string(StatusSucceeded) && ce.Data.(map[string]interface{})["result"] == string(ResultPass)
+			},
+			wantErr: false,
+		},
+		{
+			name: "defalult status succeeded #2",
+			args: args{
+				source: "source",
+				parentEvent: models.KeptnContextExtendedCE{
+					Data:           EventData{},
+					Shkeptncontext: "abcde",
+					Type:           strutils.Stringp("sh.keptn.event.eval.triggered"),
+				},
+				eventData: EventData{Status: ""},
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool {
+				return ce.Data.(map[string]interface{})["status"] == string(StatusSucceeded) && ce.Data.(map[string]interface{})["result"] == string(ResultPass)
+			},
+			wantErr: false,
+		},
+		{
+			name: "defalult result pass",
+			args: args{
+				source: "source",
+				parentEvent: models.KeptnContextExtendedCE{
+					Data:           EventData{},
+					Shkeptncontext: "abcde",
+					Type:           strutils.Stringp("sh.keptn.event.eval.triggered"),
+				},
+				eventData: EventData{},
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool {
+				return ce.Data.(map[string]interface{})["result"] == "pass"
+			},
+			wantErr: false,
+		},
+		{
+			name: "defalult result pass #2",
+			args: args{
+				source: "source",
+				parentEvent: models.KeptnContextExtendedCE{
+					Data:           EventData{},
+					Shkeptncontext: "abcde",
+					Type:           strutils.Stringp("sh.keptn.event.eval.triggered"),
+				},
+				eventData: EventData{Result: ""},
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool {
+				return ce.Data.(map[string]interface{})["result"] == "pass"
+			},
+			wantErr: false,
+		},
+		{
+			name: "passed status reused",
+			args: args{
+				source: "source",
+				parentEvent: models.KeptnContextExtendedCE{
+					Data:           EventData{},
+					Shkeptncontext: "abcde",
+					Type:           strutils.Stringp("sh.keptn.event.eval.triggered"),
+				},
+				eventData: EventData{Status: StatusErrored, Result: ResultFailed},
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool {
+				fmt.Println(ce.Data.(map[string]interface{})["status"])
+				return ce.Data.(map[string]interface{})["status"] == string(StatusErrored) && ce.Data.(map[string]interface{})["result"] == string(ResultFailed)
+			},
+			wantErr: false,
+		},
+		{
+			name: "correct event type",
+			args: args{
+				source: "source",
+				parentEvent: models.KeptnContextExtendedCE{
+					Data:           EventData{},
+					Shkeptncontext: "abcde",
+					Type:           strutils.Stringp("sh.keptn.event.eval.triggered"),
+				},
+				eventData: EventData{Status: StatusSucceeded, Result: ResultPass},
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool {
+				fmt.Println(ce.Data.(map[string]interface{})["status"])
+				return *ce.Type == "sh.keptn.event.eval.finished"
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := CreateFinishedEvent(tt.args.source, tt.args.parentEvent, tt.args.eventData)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("createFinishedEvent() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			require.True(t, tt.assertEvent(got))
+		})
+	}
+}
+
+func Test_CreateStartedEvent(t *testing.T) {
+	type args struct {
+		source      string
+		parentEvent models.KeptnContextExtendedCE
+		eventData   interface{}
+	}
+	tests := []struct {
+		name        string
+		args        args
+		assertEvent func(*models.KeptnContextExtendedCE) bool
+		wantErr     bool
+	}{
+		{
+			name: "missing keptn context",
+			args: args{
+				source:      "source",
+				parentEvent: models.KeptnContextExtendedCE{},
+				eventData:   nil,
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool { return ce == nil },
+			wantErr:     true,
+		},
+		{
+			name: "missing event type",
+			args: args{
+				source: "source",
+				parentEvent: models.KeptnContextExtendedCE{
+					Shkeptncontext: "abce",
+				},
+				eventData: nil,
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool { return ce == nil },
+			wantErr:     true,
+		},
+		{
+			name: "non-replacable event type",
+			args: args{
+				source: "source",
+				parentEvent: models.KeptnContextExtendedCE{
+					Shkeptncontext: "abce",
+					Type:           strutils.Stringp("somethin.weird"),
+				},
+				eventData: nil,
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool { return ce == nil },
+			wantErr:     true,
+		},
+		{
+			name: "passed event data",
+			args: args{
+				source: "source",
+				parentEvent: models.KeptnContextExtendedCE{
+					Data:           EventData{},
+					Shkeptncontext: "abcde",
+					Type:           strutils.Stringp("sh.keptn.event.eval.triggered"),
+				},
+				eventData: EventData{Status: StatusSucceeded, Result: ResultPass},
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool {
+				return *ce.Type == "sh.keptn.event.eval.started" &&
+					reflect.DeepEqual(ce.Data, EventData{Status: StatusSucceeded, Result: ResultPass})
+			},
+			wantErr: false,
+		},
+		{
+			name: "ok",
+			args: args{
+				source: "source",
+				parentEvent: models.KeptnContextExtendedCE{
+					Shkeptncontext: "abcde",
+					Type:           strutils.Stringp("sh.keptn.event.eval.triggered"),
+					Data:           EventData{Project: "proj"},
+				},
+				eventData: nil,
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool {
+				return *ce.Type == "sh.keptn.event.eval.started" &&
+					reflect.DeepEqual(ce.Data, EventData{Project: "proj"})
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := CreateStartedEvent(tt.args.source, tt.args.parentEvent, tt.args.eventData)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("createStartedEvent() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			require.True(t, tt.assertEvent(got))
+		})
+	}
+}
+
+func Test_CreateErrorLogEvent(t *testing.T) {
+	type args struct {
+		source      string
+		parentEvent models.KeptnContextExtendedCE
+		eventData   interface{}
+		errVal      *Error
+	}
+	tests := []struct {
+		name        string
+		args        args
+		assertEvent func(*models.KeptnContextExtendedCE) bool
+		wantErr     bool
+	}{
+		{
+			name: "missing event type",
+			args: args{
+				source:      "soure",
+				parentEvent: models.KeptnContextExtendedCE{},
+				eventData:   nil,
+				errVal:      nil,
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool { return ce == nil },
+			wantErr:     true,
+		},
+		{
+			name: "missing keptn context",
+			args: args{
+				source: "soure",
+				parentEvent: models.KeptnContextExtendedCE{
+					Type: strutils.Stringp("sh.keptn.event.eval.triggered"),
+				},
+				eventData: nil,
+				errVal:    nil,
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool { return ce == nil },
+			wantErr:     true,
+		},
+		{
+			name: "creates finished event for events of type .triggered",
+			args: args{
+				source: "soure",
+				parentEvent: models.KeptnContextExtendedCE{
+					Shkeptncontext: "abcde",
+					Type:           strutils.Stringp("sh.keptn.event.eval.triggered"),
+				},
+				eventData: nil,
+				errVal:    nil,
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool { return *ce.Type == "sh.keptn.event.eval.finished" },
+			wantErr:     false,
+		},
+		{
+			name: "creates error event for events other than .triggered",
+			args: args{
+				source: "soure",
+				parentEvent: models.KeptnContextExtendedCE{
+					Shkeptncontext: "abcde",
+					Type:           strutils.Stringp("sh.keptn.event.eval.started"),
+					Data:           ErrorLogEvent{Message: "msg"},
+				},
+				eventData: nil,
+				errVal:    nil,
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool {
+				return *ce.Type == ErrorLogEventName &&
+					reflect.DeepEqual(ce.Data, ErrorLogEvent{Task: "eval"})
+			},
+			wantErr: false,
+		},
+		{
+			name: "creates error event for events other than .triggered with custom err message",
+			args: args{
+				source: "soure",
+				parentEvent: models.KeptnContextExtendedCE{
+					Shkeptncontext: "abcde",
+					Type:           strutils.Stringp("sh.keptn.event.eval.started"),
+				},
+				eventData: nil,
+				errVal:    &Error{Message: "silly msg"},
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool {
+				return *ce.Type == ErrorLogEventName &&
+					reflect.DeepEqual(ce.Data, ErrorLogEvent{Message: "silly msg", Task: "eval"})
+			},
+			wantErr: false,
+		},
+		{
+			name: "creates error event for events other than .triggered with custom eventData",
+			args: args{
+				source: "soure",
+				parentEvent: models.KeptnContextExtendedCE{
+					Shkeptncontext: "abcde",
+					Type:           strutils.Stringp("sh.keptn.event.eval.started"),
+				},
+				eventData: ErrorLogEvent{Message: "silly msg2", Task: "eval33"},
+				errVal:    nil,
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool {
+				return *ce.Type == ErrorLogEventName &&
+					reflect.DeepEqual(ce.Data, ErrorLogEvent{Message: "silly msg2", Task: "eval33"})
+			},
+			wantErr: false,
+		},
+		{
+			name: "creates error event for events other than .triggered with custom eventData and err",
+			args: args{
+				source: "soure",
+				parentEvent: models.KeptnContextExtendedCE{
+					Shkeptncontext: "abcde",
+					Type:           strutils.Stringp("sh.keptn.event.eval.started"),
+				},
+				eventData: ErrorLogEvent{Message: "silly msg2", Task: "eval33"},
+				errVal:    &Error{Message: "silly msg"},
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool {
+				return *ce.Type == ErrorLogEventName &&
+					reflect.DeepEqual(ce.Data, ErrorLogEvent{Message: "silly msg2", Task: "eval33"})
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := CreateErrorLogEvent(tt.args.source, tt.args.parentEvent, tt.args.eventData, tt.args.errVal)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("createErrorLogEvent() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			require.True(t, tt.assertEvent(got))
+		})
+	}
+}
+
+func Test_CreateErrorEvent(t *testing.T) {
+	type args struct {
+		source      string
+		parentEvent models.KeptnContextExtendedCE
+		eventData   interface{}
+		err         *Error
+	}
+	tests := []struct {
+		name        string
+		args        args
+		assertEvent func(*models.KeptnContextExtendedCE) bool
+		wantErr     bool
+	}{
+		{
+			name: "missing keptn context",
+			args: args{
+				source: "",
+				parentEvent: models.KeptnContextExtendedCE{
+					Type: strutils.Stringp("sh.keptn.event.eval.started"),
+				},
+				eventData: nil,
+				err:       nil,
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool { return ce == nil },
+			wantErr:     true,
+		},
+		{
+			name: "missing event type",
+			args: args{
+				source: "source",
+				parentEvent: models.KeptnContextExtendedCE{
+					Shkeptncontext: "abce",
+				},
+				eventData: nil,
+				err:       nil,
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool { return ce == nil },
+			wantErr:     true,
+		},
+		{
+			name: "creates error event for events other than .triggered",
+			args: args{
+				source: "",
+				parentEvent: models.KeptnContextExtendedCE{
+					Shkeptncontext: "abcde",
+					Type:           strutils.Stringp("sh.keptn.event.eval.started"),
+				},
+				eventData: nil,
+				err:       nil,
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool { return *ce.Type == ErrorLogEventName },
+			wantErr:     false,
+		},
+		{
+			name: "creates finished event for events of type .triggered",
+			args: args{
+				source: "",
+				parentEvent: models.KeptnContextExtendedCE{
+					Shkeptncontext: "abcde",
+					Type:           strutils.Stringp("sh.keptn.event.eval.triggered"),
+					Data:           EventData{Project: "proj"},
+				},
+				eventData: nil,
+				err:       nil,
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool {
+				return *ce.Type == "sh.keptn.event.eval.finished" &&
+					reflect.DeepEqual(ce.Data, EventData{Project: "proj"})
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := CreateErrorEvent(tt.args.source, tt.args.parentEvent, tt.args.eventData, tt.args.err)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("createErrorEvent() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			require.True(t, tt.assertEvent(got))
+		})
+	}
+}
+
+func Test_CreateFinishedEventWithError(t *testing.T) {
+	type args struct {
+		source      string
+		parentEvent models.KeptnContextExtendedCE
+		eventData   interface{}
+		err         *Error
+	}
+	tests := []struct {
+		name        string
+		args        args
+		assertEvent func(*models.KeptnContextExtendedCE) bool
+		wantErr     bool
+	}{
+		{
+			name: "missing keptn context",
+			args: args{
+				source: "",
+				parentEvent: models.KeptnContextExtendedCE{
+					Type: strutils.Stringp("sh.keptn.event.eval.started"),
+				},
+				eventData: nil,
+				err:       nil,
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool { return ce == nil },
+			wantErr:     true,
+		},
+		{
+			name: "missing event type",
+			args: args{
+				source: "source",
+				parentEvent: models.KeptnContextExtendedCE{
+					Shkeptncontext: "abce",
+				},
+				eventData: nil,
+				err:       nil,
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool { return ce == nil },
+			wantErr:     true,
+		},
+		{
+			name: "non-replacable event type",
+			args: args{
+				source: "source",
+				parentEvent: models.KeptnContextExtendedCE{
+					Shkeptncontext: "abce",
+					Type:           strutils.Stringp("somethin.weird"),
+				},
+				eventData: nil,
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool { return ce == nil },
+			wantErr:     true,
+		},
+		{
+			name: "creates error event with custom err",
+			args: args{
+				source: "soure",
+				parentEvent: models.KeptnContextExtendedCE{
+					Shkeptncontext: "abcde",
+					Type:           strutils.Stringp("sh.keptn.event.eval.started"),
+				},
+				eventData: nil,
+				err:       &Error{Message: "silly msg", StatusType: StatusAborted, ResultType: ResultFailed},
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool {
+				return *ce.Type == "sh.keptn.event.eval.finished" &&
+					reflect.DeepEqual(ce.Data, EventData{Message: "silly msg", Status: StatusAborted, Result: ResultFailed})
+			},
+			wantErr: false,
+		},
+		{
+			name: "creates error event with custom eventData",
+			args: args{
+				source: "soure",
+				parentEvent: models.KeptnContextExtendedCE{
+					Shkeptncontext: "abcde",
+					Type:           strutils.Stringp("sh.keptn.event.eval.started"),
+				},
+				eventData: EventData{Message: "silly msg", Status: StatusAborted, Result: ResultFailed},
+				err:       nil,
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool {
+				return *ce.Type == "sh.keptn.event.eval.finished" &&
+					reflect.DeepEqual(ce.Data, EventData{Message: "silly msg", Status: StatusAborted, Result: ResultFailed})
+			},
+			wantErr: false,
+		},
+		{
+			name: "creates error event with custom eventData and err",
+			args: args{
+				source: "soure",
+				parentEvent: models.KeptnContextExtendedCE{
+					Shkeptncontext: "abcde",
+					Type:           strutils.Stringp("sh.keptn.event.eval.started"),
+				},
+				eventData: EventData{Message: "silly msg", Status: StatusAborted, Result: ResultFailed},
+				err:       &Error{Message: "silly msg22", StatusType: StatusSucceeded, ResultType: ResultPass},
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool {
+				return *ce.Type == "sh.keptn.event.eval.finished" &&
+					reflect.DeepEqual(ce.Data, EventData{Message: "silly msg", Status: StatusAborted, Result: ResultFailed})
+			},
+			wantErr: false,
+		},
+		{
+			name: "creates error event with eventdata and err nil",
+			args: args{
+				source: "soure",
+				parentEvent: models.KeptnContextExtendedCE{
+					Shkeptncontext: "abcde",
+					Type:           strutils.Stringp("sh.keptn.event.eval.started"),
+					Data:           EventData{Project: "proj"},
+				},
+				eventData: nil,
+				err:       nil,
+			},
+			assertEvent: func(ce *models.KeptnContextExtendedCE) bool {
+				fmt.Println(ce.Data)
+				return *ce.Type == "sh.keptn.event.eval.finished" &&
+					reflect.DeepEqual(ce.Data, EventData{Project: "proj"})
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := CreateFinishedEventWithError(tt.args.source, tt.args.parentEvent, tt.args.eventData, tt.args.err)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("createFinishedEventWithError() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			require.True(t, tt.assertEvent(got))
 		})
 	}
 }

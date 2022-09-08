@@ -15,12 +15,21 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
+	"github.com/sirupsen/logrus"
 
 	ceObs "github.com/cloudevents/sdk-go/observability/opentelemetry/v2/client"
 	ceObsHttp "github.com/cloudevents/sdk-go/observability/opentelemetry/v2/http"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 
 	httpprotocol "github.com/cloudevents/sdk-go/v2/protocol/http"
+)
+
+const UnableGetContextMsg = "unable to get keptn context from parent event %s"
+const UnableGetTypeMsg = "unable to get keptn event type from parent event %s"
+
+const (
+	shkeptnspecversion = "0.2.4"
+	cloudeventsversion = "1.0"
 )
 
 const MAX_SEND_RETRIES = 3
@@ -472,4 +481,170 @@ func ToKeptnEvent(event cloudevents.Event) (models.KeptnContextExtendedCE, error
 	}
 
 	return keptnEvent, nil
+}
+
+// CreateStartedEvent takes a parent event (e.g. .triggered event) and creates a corresponding .started event
+func CreateStartedEvent(source string, parentEvent models.KeptnContextExtendedCE, eventData interface{}) (*models.KeptnContextExtendedCE, error) {
+	if err := validateParentEvent(parentEvent); err != nil {
+		return nil, err
+	}
+
+	startedEventType, err := ReplaceEventTypeKind(*parentEvent.Type, "started")
+	if err != nil {
+		return nil, fmt.Errorf("unable to create '.started' event for parent event %s: %w", parentEvent.ID, err)
+	}
+
+	if eventData == nil {
+		commonEventData := EventData{}
+		if err := parentEvent.DataAs(&commonEventData); err != nil {
+			logrus.Errorf("unable to retrieve event data from parent event %s: %s", parentEvent.ID, err.Error())
+		}
+		eventData = commonEventData
+	}
+
+	return createEvent(source, startedEventType, parentEvent, eventData), nil
+}
+
+// CreateFinishedEvent takes a parent event (e.g. .triggered event) and creates a corresponding .finished event
+func CreateFinishedEvent(source string, parentEvent models.KeptnContextExtendedCE, eventData interface{}) (*models.KeptnContextExtendedCE, error) {
+	if err := validateParentEvent(parentEvent); err != nil {
+		return nil, err
+	}
+
+	finishedEventType, err := ReplaceEventTypeKind(*parentEvent.Type, "finished")
+	if err != nil {
+		return nil, fmt.Errorf("unable to create '.finished' event: %v from %s", err, *parentEvent.Type)
+	}
+
+	var genericEventData map[string]interface{}
+	err = Decode(eventData, &genericEventData)
+	if err != nil || genericEventData == nil {
+		return nil, fmt.Errorf("unable to decode generic event data")
+	}
+
+	if genericEventData["status"] == nil || genericEventData["status"] == "" {
+		genericEventData["status"] = "succeeded"
+	}
+
+	if genericEventData["result"] == nil || genericEventData["result"] == "" {
+		genericEventData["result"] = "pass"
+	}
+
+	return createEvent(source, finishedEventType, parentEvent, genericEventData), nil
+}
+
+// CreateFinishedEventWithError takes a parent event (e.g. .triggered event) and creates a corresponding errored .finished event
+func CreateFinishedEventWithError(source string, parentEvent models.KeptnContextExtendedCE, eventData interface{}, errVal *Error) (*models.KeptnContextExtendedCE, error) {
+	if err := validateParentEvent(parentEvent); err != nil {
+		return nil, err
+	}
+
+	finishedEventType, err := ReplaceEventTypeKind(*parentEvent.Type, "finished")
+	if err != nil {
+		return nil, fmt.Errorf("unable to create '.finished' event for parent event %s: %w", parentEvent.ID, err)
+	}
+
+	if errVal == nil {
+		errVal = &Error{}
+	}
+
+	if eventData == nil {
+		commonEventData := EventData{}
+		if err := parentEvent.DataAs(&commonEventData); err != nil {
+			logrus.Errorf("Unable to retrieve event data from parent event %s: %s", parentEvent.ID, err.Error())
+		}
+		commonEventData.Result = errVal.ResultType
+		commonEventData.Status = errVal.StatusType
+		commonEventData.Message = errVal.Message
+		eventData = commonEventData
+	}
+
+	return createEvent(source, finishedEventType, parentEvent, eventData), nil
+}
+
+// CreateErrorEvent takes a parent event (e.g. .triggered event) and creates a corresponding errored event
+func CreateErrorEvent(source string, parentEvent models.KeptnContextExtendedCE, eventData interface{}, errVal *Error) (*models.KeptnContextExtendedCE, error) {
+	if err := validateParentEvent(parentEvent); err != nil {
+		return nil, err
+	}
+
+	if errVal == nil {
+		errVal = &Error{}
+	}
+
+	if IsTaskEventType(*parentEvent.Type) && IsTriggeredEventType(*parentEvent.Type) {
+		errorFinishedEvent, err := CreateFinishedEventWithError(source, parentEvent, eventData, errVal)
+		if err != nil {
+			return nil, err
+		}
+		return errorFinishedEvent, nil
+	}
+	errorLogEvent, err := CreateErrorLogEvent(source, parentEvent, eventData, errVal)
+	if err != nil {
+		return nil, err
+	}
+	return errorLogEvent, nil
+}
+
+// CreateErrorLogEvent takes a parent event (e.g. .triggered event) and creates a corresponding errored .log event
+func CreateErrorLogEvent(source string, parentEvent models.KeptnContextExtendedCE, eventData interface{}, errVal *Error) (*models.KeptnContextExtendedCE, error) {
+	if err := validateParentEvent(parentEvent); err != nil {
+		return nil, err
+	}
+
+	if errVal == nil {
+		errVal = &Error{}
+	}
+
+	if IsTaskEventType(*parentEvent.Type) && IsTriggeredEventType(*parentEvent.Type) {
+		errorFinishedEvent, err := CreateFinishedEventWithError(source, parentEvent, eventData, errVal)
+		if err != nil {
+			return nil, err
+		}
+		return errorFinishedEvent, nil
+	}
+
+	if eventData == nil {
+		errorEventData := ErrorLogEvent{}
+		if err := parentEvent.DataAs(&errorEventData); err != nil {
+			logrus.Errorf("unable to retrieve error log data from parent event %s: %s", parentEvent.ID, err.Error())
+		}
+		if IsTaskEventType(*parentEvent.Type) {
+			taskName, _, err := ParseTaskEventType(*parentEvent.Type)
+			if err == nil && taskName != "" {
+				errorEventData.Task = taskName
+			}
+		}
+		errorEventData.Message = errVal.Message
+		eventData = errorEventData
+	}
+
+	return createEvent(source, ErrorLogEventName, parentEvent, eventData), nil
+}
+
+func createEvent(source string, eventType string, parentEvent models.KeptnContextExtendedCE, eventData interface{}) *models.KeptnContextExtendedCE {
+	return &models.KeptnContextExtendedCE{
+		ID:                 uuid.NewString(),
+		Triggeredid:        parentEvent.ID,
+		Shkeptncontext:     parentEvent.Shkeptncontext,
+		Contenttype:        cloudevents.ApplicationJSON,
+		Data:               eventData,
+		Source:             strutils.Stringp(source),
+		Shkeptnspecversion: shkeptnspecversion,
+		Specversion:        cloudeventsversion,
+		Time:               time.Now().UTC(),
+		Type:               strutils.Stringp(eventType),
+	}
+}
+
+func validateParentEvent(parentEvent models.KeptnContextExtendedCE) error {
+	if parentEvent.Type == nil || *parentEvent.Type == "" {
+		return fmt.Errorf(UnableGetTypeMsg, parentEvent.ID)
+	}
+
+	if parentEvent.Shkeptncontext == "" {
+		return fmt.Errorf(UnableGetContextMsg, parentEvent.ID)
+	}
+
+	return nil
 }

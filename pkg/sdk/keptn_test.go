@@ -3,9 +3,10 @@ package sdk
 import (
 	"context"
 	"fmt"
-	"github.com/keptn/go-utils/pkg/sdk/internal/config"
 	"math"
 	"testing"
+
+	"github.com/keptn/go-utils/pkg/sdk/internal/config"
 
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"

@@ -2,9 +2,6 @@ package sdk
 
 import (
 	"context"
-	"github.com/keptn/go-utils/pkg/sdk/connector/types"
-	sdk "github.com/keptn/go-utils/pkg/sdk/internal/api"
-	"github.com/keptn/go-utils/pkg/sdk/internal/config"
 	"os"
 	"os/signal"
 	"strings"
@@ -12,17 +9,16 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/keptn/go-utils/pkg/sdk/connector/types"
+	sdk "github.com/keptn/go-utils/pkg/sdk/internal/api"
+	"github.com/keptn/go-utils/pkg/sdk/internal/config"
+
 	"github.com/kelseyhightower/envconfig"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	apiv2 "github.com/keptn/go-utils/pkg/api/utils/v2"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/go-utils/pkg/sdk/connector/controlplane"
-)
-
-const (
-	shkeptnspecversion = "0.2.4"
-	cloudeventsversion = "1.0"
 )
 
 type IKeptn interface {
@@ -59,18 +55,9 @@ type TaskHandler interface {
 	Execute(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error)
 }
 
+type Error keptnv2.Error
+
 type KeptnEvent models.KeptnContextExtendedCE
-
-type Error struct {
-	StatusType keptnv2.StatusType
-	ResultType keptnv2.ResultType
-	Message    string
-	Err        error
-}
-
-func (e Error) Error() string {
-	return e.Message
-}
 
 // KeptnOption can be used to configure the keptn sdk
 type KeptnOption func(*Keptn)
@@ -249,7 +236,7 @@ func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE
 			if handler, ok := k.taskRegistry.Contains(*event.Type); ok {
 				keptnEvent := &KeptnEvent{}
 				if err := keptnv2.Decode(&event, keptnEvent); err != nil {
-					errorLogEvent, err := createErrorLogEvent(k.source, event, nil, &Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed})
+					errorLogEvent, err := keptnv2.CreateErrorLogEvent(k.source, event, nil, &keptnv2.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed})
 					if err != nil {
 						k.logger.Errorf("Unable to create '.error.log' event from '.triggered' event: %v", err)
 						return
@@ -276,7 +263,7 @@ func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE
 
 				// only respond with .started event if the incoming event is a task.triggered event
 				if keptnv2.IsTaskEventType(*event.Type) && keptnv2.IsTriggeredEventType(*event.Type) && autoResponse {
-					startedEvent, err := createStartedEvent(k.source, event)
+					startedEvent, err := keptnv2.CreateStartedEvent(k.source, event, nil)
 					if err != nil {
 						k.logger.Errorf("Unable to create '.started' event from '.triggered' event: %v", err)
 						return
@@ -291,7 +278,12 @@ func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE
 				if err != nil {
 					k.logger.Errorf("Error during task execution %v", err.Err)
 					if autoResponse {
-						errorEvent, err := createErrorEvent(k.source, event, result, err)
+						errorEvent, err := keptnv2.CreateErrorEvent(k.source, event, result, &keptnv2.Error{
+							StatusType: err.StatusType,
+							ResultType: err.ResultType,
+							Message:    err.Message,
+							Err:        err.Err,
+						})
 						if err != nil {
 							k.logger.Errorf("Unable to create '.error' event: %v", err)
 							return
@@ -306,7 +298,7 @@ func (k *Keptn) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE
 				if result == nil {
 					k.logger.Infof("no finished data set by task executor for event %s. Skipping sending finished event", *event.Type)
 				} else if keptnv2.IsTaskEventType(*event.Type) && keptnv2.IsTriggeredEventType(*event.Type) && autoResponse {
-					finishedEvent, err := createFinishedEvent(k.source, event, result)
+					finishedEvent, err := keptnv2.CreateFinishedEvent(k.source, event, result)
 					if err != nil {
 						k.logger.Errorf("Unable to create '.finished' event: %v", err)
 						return
@@ -367,7 +359,7 @@ func (k *Keptn) GetResourceHandler() ResourceHandler {
 }
 
 func (k *Keptn) SendStartedEvent(parentEvent KeptnEvent) error {
-	startedEvent, err := createStartedEvent(k.source, models.KeptnContextExtendedCE(parentEvent))
+	startedEvent, err := keptnv2.CreateStartedEvent(k.source, models.KeptnContextExtendedCE(parentEvent), nil)
 	if err != nil {
 		return err
 	}
@@ -375,7 +367,7 @@ func (k *Keptn) SendStartedEvent(parentEvent KeptnEvent) error {
 }
 
 func (k *Keptn) SendFinishedEvent(parentEvent KeptnEvent, newEventData interface{}) error {
-	finishedEvent, err := createFinishedEvent(k.source, models.KeptnContextExtendedCE(parentEvent), newEventData)
+	finishedEvent, err := keptnv2.CreateFinishedEvent(k.source, models.KeptnContextExtendedCE(parentEvent), newEventData)
 	if err != nil {
 		return err
 	}
