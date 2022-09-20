@@ -66,6 +66,7 @@ type ResourcesCreateResourceOptions struct {
 	URIOptions []URIOption
 }
 
+//go:generate moq -pkg utils_mock -skip-ensure -out ./fake/resources_handler_mock.go . ResourcesInterface
 type ResourcesInterface interface {
 	// CreateResources creates a resource for the specified entity.
 	CreateResources(ctx context.Context, project string, stage string, service string, resources []*models.Resource, opts ResourcesCreateResourcesOptions) (*models.EventContext, *models.Error)
