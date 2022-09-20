@@ -14,6 +14,7 @@ type SLI struct {
 	Indicators  map[string]string `yaml:"indicators"`
 }
 
+// GetSLIOptions specifies the project, stage, dervice and SLI file name to be fetched
 type GetSLIOptions struct {
 	Project     string
 	Stage       string
@@ -21,18 +22,9 @@ type GetSLIOptions struct {
 	SLIFileName string
 }
 
-type UploadSLIOptions struct {
-	Project     string
-	Stage       string
-	Service     string
-	SLIFileName string
-	SLIs        *SLI
-}
-
 // SLIReader provides functionality for getting SLIs
 type SLIReader interface {
 	// GetSLIs gets the SLIs stored for the specified project, stage and service.
-	// First, the configuration of project-level is retrieved, which is then overridden by configuration on stage level, and then overridden by configuration on service level.
 	GetSLIs(ctx context.Context, options GetSLIOptions) (map[string]string, error)
 }
 
