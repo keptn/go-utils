@@ -17,7 +17,7 @@ func TestGetResource_APIReturnsError(t *testing.T) {
 			return nil, fmt.Errorf("error")
 		},
 	}
-	resourceClient := NewResourceClient(resourcesHandler)
+	resourceClient := NewResourceHelper(resourcesHandler)
 	resource0, err0 := resourceClient.GetResource(context.TODO(), "my-project", "my-stage", "my-service", "test/resource.yaml")
 	assert.Equal(t, "", resource0)
 	assert.Error(t, err0)
@@ -38,7 +38,7 @@ func TestGetResource_ResourceNotFoundError(t *testing.T) {
 			return nil, v2.ResourceNotFoundError
 		},
 	}
-	resourceClient := NewResourceClient(resourcesHandler)
+	resourceClient := NewResourceHelper(resourcesHandler)
 	resource, err := resourceClient.GetResource(context.TODO(), "my-project", "my-stage", "my-service", "test/resource.yaml")
 	assert.Equal(t, "", resource)
 	var errExp *ResourceNotFoundError
@@ -61,7 +61,7 @@ func TestGetResource(t *testing.T) {
 	}
 
 	//service resource
-	resourceClient := NewResourceClient(resourcesHandler)
+	resourceClient := NewResourceHelper(resourcesHandler)
 	resource0, err0 := resourceClient.GetResource(context.TODO(), "my-project", "my-stage", "my-service", "test/resource.yaml")
 	assert.Equal(t, "some-content", resource0)
 	assert.NoError(t, err0)
@@ -93,7 +93,7 @@ func TestGetResource_EmptyResourceContent(t *testing.T) {
 	}
 
 	//service resource
-	resourceClient := NewResourceClient(resourcesHandler)
+	resourceClient := NewResourceHelper(resourcesHandler)
 	resource0, err0 := resourceClient.GetResource(context.TODO(), "my-project", "my-stage", "my-service", "test/resource.yaml")
 	var errExp0 *ResourceEmptyError
 	assert.Equal(t, "", resource0)
@@ -119,7 +119,7 @@ func TestUploadResource_Error(t *testing.T) {
 		},
 	}
 
-	resourceClient := NewResourceClient(resourcesHandler)
+	resourceClient := NewResourceHelper(resourcesHandler)
 	err := resourceClient.UploadResource(context.TODO(), []byte{}, "test/resource.yaml", "my-project", "my-stage", "my-service")
 	var errExp *ResourceUploadFailedError
 	assert.ErrorAs(t, err, &errExp)
@@ -133,7 +133,7 @@ func TestUploadResource(t *testing.T) {
 		},
 	}
 
-	resourceClient := NewResourceClient(resourcesHandler)
+	resourceClient := NewResourceHelper(resourcesHandler)
 	err := resourceClient.UploadResource(context.TODO(), []byte{}, "test/resource.yaml", "my-project", "my-stage", "my-service")
 	assert.NoError(t, err)
 

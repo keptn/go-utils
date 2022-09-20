@@ -22,20 +22,14 @@ type GetSLIOptions struct {
 	SLIFileName string
 }
 
-// SLIReader provides functionality for getting SLIs
-type SLIReader interface {
-	// GetSLIs gets the SLIs stored for the specified project, stage and service.
-	GetSLIs(ctx context.Context, options GetSLIOptions) (map[string]string, error)
-}
-
-// SLIClient is the default implementation of SLIReader used for retrieving SLI content
-type SLIClient struct {
+// SLIHelper is the default implementation of SLIReader used for retrieving SLI content
+type SLIHelper struct {
 	client ResourceClientInterface
 }
 
-// NewSLIClient creates a new SLIClient with a Keptn resource handler for the configuration service.
-func NewSLIClient(client ResourceClientInterface) *SLIClient {
-	return &SLIClient{
+// NewSLIHelper creates a new SLIHelper with a Keptn resource handler for the configuration service.
+func NewSLIHelper(client ResourceClientInterface) *SLIHelper {
+	return &SLIHelper{
 		client: client,
 	}
 }
@@ -50,7 +44,7 @@ func (m sliMap) insertOrUpdateMany(x map[string]string) {
 
 // GetSLIs gets the SLIs stored for the specified project, stage and service.
 // First, the configuration of project-level is retrieved, which is then overridden by configuration on stage level, and then overridden by configuration on service level.
-func (rc *SLIClient) GetSLIs(ctx context.Context, options GetSLIOptions) (map[string]string, error) {
+func (rc *SLIHelper) GetSLIs(ctx context.Context, options GetSLIOptions) (map[string]string, error) {
 	slis := make(sliMap)
 
 	// try to get SLI config from project

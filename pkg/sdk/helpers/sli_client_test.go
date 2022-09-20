@@ -15,7 +15,7 @@ const testService = "my-service"
 
 // TestConfigClient_GetSLIsNoneDefined tests that getting SLIs when none have been defined returns an empty map but no error.
 func TestConfigClient_GetSLIsNoneDefined(t *testing.T) {
-	rc := NewSLIClient(&mockResourceClient{t: t})
+	rc := NewSLIHelper(&mockResourceClient{t: t})
 	slis, err := rc.GetSLIs(context.Background(), GetSLIOptions{Project: testProject, Stage: testStage, Service: testService, SLIFileName: testSLIResourceURI})
 	assert.Empty(t, slis)
 	assert.NoError(t, err)
@@ -24,7 +24,7 @@ func TestConfigClient_GetSLIsNoneDefined(t *testing.T) {
 // TestConfigClient_GetSLIsWithOverrides tests that service-level SLIs override stage or project-level SLIs and stage-level SLIs override project-level ones.
 // In addition any SLIs defined only at a project or stage level should also be returned.
 func TestConfigClient_GetSLIsWithOverrides(t *testing.T) {
-	rc := NewSLIClient(
+	rc := NewSLIHelper(
 		&mockResourceClient{
 			t:               t,
 			projectResource: getProjectResource(t),
@@ -55,7 +55,7 @@ func TestConfigClient_GetSLIsWithOverrides(t *testing.T) {
 
 // TestConfigClient_GetSLIsInvalidYAMLCausesError tests that an invalid SLI YAML resource produces an error.
 func TestConfigClient_GetSLIsInvalidYAMLCausesError(t *testing.T) {
-	rc := NewSLIClient(
+	rc := NewSLIHelper(
 		&mockResourceClient{
 			t:               t,
 			projectResource: getInvalidYAMLResource(t)})
@@ -66,7 +66,7 @@ func TestConfigClient_GetSLIsInvalidYAMLCausesError(t *testing.T) {
 
 // TestConfigClient_GetSLIsRetrievalErrorCausesError tests that resource retrieval errors produce an error.
 func TestConfigClient_GetSLIsRetrievalErrorCausesError(t *testing.T) {
-	rc := NewSLIClient(
+	rc := NewSLIHelper(
 		&mockResourceClient{
 			t:               t,
 			serviceResource: &mockResource{err: &ResourceRetrievalFailedError{ResourceError{uri: testSLIResourceURI, project: testProject, stage: testStage, service: testService}, errors.New("Connection error")}}})
@@ -79,7 +79,7 @@ func TestConfigClient_GetSLIsRetrievalErrorCausesError(t *testing.T) {
 
 // TestConfigClient_GetSLIsEmptySLIFileCausesError tests that an empty SLI file produces an error.
 func TestConfigClient_GetSLIsEmptySLIFileCausesError(t *testing.T) {
-	rc := NewSLIClient(
+	rc := NewSLIHelper(
 		&mockResourceClient{
 			t:               t,
 			serviceResource: &mockResource{err: &ResourceEmptyError{uri: testSLIResourceURI, project: testProject, stage: testStage, service: testService}}})
@@ -92,7 +92,7 @@ func TestConfigClient_GetSLIsEmptySLIFileCausesError(t *testing.T) {
 
 // TestConfigClient_GetSLIsNoIndicatorsCausesError tests that an SLI file containing no indicators produces an error.
 func TestConfigClient_GetSLIsNoIndicatorsCausesError(t *testing.T) {
-	rc := NewSLIClient(
+	rc := NewSLIHelper(
 		&mockResourceClient{
 			t:               t,
 			serviceResource: getNoIndicatorsResource(t)})

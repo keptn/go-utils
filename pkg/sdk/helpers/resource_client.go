@@ -101,20 +101,20 @@ func getLocation(service string, stage string, project string) string {
 	return strings.TrimLeft(location, " ")
 }
 
-// ResourceClient is the default implementation for the ResourceClientInterface using a Keptn api.ResourcesV1Interface.
-type ResourceClient struct {
+// ResourceHelper is the default implementation for the ResourceClientInterface using a Keptn api.ResourcesV1Interface.
+type ResourceHelper struct {
 	client v2.ResourcesInterface
 }
 
-// NewResourceClient creates a new ResourceClient using a api.ResourcesV1Interface.
-func NewResourceClient(client v2.ResourcesInterface) *ResourceClient {
-	return &ResourceClient{
+// NewResourceHelper creates a new ResourceHelper using a api.ResourcesV1Interface.
+func NewResourceHelper(client v2.ResourcesInterface) *ResourceHelper {
+	return &ResourceHelper{
 		client: client,
 	}
 }
 
 // GetResource tries to find the first instance of a given resource on service, stage or project level.
-func (rc *ResourceClient) GetResource(ctx context.Context, project string, stage string, service string, resourceURI string) (string, error) {
+func (rc *ResourceHelper) GetResource(ctx context.Context, project string, stage string, service string, resourceURI string) (string, error) {
 	var rnfErrorType *ResourceNotFoundError
 	if project != "" && stage != "" && service != "" {
 		keptnResourceContent, err := rc.GetServiceResource(ctx, project, stage, service, resourceURI)
@@ -186,7 +186,7 @@ func (rc *ResourceClient) GetResource(ctx context.Context, project string, stage
 }
 
 // GetServiceResource tries to retrieve a resource on service level.
-func (rc *ResourceClient) GetServiceResource(ctx context.Context, project string, stage string, service string, resourceURI string) (string, error) {
+func (rc *ResourceHelper) GetServiceResource(ctx context.Context, project string, stage string, service string, resourceURI string) (string, error) {
 	return getResourceByFunc(
 		func() (*keptnmodels.Resource, error) {
 			return rc.client.GetResource(ctx,
@@ -205,7 +205,7 @@ func (rc *ResourceClient) GetServiceResource(ctx context.Context, project string
 }
 
 // GetStageResource tries to retrieve a resource on stage level.
-func (rc *ResourceClient) GetStageResource(ctx context.Context, project string, stage string, resourceURI string) (string, error) {
+func (rc *ResourceHelper) GetStageResource(ctx context.Context, project string, stage string, resourceURI string) (string, error) {
 	return getResourceByFunc(
 		func() (*keptnmodels.Resource, error) {
 			return rc.client.GetResource(ctx,
@@ -224,7 +224,7 @@ func (rc *ResourceClient) GetStageResource(ctx context.Context, project string, 
 }
 
 // GetProjectResource tries to retrieve a resource on project level.
-func (rc *ResourceClient) GetProjectResource(ctx context.Context, project string, resourceURI string) (string, error) {
+func (rc *ResourceHelper) GetProjectResource(ctx context.Context, project string, resourceURI string) (string, error) {
 	return getResourceByFunc(
 		func() (*keptnmodels.Resource, error) {
 			return rc.client.GetResource(ctx,
@@ -259,7 +259,7 @@ func getResourceByFunc(
 }
 
 // UploadResource tries to upload a resource.
-func (rc *ResourceClient) UploadResource(ctx context.Context, contentToUpload []byte, remoteResourceURI string, project string, stage string, service string) error {
+func (rc *ResourceHelper) UploadResource(ctx context.Context, contentToUpload []byte, remoteResourceURI string, project string, stage string, service string) error {
 	resources := []*keptnmodels.Resource{{ResourceContent: string(contentToUpload), ResourceURI: &remoteResourceURI}}
 	_, err := rc.client.CreateResources(ctx, project, stage, service, resources, v2.ResourcesCreateResourcesOptions{})
 	if err != nil {
