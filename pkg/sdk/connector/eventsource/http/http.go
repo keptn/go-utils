@@ -104,6 +104,9 @@ func (hes *HTTPEventSource) Start(ctx context.Context, data types.RegistrationDa
 func (hes *HTTPEventSource) OnSubscriptionUpdate(subscriptions []models.EventSubscription) {
 	hes.mutex.Lock()
 	defer hes.mutex.Unlock()
+	if subscriptionDiffer(subscriptions, hes.currentSubscriptions) {
+		hes.logger.Infof("Got new subscriptions: %v", getEvents(subscriptions))
+	}
 	hes.currentSubscriptions = subscriptions
 }
 
@@ -135,8 +138,9 @@ func (hes *HTTPEventSource) doPoll(eventUpdates chan types.EventUpdate) error {
 				continue
 			}
 			eventUpdates <- types.EventUpdate{
-				KeptnEvent: *e,
-				MetaData:   types.EventUpdateMetaData{Subject: sub.Event},
+				KeptnEvent:     *e,
+				MetaData:       types.EventUpdateMetaData{Subject: sub.Event},
+				SubscriptionID: sub.ID,
 			}
 			hes.cache.Add(sub.ID, e.ID)
 		}
@@ -165,4 +169,12 @@ func getEventFilterForSubscription(subscription models.EventSubscription) api.Ev
 	}
 
 	return eventFilter
+}
+
+func getEvents(subscriptions []models.EventSubscription) []string {
+	events := []string{}
+	for _, s := range subscriptions {
+		events = append(events, s.Event)
+	}
+	return events
 }

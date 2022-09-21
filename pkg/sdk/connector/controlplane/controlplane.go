@@ -199,14 +199,22 @@ func (cp *ControlPlane) stopComponents() {
 
 func (cp *ControlPlane) handle(ctx context.Context, eventUpdate types.EventUpdate, integration Integration) error {
 	cp.logger.Debugf("Received an event of type: %s", *eventUpdate.KeptnEvent.Type)
-	for _, subscription := range cp.currentSubscriptions {
-		if subscription.Event == eventUpdate.MetaData.Subject {
-			cp.logger.Debugf("Check if event matches subscription %s", subscription.ID)
-			matcher := eventmatcher.New(subscription)
-			if matcher.Matches(eventUpdate.KeptnEvent) {
-				cp.logger.Info("Forwarding matched event update: ", eventUpdate.KeptnEvent.ID)
-				if err := cp.forwardMatchedEvent(ctx, eventUpdate, integration, subscription); err != nil {
-					return err
+
+	// if we already know the subscription ID we can just forward the event to be handled
+	if eventUpdate.SubscriptionID != "" {
+		if err := cp.forwardMatchedEvent(ctx, eventUpdate, integration, eventUpdate.SubscriptionID); err != nil {
+			return err
+		}
+	} else {
+		for _, subscription := range cp.currentSubscriptions {
+			if subscription.Event == eventUpdate.MetaData.Subject {
+				cp.logger.Debugf("Check if event matches subscription %s", subscription.ID)
+				matcher := eventmatcher.New(subscription)
+				if matcher.Matches(eventUpdate.KeptnEvent) {
+					cp.logger.Info("Forwarding matched event update: ", eventUpdate.KeptnEvent.ID)
+					if err := cp.forwardMatchedEvent(ctx, eventUpdate, integration, subscription.ID); err != nil {
+						return err
+					}
 				}
 			}
 		}
@@ -228,7 +236,7 @@ func (cp *ControlPlane) getSender(sender types.EventSender) types.EventSender {
 	}
 }
 
-func (cp *ControlPlane) forwardMatchedEvent(ctx context.Context, eventUpdate types.EventUpdate, integration Integration, subscription models.EventSubscription) error {
+func (cp *ControlPlane) forwardMatchedEvent(ctx context.Context, eventUpdate types.EventUpdate, integration Integration, subscriptionID string) error {
 	// increase the eventHandler WaitGroup
 	cp.eventHandlerWaitGroup.Add(1)
 	// when the event handler is done, decrease the WaitGroup again
@@ -237,7 +245,7 @@ func (cp *ControlPlane) forwardMatchedEvent(ctx context.Context, eventUpdate typ
 	err := eventUpdate.KeptnEvent.AddTemporaryData(
 		tmpDataDistributorKey,
 		types.AdditionalSubscriptionData{
-			SubscriptionID: subscription.ID,
+			SubscriptionID: subscriptionID,
 		},
 		models.AddTemporaryDataOptions{
 			OverwriteIfExisting: true,
