@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.19.0](https://github.com/keptn/go-utils/compare/v0.18.0...v0.19.0) (2022-09-23)
+
+
+### Features
+
+* Expose methods to automatically generate events from parent event ([#538](https://github.com/keptn/keptn/issues/538)) ([cf4bfd8](https://github.com/keptn/go-utils/commit/cf4bfd8b27ffe36fe330722b1fb826b5ced4f80e))
+* Introduce IsUpstreamAutoProvisioned to ExpandedProject model ([#536](https://github.com/keptn/keptn/issues/536)) ([dc8c096](https://github.com/keptn/go-utils/commit/dc8c0968b1331f46db4d5e7846d7e09b1ca1c4a5))
+* Introduce skipping of automatic event responses per task handler ([#537](https://github.com/keptn/keptn/issues/537)) ([278ad8b](https://github.com/keptn/go-utils/commit/278ad8bdb21774ecce3e5de80ec6bbd8e0e0d9c0))
+
+
+### Bug Fixes
+
+* Use resourceHandler from apiv2 package instead of newly creating an internal-only, unauthenticated client ([#535](https://github.com/keptn/keptn/issues/535)) ([f07eb2f](https://github.com/keptn/go-utils/commit/f07eb2f4a74be3e0b54972d1ff52f303708d4a24))
+
 ## [0.18.0](https://github.com/keptn/go-utils/compare/v0.17.0...v0.18.0) (2022-07-28)
 
 
