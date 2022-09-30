@@ -199,22 +199,18 @@ func (cp *ControlPlane) stopComponents() {
 
 func (cp *ControlPlane) handle(ctx context.Context, eventUpdate types.EventUpdate, integration Integration) error {
 	cp.logger.Debugf("Received an event of type: %s", *eventUpdate.KeptnEvent.Type)
-
 	// if we already know the subscription ID we can just forward the event to be handled
 	if eventUpdate.SubscriptionID != "" {
-		if err := cp.forwardMatchedEvent(ctx, eventUpdate, integration, eventUpdate.SubscriptionID); err != nil {
-			return err
-		}
-	} else {
-		for _, subscription := range cp.currentSubscriptions {
-			if subscription.Event == eventUpdate.MetaData.Subject {
-				cp.logger.Debugf("Check if event matches subscription %s", subscription.ID)
-				matcher := eventmatcher.New(subscription)
-				if matcher.Matches(eventUpdate.KeptnEvent) {
-					cp.logger.Info("Forwarding matched event update: ", eventUpdate.KeptnEvent.ID)
-					if err := cp.forwardMatchedEvent(ctx, eventUpdate, integration, subscription.ID); err != nil {
-						return err
-					}
+		return cp.forwardMatchedEvent(ctx, eventUpdate, integration, eventUpdate.SubscriptionID)
+	}
+	for _, subscription := range cp.currentSubscriptions {
+		if subscription.Event == eventUpdate.MetaData.Subject {
+			cp.logger.Debugf("Check if event matches subscription %s", subscription.ID)
+			matcher := eventmatcher.New(subscription)
+			if matcher.Matches(eventUpdate.KeptnEvent) {
+				cp.logger.Info("Forwarding matched event update: ", eventUpdate.KeptnEvent.ID)
+				if err := cp.forwardMatchedEvent(ctx, eventUpdate, integration, subscription.ID); err != nil {
+					return err
 				}
 			}
 		}
