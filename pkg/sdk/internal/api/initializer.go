@@ -104,7 +104,7 @@ func getHttpScheme(env config.EnvConfig) (string, error) {
 
 func eventSource(apiSet keptnapi.KeptnInterface, logger logger.Logger, env config.EnvConfig) eventsource.EventSource {
 	if env.PubSubConnectionType() == config.ConnectionTypeHTTP {
-		return eventsourceHttp.New(clock.New(), eventsourceHttp.NewEventAPI(apiSet.ShipyardControlV1(), apiSet.APIV1()))
+		return eventsourceHttp.New(clock.New(), eventsourceHttp.NewEventAPI(apiSet.ShipyardControlV1(), apiSet.APIV1()), eventsourceHttp.WithLogger(logger))
 	}
 	natsConnector := nats.New(env.EventBrokerURL, nats.WithLogger(logger))
 	return eventsourceNats.New(natsConnector, eventsourceNats.WithLogger(logger))

@@ -141,6 +141,23 @@ func dedup(elements []string) []string {
 	return result
 }
 
+// subscriptionDiffer checks whether two lists of event subscriptions are different based on the
+// event type they are targeting
+func subscriptionDiffer(s1 []models.EventSubscription, s2 []models.EventSubscription) bool {
+	for _, ns := range s1 {
+		found := false
+		for _, os := range s2 {
+			if os.Event == ns.Event {
+				found = true
+			}
+		}
+		if !found {
+			return true
+		}
+	}
+	return len(s1) != len(s2)
+}
+
 func ToIds(events []*models.KeptnContextExtendedCE) []string {
 	ids := []string{}
 	for _, e := range events {

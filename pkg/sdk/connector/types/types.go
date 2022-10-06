@@ -11,8 +11,9 @@ type AdditionalSubscriptionData struct {
 }
 
 type EventUpdate struct {
-	KeptnEvent models.KeptnContextExtendedCE
-	MetaData   EventUpdateMetaData
+	KeptnEvent     models.KeptnContextExtendedCE
+	MetaData       EventUpdateMetaData
+	SubscriptionID string // optional
 }
 
 type EventUpdateMetaData struct {
