@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.20.0](https://github.com/keptn/go-utils/compare/v0.19.0...v0.20.0) (2022-12-07)
+
+
+### Features
+
+* **go-sdk:** Helper for retrieving SLI resources ([#541](https://github.com/keptn/keptn/issues/541)) ([cc6d13c](https://github.com/keptn/go-utils/commit/cc6d13cd1a40a4d02f1a2031b82c49451320f4ad))
+
+
+### Bug Fixes
+
+* Fix event handling for duplicated subscriptions in `go-sdk` remote execution plane use case ([#542](https://github.com/keptn/keptn/issues/542)) ([8655d73](https://github.com/keptn/go-utils/commit/8655d7329e7c5008d7acd95411a8dd00e2c456e4))
+
+
+### Other
+
+* **go-utils:** Changed dependencies ([#545](https://github.com/keptn/keptn/issues/545)) ([1f92e1e](https://github.com/keptn/go-utils/commit/1f92e1e08722c66e3d92b943f203ee95b8e5b42c))
+
 ## [0.19.0](https://github.com/keptn/go-utils/compare/v0.18.0...v0.19.0) (2022-09-23)
 
 
