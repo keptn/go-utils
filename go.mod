@@ -18,7 +18,7 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.11.1
 	go.opentelemetry.io/otel/sdk v1.11.1
 	go.opentelemetry.io/otel/trace v1.11.1
-	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
+	golang.org/x/oauth2 v0.4.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.25.4
 	k8s.io/apimachinery v0.25.4
@@ -67,7 +67,7 @@ require (
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.19.0 // indirect
 	golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be // indirect
-	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
+	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/sys v0.0.0-20220928140112-f11e5e49a4ec // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.4.0 // indirect
