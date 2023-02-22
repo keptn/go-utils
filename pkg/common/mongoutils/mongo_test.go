@@ -186,7 +186,7 @@ func TestGetMongoConnectionStringFromEnv_File(t *testing.T) {
 
 			writeMongoData(tmp+mongoExtCon, tt.externalConnectionStringEnvVar)
 			writeMongoData(tmp+mongoUser, tt.mongoDbUserEnvVar)
-			writeMongoData(tmp+mongoPwd, tt.mongoDbPasswordEnvVar)
+			writeMongoData(tmp+mongoPw, tt.mongoDbPasswordEnvVar)
 
 			gotConnectionString, gotDbName, err := GetMongoConnectionStringFromEnv()
 			if (err != nil) != tt.wantErr {
