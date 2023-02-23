@@ -42,7 +42,7 @@ func GetMongoConnectionStringFromEnv() (string, string, error) {
 	return fmt.Sprintf("mongodb://%s:%s@%s/%s", mongoDBUser, mongoDBPassword, mongoDBHost, mongoDBName), mongoDBName, nil
 }
 
-func readSecret(file string) string {
+func readMountedSecret(file string) string {
 	body, err := os.ReadFile(file)
 	if err != nil {
 		logger.Fatalf("unable to read mounted secret: %v", err)
