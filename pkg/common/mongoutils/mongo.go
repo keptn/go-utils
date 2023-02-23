@@ -29,12 +29,12 @@ func GetMongoConnectionStringFromEnv() (string, string, error) {
 	}
 	configdir := os.Getenv("MONGO_CONFIG_DIR")
 
-	if externalConnectionString := getFromEnvOrFile("MONGODB_EXTERNAL_CONNECTION_STRING", configdir+mongoExtCon); externalConnectionString != "" {
+	if externalConnectionString := getFromFileOrEnv("MONGODB_EXTERNAL_CONNECTION_STRING", configdir+mongoExtCon); externalConnectionString != "" {
 		return externalConnectionString, mongoDBName, nil
 	}
 	mongoDBHost := os.Getenv("MONGODB_HOST")
-	mongoDBUser := getFromEnvOrFile("MONGODB_USER", configdir+mongoUser)
-	mongoDBPassword := getFromEnvOrFile("MONGODB_PASSWORD", configdir+mongoPw)
+	mongoDBUser := getFromFileOrEnv("MONGODB_USER", configdir+mongoUser)
+	mongoDBPassword := getFromFileOrEnv("MONGODB_PASSWORD", configdir+mongoPw)
 
 	if !strutils.AllSet(mongoDBHost, mongoDBUser, mongoDBPassword) {
 		return "", "", errors.New("could not construct mongodb connection string: env vars 'MONGODB_HOST', 'MONGODB_USER' and 'MONGODB_PASSWORD' have to be set")
@@ -52,7 +52,7 @@ func readMountedSecret(file string) string {
 
 func getFromFileOrEnv(env string, path string) string {
 	if _, err := os.Stat(path); err == nil {
-		return readSecret(path)
+		return readMountedSecret(path)
 	}
 	return os.Getenv(env)
 }
