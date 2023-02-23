@@ -50,7 +50,7 @@ func readSecret(file string) string {
 	return string(body)
 }
 
-func getFromEnvOrFile(env string, path string) string {
+func getFromFileOrEnv(env string, path string) string {
 	if _, err := os.Stat(path); err == nil {
 		return readSecret(path)
 	}
