@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.20.1](https://github.com/keptn/go-utils/compare/v0.20.0...v0.20.1) (2023-04-04)
+
+
+### Features
+
+* add possibility to read mongo secret from file ([#566](https://github.com/keptn/keptn/issues/566)) ([6b8d8f2](https://github.com/keptn/go-utils/commit/6b8d8f22108199a622236195f76816924354fc84))
+
 ## [0.20.0](https://github.com/keptn/go-utils/compare/v0.19.0...v0.20.0) (2022-12-07)
 
 
