@@ -26,7 +26,8 @@ require (
 )
 
 require (
-	cloud.google.com/go v0.97.0 // indirect
+	cloud.google.com/go/compute v1.15.1 // indirect
+	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.0 // indirect
@@ -73,8 +74,8 @@ require (
 	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20220107163113-42d7afdf6368 // indirect
-	google.golang.org/grpc v1.51.0 // indirect
+	google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f // indirect
+	google.golang.org/grpc v1.53.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
