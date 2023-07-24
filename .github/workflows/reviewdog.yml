@@ -20,7 +20,7 @@ jobs:
         uses: reviewdog/action-golangci-lint@v2.3.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          go_version: ${{ env.GO_VERSION }}
+          go_version_file: "go.mod"
           fail_on_error: true
           reporter: github-pr-review
           golangci_lint_flags: --timeout 3m
