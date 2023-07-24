@@ -1,6 +1,6 @@
 module github.com/keptn/go-utils/examples/cp-connector
 
-go 1.18
+go 1.20
 
 replace github.com/keptn/go-utils => ../../../go-utils
 
