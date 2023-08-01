@@ -89,6 +89,7 @@ replace (
 	golang.org/x/crypto => golang.org/x/crypto v0.11.0
 	golang.org/x/net => golang.org/x/net v0.12.0
 	golang.org/x/text => golang.org/x/text v0.11.0
+	google.golang.org/protobuf => google.golang.org/protobuf v1.30.0
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
 )
