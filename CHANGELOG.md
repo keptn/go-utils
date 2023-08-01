@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.20.2](https://github.com/keptn/go-utils/compare/v0.20.1...v0.20.2) (2023-08-01)
+
+
+### Other
+
+* fix dependencies ([#591](https://github.com/keptn/keptn/issues/591)) ([4085f33](https://github.com/keptn/go-utils/commit/4085f3329695274ed263f240c09c64b1fc1a43c0))
+
 ### [0.20.1](https://github.com/keptn/go-utils/compare/v0.20.0...v0.20.1) (2023-04-04)
 
 
