@@ -16,7 +16,7 @@ defaults:
 jobs:
   prepare:
     name: Prepare release run
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     outputs:
       next-version: ${{ steps.version_number.outputs.next-version }}
       branch: ${{ steps.current_branch.outputs.branch }}
@@ -91,7 +91,7 @@ jobs:
         run: go test -race -v ./...
   release:
     name: "Release"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: [ prepare, test ]
     steps:
       - name: Checkout repo
