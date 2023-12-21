@@ -6,6 +6,8 @@
 
 <img src="./gopher.png" alt="go-utils-gopher" width="210"/>
 
+## Keptn V1 has reached end of life on December 22nd, 2023 and has been replaced.
+
 This repository contains packages for common functionality around the [Keptn Project](https://github.com/keptn).
 Please post any issues to [keptn/keptn repository](https://github.com/keptn/keptn/issues) and label them
 with `area:go-utils`.
