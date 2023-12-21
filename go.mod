@@ -85,8 +85,8 @@ require (
 )
 
 replace (
+	golang.org/x/crypto => golang.org/x/crypto v0.17.0
 	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.11.0
-	golang.org/x/crypto => golang.org/x/crypto v0.16.0
 	golang.org/x/net => golang.org/x/net v0.17.0
 	golang.org/x/text => golang.org/x/text v0.13.0
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
